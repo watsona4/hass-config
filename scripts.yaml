@@ -352,17 +352,17 @@ living_room_lights:
   sequence:
   - variables:
       target: '{% set weekday = now().strftime("%w")|int  %} {% set hour = now().strftime("%H")|int  %}
-        {% set minute = now().strftime("%M")|int  %} {% set input = states(''input_number.living_room_brightness'')|float
+        {% set minute = now().strftime("%M")|int  %} {% set input = states(''input_number.living_room_brightness'')|float(0)
         %} {{ 1000 if weekday == 4 and hour == 16 and minute <= 30 else input }}'
-      illuminance_target: '{{ target/2 if states(''binary_sensor.living_room_closed_tv'')|bool
+      illuminance_target: '{{ target/2 if is_state(''binary_sensor.living_room_closed_tv'',''on'')
         else target }}'
       max_illuminance: '{{ target }}'
       max_brightness: 50
       illuminance_margin: '{{ 0.05*illuminance_target }}'
       brightness_margin: '{{ (illuminance_margin*max_brightness/max_illuminance) }}'
-      cur_illuminance: '{{ states(''sensor.living_room_illuminance_state'')|float
+      cur_illuminance: '{{ states(''sensor.living_room_illuminance_state'')|float(0)
         }}'
-      cur_brightness: '{{ states(''sensor.living_room_brightness'')|float }}'
+      cur_brightness: '{{ states(''sensor.living_room_brightness'')|float(0) }}'
       distance_to_target: '{{ illuminance_target - cur_illuminance }}'
       illuminance_step: '{{ distance_to_target/2 if (distance_to_target|abs) > illuminance_margin
         else 0}}'
