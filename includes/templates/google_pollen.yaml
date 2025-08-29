@@ -3,8 +3,9 @@
     - platform: state
       entity_id: sensor.google_pollen_nearby
   variables:
-    d: >-
-      {{ (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | first) | default({}, true) }}
+    src: sensor.google_pollen_nearby
+    di: "{{ state_attr(src, 'dailyInfo') | default([], true) }}"
+    d: "{{ (di | first) | default({}, true) }}"
     plants: "{{ d.get('plantInfo') or [] }}"
     pick: >-
       {% set best = namespace(p=None, v=-1) %}
@@ -35,7 +36,6 @@
         }
       }}
     days: >-
-      {% set di = state_attr("sensor.google_pollen_nearby", 'dailyInfo') | default([], true) %}
       {% set ns = namespace(out=[]) %}
       {% for d in di[:3] %}
         {% set types = d.get('pollenTypeInfo') or [] %}
@@ -93,66 +93,56 @@
     - name: Google Pollen Nearby Today
       unique_id: google_pollen_nearby_today
       icon: mdi:flower-pollen
-      availability: >-
-        {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-        {{ di is sequence and (di | count) > 0 }}
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
       state: >-
-        {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-        {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-        {%- set types = d.get('pollenTypeInfo') or [] %}
-        {%- set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+        {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+        {% set types = d0.get('pollenTypeInfo') or [] %}
+        {% set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
         {{ pick.get('displayName') or pick.get('code') or 'unknown' }}
       attributes:
         date: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set dt = d.get('date') or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set dt = d0.get('date') or {} %}
           {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
         dominant_value: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('value') }}
         dominant_category: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('category') or 'unknown' }}
         dominant_hex: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
-          {%- set c = (t.get('indexInfo') or {}).get('color') or {} %}
-          {%- set r = (c.get('red') or 0) * 255 %}
-          {%- set g = (c.get('green') or 0) * 255 %}
-          {%- set b = (c.get('blue') or 0) * 255 %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set c = (t.get('indexInfo') or {}).get('color') or {} %}
+          {% set r = (c.get('red') or 0) * 255 %}
+          {% set g = (c.get('green') or 0) * 255 %}
+          {% set b = (c.get('blue') or 0) * 255 %}
           {{ '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) }}
         grass_value: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         tree_value: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         weed_value: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         recommendations: >-
-          {% set di = state_attr('sensor.google_pollen_nearby','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set types = d.get('pollenTypeInfo') or [] %}
-          {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
-          {%- set dom = (ranked | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set types = d0.get('pollenTypeInfo') or [] %}
+          {% set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
+          {% set dom = (ranked | first) or {} %}
           {{ (dom.get('healthRecommendations') or []) | unique | list }}
+
     - name: Pollen Species Nearby Today
       unique_id: pollen_species_nearby_today
       icon: mdi:leaf
-      availability: "{{ has_value('sensor.google_pollen_nearby') and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and (plants | count) > 0 }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -161,6 +151,7 @@
         category: "{{ pick.category or 'unknown' }}"
         value: "{{ pick.value }}"
         entity_picture: "{{ pick.picture or none }}"
+
     - name: Pollen Forecast Nearby Day 0
       unique_id: pollen_forecast_nearby_day_0
       icon: mdi:calendar-today
@@ -177,6 +168,7 @@
         species_category: "{{ (days[0] | default({})).get('species_category') }}"
         species_type: "{{ (days[0] | default({})).get('species_type') }}"
         species_picture: "{{ (days[0] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast Nearby Day 1
       unique_id: pollen_forecast_nearby_day_1
       icon: mdi:calendar
@@ -193,6 +185,7 @@
         species_category: "{{ (days[1] | default({})).get('species_category') }}"
         species_type: "{{ (days[1] | default({})).get('species_type') }}"
         species_picture: "{{ (days[1] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast Nearby Day 2
       unique_id: pollen_forecast_nearby_day_2
       icon: mdi:calendar
@@ -209,13 +202,13 @@
         species_category: "{{ (days[2] | default({})).get('species_category') }}"
         species_type: "{{ (days[2] | default({})).get('species_type') }}"
         species_picture: "{{ (days[2] | default({})).get('species_picture') }}"
+
     - name: Pollen Species List Nearby Today
       unique_id: pollen_species_list_nearby_today
-      availability: "{{ has_value('sensor.google_pollen_nearby') and (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | count) > 0 }}"
-      state: "{{ (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | count) > 0 }}"
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
-          {% set d = (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | first) | default({}, true) %}
           {% set plants = d.get('plantInfo') or [] %}
           {% set ns = namespace(out=[]) %}
           {% for p in plants %}
@@ -233,27 +226,27 @@
             {% set ns.out = ns.out + [item] %}
           {% endfor %}
           {{ ns.out }}
+
     - name: Pollen Peak Index Nearby Today
       unique_id: pollen_peak_index_nearby_today
       icon: mdi:meter-gas
       availability: >-
-        {% set d = (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | first) | default({}, true) %}
-        {{ (d.get('pollenTypeInfo') or []) | count > 0 }}
+        {{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}
       state: >-
-        {% set d = (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | first) | default({}, true) %}
         {% set types = d.get('pollenTypeInfo') or [] %}
         {% if types | count == 0 %} {{ none }}
-        {% else %}
-          {{ (types | map(attribute='indexInfo.value') | list | max) }}
+        {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
+
 
 # ================= Google Pollen - Home (derived templates) =================
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_home
   variables:
-    d: >-
-      {{ (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | first) | default({}, true) }}
+    src: sensor.google_pollen_home
+    di: "{{ state_attr(src,'dailyInfo') | default([], true) }}"
+    d: "{{ (di | first) | default({}, true) }}"
     plants: "{{ d.get('plantInfo') or [] }}"
     pick: >-
       {% set best = namespace(p=None, v=-1) %}
@@ -283,9 +276,7 @@
           'picture': desc.get('picture') or desc.get('pictureCloseup')
         }
       }}
-    src: "sensor.google_pollen_home"
     days: >-
-      {% set di = state_attr(src, 'dailyInfo') | default([], true) %}
       {% set ns = namespace(out=[]) %}
       {% for d in di[:3] %}
         {% set types = d.get('pollenTypeInfo') or [] %}
@@ -343,66 +334,56 @@
     - name: Google Pollen Home Today
       unique_id: google_pollen_home_today
       icon: mdi:flower-pollen
-      availability: >-
-        {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-        {{ di is sequence and (di | count) > 0 }}
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
       state: >-
-        {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-        {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-        {%- set types = d.get('pollenTypeInfo') or [] %}
-        {%- set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+        {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+        {% set types = d0.get('pollenTypeInfo') or [] %}
+        {% set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
         {{ pick.get('displayName') or pick.get('code') or 'unknown' }}
       attributes:
         date: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set dt = d.get('date') or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set dt = d0.get('date') or {} %}
           {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
         dominant_value: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('value') }}
         dominant_category: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('category') or 'unknown' }}
         dominant_hex: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
-          {%- set c = (t.get('indexInfo') or {}).get('color') or {} %}
-          {%- set r = (c.get('red') or 0) * 255 %}
-          {%- set g = (c.get('green') or 0) * 255 %}
-          {%- set b = (c.get('blue') or 0) * 255 %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set c = (t.get('indexInfo') or {}).get('color') or {} %}
+          {% set r = (c.get('red') or 0) * 255 %}
+          {% set g = (c.get('green') or 0) * 255 %}
+          {% set b = (c.get('blue') or 0) * 255 %}
           {{ '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) }}
         grass_value: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         tree_value: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         weed_value: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         recommendations: >-
-          {% set di = state_attr('sensor.google_pollen_home','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set types = d.get('pollenTypeInfo') or [] %}
-          {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
-          {%- set dom = (ranked | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set types = d0.get('pollenTypeInfo') or [] %}
+          {% set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
+          {% set dom = (ranked | first) or {} %}
           {{ (dom.get('healthRecommendations') or []) | unique | list }}
+
     - name: Pollen Species Home Today
       unique_id: pollen_species_home_today
       icon: mdi:leaf
-      availability: "{{ has_value('sensor.google_pollen_home') and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and (plants | count) > 0 }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -411,6 +392,7 @@
         category: "{{ pick.category or 'unknown' }}"
         value: "{{ pick.value }}"
         entity_picture: "{{ pick.picture or none }}"
+
     - name: Pollen Forecast Home Day 0
       unique_id: pollen_forecast_home_day_0
       icon: mdi:calendar-today
@@ -427,6 +409,7 @@
         species_category: "{{ (days[0] | default({})).get('species_category') }}"
         species_type: "{{ (days[0] | default({})).get('species_type') }}"
         species_picture: "{{ (days[0] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast Home Day 1
       unique_id: pollen_forecast_home_day_1
       icon: mdi:calendar
@@ -443,6 +426,7 @@
         species_category: "{{ (days[1] | default({})).get('species_category') }}"
         species_type: "{{ (days[1] | default({})).get('species_type') }}"
         species_picture: "{{ (days[1] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast Home Day 2
       unique_id: pollen_forecast_home_day_2
       icon: mdi:calendar
@@ -459,13 +443,13 @@
         species_category: "{{ (days[2] | default({})).get('species_category') }}"
         species_type: "{{ (days[2] | default({})).get('species_type') }}"
         species_picture: "{{ (days[2] | default({})).get('species_picture') }}"
+
     - name: Pollen Species List Home Today
       unique_id: pollen_species_list_home_today
-      availability: "{{ has_value('sensor.google_pollen_home') and (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | count) > 0 }}"
-      state: "{{ (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | count) > 0 }}"
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
-          {% set d = (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | first) | default({}, true) %}
           {% set plants = d.get('plantInfo') or [] %}
           {% set ns = namespace(out=[]) %}
           {% for p in plants %}
@@ -483,27 +467,26 @@
             {% set ns.out = ns.out + [item] %}
           {% endfor %}
           {{ ns.out }}
+
     - name: Pollen Peak Index Home Today
       unique_id: pollen_peak_index_home_today
       icon: mdi:meter-gas
-      availability: >-
-        {% set d = (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | first) | default({}, true) %}
-        {{ (d.get('pollenTypeInfo') or []) | count > 0 }}
+      availability: "{{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}"
       state: >-
-        {% set d = (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | first) | default({}, true) %}
         {% set types = d.get('pollenTypeInfo') or [] %}
         {% if types | count == 0 %} {{ none }}
-        {% else %}
-          {{ (types | map(attribute='indexInfo.value') | list | max) }}
+        {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
+
 
 # ================= Google Pollen - RV (derived templates) =================
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_rv
   variables:
-    d: >-
-      {{ (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | first) | default({}, true) }}
+    src: sensor.google_pollen_rv
+    di: "{{ state_attr(src,'dailyInfo') | default([], true) }}"
+    d: "{{ (di | first) | default({}, true) }}"
     plants: "{{ d.get('plantInfo') or [] }}"
     pick: >-
       {% set best = namespace(p=None, v=-1) %}
@@ -533,9 +516,7 @@
           'picture': desc.get('picture') or desc.get('pictureCloseup')
         }
       }}
-    src: "sensor.google_pollen_rv"
     days: >-
-      {% set di = state_attr(src, 'dailyInfo') | default([], true) %}
       {% set ns = namespace(out=[]) %}
       {% for d in di[:3] %}
         {% set types = d.get('pollenTypeInfo') or [] %}
@@ -593,66 +574,56 @@
     - name: Google Pollen RV Today
       unique_id: google_pollen_rv_today
       icon: mdi:flower-pollen
-      availability: >-
-        {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-        {{ di is sequence and (di | count) > 0 }}
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
       state: >-
-        {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-        {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-        {%- set types = d.get('pollenTypeInfo') or [] %}
-        {%- set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+        {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+        {% set types = d0.get('pollenTypeInfo') or [] %}
+        {% set pick = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
         {{ pick.get('displayName') or pick.get('code') or 'unknown' }}
       attributes:
         date: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set dt = d.get('date') or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set dt = d0.get('date') or {} %}
           {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
         dominant_value: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('value') }}
         dominant_category: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
           {{ (t.get('indexInfo') or {}).get('category') or 'unknown' }}
         dominant_hex: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set t = ((d.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
-          {%- set c = (t.get('indexInfo') or {}).get('color') or {} %}
-          {%- set r = (c.get('red') or 0) * 255 %}
-          {%- set g = (c.get('green') or 0) * 255 %}
-          {%- set b = (c.get('blue') or 0) * 255 %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} %}
+          {% set c = (t.get('indexInfo') or {}).get('color') or {} %}
+          {% set r = (c.get('red') or 0) * 255 %}
+          {% set g = (c.get('green') or 0) * 255 %}
+          {% set b = (c.get('blue') or 0) * 255 %}
           {{ '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) }}
         grass_value: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         tree_value: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         weed_value: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set x = (((d.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) %}
           {{ (x.get('indexInfo') or {}).get('value') }}
         recommendations: >-
-          {% set di = state_attr('sensor.google_pollen_rv','dailyInfo') %}
-          {% set d  = di[0] if di is sequence and (di | count) > 0 else {} %}
-          {%- set types = d.get('pollenTypeInfo') or [] %}
-          {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
-          {%- set dom = (ranked | first) or {} %}
+          {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
+          {% set types = d0.get('pollenTypeInfo') or [] %}
+          {% set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) %}
+          {% set dom = (ranked | first) or {} %}
           {{ (dom.get('healthRecommendations') or []) | unique | list }}
+
     - name: Pollen Species RV Today
       unique_id: pollen_species_rv_today
       icon: mdi:leaf
-      availability: "{{ has_value('sensor.google_pollen_rv') and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and (plants | count) > 0 }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -661,6 +632,7 @@
         category: "{{ pick.category or 'unknown' }}"
         value: "{{ pick.value }}"
         entity_picture: "{{ pick.picture or none }}"
+
     - name: Pollen Forecast RV Day 0
       unique_id: pollen_forecast_rv_day_0
       icon: mdi:calendar-today
@@ -677,6 +649,7 @@
         species_category: "{{ (days[0] | default({})).get('species_category') }}"
         species_type: "{{ (days[0] | default({})).get('species_type') }}"
         species_picture: "{{ (days[0] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast RV Day 1
       unique_id: pollen_forecast_rv_day_1
       icon: mdi:calendar
@@ -693,6 +666,7 @@
         species_category: "{{ (days[1] | default({})).get('species_category') }}"
         species_type: "{{ (days[1] | default({})).get('species_type') }}"
         species_picture: "{{ (days[1] | default({})).get('species_picture') }}"
+
     - name: Pollen Forecast RV Day 2
       unique_id: pollen_forecast_rv_day_2
       icon: mdi:calendar
@@ -709,13 +683,13 @@
         species_category: "{{ (days[2] | default({})).get('species_category') }}"
         species_type: "{{ (days[2] | default({})).get('species_type') }}"
         species_picture: "{{ (days[2] | default({})).get('species_picture') }}"
+
     - name: Pollen Species List RV Today
       unique_id: pollen_species_list_rv_today
-      availability: "{{ has_value('sensor.google_pollen_rv') and (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | count) > 0 }}"
-      state: "{{ (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | count) > 0 }}"
+      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
-          {% set d = (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | first) | default({}, true) %}
           {% set plants = d.get('plantInfo') or [] %}
           {% set ns = namespace(out=[]) %}
           {% for p in plants %}
@@ -733,16 +707,13 @@
             {% set ns.out = ns.out + [item] %}
           {% endfor %}
           {{ ns.out }}
+
     - name: Pollen Peak Index RV Today
       unique_id: pollen_peak_index_rv_today
       icon: mdi:meter-gas
-      availability: >-
-        {% set d = (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | first) | default({}, true) %}
-        {{ (d.get('pollenTypeInfo') or []) | count > 0 }}
+      availability: "{{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}"
       state: >-
-        {% set d = (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | first) | default({}, true) %}
         {% set types = d.get('pollenTypeInfo') or [] %}
         {% if types | count == 0 %} {{ none }}
-        {% else %}
-          {{ (types | map(attribute='indexInfo.value') | list | max) }}
+        {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
