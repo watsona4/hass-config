@@ -1,6 +1,7 @@
 # --- RV heartbeat (timestamp) ---
 - sensor:
     name: RV Last Seen
+    unique_id: rv_last_seen_ts
     state_topic: site/rv/heartbeat
     device_class: timestamp
     qos: 1
@@ -10,36 +11,34 @@
 # --- RV GPS sensors (robust to bad payloads, expire if stale) ---
 - sensor:
     - name: RV GPS Latitude
+      unique_id: rv_gps_lat
       state_topic: "site/rv/statestream/device_tracker/gps_location/latitude"
       value_template: "{{ value | float(0) }}"
       qos: 1
       expire_after: 600
       unit_of_measurement: "°"
     - name: RV GPS Longitude
+      unique_id: rv_gps_lon
       state_topic: "site/rv/statestream/device_tracker/gps_location/longitude"
       value_template: "{{ value | float(0) }}"
       qos: 1
       expire_after: 600
       unit_of_measurement: "°"
     - name: RV GPS Altitude
+      unique_id: rv_gps_alt
       state_topic: "site/rv/statestream/device_tracker/gps_location/altitude"
       value_template: "{{ value | float(0) }}"
       qos: 1
       expire_after: 600
       unit_of_measurement: "m"
     - name: RV GPS Accuracy
+      unique_id: rv_gps_acc
       state_topic: "site/rv/statestream/device_tracker/gps_location/gps_accuracy"
       value_template: "{{ value | float(0) }}"
       qos: 1
       expire_after: 600
       unit_of_measurement: "m"
 
-# --- RV device tracker (computed state from heartbeat + latest coords) ---
-# Notes:
-# - json_attributes_topic may NOT contain wildcards; we use heartbeat to
-#   re-render attributes via json_attributes_template.
-# - State is 'home' if coords are within ~100m of zone.home AND heartbeat is fresh.
-#   Otherwise 'not_home'. You can adjust the distance threshold.
 - device_tracker:
     - name: RV Device Tracker
       unique_id: 350e4837-3d09-4c76-9a6f-6ec5bdcd6f5e
@@ -57,10 +56,9 @@
           {% set hl = state_attr('zone.home','latitude')  | float(0) %}
           {% set hg = state_attr('zone.home','longitude') | float(0) %}
           {% set d_km = distance(lat, lon, hl, hg) %}
-          {# treat <= 0.1 km (~100 m) as home; tweak to taste #}
           {{ 'home' if d_km <= 0.1 else 'not_home' }}
         {% endif %}
-      json_attributes_topic: "site/rv/statestream/device_tracker/gps_location/#"
+      json_attributes_topic: "site/rv/heartbeat"
       json_attributes_template: >-
         {
           "latitude": {{ states('sensor.rv_gps_latitude')  | float(0) | tojson }},
@@ -130,10 +128,10 @@
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/time"
     unique_id: Acurite-Tower-A-11075-UTC
     device: &acurite_device
-        identifiers: Acurite-Tower-A-11075
-        name: Acurite-Tower-A-11075
-        model: Acurite-Tower
-        manufacturer: rtl_433
+      identifiers: Acurite-Tower-A-11075
+      name: Acurite-Tower-A-11075
+      model: Acurite-Tower
+      manufacturer: rtl_433
 - binary_sensor:
     device_class: battery
     name: Battery
@@ -172,10 +170,10 @@
     state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/time"
     unique_id: AmbientWeather-WH31E-1-167-UTC
     device: &ambient_weather_device
-        identifiers: AmbientWeather-WH31E-1-167
-        name: AmbientWeather-WH31E-1-167
-        model: AmbientWeather-WH31E
-        manufacturer: rtl_433
+      identifiers: AmbientWeather-WH31E-1-167
+      name: AmbientWeather-WH31E-1-167
+      model: AmbientWeather-WH31E
+      manufacturer: rtl_433
 - binary_sensor:
     device_class: battery
     name: Battery
@@ -205,17 +203,17 @@
     device: *ambient_weather_device
 
 # --- MQTT climates (SwitchBot IR mirrors) ---
-# Tip: topics 'target_humudity' are kept as-is to match your publisher spelling.
+# Tip: topics 'target_humudity' preserved to match publisher spelling.
 - climate:
 
     # Metadata
     name: Gym Minisplit
     unique_id: 69561e4b-44be-4c84-b897-69df1bf7dc8f
     device:
-        identifiers: [01-202403091318-96155051setAll]
-        name: Gym Minisplit-setAll
-        manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
-        model: Air Conditioner
+      identifiers: [01-202403091318-96155051setAll]
+      name: Gym Minisplit-setAll
+      manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
+      model: Air Conditioner
 
     # Modes
     modes: ["auto", "off", "cool", "heat", "dry", "fan_only"]
@@ -264,10 +262,10 @@
     name: Playroom Minisplit
     unique_id: 08a3ced1-41af-4a75-b000-deb0926aacab
     device:
-        identifiers: [03-202502230943-44999586setAll]
-        name: Playroom Minisplit-setAll
-        manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
-        model: Air Conditioner
+      identifiers: [03-202502230943-44999586setAll]
+      name: Playroom Minisplit-setAll
+      manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
+      model: Air Conditioner
 
     # Modes
     modes: ["auto", "off", "cool", "heat", "dry", "fan_only"]
@@ -313,24 +311,28 @@
 # --- Netprobe sensors ---
 - sensor:
     - name: "Netprobe Download"
+      unique_id: netprobe_down
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
       value_template: "{{ value_json.download_mbps | float }}"
       icon: mdi:download
 
     - name: "Netprobe Upload"
+      unique_id: netprobe_up
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
       value_template: "{{ value_json.upload_mbps | float }}"
       icon: mdi:upload
 
     - name: "Netprobe Latency (TCP)"
+      unique_id: netprobe_lat_tcp
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "ms"
       value_template: "{{ value_json.latency_tcp_ms | float }}"
       icon: mdi:lan-connect
 
     - name: "Netprobe Latency (ICMP)"
+      unique_id: netprobe_lat_icmp
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "ms"
       value_template: >-
@@ -342,11 +344,13 @@
       icon: mdi:lan-pending
 
     - name: "Netprobe Error Flag"
+      unique_id: netprobe_error
       state_topic: "site/home/devices/netprobe"
       value_template: "{{ value_json.error }}"
       icon: mdi:alert-circle-outline
 
     - name: "Netprobe Last Run"
+      unique_id: netprobe_last_run
       state_topic: "site/home/devices/netprobe"
       value_template: "{{ value_json.timestamp }}"
       device_class: timestamp
