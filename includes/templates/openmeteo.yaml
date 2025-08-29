@@ -9,7 +9,6 @@
   sensor:
     - name: OpenMeteo Nearby Cloud LUT
       unique_id: openmeteo_nearby_cloud_lut
-      entity_category: diagnostic
       availability: >-
         {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
         {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}
@@ -61,7 +60,6 @@
   sensor:
     - name: OpenMeteo Home Cloud LUT
       unique_id: openmeteo_home_cloud_lut
-      entity_category: diagnostic
       availability: >-
         {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
         {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}
@@ -112,7 +110,6 @@
   sensor:
     - name: OpenMeteo RV Cloud LUT
       unique_id: openmeteo_rv_cloud_lut
-      entity_category: diagnostic
       availability: >-
         {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
         {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}

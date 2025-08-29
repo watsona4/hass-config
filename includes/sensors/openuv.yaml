@@ -3,7 +3,7 @@
   name: OpenUV Nearby
   unique_id: openuv_nearby
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set plat = states('sensor.aaron_latitude') | float(0) %}
@@ -56,7 +56,7 @@
   name: OpenUV Nearby Protection
   unique_id: openuv_nearby_protection
   device_class: timestamp
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set plat = states('sensor.aaron_latitude') | float(0) %}
@@ -108,7 +108,7 @@
   name: OpenUV Nearby Forecast
   unique_id: openuv_nearby_forecast
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 3600
   timeout: 8
   resource_template: >-
     {% set plat = states('sensor.aaron_latitude') | float(0) %}
@@ -156,7 +156,7 @@
   name: OpenUV Home
   unique_id: openuv_home
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set lat = states('sensor.home_latitude')  | float(0) %}
@@ -197,7 +197,7 @@
   name: OpenUV Home Protection
   unique_id: openuv_home_protection
   device_class: timestamp
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set lat = states('sensor.home_latitude')  | float(0) %}
@@ -237,7 +237,7 @@
   name: OpenUV Home Forecast
   unique_id: openuv_home_forecast
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 3600
   timeout: 8
   resource_template: >-
     {% set lat = states('sensor.home_latitude')  | float(0) %}
@@ -273,7 +273,7 @@
   name: OpenUV RV
   unique_id: openuv_rv
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set rlat = states('sensor.rv_latitude')   | float(0) %}
@@ -334,7 +334,7 @@
   name: OpenUV RV Protection
   unique_id: openuv_rv_protection
   device_class: timestamp
-  scan_interval: 60
+  scan_interval: 300
   timeout: 8
   resource_template: >-
     {% set rlat = states('sensor.rv_latitude')   | float(0) %}
@@ -394,7 +394,7 @@
   name: OpenUV RV Forecast
   unique_id: openuv_rv_forecast
   state_class: measurement
-  scan_interval: 60
+  scan_interval: 3600
   timeout: 8
   resource_template: >-
     {% set rlat = states('sensor.rv_latitude')   | float(0) %}

@@ -39,9 +39,11 @@ recorder:
   commit_interval: 3
   exclude:
     entity_globs:
+      - sensor.google_pollen_*
+      - sensor.openmeteo_*
+      - sensor.openuv_*
       - sensor.pollen_species_list_*_today
       - sensor.pollen_forecast_*_day_*
-      - sensor.openmeteo_*_cloud_lut
 
 history:
   exclude:

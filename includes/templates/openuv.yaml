@@ -7,11 +7,15 @@
         - sensor.openuv_nearby_forecast
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: OpenUV Nearby UV Index
       unique_id: openuv_nearby_uv_index
       state_class: measurement
-      availability: "{{ states('sensor.openuv_nearby') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_nearby') }}"
       state: "{{ states('sensor.openuv_nearby') | float(0) }}"
     - name: OpenUV Nearby UV Max Index
       unique_id: openuv_nearby_uv_max_index
@@ -98,11 +102,15 @@
         - sensor.openuv_home_forecast
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: OpenUV Home UV Index
       unique_id: openuv_home_uv_index
       state_class: measurement
-      availability: "{{ states('sensor.openuv_home') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_home') }}"
       state: "{{ states('sensor.openuv_home') | float(0) }}"
     - name: OpenUV Home UV Max Index
       unique_id: openuv_home_uv_max_index
@@ -189,11 +197,15 @@
         - sensor.openuv_rv_forecast
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: OpenUV RV UV Index
       unique_id: openuv_rv_uv_index
       state_class: measurement
-      availability: "{{ states('sensor.openuv_rv') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_rv') }}"
       state: "{{ states('sensor.openuv_rv') | float(0) }}"
     - name: OpenUV RV UV Max Index
       unique_id: openuv_rv_uv_max_index
@@ -280,12 +292,16 @@
         - sensor.openmeteo_nearby
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: Nearby Apparent UV Index
       unique_id: adjusted_nearby_uv_index
       unit_of_measurement: "UV index"
       state_class: measurement
-      availability: "{{ states('sensor.openuv_nearby_uv_index') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_nearby_uv_index') }}"
       state: >-
         {% from 'macros.jinja' import uv_factor_sigmoid %}
         {% set raw_uv = states('sensor.openuv_nearby_uv_index') | float(0) %}
@@ -327,12 +343,16 @@
         - sensor.openmeteo_home
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: Home Apparent UV Index
       unique_id: adjusted_home_uv_index
       unit_of_measurement: "UV index"
       state_class: measurement
-      availability: "{{ states('sensor.openuv_home_uv_index') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_home_uv_index') }}"
       state: >-
         {% from 'macros.jinja' import uv_factor_sigmoid %}
         {% set raw_uv = states('sensor.openuv_home_uv_index') | float(0) %}
@@ -374,12 +394,16 @@
         - sensor.openmeteo_rv
     - platform: homeassistant
       event: start
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: RV Apparent UV Index
       unique_id: adjusted_rv_uv_index
       unit_of_measurement: "UV index"
       state_class: measurement
-      availability: "{{ states('sensor.openuv_rv_uv_index') not in ['unknown','unavailable','none',''] }}"
+      availability: "{{ has_value('sensor.openuv_rv_uv_index') }}"
       state: >-
         {% from 'macros.jinja' import uv_factor_sigmoid %}
         {% set raw_uv = states('sensor.openuv_rv_uv_index') | float(0) %}
@@ -651,6 +675,10 @@
 - trigger:
     - platform: state
       entity_id: sensor.adjusted_nearby_uv_index
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: Nearby UV Safe Exposure (all skin types)
       unique_id: nearby_uv_safe_exposure_all_skin_types
@@ -777,6 +805,10 @@
 - trigger:
     - platform: state
       entity_id: sensor.adjusted_home_uv_index
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: Home UV Safe Exposure (all skin types)
       unique_id: home_uv_safe_exposure_all_skin_types
@@ -903,6 +935,10 @@
 - trigger:
     - platform: state
       entity_id: sensor.adjusted_rv_uv_index
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
     - name: RV UV Safe Exposure (all skin types)
       unique_id: rv_uv_safe_exposure_all_skin_types
@@ -1186,6 +1222,10 @@
       {%- endif -%}
       {{ ns.out }}
 
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
 
     - name: Nearby UV Safe Exposure End (Forecast, ST1)
@@ -1410,6 +1450,10 @@
       {%- endif -%}
       {{ ns.out }}
 
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
 
     - name: Home UV Safe Exposure End (Forecast, ST1)
@@ -1626,6 +1670,10 @@
       {%- endif -%}
       {{ ns.out }}
 
+    - platform: time
+      at: "00:00:15"
+    - platform: time_pattern
+      minutes: "/5"
   sensor:
 
     - name: RV UV Safe Exposure End (Forecast, ST1)
