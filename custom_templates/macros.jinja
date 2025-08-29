@@ -1,0 +1,60 @@
+{%- macro wx_condition(code, is_day=true) -%}
+    {%- if code in [0,1] -%}{{ 'sunny' if is_day else 'clear-night' }}
+    {%- elif code in [2] -%}partlycloudy
+    {%- elif code in [3] -%}cloudy
+    {%- elif code in [45,48] -%}fog
+    {%- elif code in [51,53,55,56,57,61,63,66,80,81] -%}rainy
+    {%- elif code in [65,67,82] -%}pouring
+    {%- elif code in [71,73,75,77,85,86] -%}snowy
+    {%- elif code in [95,96,99] -%}lightning
+    {%- else -%}unknown
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro uv_factor_sigmoid(c) -%}
+    {%- set L = 1.0 -%}
+    {%- set x0 = 81.0837 -%}
+    {%- set k = -0.0897371 -%}
+    {%- set denom = 1 + (2.718281828459045 ** (-k * ((c|float(0)) - x0))) -%}
+    {{ L / denom }}
+{%- endmacro -%}
+
+{% macro convert_temp(value, from_unit, to_unit) %}
+  {%- set v = value | float %}
+  {%- set from_unit = from_unit | lower %}
+  {%- set to_unit = to_unit | lower %}
+
+  {#--- Normalize everything to Kelvin ---#}
+  {%- if from_unit in ['k', 'kelvin'] %}
+    {%- set k = v %}
+  {%- elif from_unit in ['c', '°c', 'celsius'] %}
+    {%- set k = v + 273.15 %}
+  {%- elif from_unit in ['f', '°f', 'fahrenheit'] %}
+    {%- set k = (v - 32) * 5/9 + 273.15 %}
+  {%- else %}
+    {{ 'unknown from_unit' }}
+  {%- endif %}
+
+  {#--- Convert Kelvin to target ---#}
+  {%- if to_unit in ['k', 'kelvin'] %}
+    {{ k }}
+  {%- elif to_unit in ['c', '°c', 'celsius'] %}
+    {{ (k - 273.15) | round(2) }}
+  {%- elif to_unit in ['f', '°f', 'fahrenheit'] %}
+    {{ ((k - 273.15) * 9/5 + 32) | round(2) }}
+  {%- else %}
+    {{ 'unknown to_unit' }}
+  {%- endif %}
+{% endmacro %}
+
+{% macro entity_temp(eid) %}
+    {%- set val = states(eid) -%}
+    {%- set unit = state_attr(eid,'unit_of_measurement') -%}
+    {% set t = convert_temp(val, unit or 'c', 'c') | float(0) %}
+    {{ t | round(1) }}
+{% endmacro %}
+
+{%- macro abs(x) -%}
+  {%- set x = x | float(0) -%}
+  {{ iif(x < 0, -x, x) }}
+{%- endmacro -%}

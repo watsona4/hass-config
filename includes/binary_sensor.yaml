@@ -1,0 +1,6 @@
+- platform: threshold
+  name: Webcam Running
+  entity_id: sensor.usb_current_monitor_ina219_current
+  upper: 0.15                                # turn ON at ≥ 0.15 A
+  hysteresis: 0.05                           # turn OFF at ≤ 0.10 A (0.15 - 0.05)
+  device_class: running

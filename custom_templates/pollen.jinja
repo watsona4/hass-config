@@ -1,0 +1,29 @@
+
+{% macro name_25(i) -%}
+    {%- set names = ["Low Pollen Count", "Moderate Pollen Count", "High Pollen Count", "Very High Pollen Count",] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro %}
+
+{% macro name_12(i) -%}
+    {%- set names = ["Low Pollen", "Moderate Pol", "High Pollen", "Very High Pol",] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro %}
+
+{% macro name_8(i) -%}
+    {%- set names = ["LowPol", "ModPol", "HighPol", "VHighPol",] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro %}
+
+{% macro color(i) -%}
+    {%- set names = ["#009966", "#ffde33", "#ff9933", "#cc0033", "disabled"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro %}
+
+{% macro level(i) -%}
+    {%- set i = i | float(0) %}
+    {%- if i < 2.5 -%} 1
+    {%- elif i < 4.9 -%} 2
+    {%- elif i < 9.7 -%} 3
+    {%- else -%} 4
+    {%- endif -%}
+{%- endmacro %}

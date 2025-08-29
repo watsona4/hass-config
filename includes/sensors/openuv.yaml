@@ -1,0 +1,446 @@
+# ===================== OpenUV Nearby =====================
+- platform: rest
+  name: OpenUV Nearby
+  unique_id: openuv_nearby
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set plat = states('sensor.aaron_latitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/uv' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set plat = states('sensor.aaron_latitude') | float(0) %}
+      {% set hlat = states('sensor.home_latitude')  | float(0) %}
+      {{ plat if plat != 0 else hlat }}
+    lng: >-
+      {% set plon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ plon if plon != 0 else hlon }}
+    alt: >-
+      {{ state_attr('person.aaron_watson','altitude') | default(states('input_number.home_altitude')) }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set plat = states('sensor.aaron_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')   | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set uv = res.get('uv') if res else none %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - uv_time
+    - uv_max
+    - uv_max_time
+    - ozone
+    - ozone_time
+    - safe_exposure_time
+    - sun_info
+
+- platform: rest
+  name: OpenUV Nearby Protection
+  unique_id: openuv_nearby_protection
+  device_class: timestamp
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set plat = states('sensor.aaron_latitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/protection' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set plat = states('sensor.aaron_latitude') | float(0) %}
+      {% set hlat = states('sensor.home_latitude')  | float(0) %}
+      {{ plat if plat != 0 else hlat }}
+    lng: >-
+      {% set plon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ plon if plon != 0 else hlon }}
+    alt: >-
+      {{ state_attr('person.aaron_watson','altitude') | default(states('input_number.home_altitude')) }}
+    from: "3.5"
+    to: "3.5"
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set plat = states('sensor.aaron_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')   | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set ft = res.get('from_time') if res else none %}
+    {{ ft if ft else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - from_time
+    - from_uv
+    - to_time
+    - to_uv
+
+- platform: rest
+  name: OpenUV Nearby Forecast
+  unique_id: openuv_nearby_forecast
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set plat = states('sensor.aaron_latitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set plat = states('sensor.aaron_latitude') | float(0) %}
+      {% set hlat = states('sensor.home_latitude')  | float(0) %}
+      {{ plat if plat != 0 else hlat }}
+    lng: >-
+      {% set plon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ plon if plon != 0 else hlon }}
+    alt: >-
+      {{ state_attr('person.aaron_watson','altitude') | default(states('input_number.home_altitude')) }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set plat = states('sensor.aaron_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')   | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set arr = value_json.get('result') if value_json is mapping else [] %}
+    {% set first = arr[0] if arr else {} %}
+    {% set uv = first.get('uv') %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes:
+    - result
+
+# ===================== OpenUV Home =======================
+- platform: rest
+  name: OpenUV Home
+  unique_id: openuv_home
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude')  | float(0) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/uv' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {{ states('sensor.home_latitude') | float(0) }}
+    lng: >-
+      {{ states('sensor.home_longitude') | float(0) }}
+    alt: >-
+      {{ states('input_number.home_altitude') }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude') | float(0) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set uv = res.get('uv') if res else none %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - uv_time
+    - uv_max
+    - uv_max_time
+    - ozone
+    - ozone_time
+    - safe_exposure_time
+    - sun_info
+
+- platform: rest
+  name: OpenUV Home Protection
+  unique_id: openuv_home_protection
+  device_class: timestamp
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude')  | float(0) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/protection' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {{ states('sensor.home_latitude') | float(0) }}
+    lng: >-
+      {{ states('sensor.home_longitude') | float(0) }}
+    alt: >-
+      {{ states('input_number.home_altitude') }}
+    from: "3.5"
+    to: "3.5"
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude') | float(0) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set ft = res.get('from_time') if res else none %}
+    {{ ft if ft else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - from_time
+    - from_uv
+    - to_time
+    - to_uv
+
+- platform: rest
+  name: OpenUV Home Forecast
+  unique_id: openuv_home_forecast
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude')  | float(0) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {{ states('sensor.home_latitude') | float(0) }}
+    lng: >-
+      {{ states('sensor.home_longitude') | float(0) }}
+    alt: >-
+      {{ states('input_number.home_altitude') }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude') | float(0) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set arr = value_json.get('result') if value_json is mapping else [] %}
+    {% set first = arr[0] if arr else {} %}
+    {% set uv = first.get('uv') %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes:
+    - result
+
+# ===================== OpenUV RV =========================
+- platform: rest
+  name: OpenUV RV
+  unique_id: openuv_rv
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+    {% set alon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/uv' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+      {% set alat = states('sensor.aaron_latitude')| float(0) %}
+      {% set hlat = states('sensor.home_latitude') | float(0) %}
+      {{ rlat if rlat != 0 else (alat if alat != 0 else hlat) }}
+    lng: >-
+      {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+      {% set alon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
+    alt: >-
+      {{ state_attr('device_tracker.rv_device_tracker','altitude')
+                   | default(state_attr('person.aaron_watson','altitude'))
+                   | default(states('input_number.home_altitude')) }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')  | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set alon = states('sensor.aaron_longitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')| float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set uv = res.get('uv') if res else none %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - uv_time
+    - uv_max
+    - uv_max_time
+    - ozone
+    - ozone_time
+    - safe_exposure_time
+    - sun_info
+
+- platform: rest
+  name: OpenUV RV Protection
+  unique_id: openuv_rv_protection
+  device_class: timestamp
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+    {% set alon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/protection' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+      {% set alat = states('sensor.aaron_latitude')| float(0) %}
+      {% set hlat = states('sensor.home_latitude') | float(0) %}
+      {{ rlat if rlat != 0 else (alat if alat != 0 else hlat) }}
+    lng: >-
+      {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+      {% set alon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
+    alt: >-
+      {{ state_attr('device_tracker.rv_device_tracker','altitude')
+                   | default(state_attr('person.aaron_watson','altitude'))
+                   | default(states('input_number.home_altitude')) }}
+    from: "3.5"
+    to: "3.5"
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')  | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set alon = states('sensor.aaron_longitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')| float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set res = value_json.get('result') if value_json is mapping else none %}
+    {% set ft = res.get('from_time') if res else none %}
+    {{ ft if ft else states(this.entity_id) }}
+  json_attributes_path: "$.result"
+  json_attributes:
+    - from_time
+    - from_uv
+    - to_time
+    - to_uv
+
+- platform: rest
+  name: OpenUV RV Forecast
+  unique_id: openuv_rv_forecast
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+    {% set alon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.openuv.io/api/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    lat: >-
+      {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+      {% set alat = states('sensor.aaron_latitude')| float(0) %}
+      {% set hlat = states('sensor.home_latitude') | float(0) %}
+      {{ rlat if rlat != 0 else (alat if alat != 0 else hlat) }}
+    lng: >-
+      {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+      {% set alon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
+    alt: >-
+      {{ state_attr('device_tracker.rv_device_tracker','altitude')
+                   | default(state_attr('person.aaron_watson','altitude'))
+                   | default(states('input_number.home_altitude')) }}
+  headers:
+    x-access-token: !secret openuv_api_key
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')  | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set alon = states('sensor.aaron_longitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')| float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set arr = value_json.get('result') if value_json is mapping else [] %}
+    {% set first = arr[0] if arr else {} %}
+    {% set uv = first.get('uv') %}
+    {{ uv if uv is not none else states(this.entity_id) }}
+  json_attributes:
+    - result

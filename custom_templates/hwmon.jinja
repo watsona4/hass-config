@@ -1,0 +1,93 @@
+{# ──────────────────────────────────────────────────────────────
+   custom_templates/hwmon.jinja
+   Reusable macros for Hardware Monitor cards
+   ────────────────────────────────────────────────────────────── #}
+
+{%- from 'macros.jinja' import convert_temp -%}
+
+{%- macro human_bytes(n, per_s=False) -%}
+  {%- set n = n|float(0) -%}
+  {%- set base = 1024.0 -%}
+  {%- set units = ['B','KB','MB','GB','TB','PB'] -%}
+  {% set ns = namespace(v=n, i=0) %}
+  {%- for _ in range(5) -%}
+    {%- if ns.v < base -%}{%- break -%}{%- endif -%}
+    {%- set ns.v = ns.v / base -%}
+    {%- set ns.i = loop.index -%}
+  {%- endfor -%}
+  {{ (ns.v if ns.v < 100 else ns.v|round(0))|round(1) }} {{ units[ns.i] }}{{ '/s' if per_s else '' }}
+{%- endmacro -%}
+
+{%- macro hw_primary(eid) -%}
+  {%- set fn = state_attr(eid, 'friendly_name') or eid -%}
+  {%- set parts = (fn or '') .split(' / ') -%}
+  {{ parts[-2:] | join(' · ') if parts|length > 1 else fn }}
+{%- endmacro -%}
+
+{%- macro hw_secondary(eid) -%}
+  {%- set val = states(eid) -%}
+  {%- set unit = state_attr(eid,'unit_of_measurement') -%}
+  {%- set dc = state_attr(eid,'device_class') -%}
+
+  {#- temperature sensors → always celsius -#}
+  {%- if dc == 'temperature' -%}
+    {%- set t = convert_temp(val, unit or 'c', 'c') | float(0) -%}
+    {{ t | round(1) }} °C
+
+  {#- humanize bytes + B/s -#}
+  {%- elif unit in ['B', 'B/s'] -%}
+    {{ human_bytes(val, unit == 'B/s') }}
+
+  {#- fallback → plain val + unit -#}
+  {%- elif unit -%}
+    {{ val }} {{ unit }}
+  {%- else -%}
+    {{ val }}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro hw_icon(eid) -%}
+  {%- set dc = state_attr(eid, 'device_class') -%}
+  {%- if dc == 'temperature' -%} mdi:thermometer
+  {%- elif dc == 'voltage' -%} mdi:flash-outline
+  {%- elif dc == 'power' -%} mdi:lightning-bolt-outline
+  {%- elif 'clock' in eid -%} mdi:chip
+  {%- elif 'load' in eid or 'level' in eid -%} mdi:gauge
+  {%- else -%} mdi:database
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro hw_icon_color(eid) -%}
+  {%- set dc = state_attr(eid,'device_class') -%}
+  {%- set raw = states(eid) -%}
+  {%- set unit = state_attr(eid,'unit_of_measurement') -%}
+  {%- if dc == 'temperature' -%}
+    {% set t = convert_temp(raw, unit or 'c', 'c') | float(0) %}
+    {{ 'red' if t >= 90 else 'orange' if t >= 80 else 'green' }}
+  {%- elif unit == '%' or 'percent' in eid -%}
+    {% set v = raw|float(0) %}
+    {{ 'red' if v >= 90 else 'orange' if v >= 75 else 'green' }}
+  {%- else -%}
+    blue
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro hw_adapter_name(eid) -%}
+  {%- set fn = state_attr(eid, 'friendly_name') or '' -%}
+  {%- set parts = fn.split(' / ') -%}
+  {%- if parts|length > 0 -%}
+    {{ (parts[0].split(' LHM ')[1] or '').strip() }}
+  {%- else -%}
+    Network
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro hw_sensor_label(eid) -%}
+  {%- set fn = state_attr(eid, 'friendly_name') or '' -%}
+  {%- set parts = fn.split(' / ') -%}
+  {%- if parts|length > 1 -%}
+    {{ parts[-1] }}
+  {%- else -%}
+    {{ fn }}
+  {%- endif -%}
+{%- endmacro -%}

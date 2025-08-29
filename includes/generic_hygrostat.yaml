@@ -1,0 +1,5 @@
+- name: Living Room Dehumidifier
+  device_class: dehumidifier
+  humidifier: switch.living_room_dehumidifier
+  target_sensor: sensor.humidifier_humidity
+  min_cycle_duration: "0:05:00"

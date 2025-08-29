@@ -1,0 +1,228 @@
+- platform: zwift
+  username: !secret my_zwift_username
+  password: !secret my_zwift_password
+
+- platform: history_stats
+  name: Furnace On Time
+  unique_id: 7c3baba3-c9a9-4225-bddb-19edcedcfb0f
+  entity_id: binary_sensor.furnace_heating_state
+  state: "on"
+  start: 1729310400
+  end: "{{ now() }}"
+  type: time
+- platform: history_stats
+  name: Dryer On Time
+  unique_id: 4e0e0383-5d46-4c5b-874e-cf9a2fe39785
+  entity_id: binary_sensor.dryer_heating_state
+  state: "on"
+  start: 1729310400
+  end: "{{ now() }}"
+  type: time
+- platform: history_stats
+  name: Water Heater On Time
+  unique_id: fc466c8a-2a7a-4e80-8dbe-a50a7a408e79
+  entity_id: binary_sensor.water_heater_heating_state
+  state: "on"
+  start: 1729310400
+  end: "{{ now() }}"
+  type: time
+- platform: history_stats
+  name: Gas Stove On Time
+  unique_id: 056611c4-7ddc-44e5-8006-3882ba2219b4
+  entity_id: binary_sensor.gas_stove_heating_state
+  state: "on"
+  start: 1729310400
+  end: "{{ now() }}"
+  type: time
+- platform: history_stats
+  name: Shop Furnace On Time
+  unique_id: 5b673d39-e43e-4e74-9887-551cd629a316
+  entity_id: binary_sensor.shop_furnace_heating_state
+  state: "on"
+  start: 1729310400
+  end: "{{ now() }}"
+  type: time
+
+- platform: rest
+  name: Agromonitoring
+  unique_id: agromonitoring
+  scan_interval: 43200
+  timeout: 8
+  resource: https://api.agromonitoring.com/agro/1.0/soil
+  params:
+    polyid: !secret agromonitoring_polyid
+    appid: !secret agromonitoring_appid
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  value_template: >-
+    {% set dt = value_json.get('dt') if value_json is mapping else none %}
+    {{ dt if dt is not none else states(this.entity_id) }}
+  json_attributes:
+    - dt
+    - t10
+    - moisture
+    - t0
+
+- platform: filter
+  name: Outside Temperature Filtered
+  unique_id: 4e74ddb5-0577-4a6d-b685-29a379d20fe2
+  entity_id: sensor.acurite_tower_a_11075_temperature
+  filters:
+    - filter: outlier
+      window_size: 5
+      radius: 10.0
+      precision: 2
+    - filter: lowpass
+      time_constant: 5
+      precision: 2
+
+- platform: filter
+  name: Outside Water Temperature Filtered
+  entity_id: sensor.outside_water_temperature
+  filters:
+    - filter: outlier
+
+- platform: filter
+  name: Average Brightness
+  entity_id: sensor.outside_brightness
+  filters:
+    - filter: time_simple_moving_average
+      window_size: "0:15:00"
+
+- platform: min_max
+  name: Blind Tilt Battery Level
+  type: min
+  entity_ids:
+    - sensor.breakfast_room_window_battery
+    - sensor.living_room_right_window_battery
+    - sensor.living_room_left_window_battery
+    - sensor.laundry_room_window_battery
+    - sensor.kitchen_left_window_battery
+    - sensor.kitchen_right_window_battery
+    - sensor.front_hallway_window_battery
+    - sensor.study_left_window_battery
+    - sensor.study_right_window_battery
+    - sensor.study_west_window_battery
+    - sensor.guest_bedroom_south_window_battery
+    - sensor.guest_bedroom_left_window_battery
+    - sensor.guest_bedroom_right_window_battery
+    - sensor.eleanor_room_window_battery
+    - sensor.michael_room_window_battery
+    - sensor.back_hallway_window_battery
+    - sensor.kids_bathroom_window_battery
+    - sensor.master_bathroom_left_window_battery
+    - sensor.master_bathroom_right_window_battery
+    - sensor.master_bedroom_left_window_battery
+    - sensor.master_bedroom_right_window_battery
+
+- platform: min_max
+  name: Xaiomi Thermometer Battery Level
+  type: min
+  entity_ids:
+    - sensor.pantry_thermometer_battery
+    - sensor.laundry_thermometer_battery
+    - sensor.chicken_coop_thermometer_battery
+
+- platform: min_max
+  name: Nest Protect Battery Level
+  type: min
+  entity_ids:
+    - sensor.nest_protect_upstairs_battery_level
+    - sensor.nest_protect_kids_room_eleanor_battery_level
+    - sensor.nest_protect_kids_room_michael_battery_level
+    - sensor.nest_protect_family_room_battery_level
+    - sensor.nest_protect_hallway_battery_level
+    - sensor.nest_protect_guest_room_battery_level
+    - sensor.nest_protect_gym_battery_level
+    - sensor.nest_protect_living_room_battery_level
+
+- platform: min_max
+  name: Nest Protect Next Replacement Epoch
+  type: min
+  entity_ids:
+    - sensor.nest_protect_upstairs_replace_by_epoch
+    - sensor.nest_protect_kids_room_eleanor_replace_by_epoch
+    - sensor.nest_protect_kids_room_michael_replace_by_epoch
+    - sensor.nest_protect_family_room_replace_by_epoch
+    - sensor.nest_protect_hallway_replace_by_epoch
+    - sensor.nest_protect_guest_room_replace_by_epoch
+    - sensor.nest_protect_gym_replace_by_epoch
+    - sensor.nest_protect_living_room_replace_by_epoch
+
+- platform: derivative
+  name: Gym Humidity First Derivative
+  source: sensor.both_humidity_d1f2020f4a37
+  unit_time: s
+  time_window: "0:05:00"
+
+- platform: derivative
+  name: Gym Humidity Second Derivative
+  source: sensor.gym_humidity_first_derivative
+  unit_time: s
+  time_window: "0:05:00"
+
+- platform: derivative
+  name: Downstairs Temperature Rate
+  source: sensor.downstairs_thermostat_current_temperature
+  unit_time: h
+  time_window: "0:30:00"
+
+- platform: derivative
+  name: Outside Temperature Rate
+  source: sensor.outdoor_thermometer_state
+  unit_time: h
+  time_window: "0:30:00"
+
+- platform: derivative
+  name: Water Usage Rate
+  source: sensor.water_meter
+  unit_time: min
+  time_window: "0:30:00"
+
+- platform: integration
+  name: Electric Usage
+  source: sensor.none_123_1min
+
+- platform: mold_indicator
+  name: Mold Indicator
+  indoor_temp_sensor: sensor.dehumidifier_temperature
+  indoor_humidity_sensor: sensor.dehumidifier_humidity
+  outdoor_temp_sensor: sensor.outside_temperature_filtered
+  calibration_factor: 1.17777777777777
+
+- platform: statistics
+  name: High Temperature
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_max
+  max_age: "24:00:00"
+
+- platform: statistics
+  name: Low Temperature
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_min
+  max_age: "24:00:00"
+
+- platform: statistics
+  name: High Temperature All Time
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_max
+  max_age: "999999:00:00"
+
+- platform: statistics
+  name: Low Temperature All Time
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_min
+  max_age: "999999:00:00"
+
+- platform: min_max
+  name: Gas Meter
+  unique_id: 74e84ae3-674b-429d-98ff-40988d3a63e0
+  type: sum
+  entity_ids:
+    - sensor.furnace_gas_meter
+    - sensor.dryer_gas_meter
+    - sensor.water_heater_gas_meter
+    - sensor.gas_stove_gas_meter
+    - sensor.shop_furnace_gas_meter

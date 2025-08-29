@@ -1,0 +1,164 @@
+{%- macro subindex(c, bp, ai) -%}
+    {%- if c is not number -%}{{ none }}
+    {%- elif c <= bp[0] -%}{{ ai[0] }}
+    {%- elif c >= bp[-1] -%}{{ ai[-1] }}
+    {%- else -%}
+    {%- for i in range(1, bp|length) -%}
+        {%- if c <= bp[i] -%}
+        {%- set Cl = bp[i-1] -%}
+        {%- set Ch = bp[i] -%}
+        {%- set Il = ai[i-1] -%}
+        {%- set Ih = ai[i] -%}
+        {{ ((Ih - Il) / (Ch - Cl) * (c - Cl) + Il) | round(0) }}
+        {%- break -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro aqi_from_pm(pm25, pm10) -%}
+    {%- set AQI   = [0, 50, 100, 150, 200, 300, 500] -%}
+    {%- set PM25B = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4, 500.4] -%}
+    {%- set PM10B = [0,   54,   154,  254,  354,   424,   604] -%}
+    {%- set c25 = (((pm25 | float) * 10) | int) / 10 -%}
+    {%- set c10 =  (pm10 | float) | int -%}
+    {%- set i25 = subindex(c25, PM25B, AQI) -%}
+    {%- set i10 = subindex(c10, PM10B, AQI) -%}
+    {{ [i25, i10] | max }}
+{%- endmacro -%}
+
+{%- macro name_25(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set names = ["Good Air Quality", "Moderate Air Quality",
+        "Unhealthy Sensitive Grps", "Unhealthy Air Quality",
+        "Very Unhealthy Air Qual.", "Hazardous Air Quality"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro name_12(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set names = ["Good Air", "Moderate Air", "Unhlthy Sensitive",
+        "Unhealthy Air", "Very Unhealthy", "Hazardous Air"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro name_8(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set names = ["Good", "Mod", "U-Sens", "Unhlthy", "V-Unhlt", "Hazard"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro color(i) -%}
+    {%- set i = i | int(0) -%}
+    {{ level_color(level(i)) }}
+{%- endmacro -%}
+
+{%- macro level_color(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set hexes = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', 'disabled'] -%}
+    {{ hexes[i-1] }}
+{%- endmacro -%}
+
+{%- macro name_8(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set names = ["Good", "Mod", "U-Sens", "Unhlthy", "V-Unhlt", "Hazard"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro name_8(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set names = ["Good", "Mod", "U-Sens", "Unhlthy", "V-Unhlt", "Hazard"] -%}
+    {{ names[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro icon(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set icons = ["mdi:emoticon-happy-outline", "mdi:emoticon-neutral-outlined", "mdi:emoticon-sad-outline",
+        "mdi:alert-circle-outline", "mdi:biohazard", "mdi:skull-crossbones"] -%}
+    {{ icons[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro description(i) -%}
+    {%- set i = i | int(0) -%}
+    {%- set descs = ["Air quality is satisfactory, and air pollution poses little or no risk.",
+        "Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.",
+        "Members of sensitive groups may experience health effects. The general public is less likely to be affected.",
+        "Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects.",
+        "Health alert: The risk of health effects is increased for everyone.",
+        "Health warning of emergency conditions: everyone is more likely to be affected."] -%}
+    {{ descs[int(level(i))-1] }}
+{%- endmacro -%}
+
+{%- macro level_find(v, bps) -%}
+  {%- set v = v | float(default=none) -%}
+  {%- if v is none -%}
+    0
+  {%- else -%}
+    {%- set n = bps | length -%}
+    {%- if n < 2 -%}{{ 0 }}{%- else -%}
+      {%- set ns = namespace(idx=1, found=false) -%}
+      {%- for ub in bps[1:] -%} {# iterate upper bounds #}
+        {%- if not ns.found and v <= (ub | float) -%}
+          {%- set ns.found = true -%}
+        {%- elif not ns.found -%}
+          {%- set ns.idx = ns.idx + 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if ns.found -%}{{ ns.idx }}{%- else -%}{{ (n - 1) }}{%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro level(i) -%}
+    {%- set bps = [0, 50, 100, 150, 200, 300, 500] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro pm25_level(i) -%}
+    {%- set bps = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4, 500.4] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro pm10_level(i) -%}
+    {%- set bps = [0.0, 54, 154, 254, 354, 424, 604] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro o3_level(i) -%}
+    {%- set bps = [0.0, 0.054, 0.070, 0.085, 0.105, 0.200] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro co_level(i) -%}
+    {%- set bps = [0.0, 4.4, 9.4, 12.4, 15.4, 30.4, 50.4] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro no2_level(i) -%}
+    {%- set bps = [0.0, 0.053, 0.100, 0.360, 0.649, 1.249, 1.649] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro so2_level(i) -%}
+    {%- set bps = [0.0, 0.035, 0.075, 0.185, 0.304, 0.604, 0.804] -%}
+    {{ level_find(i, bps) }}
+{%- endmacro -%}
+
+{%- macro dominant(entity_id, short=false) -%}
+  {%- set pol = state_attr(entity_id, "dominentpol") | upper -%}
+  {%- if pol == "O3" -%}
+    {{ short and "Ozone Gas" or "Ozone (O₃)" }}
+  {%- elif pol == "CO" -%}
+    {{ short and "CarbonMono" or "Carbon Monoxide (CO)" }}
+  {%- elif pol == "NO2" -%}
+    {{ short and "NitroDiox" or "Nitrogen Dioxide (NO₂)" }}
+  {%- elif pol == "SO2" -%}
+    {{ short and "SulfurDiox" or "Sulfur Dioxide (SO₂)" }}
+  {%- elif pol in ["PM25", "PM2.5"] -%}
+    {{ short and "PM₂.₅ Fine" or "Fine Particulate Matter (PM₂.₅)" }}
+  {%- elif pol == "PM10" -%}
+    {{ short and "PM₁₀ Coarse" or "Particulate Matter (PM₁₀)" }}
+  {%- else -%}
+    Unknown ({{ pol }})
+  {%- endif -%}
+{%- endmacro -%}

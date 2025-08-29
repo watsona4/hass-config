@@ -1,0 +1,810 @@
+# These sensors store air quality data for my location
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_nearby
+  sensor:
+    - name: WAQI Nearby AQI
+      unique_id: waqi_nearby_aqi
+      device_class: aqi
+      state_class: measurement
+      availability: "{{ states('sensor.waqi_nearby') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% set v = states('sensor.waqi_nearby') %}
+        {{ v | int if v not in ['unknown','unavailable','', None] else none }}
+      attributes:
+        station: "{{ (state_attr('sensor.waqi_nearby','city') or {}).get('name') }}"
+        dominentpol: "{{ state_attr('sensor.waqi_nearby','dominentpol') }}"
+        last_update: "{{ (state_attr('sensor.waqi_nearby','time') or {}).get('s') }}"
+        attributions: "{{ state_attr('sensor.waqi_nearby','attributions') }}"
+    - name: WAQI Nearby PM2.5
+      unique_id: waqi_nearby_pm2_5
+      device_class: pm25
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('pm25',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby Temperature
+      unique_id: waqi_nearby_temperature
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('t',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby Humidity
+      unique_id: waqi_nearby_humidity
+      device_class: humidity
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('h',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby Wind Speed
+      unique_id: waqi_nearby_wind_speed
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('w',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby Wind Gust
+      unique_id: waqi_nearby_wind_gust
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('wg',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby O3
+      unique_id: waqi_nearby_o3
+      device_class: ozone
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_nearby','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_nearby','iaqi') or {}).get('o3',{}).get('v') | float(default=none) }}"
+    - name: WAQI Nearby CO
+      unique_id: waqi_nearby_co
+      device_class: carbon_monoxide
+      unit_of_measurement: "ppm"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') or {} %}
+        {{ ((iaqi.get('co') or {}).get('v')) is number }}
+      state: >-
+        {{ ((state_attr('sensor.waqi_nearby','iaqi') or {}).get('co') or {}).get('v') | float(0) }}
+    - name: WAQI Nearby PM10
+      unique_id: waqi_nearby_pm10
+      device_class: pm10
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {{ iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {% if iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none %}
+          {{ iaqi.pm10.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI Nearby NO2
+      unique_id: waqi_nearby_no2
+      device_class: nitrogen_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {{ iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {% if iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none %}
+          {{ iaqi.no2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI Nearby SO2
+      unique_id: waqi_nearby_so2
+      device_class: sulphur_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {{ iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_nearby','iaqi') %}
+        {% if iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none %}
+          {{ iaqi.so2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_nearby
+  variables:
+    src: "sensor.waqi_nearby"
+    aqi_days: >-
+        {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level %}
+        {% set f = (state_attr(src, 'forecast') or {}) %}
+        {% set daily = f.get('daily') or {} %}
+        {% set d25 = daily.get('pm25') or [] %}
+        {% set d10 = daily.get('pm10') or [] %}
+        {% set today = now().date().isoformat() %}
+        {% set dates = ((d25 | map(attribute='day') | list) + (d10 | map(attribute='day') | list)) | select('string') | unique | list | sort %}
+        {% set dates = dates | select('ge', today) | list %}
+        {% set out = namespace(list=[]) %}
+        {% for day in dates %}
+          {% set m25 = d25 | selectattr('day','equalto',day) | list %}
+          {% set m10 = d10 | selectattr('day','equalto',day) | list %}
+          {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
+          {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+          {% set have = (v25 is not none) or (v10 is not none) %}
+          {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
+          {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+          {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
+          {% set level = level(aqi) if aqi is not none else 0 %}
+          {% set dts = day | as_datetime(default=none) %}
+          {% set title = (
+            'Today' if dts and dts.date() == now().date()
+            else ('Tomorrow' if dts and dts.date() == (now().date() + timedelta(days=1))
+            else (dts.strftime('%A') if dts else day))
+          ) %}
+          {% set item = {
+            'exists': have,
+            'date': day,
+            'title': title,
+            'state': label,
+            'aqi': aqi,
+            'hex': hex,
+            'level': level
+          } %}
+          {% set out.list = out.list + [item] %}
+        {% endfor %}
+        {{ out.list }}
+  sensor:
+    - name: AQI Forecast Nearby Day 0
+      unique_id: aqi_forecast_nearby_day_0
+      icon: mdi:calendar-today
+      availability: "{{ (aqi_days|count) > 0 and (aqi_days[0] or {}).get('exists') }}"
+      state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[0] or {}).get('date') }}"
+        title: "{{ (aqi_days[0] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[0] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[0] or {}).get('hex') }}"
+        level: "{{ (aqi_days[0] or {}).get('level') }}"
+    - name: AQI Forecast Nearby Day 1
+      unique_id: aqi_forecast_nearby_day_1
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 1 and (aqi_days[1] or {}).get('exists') }}"
+      state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[1] or {}).get('date') }}"
+        title: "{{ (aqi_days[1] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[1] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[1] or {}).get('hex') }}"
+        level: "{{ (aqi_days[1] or {}).get('level') }}"
+    - name: AQI Forecast Nearby Day 2
+      unique_id: aqi_forecast_nearby_day_2
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 2 and (aqi_days[2] or {}).get('exists') }}"
+      state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[2] or {}).get('date') }}"
+        title: "{{ (aqi_days[2] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[2] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[2] or {}).get('hex') }}"
+        level: "{{ (aqi_days[2] or {}).get('level') }}"
+    - name: AQI Forecast Nearby Day 3
+      unique_id: aqi_forecast_nearby_day_3
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 3 and (aqi_days[3] or {}).get('exists') }}"
+      state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[3] or {}).get('date') }}"
+        title: "{{ (aqi_days[3] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[3] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[3] or {}).get('hex') }}"
+        level: "{{ (aqi_days[3] or {}).get('level') }}"
+    - name: AQI Forecast Nearby Day 4
+      unique_id: aqi_forecast_nearby_day_4
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 4 and (aqi_days[4] or {}).get('exists') }}"
+      state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[4] or {}).get('date') }}"
+        title: "{{ (aqi_days[4] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[4] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[4] or {}).get('hex') }}"
+        level: "{{ (aqi_days[4] or {}).get('level') }}"
+
+# These sensors store air quality data for my home location
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_home
+  sensor:
+    - name: WAQI Home AQI
+      unique_id: waqi_home_aqi
+      device_class: aqi
+      state_class: measurement
+      availability: "{{ states('sensor.waqi_home') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% set v = states('sensor.waqi_home') %}
+        {{ v | int if v not in ['unknown','unavailable','', None] else none }}
+      attributes:
+        station: "{{ (state_attr('sensor.waqi_home','city') or {}).get('name') }}"
+        dominentpol: "{{ state_attr('sensor.waqi_home','dominentpol') }}"
+        last_update: "{{ (state_attr('sensor.waqi_home','time') or {}).get('s') }}"
+        attributions: "{{ state_attr('sensor.waqi_home','attributions') }}"
+    - name: WAQI Home PM2.5
+      unique_id: waqi_home_pm2_5
+      device_class: pm25
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('pm25',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home Temperature
+      unique_id: waqi_home_temperature
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('t',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home Humidity
+      unique_id: waqi_home_humidity
+      device_class: humidity
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('h',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home Wind Speed
+      unique_id: waqi_home_wind_speed
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('w',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home Wind Gust
+      unique_id: waqi_home_wind_gust
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('wg',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home O3
+      unique_id: waqi_home_o3
+      device_class: ozone
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_home','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_home','iaqi') or {}).get('o3',{}).get('v') | float(default=none) }}"
+    - name: WAQI Home CO
+      unique_id: waqi_home_co
+      device_class: carbon_monoxide
+      unit_of_measurement: "ppm"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') or {} %}
+        {{ ((iaqi.get('co') or {}).get('v')) is number }}
+      state: >-
+        {{ ((state_attr('sensor.waqi_home','iaqi') or {}).get('co') or {}).get('v') | float(0) }}
+    - name: WAQI Home PM10
+      unique_id: waqi_home_pm10
+      device_class: pm10
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {{ iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {% if iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none %}
+          {{ iaqi.pm10.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI Home NO2
+      unique_id: waqi_home_no2
+      device_class: nitrogen_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {{ iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {% if iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none %}
+          {{ iaqi.no2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI Home SO2
+      unique_id: waqi_home_so2
+      device_class: sulphur_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {{ iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_home','iaqi') %}
+        {% if iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none %}
+          {{ iaqi.so2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_home
+  variables:
+    src: "sensor.waqi_home"
+    aqi_days: >-
+        {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level %}
+        {% set f = (state_attr(src, 'forecast') or {}) %}
+        {% set daily = f.get('daily') or {} %}
+        {% set d25 = daily.get('pm25') or [] %}
+        {% set d10 = daily.get('pm10') or [] %}
+        {% set today = now().date().isoformat() %}
+        {% set dates = ((d25 | map(attribute='day') | list) + (d10 | map(attribute='day') | list)) | select('string') | unique | list | sort %}
+        {% set dates = dates | select('ge', today) | list %}
+        {% set out = namespace(list=[]) %}
+        {% for day in dates %}
+          {% set m25 = d25 | selectattr('day','equalto',day) | list %}
+          {% set m10 = d10 | selectattr('day','equalto',day) | list %}
+          {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
+          {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+          {% set have = (v25 is not none) or (v10 is not none) %}
+          {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
+          {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+          {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
+          {% set level = level(aqi) if aqi is not none else 0 %}
+          {% set dts = day | as_datetime(default=none) %}
+          {% set title = (
+            'Today' if dts and dts.date() == now().date()
+            else ('Tomorrow' if dts and dts.date() == (now().date() + timedelta(days=1))
+            else (dts.strftime('%A') if dts else day))
+          ) %}
+          {% set item = {
+            'exists': have,
+            'date': day,
+            'title': title,
+            'state': label,
+            'aqi': aqi,
+            'hex': hex,
+            'level': level
+          } %}
+          {% set out.list = out.list + [item] %}
+        {% endfor %}
+        {{ out.list }}
+  sensor:
+    - name: AQI Forecast Home Day 0
+      unique_id: aqi_forecast_home_day_0
+      icon: mdi:calendar-today
+      availability: "{{ (aqi_days|count) > 0 and (aqi_days[0] or {}).get('exists') }}"
+      state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[0] or {}).get('date') }}"
+        title: "{{ (aqi_days[0] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[0] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[0] or {}).get('hex') }}"
+        level: "{{ (aqi_days[0] or {}).get('level') }}"
+    - name: AQI Forecast Home Day 1
+      unique_id: aqi_forecast_home_day_1
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 1 and (aqi_days[1] or {}).get('exists') }}"
+      state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[1] or {}).get('date') }}"
+        title: "{{ (aqi_days[1] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[1] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[1] or {}).get('hex') }}"
+        level: "{{ (aqi_days[1] or {}).get('level') }}"
+    - name: AQI Forecast Home Day 2
+      unique_id: aqi_forecast_home_day_2
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 2 and (aqi_days[2] or {}).get('exists') }}"
+      state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[2] or {}).get('date') }}"
+        title: "{{ (aqi_days[2] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[2] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[2] or {}).get('hex') }}"
+        level: "{{ (aqi_days[2] or {}).get('level') }}"
+    - name: AQI Forecast Home Day 3
+      unique_id: aqi_forecast_home_day_3
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 3 and (aqi_days[3] or {}).get('exists') }}"
+      state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[3] or {}).get('date') }}"
+        title: "{{ (aqi_days[3] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[3] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[3] or {}).get('hex') }}"
+        level: "{{ (aqi_days[3] or {}).get('level') }}"
+    - name: AQI Forecast Home Day 4
+      unique_id: aqi_forecast_home_day_4
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 4 and (aqi_days[4] or {}).get('exists') }}"
+      state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[4] or {}).get('date') }}"
+        title: "{{ (aqi_days[4] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[4] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[4] or {}).get('hex') }}"
+        level: "{{ (aqi_days[4] or {}).get('level') }}"
+
+# These sensors store air quality data for RV location
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_rv
+  sensor:
+    - name: WAQI RV AQI
+      unique_id: waqi_rv_aqi
+      device_class: aqi
+      state_class: measurement
+      availability: "{{ states('sensor.waqi_rv') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% set v = states('sensor.waqi_rv') %}
+        {{ v | int if v not in ['unknown','unavailable','', None] else none }}
+      attributes:
+        station: "{{ (state_attr('sensor.waqi_rv','city') or {}).get('name') }}"
+        dominentpol: "{{ state_attr('sensor.waqi_rv','dominentpol') }}"
+        last_update: "{{ (state_attr('sensor.waqi_rv','time') or {}).get('s') }}"
+        attributions: "{{ state_attr('sensor.waqi_rv','attributions') }}"
+    - name: WAQI RV PM2.5
+      unique_id: waqi_rv_pm2_5
+      device_class: pm25
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('pm25',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV Temperature
+      unique_id: waqi_rv_temperature
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('t',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV Humidity
+      unique_id: waqi_rv_humidity
+      device_class: humidity
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('h',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV Wind Speed
+      unique_id: waqi_rv_wind_speed
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('w',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV Wind Gust
+      unique_id: waqi_rv_wind_gust
+      device_class: wind_speed
+      unit_of_measurement: "m/s"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('wg',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV O3
+      unique_id: waqi_rv_o3
+      device_class: ozone
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: "{{ state_attr('sensor.waqi_rv','iaqi') is not none }}"
+      state: "{{ (state_attr('sensor.waqi_rv','iaqi') or {}).get('o3',{}).get('v') | float(default=none) }}"
+    - name: WAQI RV CO
+      unique_id: waqi_rv_co
+      device_class: carbon_monoxide
+      unit_of_measurement: "ppm"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') or {} %}
+        {{ ((iaqi.get('co') or {}).get('v')) is number }}
+      state: >-
+        {{ ((state_attr('sensor.waqi_rv','iaqi') or {}).get('co') or {}).get('v') | float(0) }}
+    - name: WAQI RV PM10
+      unique_id: waqi_rv_pm10
+      device_class: pm10
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {{ iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {% if iaqi is mapping and iaqi.pm10 is defined and iaqi.pm10.v is not none %}
+          {{ iaqi.pm10.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI RV NO2
+      unique_id: waqi_rv_no2
+      device_class: nitrogen_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {{ iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {% if iaqi is mapping and iaqi.no2 is defined and iaqi.no2.v is not none %}
+          {{ iaqi.no2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+    - name: WAQI RV SO2
+      unique_id: waqi_rv_so2
+      device_class: sulphur_dioxide
+      unit_of_measurement: "µg/m³"
+      state_class: measurement
+      availability: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {{ iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none }}
+      state: >-
+        {% set iaqi = state_attr('sensor.waqi_rv','iaqi') %}
+        {% if iaqi is mapping and iaqi.so2 is defined and iaqi.so2.v is not none %}
+          {{ iaqi.so2.v | float }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_rv
+  variables:
+    src: "sensor.waqi_rv"
+    aqi_days: >-
+        {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level %}
+        {% set f = (state_attr(src, 'forecast') or {}) %}
+        {% set daily = f.get('daily') or {} %}
+        {% set d25 = daily.get('pm25') or [] %}
+        {% set d10 = daily.get('pm10') or [] %}
+        {% set today = now().date().isoformat() %}
+        {% set dates = ((d25 | map(attribute='day') | list) + (d10 | map(attribute='day') | list)) | select('string') | unique | list | sort %}
+        {% set dates = dates | select('ge', today) | list %}
+        {% set out = namespace(list=[]) %}
+        {% for day in dates %}
+          {% set m25 = d25 | selectattr('day','equalto',day) | list %}
+          {% set m10 = d10 | selectattr('day','equalto',day) | list %}
+          {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
+          {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+          {% set have = (v25 is not none) or (v10 is not none) %}
+          {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
+          {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+          {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
+          {% set level = level(aqi) if aqi is not none else 0 %}
+          {% set dts = day | as_datetime(default=none) %}
+          {% set title = (
+            'Today' if dts and dts.date() == now().date()
+            else ('Tomorrow' if dts and dts.date() == (now().date() + timedelta(days=1))
+            else (dts.strftime('%A') if dts else day))
+          ) %}
+          {% set item = {
+            'exists': have,
+            'date': day,
+            'title': title,
+            'state': label,
+            'aqi': aqi,
+            'hex': hex,
+            'level': level
+          } %}
+          {% set out.list = out.list + [item] %}
+        {% endfor %}
+        {{ out.list }}
+  sensor:
+    - name: AQI Forecast RV Day 0
+      unique_id: aqi_forecast_rv_day_0
+      icon: mdi:calendar-today
+      availability: "{{ (aqi_days|count) > 0 and (aqi_days[0] or {}).get('exists') }}"
+      state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[0] or {}).get('date') }}"
+        title: "{{ (aqi_days[0] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[0] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[0] or {}).get('hex') }}"
+        level: "{{ (aqi_days[0] or {}).get('level') }}"
+    - name: AQI Forecast RV Day 1
+      unique_id: aqi_forecast_rv_day_1
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 1 and (aqi_days[1] or {}).get('exists') }}"
+      state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[1] or {}).get('date') }}"
+        title: "{{ (aqi_days[1] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[1] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[1] or {}).get('hex') }}"
+        level: "{{ (aqi_days[1] or {}).get('level') }}"
+    - name: AQI Forecast RV Day 2
+      unique_id: aqi_forecast_rv_day_2
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 2 and (aqi_days[2] or {}).get('exists') }}"
+      state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[2] or {}).get('date') }}"
+        title: "{{ (aqi_days[2] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[2] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[2] or {}).get('hex') }}"
+        level: "{{ (aqi_days[2] or {}).get('level') }}"
+    - name: AQI Forecast RV Day 3
+      unique_id: aqi_forecast_rv_day_3
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 3 and (aqi_days[3] or {}).get('exists') }}"
+      state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[3] or {}).get('date') }}"
+        title: "{{ (aqi_days[3] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[3] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[3] or {}).get('hex') }}"
+        level: "{{ (aqi_days[3] or {}).get('level') }}"
+    - name: AQI Forecast RV Day 4
+      unique_id: aqi_forecast_rv_day_4
+      icon: mdi:calendar
+      availability: "{{ (aqi_days|count) > 4 and (aqi_days[4] or {}).get('exists') }}"
+      state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+      attributes:
+        date: "{{ (aqi_days[4] or {}).get('date') }}"
+        title: "{{ (aqi_days[4] or {}).get('title') }}"
+        aqi: "{{ (aqi_days[4] or {}).get('aqi') }}"
+        hex: "{{ (aqi_days[4] or {}).get('hex') }}"
+        level: "{{ (aqi_days[4] or {}).get('level') }}"
+
+# ---------- AQI helpers: category, severity (0..5), and "bad air" flags ----------
+
+# Nearby
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_nearby_aqi
+  sensor:
+    - name: WAQI Nearby AQI Category
+      unique_id: waqi_nearby_aqi_category
+      icon: mdi:smog
+      state: >-
+        {% set aqi = states('sensor.waqi_nearby_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} Good
+        {% elif 51  <= aqi <= 100 %} Moderate
+        {% elif 101 <= aqi <= 150 %} Unhealthy for Sensitive Groups
+        {% elif 151 <= aqi <= 200 %} Unhealthy
+        {% elif 201 <= aqi <= 300 %} Very Unhealthy
+        {% elif 301 <= aqi        %} Hazardous
+        {% else %} Unknown
+        {% endif %}
+      attributes:
+        aqi: "{{ states('sensor.waqi_nearby_aqi')|int(0) }}"
+    - name: WAQI Nearby AQI Severity
+      unique_id: waqi_nearby_aqi_severity
+      icon: mdi:numeric
+      # 0 Good … 5 Hazardous
+      state: >-
+        {% set aqi = states('sensor.waqi_nearby_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} 0
+        {% elif 51  <= aqi <= 100 %} 1
+        {% elif 101 <= aqi <= 150 %} 2
+        {% elif 151 <= aqi <= 200 %} 3
+        {% elif 201 <= aqi <= 300 %} 4
+        {% elif 301 <= aqi        %} 5
+        {% else %} -1
+        {% endif %}
+  binary_sensor:
+    - name: WAQI Nearby Air Quality Bad
+      unique_id: waqi_nearby_air_quality_bad
+      device_class: problem
+      # "Bad" threshold = AQI >= 101 (USG or worse). Adjust if you prefer 151+.
+      state: "{{ states('sensor.waqi_nearby_aqi')|int(0) >= 101 }}"
+
+# Home
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_home_aqi
+  sensor:
+    - name: WAQI Home AQI Category
+      unique_id: waqi_home_aqi_category
+      icon: mdi:smog
+      state: >-
+        {% set aqi = states('sensor.waqi_home_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} Good
+        {% elif 51  <= aqi <= 100 %} Moderate
+        {% elif 101 <= aqi <= 150 %} Unhealthy for Sensitive Groups
+        {% elif 151 <= aqi <= 200 %} Unhealthy
+        {% elif 201 <= aqi <= 300 %} Very Unhealthy
+        {% elif 301 <= aqi        %} Hazardous
+        {% else %} Unknown
+        {% endif %}
+      attributes:
+        aqi: "{{ states('sensor.waqi_home_aqi')|int(0) }}"
+    - name: WAQI Home AQI Severity
+      unique_id: waqi_home_aqi_severity
+      icon: mdi:numeric
+      state: >-
+        {% set aqi = states('sensor.waqi_home_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} 0
+        {% elif 51  <= aqi <= 100 %} 1
+        {% elif 101 <= aqi <= 150 %} 2
+        {% elif 151 <= aqi <= 200 %} 3
+        {% elif 201 <= aqi <= 300 %} 4
+        {% elif 301 <= aqi        %} 5
+        {% else %} -1
+        {% endif %}
+  binary_sensor:
+    - name: WAQI Home Air Quality Bad
+      unique_id: waqi_home_air_quality_bad
+      device_class: problem
+      state: "{{ states('sensor.waqi_home_aqi')|int(0) >= 101 }}"
+
+# RV
+- trigger:
+    - platform: state
+      entity_id: sensor.waqi_rv_aqi
+  sensor:
+    - name: WAQI RV AQI Category
+      unique_id: waqi_rv_aqi_category
+      icon: mdi:smog
+      state: >-
+        {% set aqi = states('sensor.waqi_rv_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} Good
+        {% elif 51  <= aqi <= 100 %} Moderate
+        {% elif 101 <= aqi <= 150 %} Unhealthy for Sensitive Groups
+        {% elif 151 <= aqi <= 200 %} Unhealthy
+        {% elif 201 <= aqi <= 300 %} Very Unhealthy
+        {% elif 301 <= aqi        %} Hazardous
+        {% else %} Unknown
+        {% endif %}
+      attributes:
+        aqi: "{{ states('sensor.waqi_rv_aqi')|int(0) }}"
+    - name: WAQI RV AQI Severity
+      unique_id: waqi_rv_aqi_severity
+      icon: mdi:numeric
+      state: >-
+        {% set aqi = states('sensor.waqi_rv_aqi')|int(0) %}
+        {% if   0   <= aqi <= 50  %} 0
+        {% elif 51  <= aqi <= 100 %} 1
+        {% elif 101 <= aqi <= 150 %} 2
+        {% elif 151 <= aqi <= 200 %} 3
+        {% elif 201 <= aqi <= 300 %} 4
+        {% elif 301 <= aqi        %} 5
+        {% else %} -1
+        {% endif %}
+  binary_sensor:
+    - name: WAQI RV Air Quality Bad
+      unique_id: waqi_rv_air_quality_bad
+      device_class: problem
+      state: "{{ states('sensor.waqi_rv_aqi')|int(0) >= 101 }}"
+
+# ---------- Rollups: worst location and "any bad" ----------
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.waqi_nearby_aqi
+        - sensor.waqi_home_aqi
+        - sensor.waqi_rv_aqi
+  sensor:
+    - name: WAQI Worst AQI
+      unique_id: waqi_worst_aqi
+      icon: mdi:alert-octagon
+      state: >-
+        {% set vals = [
+          states('sensor.waqi_nearby_aqi')|int(0),
+          states('sensor.waqi_home_aqi')|int(0),
+          states('sensor.waqi_rv_aqi')|int(0)
+        ] %}
+        {{ vals | max }}
+      attributes:
+        source: >-
+          {% set pairs = {
+            'Nearby': states('sensor.waqi_nearby_aqi')|int(0),
+            'Home':   states('sensor.waqi_home_aqi')|int(0),
+            'RV':     states('sensor.waqi_rv_aqi')|int(0)
+          } %}
+          {{ (pairs|dictsort(true, by='value')|first)[0] }}
+        category: >-
+          {% set aqi = states('sensor.waqi_worst_aqi')|int(0) %}
+          {% if   0   <= aqi <= 50  %} Good
+          {% elif 51  <= aqi <= 100 %} Moderate
+          {% elif 101 <= aqi <= 150 %} Unhealthy for Sensitive Groups
+          {% elif 151 <= aqi <= 200 %} Unhealthy
+          {% elif 201 <= aqi <= 300 %} Very Unhealthy
+          {% elif 301 <= aqi        %} Hazardous
+          {% else %} Unknown
+          {% endif %}
+  binary_sensor:
+    - name: Air Quality Bad (Any Location)
+      unique_id: waqi_any_air_quality_bad
+      device_class: problem
+      state: >-
+        {{ states('sensor.waqi_nearby_aqi')|int(0) >= 101
+           or states('sensor.waqi_home_aqi')|int(0)   >= 101
+           or states('sensor.waqi_rv_aqi')|int(0)     >= 101 }}

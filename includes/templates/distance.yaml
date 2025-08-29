@@ -1,0 +1,95 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - person.aaron_watson
+        - device_tracker.rv_device_tracker
+        - zone.home
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: User Distance to Home (mi)
+      unique_id: s_user_distance_home_mi_eff
+      device_class: distance
+      unit_of_measurement: mi
+      state_class: measurement
+      availability: >-
+        {{ has_value('person.aaron_watson')
+            and state_attr('person.aaron_watson','latitude') is number
+            and state_attr('zone.home','latitude') is number }}
+      state: >-
+        {% set v = distance('person.aaron_watson','zone.home') | float(none) %}
+        {{ this.state if v is none else (v | round(1)) }}
+
+    - name: User Distance to RV (mi)
+      unique_id: s_user_distance_rv_mi_eff
+      device_class: distance
+      unit_of_measurement: mi
+      state_class: measurement
+      availability: >-
+        {{ has_value('person.aaron_watson')
+            and has_value('device_tracker.rv_device_tracker')
+            and state_attr('person.aaron_watson','latitude') is number
+            and state_attr('device_tracker.rv_device_tracker','latitude') is number }}
+      state: >-
+        {% set v = distance('person.aaron_watson','device_tracker.rv_device_tracker') | float(none) %}
+        {{ this.state if v is none else (v | round(1)) }}
+
+    - name: RV Distance to Home (mi)
+      unique_id: s_rv_distance_home_mi_eff
+      device_class: distance
+      unit_of_measurement: mi
+      state_class: measurement
+      availability: >-
+        {{ has_value('device_tracker.rv_device_tracker')
+            and state_attr('device_tracker.rv_device_tracker','latitude') is number
+            and state_attr('zone.home','latitude') is number }}
+      state: >-
+        {% set v = distance('device_tracker.rv_device_tracker','zone.home') | float(none) %}
+        {{ this.state if v is none else (v | round(1)) }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.user_distance_to_home_mi
+        - sensor.user_distance_to_rv_mi
+        - sensor.rv_distance_to_home_mi
+    - platform: homeassistant
+      event: start
+  binary_sensor:
+    - name: User Near Home (10mi)
+      unique_id: bs_user_near_home_10mi_eff
+      device_class: presence
+      availability: "{{ has_value('sensor.user_distance_to_home_mi') }}"
+      state: >-
+        {{ (states('sensor.user_distance_to_home_mi') | float(9999)) <= 10 }}
+
+    - name: RV Near Home (10mi)
+      unique_id: bs_rv_near_home_10mi_eff
+      device_class: presence
+      availability: "{{ has_value('sensor.rv_distance_to_home_mi') }}"
+      state: >-
+        {{ (states('sensor.rv_distance_to_home_mi') | float(9999)) <= 10 }}
+
+    - name: User Near RV (60mi)
+      unique_id: bs_user_near_rv_60mi_eff
+      device_class: presence
+      availability: "{{ has_value('sensor.user_distance_to_rv_mi') }}"
+      state: >-
+        {{ (states('sensor.user_distance_to_rv_mi') | float(9999)) <= 60 }}
+
+  sensor:
+    - name: User Context
+      unique_id: s_user_context_distance_eff
+      icon: mdi:account-circle
+      availability: >-
+        {{ has_value('sensor.user_distance_to_home_mi') or has_value('sensor.user_distance_to_rv_mi') }}
+      state: >-
+        {% set d_home = states('sensor.user_distance_to_home_mi') | float(9999) %}
+        {% set d_rv   = states('sensor.user_distance_to_rv_mi') | float(9999) %}
+        {% set near_home = d_home <= 10 %}
+        {% set near_rv   = d_rv   <= 10 %}
+        {% if near_home and near_rv %} near_both
+        {% elif near_home %} near_home
+        {% elif near_rv %} near_rv
+        {% else %} away
+        {% endif %}

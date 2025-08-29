@@ -1,0 +1,32 @@
+# Water meter relay is a water utility meter object that relays data from the
+# water meter sensor, which measures absolute usage.
+water:
+  name: Water Meter Relay
+  unique_id: e831a1b4-ab3f-4aa4-b6c1-ecbdd52ffc80
+  source: sensor.water_meter
+  periodically_resetting: False
+  always_available: True
+
+# Electric meter relay is a energy utility meter object that relays data from
+# the electric meter sensor, which measures absolute usage.
+energy:
+  name: Electric Meter Relay
+  unique_id: bb99a211-ffe1-41ff-85cc-9b1e115f1f66
+  source: sensor.electric_usage
+  periodically_resetting: True
+  always_available: True
+  cycle: monthly
+  offset:
+    days: 17
+
+# Gas meter relay is a gas utility meter object that relays data from the gas
+# meter sensor, which measures absolute usage.
+gas:
+  name: Gas Meter Relay
+  unique_id: b0a78a7e-fe99-4de3-aa0e-c93fe01f3b18
+  source: sensor.gas_meter
+  periodically_resetting: False
+  always_available: True
+  cycle: monthly
+  offset:
+    days: 17

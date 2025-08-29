@@ -1,0 +1,51 @@
+esphome:
+  name: water-barrel
+  friendly_name: Water Barrel
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "yJrxGDWQhrkmzBrmIbIs4tbyE0d74tDBSMUeMyTy2NA="
+
+ota:
+  platform: esphome
+  password: "ea5e6b2bab453512b14be2a3d617ef6b"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Water-Barrel Fallback Hotspot"
+    password: "bqWV998U48bl"
+
+captive_portal:
+
+sensor:
+ - platform: ultrasonic
+   trigger_pin: D1
+   echo_pin: D2
+   name: 'Fill Level'
+   unit_of_measurement: "%"
+   accuracy_decimals: 1
+   filters:
+    - throttle_average: 60s
+    - calibrate_linear:
+        datapoints:
+         - 0.240443 -> 100
+         - 0.74874 -> 0
+    - min:
+        window_size: 60
+        send_every: 5
+    - exponential_moving_average:
+        alpha: 0.2
+    - clamp:
+        min_value: 0
+        ignore_out_of_range: true

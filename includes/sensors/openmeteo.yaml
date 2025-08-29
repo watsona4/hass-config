@@ -1,0 +1,170 @@
+# =================== OpenMeteo Nearby ===================
+- platform: rest
+  name: OpenMeteo Nearby
+  unique_id: openmeteo_nearby
+  state_class: measurement
+  device_class: temperature
+  unit_of_measurement: "°C"
+  scan_interval: 90
+  timeout: 8
+  resource_template: >-
+    {% set plat = states('sensor.aaron_latitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.open-meteo.com/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    latitude: >-
+      {% set plat = states('sensor.aaron_latitude') | float(0) %}
+      {% set hlat = states('sensor.home_latitude')  | float(0) %}
+      {{ plat if plat != 0 else hlat }}
+    longitude: >-
+      {% set plon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ plon if plon != 0 else hlon }}
+    timezone: auto
+    current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set plat = states('sensor.aaron_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')   | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set data = value_json if value_json is mapping else {} %}
+    {% set cur = data.get('current') or {} %}
+    {% set t = cur.get('temperature_2m') %}
+    {{ t if t is not none else states(this.entity_id) }}
+  json_attributes:
+    - timezone
+    - timezone_abbreviation
+    - elevation
+    - current_units
+    - current
+    - hourly_units
+    - hourly
+    - daily_units
+    - daily
+
+# =================== OpenMeteo Home =====================
+- platform: rest
+  name: OpenMeteo Home
+  unique_id: openmeteo_home
+  state_class: measurement
+  device_class: temperature
+  unit_of_measurement: "°C"
+  scan_interval: 90
+  timeout: 8
+  resource_template: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude')  | float(0) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.open-meteo.com/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    latitude: >-
+      {{ states('sensor.home_latitude') | float(0) }}
+    longitude: >-
+      {{ states('sensor.home_longitude') | float(0) }}
+    timezone: auto
+    current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude') | float(0) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set data = value_json if value_json is mapping else {} %}
+    {% set cur = data.get('current') or {} %}
+    {% set t = cur.get('temperature_2m') %}
+    {{ t if t is not none else states(this.entity_id) }}
+  json_attributes:
+    - timezone
+    - timezone_abbreviation
+    - elevation
+    - current_units
+    - current
+    - hourly_units
+    - hourly
+    - daily_units
+    - daily
+
+# =================== OpenMeteo RV =======================
+- platform: rest
+  name: OpenMeteo RV
+  unique_id: openmeteo_rv
+  state_class: measurement
+  device_class: temperature
+  unit_of_measurement: "°C"
+  scan_interval: 90
+  timeout: 8
+  resource_template: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+    {% set alon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ 'https://api.open-meteo.com/v1/forecast' if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    latitude: >-
+      {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+      {% set alat = states('sensor.aaron_latitude')| float(0) %}
+      {% set hlat = states('sensor.home_latitude') | float(0) %}
+      {{ rlat if rlat != 0 else (alat if alat != 0 else hlat) }}
+    longitude: >-
+      {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+      {% set alon = states('sensor.aaron_longitude') | float(0) %}
+      {% set hlon = states('sensor.home_longitude')  | float(0) %}
+      {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
+    timezone: auto
+    current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')  | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set alon = states('sensor.aaron_longitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')| float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set data = value_json if value_json is mapping else {} %}
+    {% set cur = data.get('current') or {} %}
+    {% set t = cur.get('temperature_2m') %}
+    {{ t if t is not none else states(this.entity_id) }}
+  json_attributes:
+    - timezone
+    - timezone_abbreviation
+    - elevation
+    - current_units
+    - current
+    - hourly_units
+    - hourly
+    - daily_units
+    - daily

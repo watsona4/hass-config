@@ -1,0 +1,152 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.nest_protect_upstairs_replace_by
+        - sensor.nest_protect_kids_room_eleanor_replace_by
+        - sensor.nest_protect_kids_room_michael_replace_by
+        - sensor.nest_protect_family_room_replace_by
+        - sensor.nest_protect_hallway_replace_by
+        - sensor.nest_protect_guest_room_replace_by
+        - sensor.nest_protect_gym_replace_by
+        - sensor.nest_protect_living_room_replace_by
+    - platform: time
+      at: "00:00:15"
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: Nest Protect Upstairs Replace By Epoch
+      unique_id: nest_protect_upstairs_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_upstairs_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_upstairs_replace_by'), default=None) }}
+
+    - name: Nest Protect Kids Room Eleanor Replace By Epoch
+      unique_id: nest_protect_kids_room_eleanor_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_kids_room_eleanor_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_kids_room_eleanor_replace_by'), default=None) }}
+
+    - name: Nest Protect Kids Room Michael Replace By Epoch
+      unique_id: nest_protect_kids_room_michael_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_kids_room_michael_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_kids_room_michael_replace_by'), default=None) }}
+
+    - name: Nest Protect Family Room Replace By Epoch
+      unique_id: nest_protect_family_room_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_family_room_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_family_room_replace_by'), default=None) }}
+
+    - name: Nest Protect Hallway Replace By Epoch
+      unique_id: nest_protect_hallway_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_hallway_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_hallway_replace_by'), default=None) }}
+
+    - name: Nest Protect Guest Room Replace By Epoch
+      unique_id: nest_protect_guest_room_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_guest_room_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_guest_room_replace_by'), default=None) }}
+
+    - name: Nest Protect Gym Replace By Epoch
+      unique_id: nest_protect_gym_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_gym_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_gym_replace_by'), default=None) }}
+
+    - name: Nest Protect Living Room Replace By Epoch
+      unique_id: nest_protect_living_room_replace_by_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: "{{ has_value('sensor.nest_protect_living_room_replace_by') }}"
+      state: >
+        {{ as_timestamp(states('sensor.nest_protect_living_room_replace_by'), default=None) }}
+
+    # --- next replacement (epoch) with helper attributes ---
+    - name: Nest Protect Next Replacement Epoch
+      unique_id: nest_protect_next_replacement_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      state: >-
+        {% set ids = [
+          'sensor.nest_protect_upstairs_replace_by_epoch',
+          'sensor.nest_protect_kids_room_eleanor_replace_by_epoch',
+          'sensor.nest_protect_kids_room_michael_replace_by_epoch',
+          'sensor.nest_protect_family_room_replace_by_epoch',
+          'sensor.nest_protect_hallway_replace_by_epoch',
+          'sensor.nest_protect_guest_room_replace_by_epoch',
+          'sensor.nest_protect_gym_replace_by_epoch',
+          'sensor.nest_protect_living_room_replace_by_epoch'
+        ] %}
+        {% set best = namespace(v=None) %}
+        {% for id in ids %}
+          {% set v = states(id) | float(0) %}
+          {% if v > 0 and (best.v is none or v < best.v) %}
+            {% set best.v = v %}
+          {% endif %}
+        {% endfor %}
+        {{ best.v if best.v is not none else none }}
+      attributes:
+        min_entity_id: >-
+          {% set ids = [
+            'sensor.nest_protect_upstairs_replace_by_epoch',
+            'sensor.nest_protect_kids_room_eleanor_replace_by_epoch',
+            'sensor.nest_protect_kids_room_michael_replace_by_epoch',
+            'sensor.nest_protect_family_room_replace_by_epoch',
+            'sensor.nest_protect_hallway_replace_by_epoch',
+            'sensor.nest_protect_guest_room_replace_by_epoch',
+            'sensor.nest_protect_gym_replace_by_epoch',
+            'sensor.nest_protect_living_room_replace_by_epoch'
+          ] %}
+          {% set best = namespace(id=None, v=None) %}
+          {% for id in ids %}
+            {% set v = states(id) | float(0) %}
+            {% if v > 0 and (best.v is none or v < best.v) %}
+              {% set best.id = id %}
+              {% set best.v = v %}
+            {% endif %}
+          {% endfor %}
+          {{ best.id }}
+
+    # --- human-friendly timestamp and device name ---
+    - name: Nest Protect Next Replacement
+      device_class: timestamp
+      state: >-
+        {% set ts = states('sensor.nest_protect_next_replacement_epoch') | float(0) %}
+        {{ ts | timestamp_local if ts > 0 else none }}
+
+    - name: Nest Protect Next Replacement Device
+      icon: mdi:smoke-detector
+      state: >-
+        {% set winner = state_attr('sensor.nest_protect_next_replacement_epoch','min_entity_id') %}
+        {% if winner %} {{ area_name(winner) or state_attr(winner,'friendly_name') or winner }}
+        {% else %} {{ none }} {% endif %}
+
+    # --- days remaining (updates at midnight and when any date changes) ---
+    - name: Nest Protect Time Until Next Replacement
+      device_class: duration
+      unit_of_measurement: d
+      state_class: measurement
+      availability: "{{ states('sensor.nest_protect_next_replacement_epoch') | float(0) > 0 }}"
+      state: >-
+        {% set ts = states('sensor.nest_protect_next_replacement_epoch') | float(0) %}
+        {% if ts > 0 %}
+          {% set due = as_datetime(ts) %}
+          {{ (due.date() - now().date()).days }}
+        {% else %} {{ none }} {% endif %}

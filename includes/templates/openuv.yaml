@@ -1,0 +1,1683 @@
+# ===================== OpenUV: Nearby =====================
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_nearby
+        - sensor.openuv_nearby_protection
+        - sensor.openuv_nearby_forecast
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: OpenUV Nearby UV Index
+      unique_id: openuv_nearby_uv_index
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_nearby') not in ['unknown','unavailable','none',''] }}"
+      state: "{{ states('sensor.openuv_nearby') | float(0) }}"
+    - name: OpenUV Nearby UV Max Index
+      unique_id: openuv_nearby_uv_max_index
+      state_class: measurement
+      availability: "{{ state_attr('sensor.openuv_nearby','uv_max') is not none }}"
+      state: "{{ state_attr('sensor.openuv_nearby', 'uv_max') | float(0) }}"
+    - name: OpenUV Nearby UV Max Time
+      unique_id: openuv_nearby_uv_max_time
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_nearby','uv_max_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_nearby','uv_max_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV Nearby Ozone
+      unique_id: openuv_nearby_ozone
+      # device_class: ozone
+      unit_of_measurement: "DU"
+      icon: >-
+        {% if state_attr('sensor.openuv_nearby','ozone') | float(0) > 1 %}
+          mdi:weather-fog
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}
+      availability: "{{ state_attr('sensor.openuv_nearby','ozone') is not none }}"
+      state: "{{ state_attr('sensor.openuv_nearby', 'ozone') | float(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 1)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_1
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st1') | int(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 2)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_2
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st2') | int(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 3)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_3
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st3') | int(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 4)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_4
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st4') | int(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 5)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_5
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st5') | int(0) }}"
+    - name: OpenUV Nearby Safe Exposure Time (Skin Type 6)
+      unique_id: openuv_nearby_safe_exposure_time_skin_type_6
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_nearby', 'safe_exposure_time') or {}).get('st6') | int(0) }}"
+    - name: OpenUV Nearby Protection Window Start
+      unique_id: openuv_nearby_protection_window_start
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_nearby_protection','from_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_nearby_protection','from_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV Nearby Protection Window End
+      unique_id: openuv_nearby_protection_window_end
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_nearby_protection','to_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_nearby_protection','to_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+  binary_sensor:
+    - name: OpenUV Nearby Protection Active
+      unique_id: openuv_nearby_protection_active
+      state: >-
+        {% set f = state_attr('sensor.openuv_nearby_protection','from_time') | as_datetime(default=none) %}
+        {% set t = state_attr('sensor.openuv_nearby_protection','to_time') | as_datetime(default=none) %}
+        {{ f is not none and t is not none and now() >= (f | as_local) and now() <= (t | as_local) }}
+
+# ===================== OpenUV: Home =====================
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_home
+        - sensor.openuv_home_protection
+        - sensor.openuv_home_forecast
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: OpenUV Home UV Index
+      unique_id: openuv_home_uv_index
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_home') not in ['unknown','unavailable','none',''] }}"
+      state: "{{ states('sensor.openuv_home') | float(0) }}"
+    - name: OpenUV Home UV Max Index
+      unique_id: openuv_home_uv_max_index
+      state_class: measurement
+      availability: "{{ state_attr('sensor.openuv_home','uv_max') is not none }}"
+      state: "{{ state_attr('sensor.openuv_home', 'uv_max') | float(0) }}"
+    - name: OpenUV Home UV Max Time
+      unique_id: openuv_home_uv_max_time
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_home','uv_max_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_home','uv_max_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV Home Ozone
+      unique_id: openuv_home_ozone
+      # device_class: ozone
+      unit_of_measurement: "DU"
+      icon: >-
+        {% if state_attr('sensor.openuv_home','ozone') | float(0) > 1 %}
+          mdi:weather-fog
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}
+      availability: "{{ state_attr('sensor.openuv_home','ozone') is not none }}"
+      state: "{{ state_attr('sensor.openuv_home', 'ozone') | float(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 1)
+      unique_id: openuv_home_safe_exposure_time_skin_type_1
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st1') | int(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 2)
+      unique_id: openuv_home_safe_exposure_time_skin_type_2
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st2') | int(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 3)
+      unique_id: openuv_home_safe_exposure_time_skin_type_3
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st3') | int(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 4)
+      unique_id: openuv_home_safe_exposure_time_skin_type_4
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st4') | int(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 5)
+      unique_id: openuv_home_safe_exposure_time_skin_type_5
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st5') | int(0) }}"
+    - name: OpenUV Home Safe Exposure Time (Skin Type 6)
+      unique_id: openuv_home_safe_exposure_time_skin_type_6
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_home', 'safe_exposure_time') or {}).get('st6') | int(0) }}"
+    - name: OpenUV Home Protection Window Start
+      unique_id: openuv_home_protection_window_start
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_home_protection','from_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_home_protection','from_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV Home Protection Window End
+      unique_id: openuv_home_protection_window_end
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_home_protection','to_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_home_protection','to_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+  binary_sensor:
+    - name: OpenUV Home Protection Active
+      unique_id: openuv_home_protection_active
+      state: >-
+        {% set f = state_attr('sensor.openuv_home_protection','from_time') | as_datetime(default=none) %}
+        {% set t = state_attr('sensor.openuv_home_protection','to_time') | as_datetime(default=none) %}
+        {{ f is not none and t is not none and now() >= (f | as_local) and now() <= (t | as_local) }}
+
+# ===================== OpenUV: RV =====================
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_rv
+        - sensor.openuv_rv_protection
+        - sensor.openuv_rv_forecast
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: OpenUV RV UV Index
+      unique_id: openuv_rv_uv_index
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_rv') not in ['unknown','unavailable','none',''] }}"
+      state: "{{ states('sensor.openuv_rv') | float(0) }}"
+    - name: OpenUV RV UV Max Index
+      unique_id: openuv_rv_uv_max_index
+      state_class: measurement
+      availability: "{{ state_attr('sensor.openuv_rv','uv_max') is not none }}"
+      state: "{{ state_attr('sensor.openuv_rv', 'uv_max') | float(0) }}"
+    - name: OpenUV RV UV Max Time
+      unique_id: openuv_rv_uv_max_time
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_rv','uv_max_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_rv','uv_max_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV RV Ozone
+      unique_id: openuv_rv_ozone
+      # device_class: ozone
+      unit_of_measurement: "DU"
+      icon: >-
+        {% if state_attr('sensor.openuv_rv','ozone') | float(0) > 1 %}
+          mdi:weather-fog
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}
+      availability: "{{ state_attr('sensor.openuv_rv','ozone') is not none }}"
+      state: "{{ state_attr('sensor.openuv_rv', 'ozone') | float(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 1)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_1
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st1') | int(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 2)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_2
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st2') | int(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 3)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_3
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st3') | int(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 4)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_4
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st4') | int(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 5)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_5
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st5') | int(0) }}"
+    - name: OpenUV RV Safe Exposure Time (Skin Type 6)
+      unique_id: openuv_rv_safe_exposure_time_skin_type_6
+      device_class: duration
+      unit_of_measurement: "min"
+      state: "{{ (state_attr('sensor.openuv_rv', 'safe_exposure_time') or {}).get('st6') | int(0) }}"
+    - name: OpenUV RV Protection Window Start
+      unique_id: openuv_rv_protection_window_start
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_rv_protection','from_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_rv_protection','from_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+    - name: OpenUV RV Protection Window End
+      unique_id: openuv_rv_protection_window_end
+      device_class: timestamp
+      availability: "{{ state_attr('sensor.openuv_rv_protection','to_time') | as_datetime(default=none) is not none }}"
+      state: >-
+        {% set dt = state_attr('sensor.openuv_rv_protection','to_time') | as_datetime(default=none) %}
+        {{ (dt | as_local) if dt is not none else none }}
+  binary_sensor:
+    - name: OpenUV RV Protection Active
+      unique_id: openuv_rv_protection_active
+      state: >-
+        {% set f = state_attr('sensor.openuv_rv_protection','from_time') | as_datetime(default=none) %}
+        {% set t = state_attr('sensor.openuv_rv_protection','to_time') | as_datetime(default=none) %}
+        {{ f is not none and t is not none and now() >= (f | as_local) and now() <= (t | as_local) }}
+
+# ===================== Adjusted UV (uses Open-Meteo cloud cover) =====================
+# Nearby
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_nearby_forecast
+        - sensor.openmeteo_nearby
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: Nearby Apparent UV Index
+      unique_id: adjusted_nearby_uv_index
+      unit_of_measurement: "UV index"
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_nearby_uv_index') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% from 'macros.jinja' import uv_factor_sigmoid %}
+        {% set raw_uv = states('sensor.openuv_nearby_uv_index') | float(0) %}
+        {% set clouds = state_attr('weather.openmeteo_weather_nearby','cloud_coverage') | float(0) %}
+        {{ (raw_uv * (uv_factor_sigmoid(clouds) | float(1))) | round(2) }}
+      attributes:
+        raw_uv: "{{ states('sensor.openuv_nearby_uv_index') }}"
+        cloud_coverage: "{{ state_attr('weather.openmeteo_weather_nearby', 'cloud_coverage') }}"
+        weather: "{{ states('weather.openmeteo_weather_nearby') }}"
+        forecast: >-
+          {% from 'macros.jinja' import uv_factor_sigmoid %}
+          {%- set fc = state_attr('sensor.openuv_nearby_forecast','result') or [] -%}
+          {%- set pairs_raw = state_attr('sensor.openmeteo_nearby_cloud_lut','pairs') or [] -%}
+          {%- set pairs = pairs_raw if pairs_raw is sequence else (pairs_raw | from_json) -%}
+          {%- set out = namespace(items=[]) -%}
+          {%- for p in fc -%}
+            {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}
+            {%- if t is not none -%}
+              {%- set tl = t | as_local -%}
+              {%- set hk = (tl.replace(minute=0,second=0,microsecond=0) | as_timestamp | int) -%}
+              {%- set c = (pairs | selectattr('hk','eq', hk) | map(attribute='cc') | first) | default(0, true) | float(0) -%}
+              {%- set f = uv_factor_sigmoid(c) | float(1) -%}
+              {%- set out.items = out.items + [ {
+                    'datetime': tl.isoformat(),
+                    'uv_base': (p.get('uv',0) | float(0)),
+                    'cloud_cover': c,
+                    'factor': f,
+                    'uv_apparent': (p.get('uv',0) | float(0)) * f
+                  } ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ out.items }}
+
+# Home
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_home_forecast
+        - sensor.openmeteo_home
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: Home Apparent UV Index
+      unique_id: adjusted_home_uv_index
+      unit_of_measurement: "UV index"
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_home_uv_index') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% from 'macros.jinja' import uv_factor_sigmoid %}
+        {% set raw_uv = states('sensor.openuv_home_uv_index') | float(0) %}
+        {% set clouds = state_attr('weather.openmeteo_weather_home','cloud_coverage') | float(0) %}
+        {{ (raw_uv * (uv_factor_sigmoid(clouds) | float(1))) | round(2) }}
+      attributes:
+        raw_uv: "{{ states('sensor.openuv_home_uv_index') }}"
+        cloud_coverage: "{{ state_attr('weather.openmeteo_weather_home', 'cloud_coverage') }}"
+        weather: "{{ states('weather.openmeteo_weather_home') }}"
+        forecast: >-
+          {% from 'macros.jinja' import uv_factor_sigmoid %}
+          {%- set fc = state_attr('sensor.openuv_home_forecast','result') or [] -%}
+          {%- set pairs_raw = state_attr('sensor.openmeteo_home_cloud_lut','pairs') or [] -%}
+          {%- set pairs = pairs_raw if pairs_raw is sequence else (pairs_raw | from_json) -%}
+          {%- set out = namespace(items=[]) -%}
+          {%- for p in fc -%}
+            {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}
+            {%- if t is not none -%}
+              {%- set tl = t | as_local -%}
+              {%- set hk = (tl.replace(minute=0,second=0,microsecond=0) | as_timestamp | int) -%}
+              {%- set c = (pairs | selectattr('hk','eq', hk) | map(attribute='cc') | first) | default(0, true) | float(0) -%}
+              {%- set f = uv_factor_sigmoid(c) | float(1) -%}
+              {%- set out.items = out.items + [ {
+                    'datetime': tl.isoformat(),
+                    'uv_base': (p.get('uv',0) | float(0)),
+                    'cloud_cover': c,
+                    'factor': f,
+                    'uv_apparent': (p.get('uv',0) | float(0)) * f
+                  } ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ out.items }}
+
+# RV
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_rv_forecast
+        - sensor.openmeteo_rv
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: RV Apparent UV Index
+      unique_id: adjusted_rv_uv_index
+      unit_of_measurement: "UV index"
+      state_class: measurement
+      availability: "{{ states('sensor.openuv_rv_uv_index') not in ['unknown','unavailable','none',''] }}"
+      state: >-
+        {% from 'macros.jinja' import uv_factor_sigmoid %}
+        {% set raw_uv = states('sensor.openuv_rv_uv_index') | float(0) %}
+        {% set clouds = state_attr('weather.openmeteo_weather_rv','cloud_coverage') | float(0) %}
+        {{ (raw_uv * (uv_factor_sigmoid(clouds) | float(1))) | round(2) }}
+      attributes:
+        raw_uv: "{{ states('sensor.openuv_rv_uv_index') }}"
+        cloud_coverage: "{{ state_attr('weather.openmeteo_weather_rv', 'cloud_coverage') }}"
+        weather: "{{ states('weather.openmeteo_weather_rv') }}"
+        forecast: >-
+          {% from 'macros.jinja' import uv_factor_sigmoid %}
+          {%- set fc = state_attr('sensor.openuv_rv_forecast','result') or [] -%}
+          {%- set pairs_raw = state_attr('sensor.openmeteo_rv_cloud_lut','pairs') or [] -%}
+          {%- set pairs = pairs_raw if pairs_raw is sequence else (pairs_raw | from_json) -%}
+          {%- set out = namespace(items=[]) -%}
+          {%- for p in fc -%}
+            {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}
+            {%- if t is not none -%}
+              {%- set tl = t | as_local -%}
+              {%- set hk = (tl.replace(minute=0,second=0,microsecond=0) | as_timestamp | int) -%}
+              {%- set c = (pairs | selectattr('hk','eq', hk) | map(attribute='cc') | first) | default(0, true) | float(0) -%}
+              {%- set f = uv_factor_sigmoid(c) | float(1) -%}
+              {%- set out.items = out.items + [ {
+                    'datetime': tl.isoformat(),
+                    'uv_base': (p.get('uv',0) | float(0)),
+                    'cloud_cover': c,
+                    'factor': f,
+                    'uv_apparent': (p.get('uv',0) | float(0)) * f
+                  } ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ out.items }}
+
+# ===================== Protection window (from adjusted UV) =====================
+# Nearby
+- sensor:
+    - name: Nearby UV Protection Start
+      unique_id: nearby_uv_protection_start
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_nearby_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, first_t=None, first_v=None, start_ts=None) %}
+        {% for p in data %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if ns.first_t is none %}{% set ns.first_t = tl %}{% set ns.first_v = v %}{% endif %}
+            {% if ns.prev_t is not none and ns.start_ts is none and ns.prev_v < thr and v >= thr %}
+              {% set dv = v - ns.prev_v %}
+              {% set frac = (thr - ns.prev_v) / (dv if dv != 0 else 1) %}
+              {% set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.start_ts is none and ns.first_t is not none and ns.first_v >= thr %}
+          {% set ns.start_ts = ns.first_t.timestamp() %}
+        {% endif %}
+        {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
+    - name: Nearby UV Protection End
+      unique_id: nearby_uv_protection_end
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_nearby_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, end_ts=None, last_t=None, last_v=None, ever_above=false) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if v >= thr %}{% set ns.ever_above = true %}{% endif %}
+            {% if ns.prev_t is not none and ns.prev_v >= thr and v < thr %}
+              {% set dv = ns.prev_v - v %}
+              {% set frac = (ns.prev_v - thr) / (dv if dv != 0 else 1) %}
+              {% set ns.end_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+            {% set ns.last_t = tl %}
+            {% set ns.last_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.end_ts is none and ns.last_t is not none and ns.ever_above %}
+          {% set ns.end_ts = ns.last_t.timestamp() %}
+        {% endif %}
+        {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
+    - name: Nearby UV Protection Duration
+      unique_id: nearby_uv_protection_duration
+      unit_of_measurement: "min"
+      icon: mdi:clock-outline
+      state: >-
+        {% set start = states('sensor.nearby_uv_protection_start') %}
+        {% set end   = states('sensor.nearby_uv_protection_end') %}
+        {% if start in ['unknown','unavailable','none','None',''] or end in ['unknown','unavailable','none','None',''] %}
+          0
+        {% else %}
+          {% set ts_start = start | as_datetime | as_local %}
+          {% set ts_end   = end   | as_datetime | as_local %}
+          {{ ((ts_end.timestamp() - ts_start.timestamp()) / 60) | round(0) }}
+        {% endif %}
+- binary_sensor:
+    - name: Nearby UV Protection
+      unique_id: nearby_uv_protection
+      availability: >-
+        {{ has_value('sensor.nearby_uv_protection_start') and has_value('sensor.nearby_uv_protection_end') }}
+      state: >-
+        {% set start = states('sensor.nearby_uv_protection_start') | as_datetime | as_local %}
+        {% set end   = states('sensor.nearby_uv_protection_end') | as_datetime | as_local %}
+        {{ start <= now() < end }}
+      attributes:
+        start: "{{ states('sensor.nearby_uv_protection_start') }}"
+        end: "{{ states('sensor.nearby_uv_protection_end') }}"
+        duration: "{{ states('sensor.nearby_uv_protection_duration') }}"
+
+# Home
+- sensor:
+    - name: Home UV Protection Start
+      unique_id: home_uv_protection_start
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_home_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, first_t=None, first_v=None, start_ts=None) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if ns.first_t is none %}{% set ns.first_t = tl %}{% set ns.first_v = v %}{% endif %}
+            {% if ns.prev_t is not none and ns.start_ts is none and ns.prev_v < thr and v >= thr %}
+              {% set dv = v - ns.prev_v %}
+              {% set frac = (thr - ns.prev_v) / (dv if dv != 0 else 1) %}
+              {% set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.start_ts is none and ns.first_t is not none and ns.first_v >= thr %}
+          {% set ns.start_ts = ns.first_t.timestamp() %}
+        {% endif %}
+        {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
+    - name: Home UV Protection End
+      unique_id: home_uv_protection_end
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_home_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, end_ts=None, last_t=None, last_v=None, ever_above=false) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if v >= thr %}{% set ns.ever_above = true %}{% endif %}
+            {% if ns.prev_t is not none and ns.prev_v >= thr and v < thr %}
+              {% set dv = ns.prev_v - v %}
+              {% set frac = (ns.prev_v - thr) / (dv if dv != 0 else 1) %}
+              {% set ns.end_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+            {% set ns.last_t = tl %}
+            {% set ns.last_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.end_ts is none and ns.last_t is not none and ns.ever_above %}
+          {% set ns.end_ts = ns.last_t.timestamp() %}
+        {% endif %}
+        {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
+    - name: Home UV Protection Duration
+      unique_id: home_uv_protection_duration
+      unit_of_measurement: "min"
+      icon: mdi:clock-outline
+      state: >-
+        {% set start = states('sensor.home_uv_protection_start') %}
+        {% set end   = states('sensor.home_uv_protection_end') %}
+        {% if start in ['unknown','unavailable','none','None',''] or end in ['unknown','unavailable','none','None',''] %}
+          0
+        {% else %}
+          {% set ts_start = start | as_datetime | as_local %}
+          {% set ts_end   = end   | as_datetime | as_local %}
+          {{ ((ts_end.timestamp() - ts_start.timestamp()) / 60) | round(0) }}
+        {% endif %}
+
+# RV
+- sensor:
+    - name: RV UV Protection Start
+      unique_id: rv_uv_protection_start
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_rv_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, first_t=None, first_v=None, start_ts=None) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if ns.first_t is none %}{% set ns.first_t = tl %}{% set ns.first_v = v %}{% endif %}
+            {% if ns.prev_t is not none and ns.start_ts is none and ns.prev_v < thr and v >= thr %}
+              {% set dv = v - ns.prev_v %}
+              {% set frac = (thr - ns.prev_v) / (dv if dv != 0 else 1) %}
+              {% set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.start_ts is none and ns.first_t is not none and ns.first_v >= thr %}
+          {% set ns.start_ts = ns.first_t.timestamp() %}
+        {% endif %}
+        {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
+    - name: RV UV Protection End
+      unique_id: rv_uv_protection_end
+      device_class: timestamp
+      state: >-
+        {% set thr = 3.5 %}
+        {% set raw = state_attr('sensor.adjusted_rv_uv_index','forecast') %}
+        {% set data = raw | from_json if raw is string else raw if raw is mapping or (raw is sequence and raw is not string) else [] %}
+        {% set ns = namespace(prev_t=None, prev_v=None, end_ts=None, last_t=None, last_v=None, ever_above=false) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t is not none and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) %}
+            {% if v >= thr %}{% set ns.ever_above = true %}{% endif %}
+            {% if ns.prev_t is not none and ns.prev_v >= thr and v < thr %}
+              {% set dv = ns.prev_v - v %}
+              {% set frac = (ns.prev_v - thr) / (dv if dv != 0 else 1) %}
+              {% set ns.end_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+            {% set ns.last_t = tl %}
+            {% set ns.last_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.end_ts is none and ns.last_t is not none and ns.ever_above %}
+          {% set ns.end_ts = ns.last_t.timestamp() %}
+        {% endif %}
+        {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
+    - name: RV UV Protection Duration
+      unique_id: rv_uv_protection_duration
+      unit_of_measurement: "min"
+      icon: mdi:clock-outline
+      state: >-
+        {% set start = states('sensor.rv_uv_protection_start') %}
+        {% set end   = states('sensor.rv_uv_protection_end') %}
+        {% if start in ['unknown','unavailable','none','None',''] or end in ['unknown','unavailable','none','None',''] %}
+          0
+        {% else %}
+          {% set ts_start = start | as_datetime | as_local %}
+          {% set ts_end   = end   | as_datetime | as_local %}
+          {{ ((ts_end.timestamp() - ts_start.timestamp()) / 60) | round(0) }}
+        {% endif %}
+
+# ===================== Safe exposure breakdown sensors =====================
+# Nearby
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_nearby_uv_index
+  sensor:
+    - name: Nearby UV Safe Exposure (all skin types)
+      unique_id: nearby_uv_safe_exposure_all_skin_types
+      icon: mdi:account-multiple-outline
+      state: "{{ states('sensor.adjusted_nearby_uv_index') | float(0) }}"
+      attributes:
+        units: "minutes (no SPF; unacclimated)"
+        st1: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 2.5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st2: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 3)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st3: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 4)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st4: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st5: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 8)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st6: >-
+          {% set uvi = states('sensor.adjusted_nearby_uv_index') | float(0) %}
+          {{ ((200 * 15)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+    - name: Nearby UV Safe Exposure ST1
+      unique_id: nearby_uv_safe_exposure_st1
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-1-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st1') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st1') | int(0) }}"
+    - name: Nearby UV Safe Exposure ST2
+      unique_id: nearby_uv_safe_exposure_st2
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-2-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st2') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st2') | int(0) }}"
+    - name: Nearby UV Safe Exposure ST3
+      unique_id: nearby_uv_safe_exposure_st3
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-3-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st3') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st3') | int(0) }}"
+    - name: Nearby UV Safe Exposure ST4
+      unique_id: nearby_uv_safe_exposure_st4
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-4-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st4') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st4') | int(0) }}"
+    - name: Nearby UV Safe Exposure ST5
+      unique_id: nearby_uv_safe_exposure_st5
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-5-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st5') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st5') | int(0) }}"
+    - name: Nearby UV Safe Exposure ST6
+      unique_id: nearby_uv_safe_exposure_st6
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-6-box
+      availability: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st6') is number }}"
+      state: "{{ state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st6') | int(0) }}"
+    - name: Nearby UV ST1 Limit Time
+      unique_id: nearby_uv_limit_time_st1
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st1') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st1') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Nearby UV ST2 Limit Time
+      unique_id: nearby_uv_limit_time_st2
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st2') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st2') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Nearby UV ST3 Limit Time
+      unique_id: nearby_uv_limit_time_st3
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st3') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st3') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Nearby UV ST4 Limit Time
+      unique_id: nearby_uv_limit_time_st4
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st4') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st4') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Nearby UV ST5 Limit Time
+      unique_id: nearby_uv_limit_time_st5
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st5') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st5') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Nearby UV ST6 Limit Time
+      unique_id: nearby_uv_limit_time_st6
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st6') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.nearby_uv_safe_exposure_all_skin_types','st6') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+
+# Home
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_home_uv_index
+  sensor:
+    - name: Home UV Safe Exposure (all skin types)
+      unique_id: home_uv_safe_exposure_all_skin_types
+      icon: mdi:account-multiple-outline
+      state: "{{ states('sensor.adjusted_home_uv_index') | float(0) }}"
+      attributes:
+        units: "minutes (no SPF; unacclimated)"
+        st1: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 2.5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st2: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 3)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st3: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 4)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st4: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st5: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 8)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st6: >-
+          {% set uvi = states('sensor.adjusted_home_uv_index') | float(0) %}
+          {{ ((200 * 15)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+    - name: Home UV Safe Exposure ST1
+      unique_id: home_uv_safe_exposure_st1
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-1-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st1') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st1') | int(0) }}"
+    - name: Home UV Safe Exposure ST2
+      unique_id: home_uv_safe_exposure_st2
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-2-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st2') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st2') | int(0) }}"
+    - name: Home UV Safe Exposure ST3
+      unique_id: home_uv_safe_exposure_st3
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-3-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st3') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st3') | int(0) }}"
+    - name: Home UV Safe Exposure ST4
+      unique_id: home_uv_safe_exposure_st4
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-4-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st4') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st4') | int(0) }}"
+    - name: Home UV Safe Exposure ST5
+      unique_id: home_uv_safe_exposure_st5
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-5-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st5') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st5') | int(0) }}"
+    - name: Home UV Safe Exposure ST6
+      unique_id: home_uv_safe_exposure_st6
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-6-box
+      availability: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st6') is number }}"
+      state: "{{ state_attr('sensor.home_uv_safe_exposure_all_skin_types','st6') | int(0) }}"
+    - name: Home UV ST1 Limit Time
+      unique_id: home_uv_limit_time_st1
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st1') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st1') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Home UV ST2 Limit Time
+      unique_id: home_uv_limit_time_st2
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st2') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st2') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Home UV ST3 Limit Time
+      unique_id: home_uv_limit_time_st3
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st3') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st3') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Home UV ST4 Limit Time
+      unique_id: home_uv_limit_time_st4
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st4') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st4') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Home UV ST5 Limit Time
+      unique_id: home_uv_limit_time_st5
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st5') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st5') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: Home UV ST6 Limit Time
+      unique_id: home_uv_limit_time_st6
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st6') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.home_uv_safe_exposure_all_skin_types','st6') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+
+# RV
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_rv_uv_index
+  sensor:
+    - name: RV UV Safe Exposure (all skin types)
+      unique_id: rv_uv_safe_exposure_all_skin_types
+      icon: mdi:account-multiple-outline
+      state: "{{ states('sensor.adjusted_rv_uv_index') | float(0) }}"
+      attributes:
+        units: "minutes (no SPF; unacclimated)"
+        st1: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 2.5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st2: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 3)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st3: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 4)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st4: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 5)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st5: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 8)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+        st6: >-
+          {% set uvi = states('sensor.adjusted_rv_uv_index') | float(0) %}
+          {{ ((200 * 15)/(3 * uvi)) | round(0) if uvi > 0 else none }}
+    - name: RV UV Safe Exposure ST1
+      unique_id: rv_uv_safe_exposure_st1
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-1-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st1') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st1') | int(0) }}"
+    - name: RV UV Safe Exposure ST2
+      unique_id: rv_uv_safe_exposure_st2
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-2-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st2') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st2') | int(0) }}"
+    - name: RV UV Safe Exposure ST3
+      unique_id: rv_uv_safe_exposure_st3
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-3-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st3') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st3') | int(0) }}"
+    - name: RV UV Safe Exposure ST4
+      unique_id: rv_uv_safe_exposure_st4
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-4-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st4') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st4') | int(0) }}"
+    - name: RV UV Safe Exposure ST5
+      unique_id: rv_uv_safe_exposure_st5
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-5-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st5') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st5') | int(0) }}"
+    - name: RV UV Safe Exposure ST6
+      unique_id: rv_uv_safe_exposure_st6
+      device_class: duration
+      unit_of_measurement: "min"
+      icon: mdi:numeric-6-box
+      availability: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st6') is number }}"
+      state: "{{ state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st6') | int(0) }}"
+    - name: RV UV ST1 Limit Time
+      unique_id: rv_uv_limit_time_st1
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st1') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st1') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: RV UV ST2 Limit Time
+      unique_id: rv_uv_limit_time_st2
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st2') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st2') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: RV UV ST3 Limit Time
+      unique_id: rv_uv_limit_time_st3
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st3') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st3') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: RV UV ST4 Limit Time
+      unique_id: rv_uv_limit_time_st4
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st4') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st4') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: RV UV ST5 Limit Time
+      unique_id: rv_uv_limit_time_st5
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st5') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st5') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+    - name: RV UV ST6 Limit Time
+      unique_id: rv_uv_limit_time_st6
+      device_class: timestamp
+      availability: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st6') %}
+        {{ mins is not none and mins | float(0) > 0 }}
+      state: >-
+        {% set mins = state_attr('sensor.rv_uv_safe_exposure_all_skin_types','st6') | float(0) %}
+        {{ (now() + timedelta(minutes=mins)).isoformat() }}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_nearby_uv_index
+    - platform: state
+      entity_id: sensor.openuv_nearby
+    - platform: state
+      entity_id: sensor.openmeteo_nearby
+    - platform: time_pattern
+      minutes: "/10"
+
+  variables:
+    uv_entity: "sensor.adjusted_nearby_uv_index"
+    openuv_entity: "sensor.openuv_nearby"
+    om_entity:  "sensor.openmeteo_nearby"
+
+    raw: "{{ state_attr(uv_entity, 'forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+
+    pts: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for p in (data or []) -%}
+        {%- set dt = (p.datetime | default(p.get('datetime'))) | as_datetime(none) -%}
+        {%- if dt is not none -%}
+          {%- set tl = dt | as_local -%}
+          {%- if tl.date() == now().date() -%}
+            {%- set v = p.uv_apparent | default(p.get('uv_apparent')) -%}
+            {%- if v is none -%}{%- set v = p.uv_base | default(p.get('uv_base')) -%}{%- endif -%}
+            {%- set v = v | float(0) -%}
+            {%- set cc = p.cloud_cover | default(p.get('cloud_cover')) -%}
+            {%- set ns.out = ns.out + [{'ts': tl.timestamp(), 'uv': v, 'cc': cc}] -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out | sort(attribute='ts') }}
+
+    om_hourly: "{{ state_attr(om_entity, 'hourly') or {} }}"
+    om_times:  "{{ om_hourly.get('time', []) }}"
+    om_cc:     "{{ om_hourly.get('cloud_cover', []) }}"
+    om_uvh:    "{{ om_hourly.get('uv_index', []) }}"
+
+    om_idx_at: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = now().timestamp() -%}
+      {%- set ts = t -%}
+      {%- set ns = namespace(best_i=none, best_d=9e9) -%}
+      {%- for i in range(om_times | count) -%}
+        {%- set tt = (om_times[i] | as_datetime | as_local).timestamp() -%}
+        {%- set d = abs(tt - ts) -%}
+        {%- if float(d) < float(ns.best_d) -%}
+          {%- set ns.best_d = d -%}
+          {%- set ns.best_i = i -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.best_i }}
+
+    uv_now: >-
+      {{ states(uv_entity) | float(none) }}
+
+    cc_now: >-
+      {%- set cur = (state_attr(om_entity, 'current') or {}) -%}
+      {{ cur.get('cloud_cover', cur.get('cloudcover')) | float(0) }}
+
+    budget: 180
+
+    integration: >-
+      {%- set tnow = now().timestamp() -%}
+      {%- set ns = namespace() -%}
+      {%- set ns.B = (budget | float(0)) -%}
+      {%- set ns.acc = 0.0 -%}
+      {%- set ns.prev_t = tnow -%}
+      {%- set ns.prev_v = uv_now | float(0) -%}
+      {%- set ns.end_ts = none -%}
+
+      {%- set fut = pts | selectattr('ts','gt', tnow) | list -%}
+
+      {%- for q in fut -%}
+        {%- set dtm = (q.ts - ns.prev_t) / 60.0 -%}
+        {%- if dtm > 0 -%}
+          {%- set area = (ns.prev_v + q.uv) / 2.0 * dtm -%}
+          {%- if ns.acc + area >= ns.B and ns.B > 0 -%}
+            {%- set rem = ns.B - ns.acc -%}
+            {%- set frac = rem / area if area > 0 else 0 -%}
+            {%- set ns.end_ts = ns.prev_t + frac * (q.ts - ns.prev_t) -%}
+            {%- break -%}
+          {%- else -%}
+            {%- set ns.acc   = ns.acc + area -%}
+            {%- set ns.prev_t = q.ts -%}
+            {%- set ns.prev_v = q.uv -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if ns.end_ts is none and ns.B > 0 and (ns.prev_t > tnow) -%}
+        {%- set ns.end_ts = ns.prev_t -%}
+      {%- endif -%}
+
+      {{ {'end_ts': ns.end_ts, 'mins': ((ns.end_ts - tnow)/60)|round(0) if ns.end_ts else none } }}
+
+    max_from_forecast: >-
+      {%- if pts | count > 0 -%}
+        {%- set m = (pts | max(attribute='uv')).uv -%}
+        {%- set pt = (pts | selectattr('uv','equalto', m) | list)[0] -%}
+        {{ {'uv': m, 'ts': pt.ts, 'cc': pt.cc} }}
+      {%- else -%}
+        {{ {'uv': 0, 'ts': none, 'cc': 0} }}
+      {%- endif -%}
+
+    ou_max_time: >-
+      {%- set a = state_attr(openuv_entity, 'uv_max_time') -%}
+      {{ a if a else none }}
+
+    max_at_ou_time: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = ou_max_time | as_datetime(none) -%}
+      {%- if t is none or (pts | count == 0) -%}
+        {{ {'uv': 0, 'ts': none, 'cc': 0} }}
+      {%- else -%}
+        {%- set tt = (t | as_local).timestamp() -%}
+        {%- set ns = namespace(best=none, best_d=9e9) -%}
+        {%- for q in pts -%}
+          {%- set d = abs(q.ts - tt) -%}
+          {%- if float(d) < float(ns.best_d) -%}
+            {%- set ns.best = q -%}
+            {%- set ns.best_d = d -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ {'uv': (ns.best.uv if ns.best else 0), 'ts': (ns.best.ts if ns.best else none), 'cc': (ns.best.cc if ns.best else 0)} }}
+      {%- endif -%}
+
+    max_combo: >-
+      {%- set a = max_from_forecast -%}
+      {%- set b = max_at_ou_time -%}
+      {%- if (b.uv | float(0)) > (a.uv | float(0)) -%}
+        {{ b }}
+      {%- else -%}
+        {{ a }}
+      {%- endif -%}
+
+    om_daily_adj_max: >-
+      {% from 'macros.jinja' import uv_factor_sigmoid %}
+      {%- set ns = namespace(out=[], buckets={}) -%}
+      {%- if (om_times | count) == (om_uvh | count) == (om_cc | count) and (om_times | count) > 0 -%}
+        {%- for i in range(om_times | count) -%}
+          {%- set t = om_times[i] | as_datetime | as_local -%}
+          {%- set d = t.date() -%}
+          {%- set adj = (om_uvh[i] | float(0)) * uv_factor_sigmoid(om_cc[i])|float -%}
+          {%- set prev = ns.buckets.get(d, 0) -%}
+          {%- set ns.buckets = ns.buckets | combine({d: max(prev, adj)}) -%}
+        {%- endfor -%}
+        {%- set days = (ns.buckets.keys() | list | sort) -%}
+        {%- for d in days[:3] -%}
+          {%- set val = ns.buckets.get(d, 0) -%}
+          {%- set ns.out = ns.out + [{'date': d.isoformat(), 'uv_adj_max': val | round(2)}] -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ ns.out }}
+
+  sensor:
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST1)
+      device_class: timestamp
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.end_ts is not none) }}
+      state: >-
+        {{ (integration.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true))
+            if integration.end_ts is not none else none }}
+
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST1)
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.mins is not none) }}
+      state: "{{ integration.mins | int(0) }}"
+
+    - name: Nearby UV Adjusted Max Today
+      unit_of_measurement: "UVI"
+      icon: mdi:white-balance-sunny
+      availability: "{{ max_combo.ts is not none }}"
+      state: "{{ (max_combo.uv | float(0)) | round(2) }}"
+      attributes:
+        time: "{{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}"
+
+    - name: Nearby UV Adjusted Max Cloud Cover Today
+      unit_of_measurement: "%"
+      icon: mdi:weather-cloudy
+      availability: "{{ max_combo.ts is not none }}"
+      state: "{{ (max_combo.cc | float(0)) | round(2) }}"
+      attributes:
+        time: "{{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}"
+
+    - name: Nearby UV Adjusted Max Time Today
+      device_class: timestamp
+      state: >-
+        {{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}
+
+    - name: Nearby Adjusted UV Max Day 0
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 1 }}"
+      state: "{{ (om_daily_adj_max[0].uv_adj_max if (om_daily_adj_max | count) >= 1 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[0].date if (om_daily_adj_max | count) >= 1 else none }}"
+
+    - name: Nearby Adjusted UV Max Day 1
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 2 }}"
+      state: "{{ (om_daily_adj_max[1].uv_adj_max if (om_daily_adj_max | count) >= 2 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[1].date if (om_daily_adj_max | count) >= 2 else none }}"
+
+    - name: Nearby Adjusted UV Max Day 2
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 3 }}"
+      state: "{{ (om_daily_adj_max[2].uv_adj_max if (om_daily_adj_max | count) >= 3 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[2].date if (om_daily_adj_max | count) >= 3 else none }}"
+
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_home_uv_index
+    - platform: state
+      entity_id: sensor.openuv_home
+    - platform: state
+      entity_id: sensor.openmeteo_home
+    - platform: time_pattern
+      minutes: "/10"
+
+  variables:
+    uv_entity: "sensor.adjusted_home_uv_index"
+    openuv_entity: "sensor.openuv_home"
+    om_entity:  "sensor.openmeteo_home"
+
+    raw: "{{ state_attr(uv_entity, 'forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+
+    pts: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for p in (data or []) -%}
+        {%- set dt = (p.datetime | default(p.get('datetime'))) | as_datetime(none) -%}
+        {%- if dt is not none -%}
+          {%- set tl = dt | as_local -%}
+          {%- if tl.date() == now().date() -%}
+            {%- set v = p.uv_apparent | default(p.get('uv_apparent')) -%}
+            {%- if v is none -%}{%- set v = p.uv | default(p.get('uv')) -%}{%- endif -%}
+            {%- set v = v | float(0) -%}
+            {%- set ns.out = ns.out + [{'ts': tl.timestamp(), 'uv': v}] -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out | sort(attribute='ts') }}
+
+    om_hourly: "{{ state_attr(om_entity, 'hourly') or {} }}"
+    om_times:  "{{ om_hourly.get('time', []) }}"
+    om_cc:     "{{ om_hourly.get('cloud_cover', []) }}"
+    om_uvh:    "{{ om_hourly.get('uv_index', []) }}"
+
+    om_idx_at: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = now().timestamp() -%}
+      {%- set ts = t -%}
+      {%- set ns = namespace(best_i=none, best_d=9e9) -%}
+      {%- for i in range(om_times | count) -%}
+        {%- set tt = (om_times[i] | as_datetime | as_local).timestamp() -%}
+        {%- set d = abs(tt - ts) -%}
+        {%- if float(d) < float(ns.best_d) -%}
+          {%- set ns.best_d = d -%}
+          {%- set ns.best_i = i -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.best_i }}
+
+    uv_now: >-
+      {{ states(uv_entity) | float(none) }}
+
+    cc_now: >-
+      {%- set cur = (state_attr(om_entity, 'current') or {}) -%}
+      {{ cur.get('cloud_cover', cur.get('cloudcover')) | float(0) }}
+
+    budget: 180
+
+    integration: >-
+      {%- set tnow = now().timestamp() -%}
+      {%- set ns = namespace() -%}
+      {%- set ns.B = (budget | float(0)) -%}
+      {%- set ns.acc = 0.0 -%}
+      {%- set ns.prev_t = tnow -%}
+      {%- set ns.prev_v = uv_now | float(0) -%}
+      {%- set ns.end_ts = none -%}
+
+      {%- set fut = pts | selectattr('ts','gt', tnow) | list -%}
+
+      {%- for q in fut -%}
+        {%- set dtm = (q.ts - ns.prev_t) / 60.0 -%}
+        {%- if dtm > 0 -%}
+          {%- set area = (ns.prev_v + q.uv) / 2.0 * dtm -%}
+          {%- if ns.acc + area >= ns.B and ns.B > 0 -%}
+            {%- set rem = ns.B - ns.acc -%}
+            {%- set frac = rem / area if area > 0 else 0 -%}
+            {%- set ns.end_ts = ns.prev_t + frac * (q.ts - ns.prev_t) -%}
+            {%- break -%}
+          {%- else -%}
+            {%- set ns.acc   = ns.acc + area -%}
+            {%- set ns.prev_t = q.ts -%}
+            {%- set ns.prev_v = q.uv -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if ns.end_ts is none and ns.B > 0 and (ns.prev_t > tnow) -%}
+        {%- set ns.end_ts = ns.prev_t -%}
+      {%- endif -%}
+
+      {{ {'end_ts': ns.end_ts, 'mins': ((ns.end_ts - tnow)/60)|round(0) if ns.end_ts else none } }}
+
+    max_from_forecast: >-
+      {%- if pts | count > 0 -%}
+        {%- set m = (pts | max(attribute='uv')).uv -%}
+        {%- set pt = (pts | selectattr('uv','equalto', m) | list)[0] -%}
+        {{ {'uv': m, 'ts': pt.ts} }}
+      {%- else -%}
+        {{ {'uv': 0, 'ts': none} }}
+      {%- endif -%}
+
+    ou_max_time: >-
+      {%- set a = state_attr(openuv_entity, 'uv_max_time') -%}
+      {{ a if a else none }}
+
+    max_at_ou_time: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = ou_max_time | as_datetime(none) -%}
+      {%- if t is none or (pts | count == 0) -%}
+        {{ {'uv': 0, 'ts': none} }}
+      {%- else -%}
+        {%- set tt = (t | as_local).timestamp() -%}
+        {%- set ns = namespace(best=none, best_d=9e9) -%}
+        {%- for q in pts -%}
+          {%- set d = abs(q.ts - tt) -%}
+          {%- if float(d) < float(ns.best_d) -%}
+            {%- set ns.best = q -%}
+            {%- set ns.best_d = d -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ {'uv': (ns.best.uv if ns.best else 0), 'ts': (ns.best.ts if ns.best else none)} }}
+      {%- endif -%}
+
+    max_combo: >-
+      {%- set a = max_from_forecast -%}
+      {%- set b = max_at_ou_time -%}
+      {%- if (b.uv | float(0)) > (a.uv | float(0)) -%}
+        {{ b }}
+      {%- else -%}
+        {{ a }}
+      {%- endif -%}
+
+    om_daily_adj_max: >-
+      {% from 'macros.jinja' import uv_factor_sigmoid %}
+      {%- set ns = namespace(out=[], buckets={}) -%}
+      {%- if (om_times | count) == (om_uvh | count) == (om_cc | count) and (om_times | count) > 0 -%}
+        {%- for i in range(om_times | count) -%}
+          {%- set t = om_times[i] | as_datetime | as_local -%}
+          {%- set d = t.date() -%}
+          {%- set adj = (om_uvh[i] | float(0)) * uv_factor_sigmoid(om_cc[i])|float -%}
+          {%- set prev = ns.buckets.get(d, 0) -%}
+          {%- set ns.buckets = ns.buckets | combine({d: max(prev, adj)}) -%}
+        {%- endfor -%}
+        {%- set days = (ns.buckets.keys() | list | sort) -%}
+        {%- for d in days[:3] -%}
+          {%- set val = ns.buckets.get(d, 0) -%}
+          {%- set ns.out = ns.out + [{'date': d.isoformat(), 'uv_adj_max': val | round(2)}] -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ ns.out }}
+
+  sensor:
+
+    - name: Home UV Safe Exposure End (Forecast, ST1)
+      device_class: timestamp
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.end_ts is not none) }}
+      state: >-
+        {{ (integration.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true))
+            if integration.end_ts is not none else none }}
+
+    - name: Home UV Safe Exposure Minutes (Forecast, ST1)
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.mins is not none) }}
+      state: "{{ integration.mins | int(0) }}"
+
+    - name: Home UV Adjusted Max Today
+      unit_of_measurement: "UVI"
+      icon: mdi:white-balance-sunny
+      availability: "{{ max_combo.ts is not none }}"
+      state: "{{ (max_combo.uv | float(0)) | round(2) }}"
+      attributes:
+        time: "{{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}"
+
+    - name: Home UV Adjusted Max Time Today
+      device_class: timestamp
+      state: >-
+        {{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}
+
+    - name: Home Adjusted UV Max Day 0
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 1 }}"
+      state: "{{ (om_daily_adj_max[0].uv_adj_max if (om_daily_adj_max | count) >= 1 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[0].date if (om_daily_adj_max | count) >= 1 else none }}"
+
+    - name: Home Adjusted UV Max Day 1
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 2 }}"
+      state: "{{ (om_daily_adj_max[1].uv_adj_max if (om_daily_adj_max | count) >= 2 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[1].date if (om_daily_adj_max | count) >= 2 else none }}"
+
+    - name: Home Adjusted UV Max Day 2
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 3 }}"
+      state: "{{ (om_daily_adj_max[2].uv_adj_max if (om_daily_adj_max | count) >= 3 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[2].date if (om_daily_adj_max | count) >= 3 else none }}"
+
+- trigger:
+    - platform: state
+      entity_id: sensor.adjusted_rv_uv_index
+    - platform: state
+      entity_id: sensor.openuv_rv
+    - platform: state
+      entity_id: sensor.openmeteo_rv
+    - platform: time_pattern
+      minutes: "/10"
+
+  variables:
+    uv_entity: "sensor.adjusted_rv_uv_index"
+    openuv_entity: "sensor.openuv_rv"
+    om_entity:  "sensor.openmeteo_rv"
+
+    raw: "{{ state_attr(uv_entity, 'forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+
+    pts: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for p in (data or []) -%}
+        {%- set dt = (p.datetime | default(p.get('datetime'))) | as_datetime(none) -%}
+        {%- if dt is not none -%}
+          {%- set tl = dt | as_local -%}
+          {%- if tl.date() == now().date() -%}
+            {%- set v = p.uv_apparent | default(p.get('uv_apparent')) -%}
+            {%- if v is none -%}{%- set v = p.uv | default(p.get('uv')) -%}{%- endif -%}
+            {%- set v = v | float(0) -%}
+            {%- set ns.out = ns.out + [{'ts': tl.timestamp(), 'uv': v}] -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out | sort(attribute='ts') }}
+
+    om_hourly: "{{ state_attr(om_entity, 'hourly') or {} }}"
+    om_times:  "{{ om_hourly.get('time', []) }}"
+    om_cc:     "{{ om_hourly.get('cloud_cover', []) }}"
+    om_uvh:    "{{ om_hourly.get('uv_index', []) }}"
+
+    om_idx_at: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = now().timestamp() -%}
+      {%- set ts = t -%}
+      {%- set ns = namespace(best_i=none, best_d=9e9) -%}
+      {%- for i in range(om_times | count) -%}
+        {%- set tt = (om_times[i] | as_datetime | as_local).timestamp() -%}
+        {%- set d = abs(tt - ts) -%}
+        {%- if float(d) < float(ns.best_d) -%}
+          {%- set ns.best_d = d -%}
+          {%- set ns.best_i = i -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.best_i }}
+
+    uv_now: >-
+      {{ states(uv_entity) | float(none) }}
+
+    cc_now: >-
+      {%- set cur = (state_attr(om_entity, 'current') or {}) -%}
+      {{ cur.get('cloud_cover', cur.get('cloudcover')) | float(0) }}
+
+    budget: 180
+
+    integration: >-
+      {%- set tnow = now().timestamp() -%}
+      {%- set ns = namespace() -%}
+      {%- set ns.B = (budget | float(0)) -%}
+      {%- set ns.acc = 0.0 -%}
+      {%- set ns.prev_t = tnow -%}
+      {%- set ns.prev_v = uv_now | float(0) -%}
+      {%- set ns.end_ts = none -%}
+
+      {%- set fut = pts | selectattr('ts','gt', tnow) | list -%}
+
+      {%- for q in fut -%}
+        {%- set dtm = (q.ts - ns.prev_t) / 60.0 -%}
+        {%- if dtm > 0 -%}
+          {%- set area = (ns.prev_v + q.uv) / 2.0 * dtm -%}
+          {%- if ns.acc + area >= ns.B and ns.B > 0 -%}
+            {%- set rem = ns.B - ns.acc -%}
+            {%- set frac = rem / area if area > 0 else 0 -%}
+            {%- set ns.end_ts = ns.prev_t + frac * (q.ts - ns.prev_t) -%}
+            {%- break -%}
+          {%- else -%}
+            {%- set ns.acc   = ns.acc + area -%}
+            {%- set ns.prev_t = q.ts -%}
+            {%- set ns.prev_v = q.uv -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if ns.end_ts is none and ns.B > 0 and (ns.prev_t > tnow) -%}
+        {%- set ns.end_ts = ns.prev_t -%}
+      {%- endif -%}
+
+      {{ {'end_ts': ns.end_ts, 'mins': ((ns.end_ts - tnow)/60)|round(0) if ns.end_ts else none } }}
+
+    max_from_forecast: >-
+      {%- if pts | count > 0 -%}
+        {%- set m = (pts | max(attribute='uv')).uv -%}
+        {%- set pt = (pts | selectattr('uv','equalto', m) | list)[0] -%}
+        {{ {'uv': m, 'ts': pt.ts} }}
+      {%- else -%}
+        {{ {'uv': 0, 'ts': none} }}
+      {%- endif -%}
+
+    ou_max_time: >-
+      {%- set a = state_attr(openuv_entity, 'uv_max_time') -%}
+      {{ a if a else none }}
+
+    max_at_ou_time: >-
+      {% from 'macros.jinja' import abs %}
+      {%- set t = ou_max_time | as_datetime(none) -%}
+      {%- if t is none or (pts | count == 0) -%}
+        {{ {'uv': 0, 'ts': none} }}
+      {%- else -%}
+        {%- set tt = (t | as_local).timestamp() -%}
+        {%- set ns = namespace(best=none, best_d=9e9) -%}
+        {%- for q in pts -%}
+          {%- set d = abs(q.ts - tt) -%}
+          {%- if float(d) < float(ns.best_d) -%}
+            {%- set ns.best = q -%}
+            {%- set ns.best_d = d -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ {'uv': (ns.best.uv if ns.best else 0), 'ts': (ns.best.ts if ns.best else none)} }}
+      {%- endif -%}
+
+    max_combo: >-
+      {%- set a = max_from_forecast -%}
+      {%- set b = max_at_ou_time -%}
+      {%- if (b.uv | float(0)) > (a.uv | float(0)) -%}
+        {{ b }}
+      {%- else -%}
+        {{ a }}
+      {%- endif -%}
+
+    om_daily_adj_max: >-
+      {% from 'macros.jinja' import uv_factor_sigmoid %}
+      {%- set ns = namespace(out=[], buckets={}) -%}
+      {%- if (om_times | count) == (om_uvh | count) == (om_cc | count) and (om_times | count) > 0 -%}
+        {%- for i in range(om_times | count) -%}
+          {%- set t = om_times[i] | as_datetime | as_local -%}
+          {%- set d = t.date() -%}
+          {%- set adj = (om_uvh[i] | float(0)) * uv_factor_sigmoid(om_cc[i])|float -%}
+          {%- set prev = ns.buckets.get(d, 0) -%}
+          {%- set ns.buckets = ns.buckets | combine({d: max(prev, adj)}) -%}
+        {%- endfor -%}
+        {%- set days = (ns.buckets.keys() | list | sort) -%}
+        {%- for d in days[:3] -%}
+          {%- set val = ns.buckets.get(d, 0) -%}
+          {%- set ns.out = ns.out + [{'date': d.isoformat(), 'uv_adj_max': val | round(2)}] -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ ns.out }}
+
+  sensor:
+
+    - name: RV UV Safe Exposure End (Forecast, ST1)
+      device_class: timestamp
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.end_ts is not none) }}
+      state: >-
+        {{ (integration.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true))
+            if integration.end_ts is not none else none }}
+
+    - name: RV UV Safe Exposure Minutes (Forecast, ST1)
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      availability: >-
+        {{ (budget | float(0)) > 0 and (uv_now | float(0)) >= 0 and (pts | count) > 0
+            and (integration.mins is not none) }}
+      state: "{{ integration.mins | int(0) }}"
+
+    - name: RV UV Adjusted Max Today
+      unit_of_measurement: "UVI"
+      icon: mdi:white-balance-sunny
+      availability: "{{ max_combo.ts is not none }}"
+      state: "{{ (max_combo.uv | float(0)) | round(2) }}"
+      attributes:
+        time: "{{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}"
+
+    - name: RV UV Adjusted Max Time Today
+      device_class: timestamp
+      state: >-
+        {{ (max_combo.ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if max_combo.ts else none }}
+
+    - name: RV Adjusted UV Max Day 0
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 1 }}"
+      state: "{{ (om_daily_adj_max[0].uv_adj_max if (om_daily_adj_max | count) >= 1 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[0].date if (om_daily_adj_max | count) >= 1 else none }}"
+
+    - name: RV Adjusted UV Max Day 1
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 2 }}"
+      state: "{{ (om_daily_adj_max[1].uv_adj_max if (om_daily_adj_max | count) >= 2 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[1].date if (om_daily_adj_max | count) >= 2 else none }}"
+
+    - name: RV Adjusted UV Max Day 2
+      unit_of_measurement: "UVI"
+      icon: mdi:weather-sunny-alert
+      availability: "{{ (om_daily_adj_max | count) >= 3 }}"
+      state: "{{ (om_daily_adj_max[2].uv_adj_max if (om_daily_adj_max | count) >= 3 else 0) | float(0) }}"
+      attributes:
+        date: "{{ om_daily_adj_max[2].date if (om_daily_adj_max | count) >= 3 else none }}"

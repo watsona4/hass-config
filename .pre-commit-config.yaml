@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=5120"]   # 5 MB threshold
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+  # Home Assistant config validation via container
+  - repo: local
+    hooks:
+      - id: ha-check-config
+        name: Home Assistant check_config
+        entry: bash -c 'docker run --rm -v "$PWD":/config ghcr.io/home-assistant/home-assistant:stable python -m homeassistant --script check_config -c /config'
+        language: system
+        files: \.(ya?ml)$

@@ -1,0 +1,352 @@
+# --- RV heartbeat (timestamp) ---
+- sensor:
+    name: RV Last Seen
+    state_topic: site/rv/heartbeat
+    device_class: timestamp
+    qos: 1
+    # If no heartbeat for 5 minutes, mark sensor unavailable
+    expire_after: 300
+
+# --- RV GPS sensors (robust to bad payloads, expire if stale) ---
+- sensor:
+    - name: RV GPS Latitude
+      state_topic: "site/rv/statestream/device_tracker/gps_location/latitude"
+      value_template: "{{ value | float(0) }}"
+      qos: 1
+      expire_after: 600
+      unit_of_measurement: "°"
+    - name: RV GPS Longitude
+      state_topic: "site/rv/statestream/device_tracker/gps_location/longitude"
+      value_template: "{{ value | float(0) }}"
+      qos: 1
+      expire_after: 600
+      unit_of_measurement: "°"
+    - name: RV GPS Altitude
+      state_topic: "site/rv/statestream/device_tracker/gps_location/altitude"
+      value_template: "{{ value | float(0) }}"
+      qos: 1
+      expire_after: 600
+      unit_of_measurement: "m"
+    - name: RV GPS Accuracy
+      state_topic: "site/rv/statestream/device_tracker/gps_location/gps_accuracy"
+      value_template: "{{ value | float(0) }}"
+      qos: 1
+      expire_after: 600
+      unit_of_measurement: "m"
+
+# --- RV device tracker (computed state from heartbeat + latest coords) ---
+# Notes:
+# - json_attributes_topic may NOT contain wildcards; we use heartbeat to
+#   re-render attributes via json_attributes_template.
+# - State is 'home' if coords are within ~100m of zone.home AND heartbeat is fresh.
+#   Otherwise 'not_home'. You can adjust the distance threshold.
+- device_tracker:
+    - name: RV Device Tracker
+      unique_id: 350e4837-3d09-4c76-9a6f-6ec5bdcd6f5e
+      source_type: gps
+      qos: 1
+      state_topic: "site/rv/heartbeat"
+      value_template: >-
+        {% set t = value | as_datetime | default(None) %}
+        {% set fresh = t is not none and (now() - t).total_seconds() < 300 %}
+        {% set lat = states('sensor.rv_gps_latitude') | float(default=none) %}
+        {% set lon = states('sensor.rv_gps_longitude') | float(default=none) %}
+        {% if not fresh or lat is none or lon is none %}
+          not_home
+        {% else %}
+          {% set hl = state_attr('zone.home','latitude')  | float(0) %}
+          {% set hg = state_attr('zone.home','longitude') | float(0) %}
+          {% set d_km = distance(lat, lon, hl, hg) %}
+          {# treat <= 0.1 km (~100 m) as home; tweak to taste #}
+          {{ 'home' if d_km <= 0.1 else 'not_home' }}
+        {% endif %}
+      json_attributes_topic: "site/rv/statestream/device_tracker/gps_location/#"
+      json_attributes_template: >-
+        {
+          "latitude": {{ states('sensor.rv_gps_latitude')  | float(0) | tojson }},
+          "longitude": {{ states('sensor.rv_gps_longitude') | float(0) | tojson }},
+          "altitude": {{ states('sensor.rv_gps_altitude')  | float(0) | tojson }},
+          "gps_accuracy": {{ states('sensor.rv_gps_accuracy') | float(0) | tojson }},
+          "last_seen": {{ value | tojson }}
+        }
+
+# --- Helper trackers (merged phones) ---
+- device_tracker:
+    name: Michael Helper Tracker
+    unique_id: 3c73108a-fa1f-4922-9b18-903349632bd9
+    json_attributes_topic: "site/home/devices/michael_helper_tracker/attributes"
+    qos: 1
+
+- device_tracker:
+    name: Eleanor Helper Tracker
+    unique_id: a500ffcc-b81b-43e9-b04c-fb8afdb293e7
+    json_attributes_topic: "site/home/devices/eleanor_helper_tracker/attributes"
+    qos: 1
+
+- device_tracker:
+    name: Aaron Helper Tracker
+    unique_id: 8c9f085a-c71f-4a63-bc78-f8ca3381f601
+    json_attributes_topic: "site/home/devices/aaron_helper_tracker/attributes"
+    qos: 1
+
+- device_tracker:
+    name: Ashley Helper Tracker
+    unique_id: 5594c0fa-c48c-41a0-90a4-221a515eafe8
+    json_attributes_topic: "site/home/devices/ashley_helper_tracker/attributes"
+    qos: 1
+
+# --- AMR meters (enforce numeric) ---
+- sensor:
+    name: Electric Meter
+    unique_id: 838099
+    unit_of_measurement: kWh
+    icon: mdi:gauge
+    force_update: true
+    state_class: total_increasing
+    qos: 1
+    state_topic: "site/home/devices/rtlamr2mqtt/838099/state"
+    value_template: "{{ value | float(0) }}"
+    json_attributes_topic: "site/home/devices/rtlamr2mqtt/838099/attributes"
+
+- sensor:
+    name: Water Meter
+    unique_id: 1568584050
+    unit_of_measurement: gal
+    icon: mdi:gauge
+    force_update: true
+    state_class: total_increasing
+    qos: 1
+    state_topic: "site/home/devices/rtlamr2mqtt/1568584050/state"
+    value_template: "{{ value_json.reading | float(0) }}"
+    json_attributes_topic: "site/home/devices/rtlamr2mqtt/1568584050/attributes"
+
+# --- rtl_433: Acurite Tower A/11075 ---
+- sensor:
+    device_class: timestamp
+    name: Timestamp
+    entity_category: diagnostic
+    enabled_by_default: false
+    icon: mdi:clock-in
+    state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/time"
+    unique_id: Acurite-Tower-A-11075-UTC
+    device: &acurite_device
+        identifiers: Acurite-Tower-A-11075
+        name: Acurite-Tower-A-11075
+        model: Acurite-Tower
+        manufacturer: rtl_433
+- binary_sensor:
+    device_class: battery
+    name: Battery
+    entity_category: diagnostic
+    state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/battery_ok"
+    payload_on: 0
+    payload_off: 1
+    unique_id: Acurite-Tower-A-11075-B
+    device: *acurite_device
+- sensor:
+    device_class: temperature
+    name: Temperature
+    unit_of_measurement: "°C"
+    value_template: "{{ value | float(default=none) | round(1) }}"
+    state_class: measurement
+    state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/temperature_C"
+    unique_id: Acurite-Tower-A-11075-T
+    device: *acurite_device
+- sensor:
+    device_class: humidity
+    name: Humidity
+    unit_of_measurement: "%"
+    value_template: "{{ value | float(default=none) }}"
+    state_class: measurement
+    state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/humidity"
+    unique_id: Acurite-Tower-A-11075-H
+    device: *acurite_device
+
+# --- rtl_433: AmbientWeather WH31E 1/167 ---
+- sensor:
+    device_class: timestamp
+    name: Timestamp
+    entity_category: diagnostic
+    enabled_by_default: false
+    icon: mdi:clock-in
+    state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/time"
+    unique_id: AmbientWeather-WH31E-1-167-UTC
+    device: &ambient_weather_device
+        identifiers: AmbientWeather-WH31E-1-167
+        name: AmbientWeather-WH31E-1-167
+        model: AmbientWeather-WH31E
+        manufacturer: rtl_433
+- binary_sensor:
+    device_class: battery
+    name: Battery
+    entity_category: diagnostic
+    state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/battery_ok"
+    unique_id: AmbientWeather-WH31E-1-167-B
+    payload_on: 0
+    payload_off: 1
+    device: *ambient_weather_device
+- sensor:
+    device_class: temperature
+    name: Temperature
+    unit_of_measurement: "°C"
+    value_template: "{{ value | float(default=none) | round(1) }}"
+    state_class: measurement
+    state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/temperature_C"
+    unique_id: AmbientWeather-WH31E-1-167-T
+    device: *ambient_weather_device
+- sensor:
+    device_class: humidity
+    name: Humidity
+    unit_of_measurement: "%"
+    value_template: "{{ value | float(default=none) }}"
+    state_class: measurement
+    state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/humidity"
+    unique_id: AmbientWeather-WH31E-1-167-H
+    device: *ambient_weather_device
+
+# --- MQTT climates (SwitchBot IR mirrors) ---
+# Tip: topics 'target_humudity' are kept as-is to match your publisher spelling.
+- climate:
+
+    # Metadata
+    name: Gym Minisplit
+    unique_id: 69561e4b-44be-4c84-b897-69df1bf7dc8f
+    device:
+        identifiers: [01-202403091318-96155051setAll]
+        name: Gym Minisplit-setAll
+        manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
+        model: Air Conditioner
+
+    # Modes
+    modes: ["auto", "off", "cool", "heat", "dry", "fan_only"]
+    fan_modes: ["auto", "low", "medium", "high"]
+    preset_modes: ["away"]
+
+    # State topics
+    current_humidity_topic: site/home/devices/Gym_Minisplit/current_humidity
+    current_temperature_topic: site/home/devices/Gym_Minisplit/current_temperature
+    json_attributes_topic: site/home/devices/Gym_Minisplit/attributes
+    mode_state_topic: site/home/devices/Gym_Minisplit/mode
+    fan_mode_state_topic: site/home/devices/Gym_Minisplit/fan_mode
+    temperature_state_topic: site/home/devices/Gym_Minisplit/target_temp
+    temperature_high_state_topic: site/home/devices/Gym_Minisplit/target_temp_high
+    temperature_low_state_topic: site/home/devices/Gym_Minisplit/target_temp_low
+    preset_mode_state_topic: site/home/devices/Gym_Minisplit/preset_mode
+    target_humidity_state_topic: site/home/devices/Gym_Minisplit/target_humudity
+    action_topic: site/home/devices/Gym_Minisplit/action
+
+    # Cast incoming numbers
+    temperature_state_template: "{{ value | float(default=none) }}"
+    temperature_high_state_template: "{{ value | float(default=none) }}"
+    temperature_low_state_template: "{{ value | float(default=none) }}"
+    current_temperature_template: "{{ value | float(default=none) }}"
+    current_humidity_template: "{{ value | float(default=none) }}"
+
+    # Command topics
+    mode_command_topic: site/home/devices/Gym_Minisplit/mode_cmd
+    fan_mode_command_topic: site/home/devices/Gym_Minisplit/fan_mode_cmd
+    temperature_command_topic: site/home/devices/Gym_Minisplit/target_temp_cmd
+    power_command_topic: site/home/devices/Gym_Minisplit/power_cmd
+    preset_mode_command_topic: site/home/devices/Gym_Minisplit/preset_mode_cmd
+    target_humidity_command_topic: site/home/devices/Gym_Minisplit/target_humudity_cmd
+
+    # Options
+    min_temp: 16
+    max_temp: 30
+    precision: 1.0
+    temperature_unit: C
+    qos: 1
+    retain: true
+
+- climate:
+
+    # Metadata
+    name: Playroom Minisplit
+    unique_id: 08a3ced1-41af-4a75-b000-deb0926aacab
+    device:
+        identifiers: [03-202502230943-44999586setAll]
+        name: Playroom Minisplit-setAll
+        manufacturer: SwitchBot(VirtualInfraredRemoteDevice)
+        model: Air Conditioner
+
+    # Modes
+    modes: ["auto", "off", "cool", "heat", "dry", "fan_only"]
+    fan_modes: ["auto", "low", "medium", "high"]
+    preset_modes: ["away"]
+
+    # State topics
+    current_humidity_topic: site/home/devices/Playroom_Minisplit/current_humidity
+    current_temperature_topic: site/home/devices/Playroom_Minisplit/current_temperature
+    json_attributes_topic: site/home/devices/Playroom_Minisplit/attributes
+    mode_state_topic: site/home/devices/Playroom_Minisplit/mode
+    fan_mode_state_topic: site/home/devices/Playroom_Minisplit/fan_mode
+    temperature_state_topic: site/home/devices/Playroom_Minisplit/target_temp
+    temperature_high_state_topic: site/home/devices/Playroom_Minisplit/target_temp_high
+    temperature_low_state_topic: site/home/devices/Playroom_Minisplit/target_temp_low
+    preset_mode_state_topic: site/home/devices/Playroom_Minisplit/preset_mode
+    target_humidity_state_topic: site/home/devices/Playroom_Minisplit/target_humudity
+    action_topic: site/home/devices/Playroom_Minisplit/action
+
+    # Cast incoming numbers
+    temperature_state_template: "{{ value | float(default=none) }}"
+    temperature_high_state_template: "{{ value | float(default=none) }}"
+    temperature_low_state_template: "{{ value | float(default=none) }}"
+    current_temperature_template: "{{ value | float(default=none) }}"
+    current_humidity_template: "{{ value | float(default=none) }}"
+
+    # Command topics
+    mode_command_topic: site/home/devices/Playroom_Minisplit/mode_cmd
+    fan_mode_command_topic: site/home/devices/Playroom_Minisplit/fan_mode_cmd
+    temperature_command_topic: site/home/devices/Playroom_Minisplit/target_temp_cmd
+    power_command_topic: site/home/devices/Playroom_Minisplit/power_cmd
+    preset_mode_command_topic: site/home/devices/Playroom_Minisplit/preset_mode_cmd
+    target_humidity_command_topic: site/home/devices/Playroom_Minisplit/target_humudity_cmd
+
+    # Options
+    min_temp: 16
+    max_temp: 30
+    precision: 1.0
+    temperature_unit: C
+    qos: 1
+    retain: true
+
+# --- Netprobe sensors ---
+- sensor:
+    - name: "Netprobe Download"
+      state_topic: "site/home/devices/netprobe"
+      unit_of_measurement: "Mbps"
+      value_template: "{{ value_json.download_mbps | float }}"
+      icon: mdi:download
+
+    - name: "Netprobe Upload"
+      state_topic: "site/home/devices/netprobe"
+      unit_of_measurement: "Mbps"
+      value_template: "{{ value_json.upload_mbps | float }}"
+      icon: mdi:upload
+
+    - name: "Netprobe Latency (TCP)"
+      state_topic: "site/home/devices/netprobe"
+      unit_of_measurement: "ms"
+      value_template: "{{ value_json.latency_tcp_ms | float }}"
+      icon: mdi:lan-connect
+
+    - name: "Netprobe Latency (ICMP)"
+      state_topic: "site/home/devices/netprobe"
+      unit_of_measurement: "ms"
+      value_template: >-
+        {% if value_json.latency_icmp_ms is not none %}
+          {{ value_json.latency_icmp_ms | float }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:lan-pending
+
+    - name: "Netprobe Error Flag"
+      state_topic: "site/home/devices/netprobe"
+      value_template: "{{ value_json.error }}"
+      icon: mdi:alert-circle-outline
+
+    - name: "Netprobe Last Run"
+      state_topic: "site/home/devices/netprobe"
+      value_template: "{{ value_json.timestamp }}"
+      device_class: timestamp

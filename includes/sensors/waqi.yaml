@@ -1,0 +1,149 @@
+# ============== WAQI Nearby ==============
+- platform: rest
+  name: WAQI Nearby
+  unique_id: waqi_nearby
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set plat = states('sensor.aaron_latitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ ('https://api.waqi.info/feed/geo:%.6f;%.6f' | format(lat,lon)) if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    token: !secret waqi_token
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set plat = states('sensor.aaron_latitude')  | float(0) %}
+    {% set plon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlat = states('sensor.home_latitude')   | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = plat if plat != 0 else hlat %}
+    {% set lon = plon if plon != 0 else hlon %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
+    {% set data = value_json.get('data') if ok else {} %}
+    {% set raw = data.get('aqi') if data else none %}
+    {% if raw is number %}
+      {{ raw | int }}
+    {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
+      {{ states(this.entity_id) }}
+    {% else %}
+      {{ (raw | int(0)) if raw is not none else states(this.entity_id) }}
+    {% endif %}
+  json_attributes_path: "$.data"
+  json_attributes:
+    - idx
+    - attributions
+    - city
+    - dominentpol
+    - iaqi
+    - time
+    - forecast
+
+# ============== WAQI Home ==============
+- platform: rest
+  name: WAQI Home
+  unique_id: waqi_home
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude')  | float(0) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ ('https://api.waqi.info/feed/geo:%.6f;%.6f' | format(lat,lon)) if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    token: !secret waqi_token
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set lat = states('sensor.home_latitude')  | float(0) %}
+    {% set lon = states('sensor.home_longitude') | float(0) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
+    {% set data = value_json.get('data') if ok else {} %}
+    {% set raw = data.get('aqi') if data else none %}
+    {% if raw is number %}
+      {{ raw | int }}
+    {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
+      {{ states(this.entity_id) }}
+    {% else %}
+      {{ (raw | int(0)) if raw is not none else states(this.entity_id) }}
+    {% endif %}
+  json_attributes_path: "$.data"
+  json_attributes:
+    - idx
+    - attributions
+    - city
+    - dominentpol
+    - iaqi
+    - time
+    - forecast
+
+
+# ============== WAQI RV ==============
+- platform: rest
+  name: WAQI RV
+  unique_id: waqi_rv
+  state_class: measurement
+  scan_interval: 60
+  timeout: 8
+  resource_template: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')    | float(0) %}
+    {% set alon = states('sensor.aaron_longitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')  | float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {% set ok = lat != 0 and lon != 0 %}
+    {{ ('https://api.waqi.info/feed/geo:%.6f;%.6f' | format(lat,lon)) if ok else 'http://127.0.0.1:65535/' }}
+  params:
+    token: !secret waqi_token
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  availability: >-
+    {% set rlat = states('sensor.rv_latitude')   | float(0) %}
+    {% set rlon = states('sensor.rv_longitude')  | float(0) %}
+    {% set alat = states('sensor.aaron_latitude')| float(0) %}
+    {% set alon = states('sensor.aaron_longitude')| float(0) %}
+    {% set hlat = states('sensor.home_latitude') | float(0) %}
+    {% set hlon = states('sensor.home_longitude')| float(0) %}
+    {% set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) %}
+    {% set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) %}
+    {{ not (lat == 0 and lon == 0) }}
+  value_template: >-
+    {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
+    {% set data = value_json.get('data') if ok else {} %}
+    {% set raw = data.get('aqi') if data else none %}
+    {% if raw is number %}
+      {{ raw | int }}
+    {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
+      {{ states(this.entity_id) }}
+    {% else %}
+      {{ (raw | int(0)) if raw is not none else states(this.entity_id) }}
+    {% endif %}
+  json_attributes_path: "$.data"
+  json_attributes:
+    - idx
+    - attributions
+    - city
+    - dominentpol
+    - iaqi
+    - time
+    - forecast
