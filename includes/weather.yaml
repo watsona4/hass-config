@@ -34,13 +34,13 @@
     {%- set d = state_attr('sensor.openmeteo_nearby','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
+    {%- set w = d.get('weathercode', []) -%}
+    {%- set ps = d.get('precipitation_sum', []) -%}
+    {%- set tmax = d.get('temperature_2m_max', []) -%}
+    {%- set tmin = d.get('temperature_2m_min', []) -%}
+    {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
+    {%- set wspd = d.get('windspeed_10m_max', []) -%}
     {%- for i in range(tt|length) -%}
-      {%- set w = d.get('weathercode', []) -%}
-      {%- set ps = d.get('precipitation_sum', []) -%}
-      {%- set tmax = d.get('temperature_2m_max', []) -%}
-      {%- set tmin = d.get('temperature_2m_min', []) -%}
-      {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
-      {%- set wspd = d.get('windspeed_10m_max', []) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
@@ -58,15 +58,17 @@
   forecast_hourly_template: >
     {% from 'macros.jinja' import wx_condition %}
     {%- set h = state_attr('sensor.openmeteo_nearby','hourly') or {} -%}
+    {%- set cur = state_attr('sensor.openmeteo_nearby','current') or {} -%}
+    {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
     {%- set tt = h.get('time', []) -%}
+    {%- set wc  = h.get('weathercode', []) -%}
+    {%- set idy = h.get('is_day', []) -%}
+    {%- set pr  = h.get('precipitation', []) -%}
+    {%- set tmp = h.get('temperature_2m', []) -%}
     {%- set out = namespace(items=[]) -%}
     {%- for i in range(tt|length) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
-      {%- if dt >= now() -%}
-        {%- set wc  = h.get('weathercode', []) -%}
-        {%- set idy = h.get('is_day', []) -%}
-        {%- set pr  = h.get('precipitation', []) -%}
-        {%- set tmp = h.get('temperature_2m', []) -%}
+      {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
               'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
@@ -114,13 +116,13 @@
     {%- set d = state_attr('sensor.openmeteo_home','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
+    {%- set w = d.get('weathercode', []) -%}
+    {%- set ps = d.get('precipitation_sum', []) -%}
+    {%- set tmax = d.get('temperature_2m_max', []) -%}
+    {%- set tmin = d.get('temperature_2m_min', []) -%}
+    {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
+    {%- set wspd = d.get('windspeed_10m_max', []) -%}
     {%- for i in range(tt|length) -%}
-      {%- set w = d.get('weathercode', []) -%}
-      {%- set ps = d.get('precipitation_sum', []) -%}
-      {%- set tmax = d.get('temperature_2m_max', []) -%}
-      {%- set tmin = d.get('temperature_2m_min', []) -%}
-      {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
-      {%- set wspd = d.get('windspeed_10m_max', []) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
@@ -138,15 +140,17 @@
   forecast_hourly_template: >
     {% from 'macros.jinja' import wx_condition %}
     {%- set h = state_attr('sensor.openmeteo_home','hourly') or {} -%}
+    {%- set cur = state_attr('sensor.openmeteo_home','current') or {} -%}
+    {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
     {%- set tt = h.get('time', []) -%}
+    {%- set wc  = h.get('weathercode', []) -%}
+    {%- set idy = h.get('is_day', []) -%}
+    {%- set pr  = h.get('precipitation', []) -%}
+    {%- set tmp = h.get('temperature_2m', []) -%}
     {%- set out = namespace(items=[]) -%}
     {%- for i in range(tt|length) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
-      {%- if dt >= now() -%}
-        {%- set wc  = h.get('weathercode', []) -%}
-        {%- set idy = h.get('is_day', []) -%}
-        {%- set pr  = h.get('precipitation', []) -%}
-        {%- set tmp = h.get('temperature_2m', []) -%}
+      {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
               'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
@@ -194,13 +198,13 @@
     {%- set d = state_attr('sensor.openmeteo_rv','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
+    {%- set w = d.get('weathercode', []) -%}
+    {%- set ps = d.get('precipitation_sum', []) -%}
+    {%- set tmax = d.get('temperature_2m_max', []) -%}
+    {%- set tmin = d.get('temperature_2m_min', []) -%}
+    {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
+    {%- set wspd = d.get('windspeed_10m_max', []) -%}
     {%- for i in range(tt|length) -%}
-      {%- set w = d.get('weathercode', []) -%}
-      {%- set ps = d.get('precipitation_sum', []) -%}
-      {%- set tmax = d.get('temperature_2m_max', []) -%}
-      {%- set tmin = d.get('temperature_2m_min', []) -%}
-      {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
-      {%- set wspd = d.get('windspeed_10m_max', []) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
@@ -218,15 +222,17 @@
   forecast_hourly_template: >
     {% from 'macros.jinja' import wx_condition %}
     {%- set h = state_attr('sensor.openmeteo_rv','hourly') or {} -%}
+    {%- set cur = state_attr('sensor.openmeteo_rv','current') or {} -%}
+    {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
     {%- set tt = h.get('time', []) -%}
+    {%- set wc  = h.get('weathercode', []) -%}
+    {%- set idy = h.get('is_day', []) -%}
+    {%- set pr  = h.get('precipitation', []) -%}
+    {%- set tmp = h.get('temperature_2m', []) -%}
     {%- set out = namespace(items=[]) -%}
     {%- for i in range(tt|length) -%}
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
-      {%- if dt >= now() -%}
-        {%- set wc  = h.get('weathercode', []) -%}
-        {%- set idy = h.get('is_day', []) -%}
-        {%- set pr  = h.get('precipitation', []) -%}
-        {%- set tmp = h.get('temperature_2m', []) -%}
+      {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
               'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
