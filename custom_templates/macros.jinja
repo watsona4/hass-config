@@ -20,7 +20,7 @@
 {%- endmacro -%}
 
 {% macro convert_temp(value, from_unit, to_unit) %}
-  {%- set v = value | float %}
+  {%- set v = value | float(0) %}
   {%- set from_unit = from_unit | lower %}
   {%- set to_unit = to_unit | lower %}
 
