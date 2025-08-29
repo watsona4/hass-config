@@ -4,8 +4,6 @@
       entity_id: sensor.openmeteo_nearby
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   sensor:
     - name: OpenMeteo Nearby Cloud LUT
       unique_id: openmeteo_nearby_cloud_lut
@@ -55,8 +53,6 @@
       entity_id: sensor.openmeteo_home
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   sensor:
     - name: OpenMeteo Home Cloud LUT
       unique_id: openmeteo_home_cloud_lut
@@ -105,8 +101,6 @@
       entity_id: sensor.openmeteo_rv
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   sensor:
     - name: OpenMeteo RV Cloud LUT
       unique_id: openmeteo_rv_cloud_lut

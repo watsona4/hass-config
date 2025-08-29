@@ -2,8 +2,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_nearby
-    - platform: homeassistant
-      event: start
   variables:
     d: >-
       {{ (state_attr('sensor.google_pollen_nearby','dailyInfo') | default([], true) | first) | default({}, true) }}
@@ -253,8 +251,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_home
-    - platform: homeassistant
-      event: start
   variables:
     d: >-
       {{ (state_attr('sensor.google_pollen_home','dailyInfo') | default([], true) | first) | default({}, true) }}
@@ -505,8 +501,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_rv
-    - platform: homeassistant
-      event: start
   variables:
     d: >-
       {{ (state_attr('sensor.google_pollen_rv','dailyInfo') | default([], true) | first) | default({}, true) }}

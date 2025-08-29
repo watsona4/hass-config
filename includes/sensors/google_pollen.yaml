@@ -49,7 +49,6 @@
     - dailyInfo
     - plantInfo
 
-
 # =================== Google Pollen - Home =====================
 - platform: rest
   name: Google Pollen Home
@@ -88,7 +87,6 @@
   json_attributes:
     - dailyInfo
     - plantInfo
-
 
 # =================== Google Pollen - RV =======================
 - platform: rest

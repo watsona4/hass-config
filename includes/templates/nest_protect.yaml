@@ -11,8 +11,6 @@
         - sensor.nest_protect_living_room_replace_by
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Nest Protect Upstairs Replace By Epoch
       unique_id: nest_protect_upstairs_replace_by_epoch

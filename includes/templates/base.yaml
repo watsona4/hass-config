@@ -41,8 +41,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.rv_last_seen
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: RV Online
       device_class: connectivity
@@ -76,8 +74,6 @@
       at: "20:30:00"
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: Daytime
       state: >-
@@ -189,8 +185,6 @@
       at: "08:15:00"
     - platform: time
       at: "08:00:15"
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: Before School Time
       unique_id: d0ae7e0d-6d84-492c-bcab-ba13133e7b60
@@ -285,8 +279,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_temperature
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Outside Temperature State
       unique_id: 25bd1829-8f7e-4a37-bf23-f71626347eb3
@@ -305,8 +297,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_humidity
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Outside Humidity State
       unique_id: ed61e0eb-7172-4572-8958-c41a897d0d89
@@ -325,8 +315,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_temperature
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Outside Water Temperature State
       unique_id: fb3bcf0e-1bc8-45dc-acdd-a5f11fac05c2
@@ -345,8 +333,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_humidity
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Outside Water Humidity State
       unique_id: 89455e7d-1d4c-4ecd-a9ea-3cb9b9f74997
@@ -365,8 +351,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_pressure
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Outside Water pressure State
       unique_id: 67d0b02d-a93e-4799-ad20-b02387b0b8ff
@@ -385,8 +369,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.chicken_coop_thermometer_temperature
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Chicken Coop Temperature State
       device_class: temperature
@@ -404,8 +386,6 @@
 - trigger:
     - platform: state
       entity_id: light.living_room_light
-    - platform: homeassistant
-      event: start
   sensor:
     - name: Living Room Brightness
       unit_of_measurement: "%"
@@ -677,8 +657,6 @@
 - trigger:
     - platform: state
       entity_id: binary_sensor.rain_sensor_moisture
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: Rain Probe Fresh
       unique_id: rain_probe_fresh
@@ -694,8 +672,6 @@
         - binary_sensor.rain_probe_fresh
         - binary_sensor.sunny
         - weather.openmeteo_weather_home
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: Rainy
       device_class: moisture

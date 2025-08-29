@@ -4,8 +4,6 @@
         - person.aaron_watson
         - device_tracker.rv_device_tracker
         - zone.home
-    - platform: homeassistant
-      event: start
   sensor:
     - name: User Distance to Home (mi)
       unique_id: s_user_distance_home_mi_eff
@@ -53,8 +51,6 @@
         - sensor.user_distance_to_home_mi
         - sensor.user_distance_to_rv_mi
         - sensor.rv_distance_to_home_mi
-    - platform: homeassistant
-      event: start
   binary_sensor:
     - name: User Near Home (10mi)
       unique_id: bs_user_near_home_10mi_eff
