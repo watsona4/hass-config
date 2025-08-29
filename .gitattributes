@@ -17,3 +17,4 @@
 
 # Safety: do NOT LFS things under www/ since you ignore it anyway
 www/** -filter -diff -merge
+*.yaml diff=yaml
