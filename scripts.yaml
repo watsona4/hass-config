@@ -291,7 +291,7 @@ turn_off_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''switch.back_porch_switch_0'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''switch.back_porch_switch_0'',''on'')
               }}'
     - sequence:
       - wait_template: '{{ has_value(''switch.front_porch_switch_0'') }}'
@@ -308,7 +308,7 @@ turn_off_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''switch.front_porch_switch_0'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''switch.front_porch_switch_0'',''on'')
               }}'
     - sequence:
       - wait_template: '{{ has_value(''switch.garage_lights_switch_0'') }}'
@@ -325,7 +325,7 @@ turn_off_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''switch.garage_lights_switch_0'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''switch.garage_lights_switch_0'',''on'')
               }}'
     - sequence:
       - wait_template: '{{ has_value(''switch.kitchen_porch_switch_0'') }}'
@@ -342,7 +342,7 @@ turn_off_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''switch.kitchen_porch_switch_0'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''switch.kitchen_porch_switch_0'',''on'')
               }}'
   mode: restart
   icon: mdi:lightbulb-off-outline
@@ -600,7 +600,7 @@ turn_off_interior_lights:
                 seconds: 30
             while:
             - condition: template
-              value_template: '{{ repeat.index < 10 and states(''light.parlor_lamp'')|bool
+              value_template: '{{ repeat.index < 10 and is_state(''light.parlor_lamp'',''on'')
                 }}'
         - repeat:
             sequence:
@@ -613,7 +613,7 @@ turn_off_interior_lights:
                 seconds: 30
             while:
             - condition: template
-              value_template: '{{ repeat.index < 10 and states(''switch.parlor_table_lamp'')|bool
+              value_template: '{{ repeat.index < 10 and is_state(''switch.parlor_table_lamp'',''on'')
                 }}'
         - repeat:
             sequence:
@@ -626,7 +626,7 @@ turn_off_interior_lights:
                 seconds: 30
             while:
             - condition: template
-              value_template: '{{ repeat.index < 10 and states(''switch.living_room_end_table_lamp'')|bool
+              value_template: '{{ repeat.index < 10 and is_state(''switch.living_room_end_table_lamp'',''on'')
                 }}'
     - if:
       - condition: state
@@ -644,7 +644,7 @@ turn_off_interior_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''switch.guest_bedroom_lamp_socket_1'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''switch.guest_bedroom_lamp_socket_1'',''on'')
               }}'
     - if:
       - condition: state
@@ -665,7 +665,7 @@ turn_off_interior_lights:
               seconds: 30
           while:
           - condition: template
-            value_template: '{{ repeat.index < 10 and states(''light.study_lamp'')|bool
+            value_template: '{{ repeat.index < 10 and is_state(''light.study_lamp'',''on'')
               }}'
   mode: restart
   icon: mdi:lightbulb-off-outline

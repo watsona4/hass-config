@@ -1,144 +1,128 @@
-# Cloud cover lookup table for current location (Nearby)
+# ================= OpenMeteo Cloud LUT - Nearby =================
 - trigger:
     - platform: state
       entity_id: sensor.openmeteo_nearby
     - platform: time
       at: "00:00:15"
+  variables:
+    src: sensor.openmeteo_nearby
+    h: "{{ state_attr(src, 'hourly') or {} }}"
+    tt: "{{ h.get('time') or [] }}"
+    cc: "{{ h.get('cloud_cover') or [] }}"
+    coverage_start_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[0]  | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    coverage_end_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    pairs_list: >-
+      {%- set out = namespace(items=[]) -%}
+      {%- for i in range(tt | length) -%}
+        {%- set t = tt[i] | as_datetime(default=None) -%}
+        {%- if t is not none -%}
+          {%- set tl = as_local(t) -%}
+          {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
+          {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
+          {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ out.items }}
   sensor:
     - name: OpenMeteo Nearby Cloud LUT
       unique_id: openmeteo_nearby_cloud_lut
-      availability: >-
-        {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
-        {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}
-      # Make the state the coverage end time (ISO). Updates only when data actually changes.
       device_class: timestamp
-      state: >-
-        {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
-        {% set tt = h.get('time') or [] %}
-        {% if (tt | length) == 0 %} {{ none }}
-        {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-        {% endif %}
+      availability: "{{ has_value(src) and (tt | length) > 0 }}"
+      # State = coverage end (localized datetime)
+      state: "{{ coverage_end_ts }}"
       attributes:
-        coverage_start: >-
-          {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[0] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        coverage_end: >-
-          {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        pairs: >-
-          {%- set h  = state_attr('sensor.openmeteo_nearby','hourly') or {} -%}
-          {%- set tt = h.get('time') or [] -%}
-          {%- set cc = h.get('cloud_cover') or [] -%}
-          {%- set out = namespace(items=[]) -%}
-          {%- for i in range(tt | length) -%}
-            {%- set t = tt[i] | as_datetime(default=None) -%}
-            {%- if t is not none -%}
-              {%- set tl = as_local(t) -%}
-              {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
-              {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
-              {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
-            {%- endif -%}
-          {%- endfor -%}
-          {{ out.items | tojson }}
+        coverage_start: "{{ coverage_start_ts }}"
+        coverage_end: "{{ coverage_end_ts }}"
+        pairs: "{{ pairs_list | tojson }}"
 
-# Cloud cover lookup table for home location
+
+# ================= OpenMeteo Cloud LUT - Home =================
 - trigger:
     - platform: state
       entity_id: sensor.openmeteo_home
     - platform: time
       at: "00:00:15"
+  variables:
+    src: sensor.openmeteo_home
+    h: "{{ state_attr(src, 'hourly') or {} }}"
+    tt: "{{ h.get('time') or [] }}"
+    cc: "{{ h.get('cloud_cover') or [] }}"
+    coverage_start_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[0]  | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    coverage_end_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    pairs_list: >-
+      {%- set out = namespace(items=[]) -%}
+      {%- for i in range(tt | length) -%}
+        {%- set t = tt[i] | as_datetime(default=None) -%}
+        {%- if t is not none -%}
+          {%- set tl = as_local(t) -%}
+          {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
+          {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
+          {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ out.items }}
   sensor:
     - name: OpenMeteo Home Cloud LUT
       unique_id: openmeteo_home_cloud_lut
-      availability: >-
-        {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
-        {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}
       device_class: timestamp
-      state: >-
-        {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
-        {% set tt = h.get('time') or [] %}
-        {% if (tt | length) == 0 %} {{ none }}
-        {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-        {% endif %}
+      availability: "{{ has_value(src) and (tt | length) > 0 }}"
+      state: "{{ coverage_end_ts }}"
       attributes:
-        coverage_start: >-
-          {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[0] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        coverage_end: >-
-          {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        pairs: >-
-          {%- set h  = state_attr('sensor.openmeteo_home','hourly') or {} -%}
-          {%- set tt = h.get('time') or [] -%}
-          {%- set cc = h.get('cloud_cover') or [] -%}
-          {%- set out = namespace(items=[]) -%}
-          {%- for i in range(tt | length) -%}
-            {%- set t = tt[i] | as_datetime(default=None) -%}
-            {%- if t is not none -%}
-              {%- set tl = as_local(t) -%}
-              {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
-              {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
-              {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
-            {%- endif -%}
-          {%- endfor -%}
-          {{ out.items | tojson }}
+        coverage_start: "{{ coverage_start_ts }}"
+        coverage_end: "{{ coverage_end_ts }}"
+        pairs: "{{ pairs_list | tojson }}"
 
-# Cloud cover lookup table for RV location
+
+# ================= OpenMeteo Cloud LUT - RV =================
 - trigger:
     - platform: state
       entity_id: sensor.openmeteo_rv
     - platform: time
       at: "00:00:15"
+  variables:
+    src: sensor.openmeteo_rv
+    h: "{{ state_attr(src, 'hourly') or {} }}"
+    tt: "{{ h.get('time') or [] }}"
+    cc: "{{ h.get('cloud_cover') or [] }}"
+    coverage_start_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[0]  | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    coverage_end_ts: >-
+      {% if (tt | length) == 0 %} {{ none }}
+      {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+      {% endif %}
+    pairs_list: >-
+      {%- set out = namespace(items=[]) -%}
+      {%- for i in range(tt | length) -%}
+        {%- set t = tt[i] | as_datetime(default=None) -%}
+        {%- if t is not none -%}
+          {%- set tl = as_local(t) -%}
+          {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
+          {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
+          {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ out.items }}
   sensor:
     - name: OpenMeteo RV Cloud LUT
       unique_id: openmeteo_rv_cloud_lut
-      availability: >-
-        {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
-        {{ h.get('time') is iterable and (h.get('time') | length) > 0 }}
       device_class: timestamp
-      state: >-
-        {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
-        {% set tt = h.get('time') or [] %}
-        {% if (tt | length) == 0 %} {{ none }}
-        {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-        {% endif %}
+      availability: "{{ has_value(src) and (tt | length) > 0 }}"
+      state: "{{ coverage_end_ts }}"
       attributes:
-        coverage_start: >-
-          {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[0] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        coverage_end: >-
-          {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
-          {% set tt = h.get('time') or [] %}
-          {% if (tt | length) == 0 %} {{ none }}
-          {% else %} {{ (tt[-1] | as_datetime(default=None) | as_local) }}
-          {% endif %}
-        pairs: >-
-          {%- set h  = state_attr('sensor.openmeteo_rv','hourly') or {} -%}
-          {%- set tt = h.get('time') or [] -%}
-          {%- set cc = h.get('cloud_cover') or [] -%}
-          {%- set out = namespace(items=[]) -%}
-          {%- for i in range(tt | length) -%}
-            {%- set t = tt[i] | as_datetime(default=None) -%}
-            {%- if t is not none -%}
-              {%- set tl = as_local(t) -%}
-              {%- set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) -%}
-              {%- set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 -%}
-              {%- set out.items = out.items + [ {'hk': hk, 'cc': val} ] -%}
-            {%- endif -%}
-          {%- endfor -%}
-          {{ out.items | tojson }}
+        coverage_start: "{{ coverage_start_ts }}"
+        coverage_end: "{{ coverage_end_ts }}"
+        pairs: "{{ pairs_list | tojson }}"
