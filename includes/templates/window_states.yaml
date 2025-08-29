@@ -1,205 +1,233 @@
 # ========================== Brightness Indicators ===========================
-
-- binary_sensor:
+# Triggers only when inputs that matter change (no minute polling)
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.sunny
+        - input_boolean.someone_is_home
+        - input_boolean.in_a_teams_meeting
+        - sun.sun
+  variables:
+    home: "{{ is_state('input_boolean.someone_is_home','on') }}"
+    sunny: "{{ is_state('binary_sensor.sunny','on') }}"
+    azi: "{{ state_attr('sun.sun','azimuth') }}"
+    elv: "{{ state_attr('sun.sun','elevation') }}"
+    teams: "{{ is_state('input_boolean.in_a_teams_meeting','on') }}"
+  binary_sensor:
     - name: Breakfast Room Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: breakfast_room_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny") | bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
         {% set before_church = azi >= 228 and azi < 260 and elv < 59 %}
-        {% set above_church = azi >= 260 and azi < 311 and elv >= 15 and elv < 59 %}
+        {% set above_church  = azi >= 260 and azi < 311 and elv >= 15 and elv < 59 %}
         {% set behind_church = azi >= 311 and azi < 336 and elv < 59 %}
         {{ home and sunny and (before_church or above_church or behind_church) }}
+
     - name: Kitchen Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: kitchen_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny") | bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
         {{ home and sunny and azi >= 89 and azi < 100 }}
+
     - name: Laundry Room Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: laundry_room_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny") | bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
         {{ home and sunny and azi >= 204 }}
+
     - name: Living Room Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: living_room_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny") | bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {% set before_church = azi >= 253 and azi < 268 and elv < 22 %}
-        {% set above_steeple = azi >= 268 and azi < 274 and elv > 30 %}
-        {% set above_church = azi >= 274 and azi < 315 and elv >= 15 and elv < 22 %}
-        {% set behind_church_left_window = azi >= 315 and azi < 320 and elv < 22 %}
+        {% set before_church               = azi >= 253 and azi < 268 and elv < 22 %}
+        {% set above_steeple              = azi >= 268 and azi < 274 and elv > 30 %}
+        {% set above_church               = azi >= 274 and azi < 315 and elv >= 15 and elv < 22 %}
+        {% set behind_church_left_window  = azi >= 315 and azi < 320 and elv < 22 %}
         {% set behind_church_right_window = azi >= 338 and azi < 343 and elv < 18 %}
-        {{ home and sunny and
-          (before_church or above_steeple or above_church or
-          behind_church_left_window or behind_church_right_window) }}
+        {{ home and sunny and (
+            before_church or above_steeple or above_church or
+            behind_church_left_window or behind_church_right_window
+        ) }}
+
     - name: Study South Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: study_south_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
         {% set elv_limit = (48 - 28) / (215 - 132) * (azi - 132) + 28 %}
-        {% set weekday = now().date().weekday() %}
-        {% set weekday = weekday >= 0 and weekday <= 4 %}
         {{ home and sunny and azi >= 132 and azi < 215 and elv < elv_limit }}
+
     - name: Study West Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: study_west_closed_brightness
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {% set teams = states("input_boolean.in_a_teams_meeting")|bool %}
-        {% set weekday = now().date().weekday() %}
-        {% set weekday = weekday >= 0 and weekday <= 4 %}
         {{ teams or (home and sunny and azi >= 215 and azi < 300) }}
-    - name: Study West Closed Brightness
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
-      state: >-
-        {% set home = states("input_boolean.someone_is_home") %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {% set teams = states("input_boolean.in_a_teams_meeting")|bool %}
-        {% set weekday = now().date().weekday() %}
-        {% set weekday = weekday >= 0 and weekday <= 4 %}
-        {{ teams or (home and sunny and azi >= 215 and azi < 300) }}
+
 
 # ========================== Temperature Indicators ==========================
-
-- binary_sensor:
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.sunny
+        - binary_sensor.hot_inside
+        - binary_sensor.hot_in_study
+        - sun.sun
+  variables:
+    sunny: "{{ is_state('binary_sensor.sunny','on') }}"
+    hot_inside: "{{ is_state('binary_sensor.hot_inside','on') }}"
+    hot_in_study: "{{ is_state('binary_sensor.hot_in_study','on') }}"
+    azi: "{{ state_attr('sun.sun','azimuth') }}"
+    elv: "{{ state_attr('sun.sun','elevation') }}"
+  binary_sensor:
     - name: Front Hallway Closed Temperature
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: front_hallway_closed_temperature
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set hot = states("binary_sensor.hot_inside")|bool %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {{ sunny and hot and (azi >= 117 and azi < 240 and elv >= 5) }}
+        {{ sunny and hot_inside and (azi >= 117 and azi < 240 and elv >= 5) }}
+
     - name: Study South Closed Temperature
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: study_south_closed_temperature
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set hot = states("binary_sensor.hot_inside")|bool or states("binary_sensor.hot_in_study")|bool %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {{ sunny and hot and (azi >= 117 and azi < 261 and elv >= 5) }}
+        {{ sunny and (hot_inside or hot_in_study) and (azi >= 117 and azi < 261 and elv >= 5) }}
+
     - name: Study West Closed Temperature
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: study_west_closed_temperature
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set hot = states("binary_sensor.hot_inside")|bool or states("binary_sensor.hot_in_study")|bool %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {{ sunny and hot and azi >= 204 and elv >= 5 }}
+        {{ sunny and (hot_inside or hot_in_study) and azi >= 204 and elv >= 5 }}
+
     - name: Guest South Closed Temperature
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: guest_south_closed_temperature
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set hot = states("binary_sensor.hot_inside")|bool %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {{ sunny and hot and (azi >= 170 and azi < 261 and elv >= 5) }}
+        {{ sunny and hot_inside and (azi >= 170 and azi < 261 and elv >= 5) }}
+
     - name: West Windows Closed Temperature
-      availability: >-
-        {{ has_value("binary_sensor.sunny") }}
+      unique_id: west_windows_closed_temperature
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('sun.sun') }}"
       state: >-
-        {% set hot = states("binary_sensor.hot_inside")|bool %}
-        {% set sunny = states("binary_sensor.sunny")|bool %}
-        {% set azi = state_attr("sun.sun", "azimuth") %}
-        {% set elv = state_attr("sun.sun", "elevation") %}
-        {{ sunny and hot and azi >= 204 and elv >= 5 }}
+        {{ sunny and hot_inside and azi >= 204 and elv >= 5 }}
+
 
 # ========================== Window Button States ============================
-
-- binary_sensor:
+# Trigger on each timer changing state; no periodic evaluation.
+- trigger:
+    - platform: state
+      entity_id:
+        - timer.breakfast_room_timer
+        - timer.eleanor_room_timer
+        - timer.guest_bedroom_timer
+        - timer.kids_bathroom_timer
+        - timer.living_room_timer
+        - timer.master_bathroom_timer
+        - timer.master_bedroom_timer
+        - timer.michael_room_timer
+  binary_sensor:
     - name: Breakfast Room Closed Button
-      state: >-
-        {{ is_state("timer.breakfast_room_timer", "active") }}
+      unique_id: breakfast_room_closed_button
+      state: "{{ is_state('timer.breakfast_room_timer','active') }}"
     - name: Eleanor Room Closed Button
-      state: >-
-        {{ is_state("timer.eleanor_room_timer", "active") }}
+      unique_id: eleanor_room_closed_button
+      state: "{{ is_state('timer.eleanor_room_timer','active') }}"
     - name: Guest Bedroom Closed Button
-      state: >-
-        {{ is_state("timer.guest_bedroom_timer", "active") }}
+      unique_id: guest_bedroom_closed_button
+      state: "{{ is_state('timer.guest_bedroom_timer','active') }}"
     - name: Kids Bathroom Closed Button
-      state: >-
-        {{ is_state("timer.kids_bathroom_timer", "active") }}
+      unique_id: kids_bathroom_closed_button
+      state: "{{ is_state('timer.kids_bathroom_timer','active') }}"
     - name: Living Room Closed Button
-      state: >-
-        {{ is_state("timer.living_room_timer", "active") }}
+      unique_id: living_room_closed_button
+      state: "{{ is_state('timer.living_room_timer','active') }}"
     - name: Master Bathroom Closed Button
-      state: >-
-        {{ is_state("timer.master_bathroom_timer", "active") }}
+      unique_id: master_bathroom_closed_button
+      state: "{{ is_state('timer.master_bathroom_timer','active') }}"
     - name: Master Bedroom Closed Button
-      state: >-
-        {{ is_state("timer.master_bedroom_timer", "active") }}
+      unique_id: master_bedroom_closed_button
+      state: "{{ is_state('timer.master_bedroom_timer','active') }}"
     - name: Michael Room Closed Button
-      state: >-
-        {{ is_state("timer.michael_room_timer", "active") }}
+      unique_id: michael_room_closed_button
+      state: "{{ is_state('timer.michael_room_timer','active') }}"
+
 
 # ============================= Presence States ==============================
-
-- binary_sensor:
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.kids_bathroom_presence_presence_information
+  binary_sensor:
     - name: Kids Bathroom Closed Presence
-      availability: >-
-        {{ has_value('binary_sensor.kids_bathroom_presence_presence_information') }}
-      state: >-
-        {{ is_state('binary_sensor.kids_bathroom_presence_presence_information', 'on') }}
+      unique_id: kids_bathroom_closed_presence
+      availability: "{{ has_value('binary_sensor.kids_bathroom_presence_presence_information') }}"
+      state: "{{ is_state('binary_sensor.kids_bathroom_presence_presence_information','on') }}"
       delay_off: "1:00:00"
-- binary_sensor:
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.master_bathroom_presence_presence_information
+  binary_sensor:
     - name: Master Bathroom Closed Presence
-      availability: >-
-        {{ has_value('binary_sensor.master_bathroom_presence_presence_information') }}
-      state: >-
-        {{ is_state('binary_sensor.master_bathroom_presence_presence_information','on') }}
+      unique_id: master_bathroom_closed_presence
+      availability: "{{ has_value('binary_sensor.master_bathroom_presence_presence_information') }}"
+      state: "{{ is_state('binary_sensor.master_bathroom_presence_presence_information','on') }}"
       delay_off: "1:00:00"
 
-# ======================== Miscellaneous Conditions ===========================
 
-- binary_sensor:
+# ======================== Miscellaneous Conditions ==========================
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.sunny
+        - input_boolean.someone_is_home
+        - media_player.un50j5500
+  variables:
+    sunny: "{{ is_state('binary_sensor.sunny','on') }}"
+    home: "{{ is_state('input_boolean.someone_is_home','on') }}"
+    tv_on: "{{ is_state('media_player.un50j5500','on') }}"
+  binary_sensor:
     - name: Living Room Closed TV
-      availability: >-
-        {{ has_value("binary_sensor.sunny") and has_value('media_player.un50j5500') }}
-      state: >-
-        {% set sunny = states('binary_sensor.sunny') %}
-        {% set home = states('input_boolean.someone_is_home') %}
-        {% set tv_on = is_state('media_player.un50j5500', 'on') %}
-        {{ home and sunny and tv_on }}
+      unique_id: living_room_closed_tv
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('media_player.un50j5500') }}"
+      state: "{{ home and sunny and tv_on }}"
 
-- binary_sensor:
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.sunny
+        - input_boolean.someone_is_home
+        - media_player.kitchen_hub
+  variables:
+    sunny: "{{ is_state('binary_sensor.sunny','on') }}"
+    home: "{{ is_state('input_boolean.someone_is_home','on') }}"
+    hub_on: "{{ is_state('media_player.kitchen_hub','on') }}"
+  binary_sensor:
     - name: Kitchen Closed Hub
-      availability: >-
-        {{ has_value("binary_sensor.sunny") and has_value('media_player.kitchen_hub') }}
-      state: >-
-        {% set sunny = states('binary_sensor.sunny') %}
-        {% set home = states('input_boolean.someone_is_home') %}
-        {% set hub_on = is_state('media_player.kitchen_hub', 'on') %}
-        {{ home and sunny and hub_on }}
+      unique_id: kitchen_closed_hub
+      availability: "{{ has_value('binary_sensor.sunny') and has_value('media_player.kitchen_hub') }}"
+      state: "{{ home and sunny and hub_on }}"
 
-- binary_sensor:
+# ====================== Time Window: Before 06:00 Local =====================
+# This one truly needs time-based triggers to avoid per-minute evaluation.
+# We add a startup trigger to initialize correctly after a restart.
+- trigger:
+    - platform: time
+      at: "00:00:01"
+      id: midnight
+    - platform: time
+      at: "06:00:00"
+      id: six
+    - platform: homeassistant
+      event: start
+      id: start
+  binary_sensor:
     - name: Master Bedroom Closed Morning
+      unique_id: master_bedroom_closed_morning
       state: >-
-        {{ now() < today_at("06:00") }}
+        {% if trigger.id in ['midnight'] %}
+          true
+        {% elif trigger.id in ['six'] %}
+          false
+        {% else %}
+          {# initialize on restart #}
+          {{ now().hour < 6 }}
+        {% endif %}
