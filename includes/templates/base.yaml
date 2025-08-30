@@ -735,48 +735,42 @@
         {% set v = states('sensor.platform_battery_monitor_voltmeter')|float(0) %}
         {{ 22.6757 * v**2 - 476.19 * v + 2500 }}
 
-# ===============================
-# Home/Person/RV lat/lon helpers
-# ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - zone.home
-        - person.aaron_watson
-        - device_tracker.rv_device_tracker
-  sensor:
+# ===================================
+# Home/Person/RV lat/lon helpers (non-triggered)
+# ===================================
+- sensor:
     - name: Home Latitude
-      unique_id: helper_home_lat
+      unique_id: home_latitude
       icon: mdi:home-map-marker
       availability: "{{ state_attr('zone.home','latitude') is not none }}"
       state: "{{ state_attr('zone.home','latitude') | float(0) }}"
 
     - name: Home Longitude
-      unique_id: helper_home_lon
+      unique_id: home_longitude
       icon: mdi:home-map-marker
       availability: "{{ state_attr('zone.home','longitude') is not none }}"
       state: "{{ state_attr('zone.home','longitude') | float(0) }}"
 
     - name: Aaron Latitude
-      unique_id: helper_aaron_lat
+      unique_id: aaron_latitude
       icon: mdi:account
       availability: "{{ state_attr('person.aaron_watson','latitude') is not none }}"
       state: "{{ state_attr('person.aaron_watson','latitude') | float(0) }}"
 
     - name: Aaron Longitude
-      unique_id: helper_aaron_lon
+      unique_id: aaron_longitude
       icon: mdi:account
       availability: "{{ state_attr('person.aaron_watson','longitude') is not none }}"
       state: "{{ state_attr('person.aaron_watson','longitude') | float(0) }}"
 
     - name: RV Latitude
-      unique_id: helper_rv_lat
+      unique_id: rv_latitude
       icon: mdi:van-passenger
       availability: "{{ state_attr('device_tracker.rv_device_tracker','latitude') is not none }}"
       state: "{{ state_attr('device_tracker.rv_device_tracker','latitude') | float(0) }}"
 
     - name: RV Longitude
-      unique_id: helper_rv_lon
+      unique_id: rv_longitude
       icon: mdi:van-passenger
       availability: "{{ state_attr('device_tracker.rv_device_tracker','longitude') is not none }}"
       state: "{{ state_attr('device_tracker.rv_device_tracker','longitude') | float(0) }}"
