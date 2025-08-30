@@ -1,4 +1,4 @@
-# ===== Nest Protect "replace by" -> epoch helpers and rollups =====
+# Next replacement (epoch) computed directly from the raw date sensors
 - trigger:
     - platform: state
       entity_id:
@@ -10,12 +10,12 @@
         - sensor.nest_protect_guest_room_replace_by
         - sensor.nest_protect_gym_replace_by
         - sensor.nest_protect_living_room_replace_by
-    # Daily refresh for “days remaining” and any midnight rollovers
     - platform: time
       at: "00:00:15"
+    - platform: homeassistant
+      event: start
   variables:
-    # raw "replace_by" entities (dates/strings)
-    raw_ids: >
+    srcs: >
       {{ [
         'sensor.nest_protect_upstairs_replace_by',
         'sensor.nest_protect_kids_room_eleanor_replace_by',
@@ -26,138 +26,47 @@
         'sensor.nest_protect_gym_replace_by',
         'sensor.nest_protect_living_room_replace_by'
       ] }}
-    # the matching epoch helper entity_ids we define below
-    epoch_ids: >
-      {{ [
-        'sensor.nest_protect_upstairs_replace_by_epoch',
-        'sensor.nest_protect_kids_room_eleanor_replace_by_epoch',
-        'sensor.nest_protect_kids_room_michael_replace_by_epoch',
-        'sensor.nest_protect_family_room_replace_by_epoch',
-        'sensor.nest_protect_hallway_replace_by_epoch',
-        'sensor.nest_protect_guest_room_replace_by_epoch',
-        'sensor.nest_protect_gym_replace_by_epoch',
-        'sensor.nest_protect_living_room_replace_by_epoch'
-      ] }}
+    best: >-
+      {% set b = namespace(id=None, ts=None) %}
+      {% for e in srcs if has_value(e) %}
+        {% set ts = as_timestamp(states(e), default=None) %}
+        {% if ts is not none and (b.ts is none or ts < b.ts) %}
+          {% set b.id = e %}
+          {% set b.ts = ts %}
+        {% endif %}
+      {% endfor %}
+      {{ b }}
   sensor:
-    # -------- Per-room epoch helpers --------
-    - name: Nest Protect Upstairs Replace By Epoch
-      unique_id: nest_protect_upstairs_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_upstairs_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_upstairs_replace_by'), default=None) }}"
-
-    - name: Nest Protect Kids Room Eleanor Replace By Epoch
-      unique_id: nest_protect_kids_room_eleanor_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_kids_room_eleanor_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_kids_room_eleanor_replace_by'), default=None) }}"
-
-    - name: Nest Protect Kids Room Michael Replace By Epoch
-      unique_id: nest_protect_kids_room_michael_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_kids_room_michael_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_kids_room_michael_replace_by'), default=None) }}"
-
-    - name: Nest Protect Family Room Replace By Epoch
-      unique_id: nest_protect_family_room_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_family_room_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_family_room_replace_by'), default=None) }}"
-
-    - name: Nest Protect Hallway Replace By Epoch
-      unique_id: nest_protect_hallway_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_hallway_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_hallway_replace_by'), default=None) }}"
-
-    - name: Nest Protect Guest Room Replace By Epoch
-      unique_id: nest_protect_guest_room_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_guest_room_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_guest_room_replace_by'), default=None) }}"
-
-    - name: Nest Protect Gym Replace By Epoch
-      unique_id: nest_protect_gym_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_gym_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_gym_replace_by'), default=None) }}"
-
-    - name: Nest Protect Living Room Replace By Epoch
-      unique_id: nest_protect_living_room_replace_by_epoch
-      unit_of_measurement: s
-      state_class: measurement
-      availability: "{{ has_value('sensor.nest_protect_living_room_replace_by') }}"
-      state: "{{ as_timestamp(states('sensor.nest_protect_living_room_replace_by'), default=None) }}"
-
-    # -------- Next replacement (min across epochs) --------
     - name: Nest Protect Next Replacement Epoch
       unique_id: nest_protect_next_replacement_epoch
       unit_of_measurement: s
       state_class: measurement
-      availability: >-
-        {% set ns = namespace(ok=false) %}
-        {% for s in raw_ids %}
-          {% if has_value(s) %}{% set ns.ok = true %}{% endif %}
-        {% endfor %}
-        {{ ns.ok }}
-      state: >-
-        {% set best = namespace(v=None) %}
-        {% for id in epoch_ids %}
-          {% set v = states(id) | float(0) %}
-          {% if v > 0 and (best.v is none or v < best.v) %}
-            {% set best.v = v %}
-          {% endif %}
-        {% endfor %}
-        {{ best.v if best.v is not none else none }}
+      availability: "{{ best.ts is not none }}"
+      state: "{{ best.ts }}"
       attributes:
-        min_entity_id: >-
-          {% set best = namespace(id=None, v=None) %}
-          {% for id in epoch_ids %}
-            {% set v = states(id) | float(0) %}
-            {% if v > 0 and (best.v is none or v < best.v) %}
-              {% set best.id = id %}
-              {% set best.v = v %}
-            {% endif %}
-          {% endfor %}
-          {{ best.id }}
+        source_entity_id: "{{ best.id }}"
 
-    # -------- Human-friendly timestamp of next replacement --------
     - name: Nest Protect Next Replacement
       unique_id: nest_protect_next_replacement_timestamp
       device_class: timestamp
-      availability: "{{ states('sensor.nest_protect_next_replacement_epoch') | float(0) > 0 }}"
-      state: >-
-        {% set ts = states('sensor.nest_protect_next_replacement_epoch') | float(0) %}
-        {{ ts | timestamp_local if ts > 0 else none }}
+      availability: "{{ best.ts is not none }}"
+      state: "{{ best.ts | timestamp_local }}"
+      attributes:
+        source_entity_id: "{{ best.id }}"
 
-    # -------- Which device is next --------
-    - name: Nest Protect Next Replacement Device
-      unique_id: nest_protect_next_replacement_device
-      icon: mdi:smoke-detector
-      availability: "{{ has_value('sensor.nest_protect_next_replacement_epoch') }}"
-      state: >-
-        {% set winner = state_attr('sensor.nest_protect_next_replacement_epoch','min_entity_id') %}
-        {% if winner %}
-          {{ area_name(winner) or state_attr(winner,'friendly_name') or winner }}
-        {% else %} {{ none }} {% endif %}
-
-    # -------- Days remaining (recomputes at midnight + on source changes) --------
     - name: Nest Protect Time Until Next Replacement
-      unique_id: nest_protect_time_until_next_replacement_days
-      device_class: duration
-      unit_of_measurement: d
-      state_class: measurement
-      availability: "{{ states('sensor.nest_protect_next_replacement_epoch') | float(0) > 0 }}"
+      unique_id: nest_protect_time_until_next_replacement
+      icon: mdi:calendar-clock
+      availability: "{{ best.ts is not none }}"
       state: >-
-        {% set ts = states('sensor.nest_protect_next_replacement_epoch') | float(0) %}
-        {% if ts > 0 %}
-          {% set due = as_datetime(ts) %}
-          {{ (due.date() - now().date()).days }}
-        {% else %} {{ none }} {% endif %}
+        {% set days = ((as_datetime(best.ts) - now()).total_seconds() // 86400) | int %}
+        {% set m = (days // 30) | int %}
+        {% set d = (days % 30)  | int %}
+        {% if days < 0 %}
+          overdue {{ (days | abs) // 30 }} mo {{ (days | abs) % 30 }} d
+        {% else %}
+          {{ m }} mo {{ d }} d
+        {% endif %}
+      attributes:
+        total_days: >-
+          {{ ((as_datetime(best.ts) - now()).total_seconds() // 86400) | int }}
