@@ -806,17 +806,18 @@
       state: "{{ (states('sensor.none_123_1min') | float(0)) / 240 }}"
 
 # ===============================
-# Updates Available
+# Updates Available (triggered)
 # ===============================
 - trigger:
     - platform: time_pattern
       minutes: "/5"
   binary_sensor:
     - name: Updates Available
-      unique_id: 5c2d7a68-1b7a-4a6c-9d88-updates-avail
+      unique_id: updates_available
+      device_class: update
       state: >-
         {{ expand(states) | selectattr('domain','eq','update')
-           | selectattr('state','eq','on') | map(attribute='entity_id') | list | length > 0 }}
+           | selectattr('state','eq','on') | list | count > 0 }}
 
 # ===============================
 # Rain probe “fresh” pulse and Rainy
