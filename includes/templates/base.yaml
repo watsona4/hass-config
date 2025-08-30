@@ -1,61 +1,35 @@
 # ===============================
 # Agromonitoring soil sensors
 # ===============================
-- trigger:
-    - platform: state
-      entity_id: sensor.agromonitoring
-  variables:
-    t10: "{{ state_attr('sensor.agromonitoring','t10') }}"
-    t0: "{{ state_attr('sensor.agromonitoring','t0') }}"
-    moisture: "{{ state_attr('sensor.agromonitoring','moisture') }}"
-  sensor:
+- sensor:
     - name: Soil Temperature at 10cm
-      unique_id: 7e8c7f0d-1ce3-4a0a-9d15-aggro-t10-k
-      unit_of_measurement: "K"
-      device_class: temperature
-      state_class: measurement
-      availability: "{{ t10 is not none }}"
-      state: "{{ t10 | float(0) | round(2) }}"
-
-    - name: Soil Temperature at 10cm F
-      unique_id: 1b2a9a0a-5d63-4c63-bb86-aggro-t10-f
+      unique_id: soil_temp_10cm
       unit_of_measurement: "°F"
       device_class: temperature
       state_class: measurement
-      availability: "{{ has_value('sensor.soil_temperature_at_10cm') }}"
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t10') is not none }}"
       state: >-
         {% from "macros.jinja" import convert_temp %}
-        {{ convert_temp(states('sensor.soil_temperature_at_10cm'), 'k', 'f') }}
+        {{ convert_temp(state_attr('sensor.agromonitoring','t10'),'k','f') }}
 
     - name: Soil Moisture
-      unique_id: 6a7d9e67-2a60-4b2a-9cb3-aggro-moisture
-      unit_of_measurement: "VWC"
-      availability: "{{ moisture is not none }}"
-      state: "{{ moisture | float(0) }}"
-
-    - name: Soil Moisture Pct
-      unique_id: 0b0c4a0c-52d1-4e0e-8b3a-aggro-moisture-pct
+      unique_id: soil_moisture
       unit_of_measurement: "%"
-      availability: "{{ has_value('sensor.soil_moisture') }}"
-      state: "{{ states('sensor.soil_moisture') | float(0) * 100 }}"
+      device_class: humidity
+      state_class: measurement
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','moisture') is not none }}"
+      state: >-
+        {{ state_attr('sensor.agromonitoring','moisture') | float(0) * 100 }}
 
     - name: Soil Surface Temperature
-      unique_id: 2e3b0de3-0d33-4c1c-a3b1-aggro-t0-k
-      unit_of_measurement: "K"
-      device_class: temperature
-      state_class: measurement
-      availability: "{{ t0 is not none }}"
-      state: "{{ t0 | float(0) | round(2) }}"
-
-    - name: Soil Surface Temperature F
-      unique_id: 4c8a89a9-1f56-4a2e-9e22-aggro-t0-f
+      unique_id: soil_surface_temp
       unit_of_measurement: "°F"
       device_class: temperature
       state_class: measurement
-      availability: "{{ has_value('sensor.soil_surface_temperature') }}"
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t0') is not none }}"
       state: >-
         {% from "macros.jinja" import convert_temp %}
-        {{ convert_temp(states('sensor.soil_surface_temperature'), 'k', 'f') }}
+        {{ convert_temp(state_attr('sensor.agromonitoring','t0'),'k','f') }}
 
 # ===============================
 # RV connectivity pulse
