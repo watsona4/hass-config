@@ -775,28 +775,23 @@
       availability: "{{ state_attr('device_tracker.rv_device_tracker','longitude') is not none }}"
       state: "{{ state_attr('device_tracker.rv_device_tracker','longitude') | float(0) }}"
 
-# ===============================
-# Brightness from lights
-# ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - light.chicken_coop_light
-        - light.dining_room_light
-  sensor:
+# ===================================
+# Brightness from lights (non-triggered)
+# ===================================
+- sensor:
     - name: Chicken Coop Light Brightness
-      unique_id: 9a9f9f9b-cc1c-4d7b-a1b0-coop-bright
+      unique_id: chicken_coop_light_brightness
       unit_of_measurement: "%"
       state_class: measurement
       availability: "{{ has_value('light.chicken_coop_light') }}"
-      state: "{{ state_attr('light.chicken_coop_light','brightness') | float(0) * 100 / 255 }}"
+      state: "{{ (state_attr('light.chicken_coop_light','brightness') | float(0)) * 100 / 255 }}"
 
     - name: Dining Room Brightness
-      unique_id: 8f8e8e8a-bb1c-4c7a-9c1a-dining-bright
+      unique_id: dining_room_brightness
       unit_of_measurement: "%"
       state_class: measurement
       availability: "{{ has_value('light.dining_room_light') }}"
-      state: "{{ state_attr('light.dining_room_light','brightness') | float(0) * 100 / 255 }}"
+      state: "{{ (state_attr('light.dining_room_light','brightness') | float(0)) * 100 / 255 }}"
 
 # ===============================
 # Mains Current
