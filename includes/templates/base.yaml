@@ -867,14 +867,9 @@
 # ===============================
 # Mold Status and Upstairs HVAC action
 # ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.mold_indicator
-        - climate.upstairs_thermostat
-  select:
+- select:
     - name: Mold Status
-      unique_id: 3aa1d55e-ff34-4f5f-9c1a-mold-status
+      unique_id: mold_status
       availability: "{{ has_value('sensor.mold_indicator') }}"
       state: >-
         {% set s = states('sensor.mold_indicator') | float(0) %}
@@ -883,7 +878,7 @@
       select_option: []
 
     - name: Upstairs HVAC Action
-      unique_id: 4bb2e66f-44aa-43c1-b3f1-upstairs-hvac-action
+      unique_id: upstairs_hvac_action
       availability: "{{ has_value('climate.upstairs_thermostat') }}"
       state: "{{ state_attr('climate.upstairs_thermostat','hvac_action') }}"
       options: "['cooling','drying','fan_only','idle','off']"
