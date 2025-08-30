@@ -195,28 +195,31 @@
         power: "{{ states('sensor.living_room_dehumidifier_power') | float(0) }}"
 
 # ===============================
-# Before School Time (no now()/today_at())
+# Before School Time
 # ===============================
 - trigger:
+    # Edges of the window
     - platform: time
-      at: "06:00:00"       # window opens
+      at: "06:00:00"     # window opens
     - platform: time
-      at: "08:15:00"       # window closes
+      at: "08:15:00"     # window closes
+    # Recompute month/weekday each day (covers holidays/summer break, etc.)
     - platform: time
-      at: "00:02:00"       # daily recompute for month/weekday
-  variables:
-    month: "{{ now().month }}"
-    weekday: "{{ now().weekday() }}"
-    # Treat school year as Sep..Jun inclusive
-    school_year: "{{ month <= 6 or month >= 9 }}"
-    is_weekday: "{{ weekday <= 4 }}"
-    # At triggers above, infer if inside window by comparing the time-of-day string
-    hhmmss: "{{ now().strftime('%H:%M:%S') }}"
-    in_window: "{{ '06:00:00' <= hhmmss <= '08:15:00' }}"
+      at: "00:02:00"
+    # OPTIONAL but recommended: set correct state after a restart
+    - platform: homeassistant
+      event: start
+
   binary_sensor:
     - name: Before School Time
-      unique_id: d0ae7e0d-6d84-492c-bcab-ba13133e7b60
-      state: "{{ school_year and is_weekday and in_window }}"
+      unique_id: before_school_time
+      state: >-
+        {% set m = now().month %}
+        {% set wd = now().weekday() %}  {# Mon=0..Sun=6 #}
+        {% set school_year = (m <= 6) or (m >= 9) %}
+        {% set is_weekday  = wd <= 4 %}
+        {% set in_window = today_at('06:00:00') <= now() <= today_at('08:15:00') %}
+        {{ school_year and is_weekday and in_window }}
 
 # ===============================
 # Sensor Problems (unchanged logic)
