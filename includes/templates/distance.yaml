@@ -1,5 +1,5 @@
 # =========================================================
-# Distance helpers, trigger on the minimum set of inputs
+# Distance helpers (triggered on minimal inputs)
 # =========================================================
 - trigger:
     - platform: state
@@ -8,21 +8,16 @@
         - device_tracker.rv_device_tracker
         - zone.home
   variables:
-    # Pre-calc distances once per trigger so downstream sensors reuse them.
-    _d_user_home: >-
-      {% set v = distance('person.aaron_watson','zone.home') | float(none) %}
-      {{ v }}
-    _d_user_rv: >-
-      {% set v = distance('person.aaron_watson','device_tracker.rv_device_tracker') | float(none) %}
-      {{ v }}
-    _d_rv_home: >-
-      {% set v = distance('device_tracker.rv_device_tracker','zone.home') | float(none) %}
-      {{ v }}
+    # distance() returns KM; convert to miles here
+    _d_user_home_km: "{{ distance('person.aaron_watson','zone.home') | float(default=none) }}"
+    _d_user_rv_km:   "{{ distance('person.aaron_watson','device_tracker.rv_device_tracker') | float(default=none) }}"
+    _d_rv_home_km:   "{{ distance('device_tracker.rv_device_tracker','zone.home') | float(default=none) }}"
+    _km_to_mi: 0.621371
   sensor:
-    - name: User Distance to Home (mi)
-      unique_id: s_user_distance_home_mi_eff
+    - name: User Distance to Home
+      unique_id: user_distance_to_home
       device_class: distance
-      unit_of_measurement: mi
+      unit_of_measurement: "mi"
       state_class: measurement
       availability: >-
         {{ has_value('person.aaron_watson')
@@ -30,13 +25,17 @@
            and state_attr('person.aaron_watson','latitude') is number
            and state_attr('zone.home','latitude') is number }}
       state: >-
-        {% set v = _d_user_home | float(none) %}
-        {{ this.state if v is none else (v | round(1)) }}
+        {% set vkm = _d_user_home_km %}
+        {% if vkm is none %}
+          {{ this.state }}
+        {% else %}
+          {{ (vkm | float * _km_to_mi) | round(1) }}
+        {% endif %}
 
-    - name: User Distance to RV (mi)
-      unique_id: s_user_distance_rv_mi_eff
+    - name: User Distance to RV
+      unique_id: user_distance_to_rv
       device_class: distance
-      unit_of_measurement: mi
+      unit_of_measurement: "mi"
       state_class: measurement
       availability: >-
         {{ has_value('person.aaron_watson')
@@ -44,13 +43,17 @@
            and state_attr('person.aaron_watson','latitude') is number
            and state_attr('device_tracker.rv_device_tracker','latitude') is number }}
       state: >-
-        {% set v = _d_user_rv | float(none) %}
-        {{ this.state if v is none else (v | round(1)) }}
+        {% set vkm = _d_user_rv_km %}
+        {% if vkm is none %}
+          {{ this.state }}
+        {% else %}
+          {{ (vkm | float * _km_to_mi) | round(1) }}
+        {% endif %}
 
-    - name: RV Distance to Home (mi)
-      unique_id: s_rv_distance_home_mi_eff
+    - name: RV Distance to Home
+      unique_id: rv_distance_to_home
       device_class: distance
-      unit_of_measurement: mi
+      unit_of_measurement: "mi"
       state_class: measurement
       availability: >-
         {{ has_value('device_tracker.rv_device_tracker')
@@ -58,55 +61,56 @@
            and state_attr('device_tracker.rv_device_tracker','latitude') is number
            and state_attr('zone.home','latitude') is number }}
       state: >-
-        {% set v = _d_rv_home | float(none) %}
-        {{ this.state if v is none else (v | round(1)) }}
+        {% set vkm = _d_rv_home_km %}
+        {% if vkm is none %}
+          {{ this.state }}
+        {% else %}
+          {{ (vkm | float * _km_to_mi) | round(1) }}
+        {% endif %}
 
 
 # =========================================================
-# Nearness binary sensors + context, reusing computed values
+# Nearness binary sensors + context (reuse computed values)
 # =========================================================
 - trigger:
     - platform: state
       entity_id:
-        - sensor.user_distance_to_home_mi
-        - sensor.user_distance_to_rv_mi
-        - sensor.rv_distance_to_home_mi
+        - sensor.user_distance_to_home
+        - sensor.user_distance_to_rv
+        - sensor.rv_distance_to_home
   variables:
-    _home: "{{ states('sensor.user_distance_to_home_mi') | float(9999) }}"
-    _rv:   "{{ states('sensor.user_distance_to_rv_mi')   | float(9999) }}"
-    _rvh:  "{{ states('sensor.rv_distance_to_home_mi')   | float(9999) }}"
-    _near_home: "{{ _home <= 10 }}"
-    _near_rv:   "{{ _rv   <= 60 }}"
+    _home: "{{ states('sensor.user_distance_to_home') }}"
+    _rv:   "{{ states('sensor.user_distance_to_rv') }}"
+    _rvh:  "{{ states('sensor.rv_distance_to_home') }}"
   binary_sensor:
-    - name: User Near Home (10mi)
-      unique_id: bs_user_near_home_10mi_eff
+    - name: User Near Home
+      unique_id: user_near_home
       device_class: presence
-      availability: "{{ has_value('sensor.user_distance_to_home_mi') }}"
-      state: "{{ _home <= 10 }}"
+      availability: "{{ has_value('sensor.user_distance_to_home') }}"
+      state: "{{ (_home | float(9999)) <= 10 }}"
 
-    - name: RV Near Home (10mi)
-      unique_id: bs_rv_near_home_10mi_eff
+    - name: RV Near Home
+      unique_id: rv_near_home
       device_class: presence
-      availability: "{{ has_value('sensor.rv_distance_to_home_mi') }}"
-      state: "{{ _rvh <= 10 }}"
+      availability: "{{ has_value('sensor.rv_distance_to_home') }}"
+      state: "{{ (_rvh | float(9999)) <= 10 }}"
 
-    - name: User Near RV (60mi)
-      unique_id: bs_user_near_rv_60mi_eff
+    - name: User Near RV
+      unique_id: user_near_rv
       device_class: presence
-      availability: "{{ has_value('sensor.user_distance_to_rv_mi') }}"
-      state: "{{ _rv <= 60 }}"
+      availability: "{{ has_value('sensor.user_distance_to_rv') }}"
+      state: "{{ (_rv | float(9999)) <= 60 }}"
   sensor:
     - name: User Context
-      unique_id: s_user_context_distance_eff
+      unique_id: user_context
       icon: mdi:account-circle
       availability: >-
-        {{ has_value('sensor.user_distance_to_home_mi')
-           or has_value('sensor.user_distance_to_rv_mi') }}
+        {{ has_value('sensor.user_distance_to_home')
+           or has_value('sensor.user_distance_to_rv') }}
       state: >-
-        {% set near_home = _home <= 10 %}
-        {% set near_rv   = (states('sensor.user_distance_to_rv_mi') | float(9999)) <= 10 %}
-        {% if near_home and near_rv %} near_both
-        {% elif near_home %} near_home
-        {% elif near_rv %} near_rv
+        {% set near_home = (_home | float(9999)) <= 10 %}
+        {% set near_rv   = (_rv   | float(9999)) <= 60 %}
+        {% if near_home %} home
+        {% elif near_rv %} rv
         {% else %} away
         {% endif %}
