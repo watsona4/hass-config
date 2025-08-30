@@ -709,33 +709,31 @@
       availability: "{{ has_value('sensor.shop_furnace_switch_0_power') }}"
       state: "{{ states('sensor.shop_furnace_switch_0_power') | float(0) > 10 }}"
 
-# ===============================
-# Platform battery select and level
-# ===============================
-- trigger:
-    - platform: state
-      entity_id: sensor.platform_battery_monitor_voltmeter
-  variables:
-    vbat: "{{ states('sensor.platform_battery_monitor_voltmeter') | float(0) }}"
-  select:
+# ===================================
+# Platform battery select and level (non-triggered)
+# ===================================
+- select:
     - name: Platform Battery State
-      unique_id: 1858d33c-76d8-4168-a220-fe9234e88cc0
+      unique_id: platform_battery_state
       availability: "{{ has_value('sensor.platform_battery_monitor_voltmeter') }}"
       state: >-
-        {% if vbat > 13 %} charging
-        {% elif vbat < 12 %} needs charging
+        {% set v = states('sensor.platform_battery_monitor_voltmeter')|float(0) %}
+        {% if v > 13 %} charging
+        {% elif v < 12 %} needs charging
         {% else %} discharging
         {% endif %}
-      options: "['unavailable','unknown','charging','needs charging','discharging']"
+      options: "['charging','needs charging','discharging']"
       select_option: []
 
-  sensor:
+- sensor:
     - name: Platform Battery Level
-      unique_id: 7f7b8a9a-4984-4bf9-9a8a-platform-batt-level
+      unique_id: platform_battery_level
       device_class: battery
       unit_of_measurement: "%"
       availability: "{{ has_value('sensor.platform_battery_monitor_voltmeter') }}"
-      state: "{{ 22.6757 * vbat**2 - 476.19 * vbat + 2500 }}"
+      state: >-
+        {% set v = states('sensor.platform_battery_monitor_voltmeter')|float(0) %}
+        {{ 22.6757 * v**2 - 476.19 * v + 2500 }}
 
 # ===============================
 # Home/Person/RV lat/lon helpers
