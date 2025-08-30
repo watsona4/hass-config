@@ -315,22 +315,16 @@
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
       value_template: >-
-        {% set v = value_json.download_mbps %}
-        {{ v if v is number else this.state }}
-      availability_topic: "site/home/devices/netprobe"
-      availability_template: >-
-        {{ (value_json.download_mbps is number) }}
+        {% set v = value_json.download_mbps | float(nan) %}
+        {{ value_json.download_mbps }}
 
     - name: "Netprobe Upload"
       unique_id: netprobe_up
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
       value_template: >-
-        {% set v = value_json.upload_mbps %}
-        {{ v if v is number else this.state }}
-      availability_topic: "site/home/devices/netprobe"
-      availability_template: >-
-        {{ (value_json.upload_mbps is number) }}
+        {% set v = value_json.upload_mbps | float(nan) %}
+        {{ v if v == v else states('sensor.netprobe_upload') }}
 
     - name: "Netprobe Latency (TCP)"
       unique_id: netprobe_lat_tcp
