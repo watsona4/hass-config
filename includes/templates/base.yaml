@@ -222,7 +222,7 @@
         {{ school_year and is_weekday and in_window }}
 
 # ===============================
-# Sensor Problems (unchanged logic)
+# Sensor Problems
 # ===============================
 - trigger:
     - platform: time_pattern
@@ -247,7 +247,8 @@
       {{ ns.data }}
   binary_sensor:
     - name: Sensor Problems
-      unique_id: c84e48cc-b07f-47e2-8413-4752866332f2
+      unique_id: sensor_problems
+      device_class: problem
       state: "{{ 'on' if problem_list | count > 0 else 'off' }}"
       attributes:
         problems: "{{ problem_list }}"
