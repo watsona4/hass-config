@@ -269,120 +269,221 @@
           false
         {% endif %}
 
-# ===============================
-# “Remembered state” sensors
-# ===============================
+# -----------------------------
+# Living Room Illuminance State
+# -----------------------------
 - trigger:
     - platform: state
       entity_id: sensor.everything_presence_one_6dbad0_illuminance
+    - platform: time_pattern
+      minutes: "/5"          # periodic refresh for staleness check
+  variables:
+    src: sensor.everything_presence_one_6dbad0_illuminance
+    keep_sec: 1800           # consider cached value valid for 30 minutes
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Living Room Illuminance State
-      unique_id: 68f8d798-079f-4a74-9a67-6f65c7943068
+      unique_id: living_room_illuminance_state
       device_class: illuminance
       unit_of_measurement: lx
       state_class: measurement
-      availability: "{{ has_value('sensor.everything_presence_one_6dbad0_illuminance') and has_value(this.entity_id) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set s = trigger.to_state.state %}
-        {% if s not in ['unknown','unavailable','none',''] %} {{ s | float(0) }}
-        {% else %} {{ states(this.entity_id) }} {% endif %}
+        {{ this.state if val is none else val }}
 
+# -----------------------------
+# Outside Temperature State
+# -----------------------------
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.acurite_tower_a_11075_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Outside Temperature State
-      unique_id: 25bd1829-8f7e-4a37-bf23-f71626347eb3
+      unique_id: outside_temperature_state
       device_class: temperature
       unit_of_measurement: "°F"
       state_class: measurement
-      availability: "{{ has_value('sensor.acurite_tower_a_11075_temperature') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.acurite_tower_a_11075_temperature') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# ---------------------------
+# Outside Humidity State
+# ---------------------------
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_humidity
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.acurite_tower_a_11075_humidity
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Outside Humidity State
-      unique_id: ed61e0eb-7172-4572-8958-c41a897d0d89
+      unique_id: outside_humidity_state
       device_class: humidity
       unit_of_measurement: "%"
       state_class: measurement
-      availability: "{{ has_value('sensor.acurite_tower_a_11075_humidity') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.acurite_tower_a_11075_humidity') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# -----------------------------------
+# Outside Water Temperature State
+# -----------------------------------
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Outside Water Temperature State
-      unique_id: fb3bcf0e-1bc8-45dc-acdd-a5f11fac05c2
+      unique_id: outside_water_temperature_state
       device_class: temperature
       unit_of_measurement: "°F"
       state_class: measurement
-      availability: "{{ has_value('sensor.outside_water_temperature') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.outside_water_temperature') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# -------------------------------
+# Outside Water Humidity State
+# -------------------------------
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_humidity
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_humidity
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Outside Water Humidity State
-      unique_id: 89455e7d-1d4c-4ecd-a9ea-3cb9b9f74997
+      unique_id: outside_water_humidity_state
       device_class: humidity
       unit_of_measurement: "%"
       state_class: measurement
-      availability: "{{ has_value('sensor.outside_water_humidity') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.outside_water_humidity') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# ------------------------------
+# Outside Water Pressure State
+# ------------------------------
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_pressure
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_pressure
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Outside Water Pressure State
-      unique_id: 67d0b02d-a93e-4799-ad20-b02387b0b8ff
+      unique_id: outside_water_pressure_state
       device_class: pressure
       unit_of_measurement: "psi"
       state_class: measurement
-      availability: "{{ has_value('sensor.outside_water_pressure') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.outside_water_pressure') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# ------------------------------------
+# Chicken Coop Temperature State
+# ------------------------------------
 - trigger:
     - platform: state
       entity_id: sensor.chicken_coop_thermometer_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.chicken_coop_thermometer_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
   sensor:
     - name: Chicken Coop Temperature State
-      unique_id: 5da7be2a-6a60-4c1f-9d2a-cc-coop-temp-state
+      unique_id: chicken_coop_temperature_state
       device_class: temperature
       unit_of_measurement: "°F"
       state_class: measurement
-      availability: "{{ has_value('sensor.chicken_coop_thermometer_temperature') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = states('sensor.chicken_coop_thermometer_temperature') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if val is none else val }}
 
+# --------------------------------
+# Living Room Brightness (%)
+# --------------------------------
 - trigger:
     - platform: state
       entity_id: light.living_room_light
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: light.living_room_light
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    b: "{{ state_attr(src, 'brightness') }}"
+    pct: >-
+      {{ (b / 255 * 100) if b is not none else none }}
   sensor:
     - name: Living Room Brightness
-      unique_id: 6f4c1c46-51a1-47c4-bb9e-lr-brightness
+      unique_id: living_room_brightness
       unit_of_measurement: "%"
       state_class: measurement
-      availability: "{{ has_value('light.living_room_light') or (this.state not in ['unknown','unavailable']) }}"
+      availability: >-
+        {{ (b is not none) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
       state: >-
-        {% set v = state_attr('light.living_room_light','brightness') | float(none) %}
-        {{ this.state if v is none else v }}
+        {{ this.state if pct is none else (pct | round(0)) }}
 
 # ===============================
 # Zwift summaries (trigger on zwift entity)
