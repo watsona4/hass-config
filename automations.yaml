@@ -5832,6 +5832,11 @@
     - condition: state
       entity_id: binary_sensor.living_room_door_contact
       state: 'off'
+    - condition: template
+      value_template: '{% set inside = states(''sensor.downstairs_thermostat_current_temperature'')
+        | float(0) %} {% set outside = states(''sensor.outside_temperature_state'')
+        | float(0) %} {% set diff = outside - inside %} {{ diff > 5 or diff < -10
+        }}'
     then:
     - action: script.announce
       metadata: {}
