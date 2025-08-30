@@ -793,20 +793,17 @@
       availability: "{{ has_value('light.dining_room_light') }}"
       state: "{{ (state_attr('light.dining_room_light','brightness') | float(0)) * 100 / 255 }}"
 
-# ===============================
-# Mains Current
-# ===============================
-- trigger:
-    - platform: state
-      entity_id: sensor.none_123_1min
-  sensor:
+# ===================================
+# Mains Current (non-triggered)
+# ===================================
+- sensor:
     - name: Mains Current
-      unique_id: 7a7f7f7e-aa11-44cc-9922-mains-current
+      unique_id: mains_current
       device_class: current
       unit_of_measurement: A
       state_class: measurement
       availability: "{{ has_value('sensor.none_123_1min') }}"
-      state: "{{ states('sensor.none_123_1min') | float(0) / 240 }}"
+      state: "{{ (states('sensor.none_123_1min') | float(0)) / 240 }}"
 
 # ===============================
 # Updates Available
