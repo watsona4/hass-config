@@ -4,7 +4,7 @@
 
 - platform: history_stats
   name: Furnace On Time
-  unique_id: 7c3baba3-c9a9-4225-bddb-19edcedcfb0f
+  unique_id: furnace_on_time
   entity_id: binary_sensor.furnace_heating_state
   state: "on"
   start: 1729310400
@@ -12,7 +12,7 @@
   type: time
 - platform: history_stats
   name: Dryer On Time
-  unique_id: 4e0e0383-5d46-4c5b-874e-cf9a2fe39785
+  unique_id: dryer_on_time
   entity_id: binary_sensor.dryer_heating_state
   state: "on"
   start: 1729310400
@@ -20,7 +20,7 @@
   type: time
 - platform: history_stats
   name: Water Heater On Time
-  unique_id: fc466c8a-2a7a-4e80-8dbe-a50a7a408e79
+  unique_id: water_heater_on_time
   entity_id: binary_sensor.water_heater_heating_state
   state: "on"
   start: 1729310400
@@ -28,7 +28,7 @@
   type: time
 - platform: history_stats
   name: Gas Stove On Time
-  unique_id: 056611c4-7ddc-44e5-8006-3882ba2219b4
+  unique_id: gas_stove_on_time
   entity_id: binary_sensor.gas_stove_heating_state
   state: "on"
   start: 1729310400
@@ -36,7 +36,7 @@
   type: time
 - platform: history_stats
   name: Shop Furnace On Time
-  unique_id: 5b673d39-e43e-4e74-9887-551cd629a316
+  unique_id: shop_furnace_on_time
   entity_id: binary_sensor.shop_furnace_heating_state
   state: "on"
   start: 1729310400
@@ -67,25 +67,24 @@
 
 - platform: filter
   name: Outside Temperature Filtered
-  unique_id: 4e74ddb5-0577-4a6d-b685-29a379d20fe2
+  unique_id: outside_temperature_filtered
   entity_id: sensor.acurite_tower_a_11075_temperature
   filters:
     - filter: outlier
       window_size: 5
       radius: 10.0
       precision: 2
-    - filter: lowpass
-      time_constant: 5
-      precision: 2
 
 - platform: filter
   name: Outside Water Temperature Filtered
+  unique_id: outside_water_temperature_filtered
   entity_id: sensor.outside_water_temperature
   filters:
     - filter: outlier
 
 - platform: filter
   name: Average Brightness
+  unique_id: average_brightness
   entity_id: sensor.outside_brightness
   filters:
     - filter: time_simple_moving_average
@@ -93,6 +92,7 @@
 
 - platform: min_max
   name: Blind Tilt Battery Level
+  unique_id: blind_tilt_battery_level
   type: min
   entity_ids:
     - sensor.breakfast_room_window_battery
@@ -119,6 +119,7 @@
 
 - platform: min_max
   name: Xaiomi Thermometer Battery Level
+  unique_id: xaiomi_thermometer_battery_level
   type: min
   entity_ids:
     - sensor.pantry_thermometer_battery
@@ -127,6 +128,7 @@
 
 - platform: min_max
   name: Nest Protect Battery Level
+  unique_id: nest_protect_battery_level
   type: min
   entity_ids:
     - sensor.nest_protect_upstairs_battery_level
@@ -183,10 +185,12 @@
 
 - platform: integration
   name: Electric Usage
+  unique_id: electric_usage
   source: sensor.none_123_1min
 
 - platform: mold_indicator
   name: Mold Indicator
+  unique_id: mold_indicator
   indoor_temp_sensor: sensor.dehumidifier_temperature
   indoor_humidity_sensor: sensor.dehumidifier_humidity
   outdoor_temp_sensor: sensor.outside_temperature_filtered
@@ -194,31 +198,35 @@
 
 - platform: statistics
   name: High Temperature
+  unique_id: high_temperature
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_max
   max_age: "24:00:00"
 
 - platform: statistics
   name: Low Temperature
+  unique_id: low_temperature
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min
   max_age: "24:00:00"
 
 - platform: statistics
   name: High Temperature All Time
+  unique_id: high_temperature_all_time
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_max
   max_age: "999999:00:00"
 
 - platform: statistics
   name: Low Temperature All Time
+  unique_id: low_temperature_all_time
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min
   max_age: "999999:00:00"
 
 - platform: min_max
   name: Gas Meter
-  unique_id: 74e84ae3-674b-429d-98ff-40988d3a63e0
+  unique_id: gas_meter
   type: sum
   entity_ids:
     - sensor.furnace_gas_meter
