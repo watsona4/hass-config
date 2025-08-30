@@ -124,52 +124,38 @@
 # ===============================
 # Hot Inside / Hot In Study
 # ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - input_number.downstairs_temperature
-        - climate.downstairs_thermostat
-        - climate.upstairs_thermostat
-        - sensor.outdoor_thermometer_state
-  variables:
-    downstairs: "{{ state_attr('climate.downstairs_thermostat','current_temperature') | float(0) }}"
-    upstairs:   "{{ state_attr('climate.upstairs_thermostat','current_temperature')   | float(0) }}"
-    target:     "{{ states('input_number.downstairs_temperature') | float(0) }}"
-    outdoor:    "{{ states('sensor.outdoor_thermometer_state') | float(0) }}"
-  binary_sensor:
+- binary_sensor:
     - name: Hot Inside
-      unique_id: 41ae9c0f-8726-42a9-b772-6cd1a16e48a0
+      unique_id: hot_inside
       device_class: heat
       delay_on: "00:15:00"
       delay_off: "00:15:00"
       availability: >-
         {{ has_value('input_number.downstairs_temperature')
-           and state_attr('climate.downstairs_thermostat','current_temperature') is not none
-           and state_attr('climate.upstairs_thermostat','current_temperature') is not none
-           and has_value('sensor.outdoor_thermometer_state') }}
-      state: "{{ (downstairs - target > 1 and upstairs - target > 2) or (outdoor > downstairs) }}"
+            and has_value('sensor.outdoor_thermometer_state')
+            and state_attr('climate.downstairs_thermostat','current_temperature') is not none
+            and state_attr('climate.upstairs_thermostat','current_temperature') is not none }}
+      state: >-
+        {% set downstairs = state_attr('climate.downstairs_thermostat','current_temperature') | float(0) %}
+        {% set upstairs   = state_attr('climate.upstairs_thermostat','current_temperature')   | float(0) %}
+        {% set target     = states('input_number.downstairs_temperature') | float(0) %}
+        {% set outdoor    = states('sensor.outdoor_thermometer_state') | float(0) %}
+        {{ (downstairs - target > 1 and upstairs - target > 2) or (outdoor > downstairs) }}
 
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.chicken_coop_temperature_state
-        - sensor.outdoor_thermometer_state
-        - input_number.downstairs_temperature
-  variables:
-    temp: "{{ states('sensor.chicken_coop_temperature_state') | float(0) }}"
-    outside_temp: "{{ states('sensor.outdoor_thermometer_state') | float(0) }}"
-    target_temp: "{{ states('input_number.downstairs_temperature') | float(0) }}"
-  binary_sensor:
     - name: Hot In Study
-      unique_id: dbca2e5b-24e6-44f9-a045-73512cfb6b6b
+      unique_id: hot_in_study
       device_class: heat
       delay_on: "00:15:00"
       delay_off: "00:15:00"
       availability: >-
         {{ has_value('sensor.chicken_coop_temperature_state')
-           and has_value('sensor.outdoor_thermometer_state')
-           and has_value('input_number.downstairs_temperature') }}
-      state: "{{ temp > target_temp + 1 or outside_temp > temp }}"
+            and has_value('sensor.outdoor_thermometer_state')
+            and has_value('input_number.downstairs_temperature') }}
+      state: >-
+        {% set temp         = states('sensor.chicken_coop_temperature_state') | float(0) %}
+        {% set outside_temp = states('sensor.outdoor_thermometer_state') | float(0) %}
+        {% set target_temp  = states('input_number.downstairs_temperature') | float(0) %}
+        {{ temp > target_temp + 1 or outside_temp > temp }}
 
 # ===============================
 # Presence delays
