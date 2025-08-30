@@ -518,41 +518,44 @@
       state: "{{ state_attr('sensor.zwift_online_1747373','totalWattHours') | float(0) }}"
 
 # ===============================
-# Deco AP statuses
+# Deco AP statuses (non-triggered)
 # ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - device_tracker.roof_deco
-        - device_tracker.gym_deco
-        - device_tracker.hallway_deco
-        - device_tracker.study_deco
-        - device_tracker.living_room_deco
-        - device_tracker.playroom_deco
-  sensor:
+- binary_sensor:
     - name: Roof AP
-      unique_id: b6de94e8-cba9-4a06-ae0d-4e2c0197417e
-      state: "{{ 'Online' if state_attr('device_tracker.roof_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: roof_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.roof_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.roof_deco','internet_online') is true }}"
 
     - name: Gym AP
-      unique_id: a2fadd1d-9ee4-4a36-880a-cd8b5115ec80
-      state: "{{ 'Online' if state_attr('device_tracker.gym_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: gym_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.gym_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.gym_deco','internet_online') is true }}"
 
     - name: Hallway AP
-      unique_id: e1a1d9fc-958d-4d84-b9d0-8f2b0ab5ef35
-      state: "{{ 'Online' if state_attr('device_tracker.hallway_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: hallway_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.hallway_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.hallway_deco','internet_online') is true }}"
 
     - name: Study AP
-      unique_id: 34f82a27-0db8-43d9-9917-25048b9198dd
-      state: "{{ 'Online' if state_attr('device_tracker.study_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: study_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.study_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.study_deco','internet_online') is true }}"
 
     - name: Living Room AP
-      unique_id: eb8f39cd-3871-4250-b2c8-9ac910e1c431
-      state: "{{ 'Online' if state_attr('device_tracker.living_room_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: living_room_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.living_room_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.living_room_deco','internet_online') is true }}"
 
     - name: Playroom AP
-      unique_id: 0f795220-650e-4594-90b4-d472a473954d
-      state: "{{ 'Online' if state_attr('device_tracker.playroom_deco','internet_online') | default(false) else 'Offline' }}"
+      unique_id: playroom_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.playroom_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.playroom_deco','internet_online') is true }}"
 
 # ===============================
 # Outside Brightness estimator
