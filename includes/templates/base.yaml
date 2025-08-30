@@ -557,22 +557,19 @@
       availability: "{{ state_attr('device_tracker.playroom_deco','internet_online') is not none }}"
       state: "{{ state_attr('device_tracker.playroom_deco','internet_online') is true }}"
 
-# ===============================
-# Outside Brightness estimator
-# ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.light_sensor_illuminance
-        - sensor.solar_irradiance
-  variables:
-    illuminance: "{{ states('sensor.light_sensor_illuminance') | float(0) }}"
-    irradiance: "{{ [states('sensor.solar_irradiance') | float(0), 1] | max }}"
-  sensor:
+# ===================================
+# Outside Brightness estimator (non-triggered)
+# ===================================
+- sensor:
     - name: Outside Brightness
-      unique_id: a482977f-5b03-46ee-b044-6b9dbd9356c4
+      unique_id: outside_brightness
       unit_of_measurement: "lm/W"
-      state: "{{ illuminance / irradiance }}"
+      state_class: measurement
+      icon: mdi:brightness-5
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      state: >-
+        {{ (states('sensor.light_sensor_illuminance')|float(0))
+           / ([states('sensor.solar_irradiance')|float(0), 1]|max) }}
 
 # ===============================
 # Gas usage meters from on-time
