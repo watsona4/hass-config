@@ -254,21 +254,20 @@
         problems: "{{ problem_list }}"
 
 # ===============================
-# Dark Outside (keep your hysteresis)
+# Dark Outside
 # ===============================
-- trigger:
-    - platform: state
-      entity_id: sensor.light_sensor_illuminance
-  variables:
-    ill: "{{ states('sensor.light_sensor_illuminance') | float(0) if has_value('sensor.light_sensor_illuminance') else none }}"
-  binary_sensor:
+- binary_sensor:
     - name: Dark Outside
-      unique_id: c0fa4158-6312-45d3-bdd3-74f224d8d71a
+      unique_id: dark_outside
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
       state: >-
-        {% set was_dark = (this.state | default('off') | string | lower) == 'on' %}
+        {% set ill = states('sensor.light_sensor_illuminance') | float(default=none) %}
         {% if ill is not none %}
+          {% set was_dark = is_state('binary_sensor.dark_outside', 'on') %}
           {{ ill < 30 or (was_dark and ill < 150) }}
-        {% else %} false {% endif %}
+        {% else %}
+          false
+        {% endif %}
 
 # ===============================
 # “Remembered state” sensors
