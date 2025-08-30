@@ -160,36 +160,25 @@
 # ===============================
 # Presence delays
 # ===============================
-- trigger:
-    - platform: state
-      entity_id: binary_sensor.eleanor_presence_presence_information
-  binary_sensor:
+- binary_sensor:
     - name: Eleanor Presence Delay
-      unique_id: d050ef60-2710-4ceb-aac9-2f42644a04c0
+      unique_id: eleanor_presence_delay
       device_class: presence
-      delay_off: "00:15:00"
+      delay_off: "01:00:00"
       availability: "{{ has_value('binary_sensor.eleanor_presence_presence_information') }}"
       state: "{{ is_state('binary_sensor.eleanor_presence_presence_information','on') }}"
 
-- trigger:
-    - platform: state
-      entity_id: binary_sensor.michael_presence_presence_information
-  binary_sensor:
     - name: Michael Presence Delay
-      unique_id: bea65138-65a1-4ee8-84e3-a84cf293211b
+      unique_id: michael_presence_delay
       device_class: presence
-      delay_off: "00:15:00"
+      delay_off: "01:00:00"
       availability: "{{ has_value('binary_sensor.michael_presence_presence_information') }}"
       state: "{{ is_state('binary_sensor.michael_presence_presence_information','on') }}"
 
-- trigger:
-    - platform: state
-      entity_id: binary_sensor.guest_bedroom_presence_presence_sensor_1
-  binary_sensor:
     - name: Guest Bedroom Presence Delay
-      unique_id: c30c13f6-f33a-40b3-9204-5315d204f46d
+      unique_id: guest_bedroom_presence_delay
       device_class: presence
-      delay_off: "00:15:00"
+      delay_off: "01:00:00"
       availability: "{{ has_value('binary_sensor.guest_bedroom_presence_presence_sensor_1') }}"
       state: "{{ is_state('binary_sensor.guest_bedroom_presence_presence_sensor_1','on') }}"
 
