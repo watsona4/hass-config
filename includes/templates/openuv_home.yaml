@@ -236,7 +236,7 @@
     tt: "{{ h.get('time') or [] }}"
     uv: "{{ h.get('uv_index') or [] }}"
   sensor:
-    - name: OM Home Apparent UV Index
+    - name: OpenMeteo Home Apparent UV Index
       unique_id: openmeteo_home_apparent_uv_index
       unit_of_measurement: "UV index"
       state_class: measurement
@@ -259,7 +259,7 @@
           {%- endfor -%}
           {{ out.items }}
 
-# Protection window (OM Home)
+# Protection window (OpenMeteo Home)
 - trigger:
     - platform: state
       entity_id: sensor.openmeteo_home_apparent_uv_index
@@ -274,7 +274,7 @@
       {%- else -%}{{ [] }}
       {%- endif %}
   sensor:
-    - name: OM Home UV Protection Start
+    - name: OpenMeteo Home UV Protection Start
       unique_id: om_home_uv_protection_start
       device_class: timestamp
       state: >-
@@ -299,7 +299,7 @@
         {% endif %}
         {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
 
-    - name: OM Home UV Protection End
+    - name: OpenMeteo Home UV Protection End
       unique_id: om_home_uv_protection_end
       device_class: timestamp
       state: >-
@@ -326,7 +326,7 @@
         {% endif %}
         {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
 
-    - name: OM Home UV Protection Duration
+    - name: OpenMeteo Home UV Protection Duration
       unique_id: om_home_uv_protection_duration
       unit_of_measurement: "min"
       icon: mdi:clock-outline
@@ -345,7 +345,7 @@
     - platform: time_pattern
       minutes: "/10"
   binary_sensor:
-    - name: OM Home UV Protection
+    - name: OpenMeteo Home UV Protection
       unique_id: om_home_uv_protection
       availability: "{{ has_value('sensor.om_home_uv_protection_start') and has_value('sensor.om_home_uv_protection_end') }}"
       state: >-
@@ -357,14 +357,14 @@
         end: "{{ states('sensor.om_home_uv_protection_end') }}"
         duration: "{{ states('sensor.om_home_uv_protection_duration') }}"
 
-# OM Home Safe Exposure (Fitzpatrick) from apparent uv_index
+# OpenMeteo Home Safe Exposure (Fitzpatrick) from apparent uv_index
 - trigger:
     - platform: state
       entity_id: sensor.openmeteo_home_apparent_uv_index
   variables:
     app_uv_src: sensor.openmeteo_home_apparent_uv_index
   sensor:
-    - name: OM Home Safe Exposure (Skin Type 1)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 1)
       unique_id: om_home_safe_exposure_skin_type_1
       device_class: duration
       unit_of_measurement: "min"
@@ -374,7 +374,7 @@
         {% set u = states(app_uv_src) | float(0) %}
         {% set u = u if u >= 0.1 else 0.1 %}
         {{ ((200 * 2.5) / (3 * u)) | round(0) }}
-    - name: OM Home Safe Exposure (Skin Type 2)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 2)
       unique_id: om_home_safe_exposure_skin_type_2
       device_class: duration
       unit_of_measurement: "min"
@@ -384,7 +384,7 @@
         {% set u = states(app_uv_src) | float(0) %}
         {% set u = u if u >= 0.1 else 0.1 %}
         {{ ((200 * 3) / (3 * u)) | round(0) }}
-    - name: OM Home Safe Exposure (Skin Type 3)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 3)
       unique_id: om_home_safe_exposure_skin_type_3
       device_class: duration
       unit_of_measurement: "min"
@@ -395,7 +395,7 @@
         {% set u = states(app_uv_src) | float(0) %}
         {% set u = u if u >= 0.1 else 0.1 %}
         {{ ((200 * 4) / (3 * u)) | round(0) }}
-    - name: OM Home Safe Exposure (Skin Type 4)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 4)
       unique_id: om_home_safe_exposure_skin_type_4
       device_class: duration
       unit_of_measurement: "min"
@@ -405,7 +405,7 @@
         {% set u = states(app_uv_src) | float(0) %}
         {% set u = u if u >= 0.1 else 0.1 %}
         {{ ((200 * 5) / (3 * u)) | round(0) }}
-    - name: OM Home Safe Exposure (Skin Type 5)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 5)
       unique_id: om_home_safe_exposure_skin_type_5
       device_class: duration
       unit_of_measurement: "min"
@@ -415,7 +415,7 @@
         {% set u = states(app_uv_src) | float(0) %}
         {% set u = u if u >= 0.1 else 0.1 %}
         {{ ((200 * 8) / (3 * u)) | round(0) }}
-    - name: OM Home Safe Exposure (Skin Type 6)
+    - name: OpenMeteo Home Safe Exposure (Skin Type 6)
       unique_id: om_home_safe_exposure_skin_type_6
       device_class: duration
       unit_of_measurement: "min"
@@ -649,7 +649,7 @@
         capped: "{{ integration_multi['st6']['capped'] }}"
 
 # ===================== Home UV Dose Integration — Open-Meteo apparent (single loop; ST1–ST6) =====================
-# Same idea, using the OM apparent forecast stream. No fallback end_ts; if budget not met by last point, it's 'none'.
+# Same idea, using the OpenMeteo apparent forecast stream. No fallback end_ts; if budget not met by last point, it's 'none'.
 
 - trigger:
     - platform: state
