@@ -640,7 +640,7 @@
   - at: '18:30:00'
     trigger: time
   - entity_id:
-    - sensor.outdoor_thermometer_state
+    - sensor.outside_temperature_state
     above: 39.9
     trigger: numeric_state
     for:
@@ -649,7 +649,7 @@
       seconds: 0
     id: Temperature
   - entity_id:
-    - sensor.outdoor_thermometer_state
+    - sensor.outside_temperature_state
     below: 40
     trigger: numeric_state
     for:
@@ -666,7 +666,7 @@
     - person.ashley_watson
     to: home
   - entity_id:
-    - sensor.outdoor_thermometer_state
+    - sensor.outside_temperature_state
     above: 44.9
     trigger: numeric_state
     for:
@@ -675,7 +675,7 @@
       seconds: 0
     id: Temperature
   - entity_id:
-    - sensor.outdoor_thermometer_state
+    - sensor.outside_temperature_state
     below: 45
     trigger: numeric_state
     for:
@@ -695,7 +695,7 @@
         id:
         - Temperature
       - condition: numeric_state
-        entity_id: sensor.outdoor_thermometer_state
+        entity_id: sensor.outside_temperature_state
         above: 39
         below: 44
       - condition: numeric_state
@@ -718,7 +718,7 @@
         %}\n  {% if entry[\"datetime\"] | as_datetime | as_local <= morning %}\n    {%
         set ns.data = ns.data + [entry] %}\n  {% endif %}\n{% endfor %} {{ ns.data
         }}"
-      drops_time: "{% set ns = namespace(drops_time=None) %} {% if states(\"sensor.outdoor_thermometer_state\")
+      drops_time: "{% set ns = namespace(drops_time=None) %} {% if states(\"sensor.outside_temperature_state\")
         | float >= 40 %}\n  {% for entry in forecast %}\n    {% if ns.drops_time is
         none and entry[\"temperature\"] | float < 40 %}\n      {% set ns.drops_time
         = entry[\"datetime\"] %}\n    {% endif %}\n  {% endfor %}\n{% endif %} {{
