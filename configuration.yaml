@@ -88,5 +88,4 @@ generic_hygrostat: !include includes/generic_hygrostat.yaml
 binary_sensor: !include includes/binary_sensor.yaml
 sensor: !include_dir_merge_list includes/sensors
 utility_meter: !include includes/utility_meters.yaml
-alarm_control_panel: !include includes/alarm_control_panel.yaml
 weather: !include includes/weather.yaml
