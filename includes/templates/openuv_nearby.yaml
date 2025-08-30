@@ -1,0 +1,867 @@
+# ===================== Helper (Fitzpatrick minutes) =====================
+# We compute "Time to Burn (mins)" from UVI using OpenUV's guidance:
+# Type I:  (200 * 2.5) / (3 * UVI)
+# Type II: (200 * 3)   / (3 * UVI)
+# Type III:(200 * 4)   / (3 * UVI)
+# Type IV: (200 * 5)   / (3 * UVI)
+# Type V:  (200 * 8)   / (3 * UVI)
+# Type VI: (200 * 15)  / (3 * UVI)
+# We'll implement it inline in each sensor; clamp UVI to >=0.1 to avoid div-by-zero.
+
+# ===================== OpenUV Apparent UV (Nearby) =====================
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_nearby
+        - sensor.openuv_nearby_forecast
+        - sensor.openmeteo_nearby
+        - sensor.openmeteo_nearby_cloud_lut
+        - weather.openmeteo_weather_nearby
+    - platform: time
+      at: "00:00:15"
+  variables:
+    uv_src: sensor.openuv_nearby
+    fc_src: sensor.openuv_nearby_forecast
+    om_lut: sensor.openmeteo_nearby_cloud_lut
+    wx_src: weather.openmeteo_weather_nearby
+    raw_fc: "{{ state_attr(fc_src,'result') or [] }}"
+    pairs_raw: "{{ state_attr(om_lut,'pairs') or [] }}"
+    pairs: "{{ pairs_raw if pairs_raw is sequence else (pairs_raw | from_json) }}"
+  sensor:
+    - name: OpenUV Nearby Apparent UV Index
+      unique_id: openuv_nearby_apparent_uv_index
+      unit_of_measurement: "UV index"
+      state_class: measurement
+      availability: "{{ has_value(uv_src) }}"
+      state: >-
+        {% from 'macros.jinja' import uv_factor_sigmoid %}
+        {% set raw_uv = states(uv_src) | float(0) %}
+        {% set clouds = state_attr(wx_src,'cloud_coverage') | float(0) %}
+        {{ (raw_uv * (uv_factor_sigmoid(clouds) | float(1))) | round(2) }}
+      attributes:
+        source: "openuv_clear_sky * cloud_correction"
+        forecast: >-
+          {% from 'macros.jinja' import uv_factor_sigmoid %}
+          {%- set out = namespace(items=[]) -%}
+          {%- for p in (raw_fc or []) -%}
+            {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}
+            {%- if t is not none -%}
+              {%- set tl = t | as_local -%}
+              {%- set hk = (tl.replace(minute=0,second=0,microsecond=0) | as_timestamp | int) -%}
+              {%- set c = (pairs | selectattr('hk','eq', hk) | map(attribute='cc') | first) | default(0, true) | float(0) -%}
+              {%- set f = uv_factor_sigmoid(c) | float(1) -%}
+              {%- set out.items = out.items + [ {
+                    'datetime': tl.isoformat(),
+                    'uv_apparent': (p.get('uv',0) | float(0)) * f
+                  } ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ out.items }}
+
+    # Safe exposure times (Fitzpatrick), computed from apparent UVI
+    - name: OpenUV Nearby Safe Exposure (Skin Type 1)
+      unique_id: openuv_nearby_safe_exposure_skin_type_1
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 2.5) / (3 * u)) | round(0) }}
+
+    - name: OpenUV Nearby Safe Exposure (Skin Type 2)
+      unique_id: openuv_nearby_safe_exposure_skin_type_2
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 3) / (3 * u)) | round(0) }}
+
+    - name: OpenUV Nearby Safe Exposure (Skin Type 3)
+      unique_id: openuv_nearby_safe_exposure_skin_type_3
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 4) / (3 * u)) | round(0) }}
+
+    - name: OpenUV Nearby Safe Exposure (Skin Type 4)
+      unique_id: openuv_nearby_safe_exposure_skin_type_4
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 5) / (3 * u)) | round(0) }}
+
+    - name: OpenUV Nearby Safe Exposure (Skin Type 5)
+      unique_id: openuv_nearby_safe_exposure_skin_type_5
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 8) / (3 * u)) | round(0) }}
+
+    - name: OpenUV Nearby Safe Exposure (Skin Type 6)
+      unique_id: openuv_nearby_safe_exposure_skin_type_6
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value('sensor.openuv_nearby_apparent_uv_index') }}"
+      state: >-
+        {% set u = states('sensor.openuv_nearby_apparent_uv_index') | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 15) / (3 * u)) | round(0) }}
+
+# Protection window (OpenUV Nearby)
+- trigger:
+    - platform: state
+      entity_id: sensor.openuv_nearby_apparent_uv_index
+    - platform: time
+      at: "00:00:10"
+  variables:
+    thr: 3.5
+    raw: "{{ state_attr('sensor.openuv_nearby_apparent_uv_index','forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+  sensor:
+    - name: OpenUV Nearby UV Protection Start
+      unique_id: openuv_nearby_uv_protection_start
+      device_class: timestamp
+      state: >-
+        {% set ns = namespace(prev_t=None, prev_v=None, first_t=None, first_v=None, start_ts=None) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | float(0) %}
+            {% if ns.first_t is none %}{% set ns.first_t = tl %}{% set ns.first_v = v %}{% endif %}
+            {% if ns.prev_t and ns.start_ts is none and ns.prev_v < thr and v >= thr %}
+              {% set dv = v - ns.prev_v %}
+              {% set frac = (thr - ns.prev_v) / (dv if dv != 0 else 1) %}
+              {% set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.start_ts is none and ns.first_t and ns.first_v >= thr %}
+          {% set ns.start_ts = ns.first_t.timestamp() %}
+        {% endif %}
+        {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
+
+    - name: OpenUV Nearby UV Protection End
+      unique_id: openuv_nearby_uv_protection_end
+      device_class: timestamp
+      state: >-
+        {% set ns = namespace(prev_t=None, prev_v=None, end_ts=None, last_t=None, last_v=None, ever_above=false) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | float(0) %}
+            {% if v >= thr %}{% set ns.ever_above = true %}{% endif %}
+            {% if ns.prev_t and ns.prev_v >= thr and v < thr %}
+              {% set dv = ns.prev_v - v %}
+              {% set frac = (ns.prev_v - thr) / (dv if dv != 0 else 1) %}
+              {% set ns.end_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+            {% set ns.last_t = tl %}
+            {% set ns.last_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.end_ts is none and ns.last_t and ns.ever_above %}
+          {% set ns.end_ts = ns.last_t.timestamp() %}
+        {% endif %}
+        {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
+
+    - name: OpenUV Nearby UV Protection Duration
+      unique_id: openuv_nearby_uv_protection_duration
+      unit_of_measurement: "min"
+      icon: mdi:clock-outline
+      availability: "{{ has_value('sensor.openuv_nearby_uv_protection_start') and has_value('sensor.openuv_nearby_uv_protection_end') }}"
+      state: >-
+        {% set start = states('sensor.openuv_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set end   = states('sensor.openuv_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {% if start and end %} {{ ((end.timestamp() - start.timestamp()) / 60) | round(0) }}
+        {% else %} 0 {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_nearby_uv_protection_start
+        - sensor.openuv_nearby_uv_protection_end
+    - platform: time_pattern
+      minutes: "/10"
+  binary_sensor:
+    - name: OpenUV Nearby UV Protection
+      unique_id: openuv_nearby_uv_protection
+      availability: "{{ has_value('sensor.openuv_nearby_uv_protection_start') and has_value('sensor.openuv_nearby_uv_protection_end') }}"
+      state: >-
+        {% set s = states('sensor.openuv_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set e = states('sensor.openuv_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {{ s is not none and e is not none and s <= now() < e }}
+      attributes:
+        start: "{{ states('sensor.openuv_nearby_uv_protection_start') }}"
+        end: "{{ states('sensor.openuv_nearby_uv_protection_end') }}"
+        duration: "{{ states('sensor.openuv_nearby_uv_protection_duration') }}"
+
+# ===================== Open-Meteo Apparent UV (Nearby) =====================
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openmeteo_nearby
+    - platform: time
+      at: "00:00:15"
+  variables:
+    om_src: sensor.openmeteo_nearby
+    h: "{{ state_attr(om_src,'hourly') or {} }}"
+    tt: "{{ h.get('time') or [] }}"
+    uv: "{{ h.get('uv_index') or [] }}"
+  sensor:
+    - name: OM Nearby Apparent UV Index
+      unique_id: openmeteo_nearby_apparent_uv_index
+      unit_of_measurement: "UV index"
+      state_class: measurement
+      availability: "{{ (uv | length) > 0 }}"
+      state: >-
+        {{ (uv[0] | float(0)) if (uv | length) > 0 else 0 }}
+      attributes:
+        source: "openmeteo_uv_index"
+        forecast: >-
+          {%- set out = namespace(items=[]) -%}
+          {%- for i in range(uv | length) -%}
+            {%- set t = tt[i] | as_datetime(default=none) -%}
+            {%- if t is not none -%}
+              {%- set tl = t | as_local -%}
+              {%- set out.items = out.items + [ {
+                    'datetime': tl.isoformat(),
+                    'uv_apparent': (uv[i] | float(0))
+                  } ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ out.items }}
+
+# Protection window (OM Nearby)
+- trigger:
+    - platform: state
+      entity_id: sensor.openmeteo_nearby_apparent_uv_index
+    - platform: time
+      at: "00:00:10"
+  variables:
+    thr: 3.5
+    raw: "{{ state_attr('sensor.openmeteo_nearby_apparent_uv_index','forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+  sensor:
+    - name: OM Nearby UV Protection Start
+      unique_id: om_nearby_uv_protection_start
+      device_class: timestamp
+      state: >-
+        {% set ns = namespace(prev_t=None, prev_v=None, first_t=None, first_v=None, start_ts=None) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | float(0) %}
+            {% if ns.first_t is none %}{% set ns.first_t = tl %}{% set ns.first_v = v %}{% endif %}
+            {% if ns.prev_t and ns.start_ts is none and ns.prev_v < thr and v >= thr %}
+              {% set dv = v - ns.prev_v %}
+              {% set frac = (thr - ns.prev_v) / (dv if dv != 0 else 1) %}
+              {% set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.start_ts is none and ns.first_t and ns.first_v >= thr %}
+          {% set ns.start_ts = ns.first_t.timestamp() %}
+        {% endif %}
+        {{ (ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.start_ts is not none else none }}
+
+    - name: OM Nearby UV Protection End
+      unique_id: om_nearby_uv_protection_end
+      device_class: timestamp
+      state: >-
+        {% set ns = namespace(prev_t=None, prev_v=None, end_ts=None, last_t=None, last_v=None, ever_above=false) %}
+        {% for p in (data or []) %}
+          {% set t = p.datetime | default(p.get('datetime')) | as_datetime(default=none) %}
+          {% if t and (t | as_local).date() == now().date() %}
+            {% set tl = t | as_local %}
+            {% set v = p.uv_apparent | float(0) %}
+            {% if v >= thr %}{% set ns.ever_above = true %}{% endif %}
+            {% if ns.prev_t and ns.prev_v >= thr and v < thr %}
+              {% set dv = ns.prev_v - v %}
+              {% set frac = (ns.prev_v - thr) / (dv if dv != 0 else 1) %}
+              {% set ns.end_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) %}
+            {% endif %}
+            {% set ns.prev_t = tl %}
+            {% set ns.prev_v = v %}
+            {% set ns.last_t = tl %}
+            {% set ns.last_v = v %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.end_ts is none and ns.last_t and ns.ever_above %}
+          {% set ns.end_ts = ns.last_t.timestamp() %}
+        {% endif %}
+        {{ (ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if ns.end_ts is not none else none }}
+
+    - name: OM Nearby UV Protection Duration
+      unique_id: om_nearby_uv_protection_duration
+      unit_of_measurement: "min"
+      icon: mdi:clock-outline
+      availability: "{{ has_value('sensor.om_nearby_uv_protection_start') and has_value('sensor.om_nearby_uv_protection_end') }}"
+      state: >-
+        {% set start = states('sensor.om_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set end   = states('sensor.om_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {% if start and end %} {{ ((end.timestamp() - start.timestamp()) / 60) | round(0) }}
+        {% else %} 0 {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.om_nearby_uv_protection_start
+        - sensor.om_nearby_uv_protection_end
+    - platform: time_pattern
+      minutes: "/10"
+  binary_sensor:
+    - name: OM Nearby UV Protection
+      unique_id: om_nearby_uv_protection
+      availability: "{{ has_value('sensor.om_nearby_uv_protection_start') and has_value('sensor.om_nearby_uv_protection_end') }}"
+      state: >-
+        {% set s = states('sensor.om_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set e = states('sensor.om_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {{ s is not none and e is not none and s <= now() < e }}
+      attributes:
+        start: "{{ states('sensor.om_nearby_uv_protection_start') }}"
+        end: "{{ states('sensor.om_nearby_uv_protection_end') }}"
+        duration: "{{ states('sensor.om_nearby_uv_protection_duration') }}"
+
+# OM Nearby Safe Exposure (Fitzpatrick) from apparent uv_index
+- trigger:
+    - platform: state
+      entity_id: sensor.openmeteo_nearby_apparent_uv_index
+  variables:
+    app_uv_src: sensor.openmeteo_nearby_apparent_uv_index
+  sensor:
+    - name: OM Nearby Safe Exposure (Skin Type 1)
+      unique_id: om_nearby_safe_exposure_skin_type_1
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}"
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 2.5) / (3 * u)) | round(0) }}
+    - name: OM Nearby Safe Exposure (Skin Type 2)
+      unique_id: om_nearby_safe_exposure_skin_type_2
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}"
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 3) / (3 * u)) | round(0) }}
+    - name: OM Nearby Safe Exposure (Skin Type 3)
+      unique_id: om_nearby_safe_exposure_skin_type_3
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}
+      "
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 4) / (3 * u)) | round(0) }}
+    - name: OM Nearby Safe Exposure (Skin Type 4)
+      unique_id: om_nearby_safe_exposure_skin_type_4
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}"
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 5) / (3 * u)) | round(0) }}
+    - name: OM Nearby Safe Exposure (Skin Type 5)
+      unique_id: om_nearby_safe_exposure_skin_type_5
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}"
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 8) / (3 * u)) | round(0) }}
+    - name: OM Nearby Safe Exposure (Skin Type 6)
+      unique_id: om_nearby_safe_exposure_skin_type_6
+      device_class: duration
+      unit_of_measurement: "min"
+      state_class: measurement
+      availability: "{{ has_value(app_uv_src) }}"
+      state: >-
+        {% set u = states(app_uv_src) | float(0) %}
+        {% set u = u if u >= 0.1 else 0.1 %}
+        {{ ((200 * 15) / (3 * u)) | round(0) }}
+
+# ===================== Nearby UV Dose Integration — OpenUV apparent (single loop; ST1–ST6) =====================
+# Integrates the future apparent UV forecast (trapezoid) once, and resolves separate end_ts for each Fitzpatrick type.
+# If a budget isn't reached by the last forecast point (sunset), end_ts remains 'none'.
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openuv_nearby_apparent_uv_index   # exposes 'forecast' of apparent UV points
+        - sensor.openuv_nearby
+    - platform: time_pattern
+      minutes: "/10"
+
+  variables:
+    uv_entity: "sensor.openuv_nearby_apparent_uv_index"
+
+    # Forecast points for *today* (apparent UV)
+    raw: "{{ state_attr(uv_entity, 'forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+    pts: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for p in (data or []) -%}
+        {%- set dt = (p.datetime | default(p.get('datetime'))) | as_datetime(none) -%}
+        {%- if dt is not none -%}
+          {%- set tl = dt | as_local -%}
+          {%- if tl.date() == now().date() -%}
+            {%- set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) -%}
+            {%- set ns.out = ns.out + [{'ts': tl.timestamp(), 'uv': v}] -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out | sort(attribute='ts') }}
+
+    uv_now: "{{ states(uv_entity) | float(0) }}"
+
+    # Strict OpenUV UV-min budgets (minutes × UVI)
+    st1_budget: "{{ (200 * 2.5) / 3 }}"
+    st2_budget: "{{ (200 * 3)   / 3 }}"
+    st3_budget: "{{ (200 * 4)   / 3 }}"
+    st4_budget: "{{ (200 * 5)   / 3 }}"
+    st5_budget: "{{ (200 * 8)   / 3 }}"
+    st6_budget: "{{ (200 * 15)  / 3 }}"
+
+    # Single-pass, multi-skin integration (no dict.update(); use |combine)
+    integration_multi: >-
+      {% set tnow = now().timestamp() -%}
+      {%- set budgets = {
+            'st1': (st1_budget | float(0)),
+            'st2': (st2_budget | float(0)),
+            'st3': (st3_budget | float(0)),
+            'st4': (st4_budget | float(0)),
+            'st5': (st5_budget | float(0)),
+            'st6': (st6_budget | float(0))
+          } -%}
+      {%- set types = ['st1','st2','st3','st4','st5','st6'] -%}
+      {%- set ts = pts | map(attribute='ts') | list -%}
+      {%- set uv = pts | map(attribute='uv') | list -%}
+      {%- set n = ts | length -%}
+      {%- set ns = namespace(
+            idx     = None,
+            last_ts = None,
+            acc     = {},
+            end_ts  = {},
+            done    = {},
+            prev_t  = tnow,
+            prev_v  = (uv_now | float(0)),
+            result  = {}
+          ) -%}
+      {%- for i in range(n) -%}
+        {%- if (uv[i] | float(0)) > 0 -%}
+          {%- set ns.idx = i -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if ns.idx is not none -%}
+        {%- if (ns.idx + 1) < n -%}
+          {%- set ns.last_ts = ts[ns.idx + 1] -%}
+        {%- else -%}
+          {%- set ns.last_ts = ts[ns.idx] -%}
+        {%- endif -%}
+      {%- elif n > 0 -%}
+        {%- set ns.last_ts = ts[-1] -%}
+      {%- endif -%}
+      {%- for k in types -%}
+        {%- set ns.acc    = ns.acc    | combine({k: 0.0}) -%}
+        {%- set ns.end_ts = ns.end_ts | combine({k: none}) -%}
+        {%- set ns.done   = ns.done   | combine({k: false}) -%}
+      {%- endfor -%}
+      {%- for q in (pts | selectattr('ts','gt', tnow) | list) -%}
+        {%- set dtm  = (q.ts - ns.prev_t) / 60.0 -%}
+        {%- if dtm > 0 -%}
+          {%- set area = ((ns.prev_v | float(0)) + (q.uv | float(0))) / 2.0 * dtm -%}
+          {%- for k in types -%}
+            {%- if not ns.done[k] and (budgets[k] > 0) -%}
+              {%- if ns.acc[k] + area >= budgets[k] -%}
+                {%- set rem  = budgets[k] - ns.acc[k] -%}
+                {%- set frac = rem / area if area > 0 else 0 -%}
+                {%- set ns.end_ts = ns.end_ts | combine({k: (ns.prev_t + frac * (q.ts - ns.prev_t))}) -%}
+                {%- set ns.done   = ns.done   | combine({k: true}) -%}
+              {%- else -%}
+                {%- set ns.acc = ns.acc | combine({k: (ns.acc[k] + area)}) -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- set ns.prev_t = q.ts -%}
+          {%- set ns.prev_v = q.uv -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- for k in types -%}
+        {%- set is_cap  = (ns.end_ts[k] is none) and (ns.last_ts is not none) -%}
+        {%- set final_ts = (ns.end_ts[k] if ns.end_ts[k] is not none else ns.last_ts) -%}
+        {%- set mins = (((final_ts - tnow) / 60) | round(0)) if final_ts is not none else none -%}
+        {%- set k_obj = {'end_ts': final_ts, 'mins': mins, 'capped': is_cap} -%}
+        {%- set ns.result = ns.result | combine({k: k_obj}) -%}
+      {%- endfor -%}
+      {{ ns.result }}
+
+  sensor:
+    - name: Nearby UV Safe Exposure End (Forecast, ST1 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st1_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st1']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st1']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st1']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st1']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST1 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st1_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st1']['mins'] is not none) }}"
+      state: "{{ integration_multi['st1']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st1']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST2 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st2_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st2']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st2']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st2']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st2']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST2 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st2_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st2']['mins'] is not none) }}"
+      state: "{{ integration_multi['st2']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st2']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST3 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st3_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st3']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st3']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st3']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st3']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST3 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st3_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st3']['mins'] is not none) }}"
+      state: "{{ integration_multi['st3']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st3']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST4 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st4_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st4']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st4']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st4']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st4']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST4 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st4_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st4']['mins'] is not none) }}"
+      state: "{{ integration_multi['st4']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st4']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST5 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st5_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st5']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st5']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st5']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st5']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST5 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st5_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st5']['mins'] is not none) }}"
+      state: "{{ integration_multi['st5']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st5']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST6 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st6_openuv
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st6']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st6']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st6']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st6']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST6 • OpenUV)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st6_openuv
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st6']['mins'] is not none) }}"
+      state: "{{ integration_multi['st6']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st6']['capped'] }}"
+
+# ===================== Nearby UV Dose Integration — Open-Meteo apparent (single loop; ST1–ST6) =====================
+# Same idea, using the OM apparent forecast stream. No fallback end_ts; if budget not met by last point, it's 'none'.
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.openmeteo_nearby_apparent_uv_index
+        - sensor.openmeteo_nearby
+    - platform: time_pattern
+      minutes: "/10"
+
+  variables:
+    uv_entity: "sensor.openmeteo_nearby_apparent_uv_index"
+
+    raw: "{{ state_attr(uv_entity, 'forecast') }}"
+    data: >-
+      {%- if raw is string -%}{{ raw | from_json }}
+      {%- elif raw is sequence -%}{{ raw }}
+      {%- else -%}{{ [] }}
+      {%- endif %}
+    pts: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for p in (data or []) -%}
+        {%- set dt = (p.datetime | default(p.get('datetime'))) | as_datetime(none) -%}
+        {%- if dt is not none -%}
+          {%- set tl = dt | as_local -%}
+          {%- if tl.date() == now().date() -%}
+            {%- set v = p.uv_apparent | default(p.get('uv_apparent')) | float(0) -%}
+            {%- set ns.out = ns.out + [{'ts': tl.timestamp(), 'uv': v}] -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out | sort(attribute='ts') }}
+
+    uv_now: "{{ states(uv_entity) | float(0) }}"
+
+    st1_budget: "{{ (200 * 2.5) / 3 }}"
+    st2_budget: "{{ (200 * 3)   / 3 }}"
+    st3_budget: "{{ (200 * 4)   / 3 }}"
+    st4_budget: "{{ (200 * 5)   / 3 }}"
+    st5_budget: "{{ (200 * 8)   / 3 }}"
+    st6_budget: "{{ (200 * 15)  / 3 }}"
+
+    integration_multi: >-
+      {% set tnow = now().timestamp() -%}
+      {%- set budgets = {
+            'st1': (st1_budget | float(0)),
+            'st2': (st2_budget | float(0)),
+            'st3': (st3_budget | float(0)),
+            'st4': (st4_budget | float(0)),
+            'st5': (st5_budget | float(0)),
+            'st6': (st6_budget | float(0))
+          } -%}
+      {%- set types = ['st1','st2','st3','st4','st5','st6'] -%}
+      {%- set ts = pts | map(attribute='ts') | list -%}
+      {%- set uv = pts | map(attribute='uv') | list -%}
+      {%- set n = ts | length -%}
+      {%- set ns = namespace(
+            idx     = None,
+            last_ts = None,
+            acc     = {},
+            end_ts  = {},
+            done    = {},
+            prev_t  = tnow,
+            prev_v  = (uv_now | float(0)),
+            result  = {}
+          ) -%}
+      {%- for i in range(n) -%}
+        {%- if (uv[i] | float(0)) > 0 -%}
+          {%- set ns.idx = i -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if ns.idx is not none -%}
+        {%- if (ns.idx + 1) < n -%}
+          {%- set ns.last_ts = ts[ns.idx + 1] -%}
+        {%- else -%}
+          {%- set ns.last_ts = ts[ns.idx] -%}
+        {%- endif -%}
+      {%- elif n > 0 -%}
+        {%- set ns.last_ts = ts[-1] -%}
+      {%- endif -%}
+      {%- for k in types -%}
+        {%- set ns.acc    = ns.acc    | combine({k: 0.0}) -%}
+        {%- set ns.end_ts = ns.end_ts | combine({k: none}) -%}
+        {%- set ns.done   = ns.done   | combine({k: false}) -%}
+      {%- endfor -%}
+      {%- for q in (pts | selectattr('ts','gt', tnow) | list) -%}
+        {%- set dtm  = (q.ts - ns.prev_t) / 60.0 -%}
+        {%- if dtm > 0 -%}
+          {%- set area = ((ns.prev_v | float(0)) + (q.uv | float(0))) / 2.0 * dtm -%}
+          {%- for k in types -%}
+            {%- if not ns.done[k] and (budgets[k] > 0) -%}
+              {%- if ns.acc[k] + area >= budgets[k] -%}
+                {%- set rem  = budgets[k] - ns.acc[k] -%}
+                {%- set frac = rem / area if area > 0 else 0 -%}
+                {%- set ns.end_ts = ns.end_ts | combine({k: (ns.prev_t + frac * (q.ts - ns.prev_t))}) -%}
+                {%- set ns.done   = ns.done   | combine({k: true}) -%}
+              {%- else -%}
+                {%- set ns.acc = ns.acc | combine({k: (ns.acc[k] + area)}) -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- set ns.prev_t = q.ts -%}
+          {%- set ns.prev_v = q.uv -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- for k in types -%}
+        {%- set is_cap  = (ns.end_ts[k] is none) and (ns.last_ts is not none) -%}
+        {%- set final_ts = (ns.end_ts[k] if ns.end_ts[k] is not none else ns.last_ts) -%}
+        {%- set mins = (((final_ts - tnow) / 60) | round(0)) if final_ts is not none else none -%}
+        {%- set k_obj = {'end_ts': final_ts, 'mins': mins, 'capped': is_cap} -%}
+        {%- set ns.result = ns.result | combine({k: k_obj}) -%}
+      {%- endfor -%}
+      {{ ns.result }}
+
+  sensor:
+    - name: Nearby UV Safe Exposure End (Forecast, ST1 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st1_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st1']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st1']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st1']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st1']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST1 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st1_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st1']['mins'] is not none) }}"
+      state: "{{ integration_multi['st1']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st1']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST2 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st2_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st2']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st2']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st2']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st2']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST2 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st2_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st2']['mins'] is not none) }}"
+      state: "{{ integration_multi['st2']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st2']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST3 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st3_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st3']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st3']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st3']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st3']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST3 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st3_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st3']['mins'] is not none) }}"
+      state: "{{ integration_multi['st3']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st3']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST4 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st4_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st4']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st4']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st4']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st4']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST4 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st4_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st4']['mins'] is not none) }}"
+      state: "{{ integration_multi['st4']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st4']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST5 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st5_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st5']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st5']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st5']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st5']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST5 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st5_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st5']['mins'] is not none) }}"
+      state: "{{ integration_multi['st5']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st5']['capped'] }}"
+
+    - name: Nearby UV Safe Exposure End (Forecast, ST6 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_end_forecast_st6_openmeteo
+      device_class: timestamp
+      availability: "{{ (pts | count) > 0 and (integration_multi['st6']['end_ts'] is not none) }}"
+      state: "{{ (integration_multi['st6']['end_ts'] | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true)) if integration_multi['st6']['end_ts'] else none }}"
+      attributes:
+        capped: "{{ integration_multi['st6']['capped'] }}"
+    - name: Nearby UV Safe Exposure Minutes (Forecast, ST6 • Open-Meteo)
+      unique_id: nearby_uv_safe_exposure_minutes_forecast_st6_openmeteo
+      unit_of_measurement: "min"
+      icon: mdi:sun-clock
+      state_class: measurement
+      availability: "{{ (pts | count) > 0 and (integration_multi['st6']['mins'] is not none) }}"
+      state: "{{ integration_multi['st6']['mins'] | int(0) }}"
+      attributes:
+        capped: "{{ integration_multi['st6']['capped'] }}"
