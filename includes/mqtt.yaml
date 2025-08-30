@@ -314,15 +314,23 @@
       unique_id: netprobe_down
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
-      value_template: "{{ value_json.download_mbps | float }}"
-      icon: mdi:download
+      value_template: >-
+        {% set v = value_json.download_mbps %}
+        {{ v if v is number else this.state }}
+      availability_topic: "site/home/devices/netprobe"
+      availability_template: >-
+        {{ (value_json.download_mbps is number) }}
 
     - name: "Netprobe Upload"
       unique_id: netprobe_up
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "Mbps"
-      value_template: "{{ value_json.upload_mbps | float }}"
-      icon: mdi:upload
+      value_template: >-
+        {% set v = value_json.upload_mbps %}
+        {{ v if v is number else this.state }}
+      availability_topic: "site/home/devices/netprobe"
+      availability_template: >-
+        {{ (value_json.upload_mbps is number) }}
 
     - name: "Netprobe Latency (TCP)"
       unique_id: netprobe_lat_tcp
@@ -354,3 +362,15 @@
       state_topic: "site/home/devices/netprobe"
       value_template: "{{ value_json.timestamp }}"
       device_class: timestamp
+
+    - name: "Netprobe Hiccup"
+      unique_id: netprobe_hiccup
+      state_topic: "site/home/devices/netprobe"
+      value_template: "{{ value_json.hiccup }}"
+      icon: mdi:pulse
+
+    - name: "Netprobe Hiccup Reason"
+      unique_id: netprobe_hiccup_reason
+      state_topic: "site/home/devices/netprobe"
+      value_template: "{{ value_json.hiccup_reason | default('') }}"
+      icon: mdi:alert-circle-outline
