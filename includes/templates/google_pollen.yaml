@@ -1,7 +1,11 @@
-# ================= Google Pollen - Nearby (derived templates) =================
+# ==============================================================================
+#                           Google Pollen - Nearby
+# ==============================================================================
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_nearby
+    - platform: homeassistant
+      event: start
   variables:
     src: sensor.google_pollen_nearby
     di: "{{ state_attr(src, 'dailyInfo') | default([], true) }}"
@@ -93,7 +97,7 @@
     - name: Google Pollen Nearby Today
       unique_id: google_pollen_nearby_today
       icon: mdi:flower-pollen
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: >-
         {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
         {% set types = d0.get('pollenTypeInfo') or [] %}
@@ -142,7 +146,7 @@
     - name: Pollen Species Nearby Today
       unique_id: pollen_species_nearby_today
       icon: mdi:leaf
-      availability: "{{ has_value(src) and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and ((plants | count) > 0) }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -155,7 +159,7 @@
     - name: Pollen Forecast Nearby Day 0
       unique_id: pollen_forecast_nearby_day_0
       icon: mdi:calendar-today
-      availability: "{{ (days | count) > 0 and (days[0] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 0) and ((days[0] | default({})).get('exists')) }}"
       state: "{{ (days[0] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[0] | default({})).get('date') }}"
@@ -172,7 +176,7 @@
     - name: Pollen Forecast Nearby Day 1
       unique_id: pollen_forecast_nearby_day_1
       icon: mdi:calendar
-      availability: "{{ (days | count) > 1 and (days[1] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 1) and ((days[1] | default({})).get('exists')) }}"
       state: "{{ (days[1] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[1] | default({})).get('date') }}"
@@ -189,7 +193,7 @@
     - name: Pollen Forecast Nearby Day 2
       unique_id: pollen_forecast_nearby_day_2
       icon: mdi:calendar
-      availability: "{{ (days | count) > 2 and (days[2] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 2) and ((days[2] | default({})).get('exists')) }}"
       state: "{{ (days[2] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[2] | default({})).get('date') }}"
@@ -205,7 +209,7 @@
 
     - name: Pollen Species List Nearby Today
       unique_id: pollen_species_list_nearby_today
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
@@ -230,22 +234,24 @@
     - name: Pollen Peak Index Nearby Today
       unique_id: pollen_peak_index_nearby_today
       icon: mdi:meter-gas
-      availability: >-
-        {{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}
+      availability: "{{ has_value(src) and (((d.get('pollenTypeInfo') or []) | count) > 0) }}"
       state: >-
         {% set types = d.get('pollenTypeInfo') or [] %}
-        {% if types | count == 0 %} {{ none }}
+        {% if (types | count) == 0 %} {{ none }}
         {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
 
-
-# ================= Google Pollen - Home (derived templates) =================
+# ==============================================================================
+#                           Google Pollen - Home
+# ==============================================================================
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_home
+    - platform: homeassistant
+      event: start
   variables:
     src: sensor.google_pollen_home
-    di: "{{ state_attr(src,'dailyInfo') | default([], true) }}"
+    di: "{{ state_attr(src, 'dailyInfo') | default([], true) }}"
     d: "{{ (di | first) | default({}, true) }}"
     plants: "{{ d.get('plantInfo') or [] }}"
     pick: >-
@@ -334,7 +340,7 @@
     - name: Google Pollen Home Today
       unique_id: google_pollen_home_today
       icon: mdi:flower-pollen
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: >-
         {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
         {% set types = d0.get('pollenTypeInfo') or [] %}
@@ -383,7 +389,7 @@
     - name: Pollen Species Home Today
       unique_id: pollen_species_home_today
       icon: mdi:leaf
-      availability: "{{ has_value(src) and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and ((plants | count) > 0) }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -396,7 +402,7 @@
     - name: Pollen Forecast Home Day 0
       unique_id: pollen_forecast_home_day_0
       icon: mdi:calendar-today
-      availability: "{{ (days | count) > 0 and (days[0] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 0) and ((days[0] | default({})).get('exists')) }}"
       state: "{{ (days[0] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[0] | default({})).get('date') }}"
@@ -413,7 +419,7 @@
     - name: Pollen Forecast Home Day 1
       unique_id: pollen_forecast_home_day_1
       icon: mdi:calendar
-      availability: "{{ (days | count) > 1 and (days[1] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 1) and ((days[1] | default({})).get('exists')) }}"
       state: "{{ (days[1] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[1] | default({})).get('date') }}"
@@ -430,7 +436,7 @@
     - name: Pollen Forecast Home Day 2
       unique_id: pollen_forecast_home_day_2
       icon: mdi:calendar
-      availability: "{{ (days | count) > 2 and (days[2] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 2) and ((days[2] | default({})).get('exists')) }}"
       state: "{{ (days[2] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[2] | default({})).get('date') }}"
@@ -446,7 +452,7 @@
 
     - name: Pollen Species List Home Today
       unique_id: pollen_species_list_home_today
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
@@ -471,21 +477,24 @@
     - name: Pollen Peak Index Home Today
       unique_id: pollen_peak_index_home_today
       icon: mdi:meter-gas
-      availability: "{{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}"
+      availability: "{{ has_value(src) and (((d.get('pollenTypeInfo') or []) | count) > 0) }}"
       state: >-
         {% set types = d.get('pollenTypeInfo') or [] %}
-        {% if types | count == 0 %} {{ none }}
+        {% if (types | count) == 0 %} {{ none }}
         {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
 
-
-# ================= Google Pollen - RV (derived templates) =================
+# ==============================================================================
+#                           Google Pollen - RV
+# ==============================================================================
 - trigger:
     - platform: state
       entity_id: sensor.google_pollen_rv
+    - platform: homeassistant
+      event: start
   variables:
     src: sensor.google_pollen_rv
-    di: "{{ state_attr(src,'dailyInfo') | default([], true) }}"
+    di: "{{ state_attr(src, 'dailyInfo') | default([], true) }}"
     d: "{{ (di | first) | default({}, true) }}"
     plants: "{{ d.get('plantInfo') or [] }}"
     pick: >-
@@ -574,7 +583,7 @@
     - name: Google Pollen RV Today
       unique_id: google_pollen_rv_today
       icon: mdi:flower-pollen
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: >-
         {% set d0 = (di[0] if di is sequence and (di | count) > 0 else {}) %}
         {% set types = d0.get('pollenTypeInfo') or [] %}
@@ -623,7 +632,7 @@
     - name: Pollen Species RV Today
       unique_id: pollen_species_rv_today
       icon: mdi:leaf
-      availability: "{{ has_value(src) and (plants | count) > 0 }}"
+      availability: "{{ has_value(src) and ((plants | count) > 0) }}"
       state: "{{ pick.name or 'unknown' }}"
       attributes:
         code: "{{ pick.code }}"
@@ -636,7 +645,7 @@
     - name: Pollen Forecast RV Day 0
       unique_id: pollen_forecast_rv_day_0
       icon: mdi:calendar-today
-      availability: "{{ (days | count) > 0 and (days[0] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 0) and ((days[0] | default({})).get('exists')) }}"
       state: "{{ (days[0] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[0] | default({})).get('date') }}"
@@ -653,7 +662,7 @@
     - name: Pollen Forecast RV Day 1
       unique_id: pollen_forecast_rv_day_1
       icon: mdi:calendar
-      availability: "{{ (days | count) > 1 and (days[1] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 1) and ((days[1] | default({})).get('exists')) }}"
       state: "{{ (days[1] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[1] | default({})).get('date') }}"
@@ -670,7 +679,7 @@
     - name: Pollen Forecast RV Day 2
       unique_id: pollen_forecast_rv_day_2
       icon: mdi:calendar
-      availability: "{{ (days | count) > 2 and (days[2] | default({})).get('exists') }}"
+      availability: "{{ ((days | count) > 2) and ((days[2] | default({})).get('exists')) }}"
       state: "{{ (days[2] | default({})).get('state') or 'unknown' }}"
       attributes:
         date: "{{ (days[2] | default({})).get('date') }}"
@@ -686,7 +695,7 @@
 
     - name: Pollen Species List RV Today
       unique_id: pollen_species_list_rv_today
-      availability: "{{ has_value(src) and (di | count) > 0 }}"
+      availability: "{{ has_value(src) and ((di | count) > 0) }}"
       state: "{{ (di | count) > 0 }}"
       attributes:
         species: >-
@@ -711,9 +720,10 @@
     - name: Pollen Peak Index RV Today
       unique_id: pollen_peak_index_rv_today
       icon: mdi:meter-gas
-      availability: "{{ has_value(src) and (d.get('pollenTypeInfo') or []) | count > 0 }}"
+      availability: "{{ has_value(src) and (((d.get('pollenTypeInfo') or []) | count) > 0) }}"
       state: >-
         {% set types = d.get('pollenTypeInfo') or [] %}
-        {% if types | count == 0 %} {{ none }}
+        {% if (types | count) == 0 %} {{ none }}
         {% else %} {{ (types | map(attribute='indexInfo.value') | list | max) }}
         {% endif %}
+
