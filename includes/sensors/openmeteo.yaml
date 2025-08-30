@@ -27,8 +27,8 @@
       {{ plon if plon != 0 else hlon }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
-    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
@@ -78,8 +78,8 @@
       {{ states('sensor.home_longitude') | float(0) }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
-    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
@@ -137,8 +137,8 @@
       {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max
-    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index
+    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
