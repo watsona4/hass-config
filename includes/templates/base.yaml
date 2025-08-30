@@ -820,7 +820,7 @@
            | selectattr('state','eq','on') | list | count > 0 }}
 
 # ===============================
-# Rain probe “fresh” pulse and Rainy
+# Rain probe “fresh” pulse (triggered)
 # ===============================
 - trigger:
     - platform: state
@@ -833,33 +833,31 @@
       state: "{{ trigger.platform == 'state' }}"
       delay_off: "00:30:00"
 
-- trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.rain_sensor_moisture
-        - binary_sensor.rain_probe_fresh
-        - binary_sensor.sunny
-        - weather.openmeteo_weather_home
-  variables:
-    probe_ok: "{{ has_value('binary_sensor.rain_sensor_moisture') and is_state('binary_sensor.rain_probe_fresh','on') }}"
-    wx: "{{ states('weather.openmeteo_weather_home') }}"
-  binary_sensor:
+# ===============================
+# Rainy (non-triggered; uses pulse + weather/sunny)
+# ===============================
+- binary_sensor:
     - name: Rainy
-      unique_id: 9f9df0b1-2f45-4c86-8e6d-rainy-sensor
+      unique_id: rainy
       device_class: moisture
       icon: "{{ 'mdi:weather-pouring' if is_state(this.entity_id,'on') else 'mdi:weather-partly-cloudy' }}"
-      availability: "{{ has_value('binary_sensor.rain_sensor_moisture') or has_value('binary_sensor.sunny') or has_value('weather.openmeteo_weather_home') }}"
+      availability: >-
+        {{ has_value('binary_sensor.rain_sensor_moisture')
+           or has_value('binary_sensor.sunny')
+           or has_value('weather.openmeteo_weather_home') }}
       state: >-
+        {% set probe_ok = has_value('binary_sensor.rain_sensor_moisture')
+                           and is_state('binary_sensor.rain_probe_fresh','on') %}
         {% if probe_ok %}
           {{ is_state('binary_sensor.rain_sensor_moisture','on') }}
         {% else %}
           {% set rainy_states = ['rainy','pouring','lightning-rainy'] %}
-          {{ (not is_state('binary_sensor.sunny','on')) and (wx in rainy_states) }}
+          {{ (not is_state('binary_sensor.sunny','on')) and (states('weather.openmeteo_weather_home') in rainy_states) }}
         {% endif %}
       delay_on: "00:00:30"
       delay_off: "00:05:00"
       attributes:
-        source_used: "{{ 'moisture_sensor' if probe_ok else 'fallback_weather_sunny' }}"
+        source_used: "{{ 'moisture_sensor' if (has_value('binary_sensor.rain_sensor_moisture') and is_state('binary_sensor.rain_probe_fresh','on')) else 'fallback_weather_sunny' }}"
         probe_last_changed: >-
           {% if states.binary_sensor.rain_sensor_moisture is defined %}
             {{ states.binary_sensor.rain_sensor_moisture.last_changed }}
