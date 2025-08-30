@@ -112,19 +112,14 @@
 # ===============================
 # Humidity Ratio
 # ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.outdoor_thermometer_humidity
-        - sensor.downstairs_thermostat_current_humidity
-  variables:
-    a: "{{ states('sensor.outdoor_thermometer_humidity') | float(0) }}"
-    b: "{{ states('sensor.downstairs_thermostat_current_humidity') | float(0) }}"
-  sensor:
+- sensor:
     - name: Humidity Ratio
-      unique_id: 2b5a6f1e-2a0e-4a21-9e77-hum-ratio
+      unique_id: humidity_ratio
       availability: "{{ has_value('sensor.outdoor_thermometer_humidity') and has_value('sensor.downstairs_thermostat_current_humidity') }}"
-      state: "{{ (a / b) if b > 0 else none }}"
+      state: >-
+        {% set a = states('sensor.outdoor_thermometer_humidity') | float(0) %}
+        {% set b = states('sensor.downstairs_thermostat_current_humidity') | float(0) %}
+        {{ (a / b) if b > 0 else none }}
 
 # ===============================
 # Hot Inside / Hot In Study
