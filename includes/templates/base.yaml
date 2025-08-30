@@ -45,20 +45,19 @@
 # ===============================
 # Sunny outside (debounced)
 # ===============================
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.light_sensor_illuminance
-        - sun.sun
-  variables:
-    elev: "{{ state_attr('sun.sun','elevation') | float(0) }}"
-    ill: "{{ states('sensor.light_sensor_illuminance') | float(0) }}"
-  binary_sensor:
+- binary_sensor:
     - name: Sunny
-      unique_id: 232a257d-23f2-4489-9de4-cab65a2d30c3
+      unique_id: sunny_outside
+      device_class: light
       delay_on: "00:05:00"
       delay_off: "00:05:00"
-      state: "{{ has_value('sensor.light_sensor_illuminance') and elev > 3 and ill > 500 }}"
+      availability: >-
+        {{ has_value('sensor.light_sensor_illuminance')
+           and state_attr('sun.sun','elevation') is number }}
+      state: >-
+        {% set elev = state_attr('sun.sun','elevation') | float(0) %}
+        {% set ill = states('sensor.light_sensor_illuminance') | float(0) %}
+        {{ elev > 3 and ill > 500 }}
 
 # ===============================
 # Daytime/Evening without now()
@@ -70,7 +69,6 @@
         - schedule.evening
         - input_boolean.daytime_override
         - calendar.holidays_in_united_states
-    # Boundaries to flip holiday daytime
     - platform: time
       at: "06:30:00"
     - platform: time
@@ -78,33 +76,38 @@
     - platform: time
       at: "20:30:00"
     - platform: time
-      at: "00:01:00"   # daily recompute without now()/today_at()
+      at: "00:01:00"
+
   variables:
-    daytime: "{{ is_state('schedule.daytime','on') }}"
-    evening: "{{ is_state('schedule.evening','on') }}"
-    override: "{{ is_state('input_boolean.daytime_override','on') }}"
-    is_holiday: "{{ is_state('calendar.holidays_in_united_states','on') }}"
+    daytime: "{{ states('schedule.daytime') }}"
+    evening: "{{ states('schedule.evening') }}"
+    override: "{{ states('input_boolean.daytime_override') }}"
+    is_holiday: "{{ states('calendar.holidays_in_united_states') }}"
+
+    # Time strings (safe for lexicographic compare)
     t0630: "06:30:00"
     t1830: "18:30:00"
     t2030: "20:30:00"
-    # Compare current time string only when a time-trigger fires or one of sources flips
-    hhmmss: "{{ (now().strftime('%H:%M:%S')) }}"
+    hhmmss: "{{ now().strftime('%H:%M:%S') }}"
+
+    # Derived flags using string comparison
     in_holiday_window: "{{ hhmmss >= t0630 and hhmmss < t2030 }}"
     late: "{{ hhmmss >= t1830 }}"
+
   binary_sensor:
     - name: Daytime
-      unique_id: 7b1270b1-14d6-4a15-9e83-daytime-sensor
+      unique_id: daytime_sensor
       state: >-
-        {% set normal_daytime = daytime and not is_holiday %}
-        {% set holiday_daytime = is_holiday and in_holiday_window %}
-        {% set no_late_override = not (override and late) %}
-        {% set special_override = (not evening) and override and not late %}
+        {% set normal_daytime = (daytime == 'on') and (is_holiday != 'on') %}
+        {% set holiday_daytime = (is_holiday == 'on') and (in_holiday_window | bool) %}
+        {% set no_late_override = not ((override == 'on') and (late | bool)) %}
+        {% set special_override = (evening != 'on') and (override == 'on') and not (late | bool) %}
         {{ special_override or ((normal_daytime or holiday_daytime) and no_late_override) }}
 
     - name: Evening
-      unique_id: 94e7b3a4-9dd6-4caa-8d7b-evening-sensor
+      unique_id: evening_sensor
       state: >-
-        {{ evening or (override and late) }}
+        {{ (evening == 'on') or ((override == 'on') and (late | bool)) }}
 
 # ===============================
 # Humidity Ratio
