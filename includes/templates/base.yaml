@@ -34,15 +34,12 @@
 # ===============================
 # RV connectivity pulse
 # ===============================
-- trigger:
-    - platform: state
-      entity_id: sensor.rv_last_seen
-  binary_sensor:
+- binary_sensor:
     - name: RV Online
-      unique_id: 3c1e2a09-4b04-4fd9-9c3f-rv-online
+      unique_id: rv_online
       device_class: connectivity
       availability: "{{ has_value('sensor.rv_last_seen') }}"
-      state: "{{ trigger.platform == 'state' }}"
+      state: "{{ has_value('sensor.rv_last_seen') }}"
       delay_off: "00:02:00"
 
 # ===============================
