@@ -330,32 +330,32 @@
       unique_id: openmeteo_home_uv_protection_duration
       unit_of_measurement: "min"
       icon: mdi:clock-outline
-      availability: "{{ has_value('sensor.om_home_uv_protection_start') and has_value('sensor.om_home_uv_protection_end') }}"
+      availability: "{{ has_value('sensor.openmeteo_home_uv_protection_start') and has_value('sensor.openmeteo_home_uv_protection_end') }}"
       state: >-
-        {% set start = states('sensor.om_home_uv_protection_start') | as_datetime(default=None) %}
-        {% set end   = states('sensor.om_home_uv_protection_end')   | as_datetime(default=None) %}
+        {% set start = states('sensor.openmeteo_home_uv_protection_start') | as_datetime(default=None) %}
+        {% set end   = states('sensor.openmeteo_home_uv_protection_end')   | as_datetime(default=None) %}
         {% if start and end %} {{ ((end.timestamp() - start.timestamp()) / 60) | round(0) }}
         {% else %} 0 {% endif %}
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.om_home_uv_protection_start
-        - sensor.om_home_uv_protection_end
+        - sensor.openmeteo_home_uv_protection_start
+        - sensor.openmeteo_home_uv_protection_end
     - platform: time_pattern
       minutes: "/10"
   binary_sensor:
     - name: OpenMeteo Home UV Protection
       unique_id: openmeteo_home_uv_protection
-      availability: "{{ has_value('sensor.om_home_uv_protection_start') and has_value('sensor.om_home_uv_protection_end') }}"
+      availability: "{{ has_value('sensor.openmeteo_home_uv_protection_start') and has_value('sensor.openmeteo_home_uv_protection_end') }}"
       state: >-
-        {% set s = states('sensor.om_home_uv_protection_start') | as_datetime(default=None) %}
-        {% set e = states('sensor.om_home_uv_protection_end')   | as_datetime(default=None) %}
+        {% set s = states('sensor.openmeteo_home_uv_protection_start') | as_datetime(default=None) %}
+        {% set e = states('sensor.openmeteo_home_uv_protection_end')   | as_datetime(default=None) %}
         {{ s is not none and e is not none and s <= now() < e }}
       attributes:
-        start: "{{ states('sensor.om_home_uv_protection_start') }}"
-        end: "{{ states('sensor.om_home_uv_protection_end') }}"
-        duration: "{{ states('sensor.om_home_uv_protection_duration') }}"
+        start: "{{ states('sensor.openmeteo_home_uv_protection_start') }}"
+        end: "{{ states('sensor.openmeteo_home_uv_protection_end') }}"
+        duration: "{{ states('sensor.openmeteo_home_uv_protection_duration') }}"
 
 # OpenMeteo Home Safe Exposure (Fitzpatrick) from apparent uv_index
 - trigger:

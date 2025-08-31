@@ -22,7 +22,7 @@
   variables:
     uv_src: sensor.openuv_nearby
     fc_src: sensor.openuv_nearby_forecast
-    openmeteo_lut: sensor.openmeteo_nearby_cloud_lut
+    om_lut: sensor.openmeteo_nearby_cloud_lut
     wx_src: weather.openmeteo_weather_nearby
     raw_fc: "{{ state_attr(fc_src,'result') or [] }}"
     pairs_raw: "{{ state_attr(om_lut,'pairs') or [] }}"
@@ -330,32 +330,32 @@
       unique_id: openmeteo_nearby_uv_protection_duration
       unit_of_measurement: "min"
       icon: mdi:clock-outline
-      availability: "{{ has_value('sensor.om_nearby_uv_protection_start') and has_value('sensor.om_nearby_uv_protection_end') }}"
+      availability: "{{ has_value('sensor.openmeteo_nearby_uv_protection_start') and has_value('sensor.openmeteo_nearby_uv_protection_end') }}"
       state: >-
-        {% set start = states('sensor.om_nearby_uv_protection_start') | as_datetime(default=None) %}
-        {% set end   = states('sensor.om_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {% set start = states('sensor.openmeteo_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set end   = states('sensor.openmeteo_nearby_uv_protection_end')   | as_datetime(default=None) %}
         {% if start and end %} {{ ((end.timestamp() - start.timestamp()) / 60) | round(0) }}
         {% else %} 0 {% endif %}
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.om_nearby_uv_protection_start
-        - sensor.om_nearby_uv_protection_end
+        - sensor.openmeteo_nearby_uv_protection_start
+        - sensor.openmeteo_nearby_uv_protection_end
     - platform: time_pattern
       minutes: "/10"
   binary_sensor:
     - name: OpenMeteo Nearby UV Protection
       unique_id: openmeteo_nearby_uv_protection
-      availability: "{{ has_value('sensor.om_nearby_uv_protection_start') and has_value('sensor.om_nearby_uv_protection_end') }}"
+      availability: "{{ has_value('sensor.openmeteo_nearby_uv_protection_start') and has_value('sensor.openmeteo_nearby_uv_protection_end') }}"
       state: >-
-        {% set s = states('sensor.om_nearby_uv_protection_start') | as_datetime(default=None) %}
-        {% set e = states('sensor.om_nearby_uv_protection_end')   | as_datetime(default=None) %}
+        {% set s = states('sensor.openmeteo_nearby_uv_protection_start') | as_datetime(default=None) %}
+        {% set e = states('sensor.openmeteo_nearby_uv_protection_end')   | as_datetime(default=None) %}
         {{ s is not none and e is not none and s <= now() < e }}
       attributes:
-        start: "{{ states('sensor.om_nearby_uv_protection_start') }}"
-        end: "{{ states('sensor.om_nearby_uv_protection_end') }}"
-        duration: "{{ states('sensor.om_nearby_uv_protection_duration') }}"
+        start: "{{ states('sensor.openmeteo_nearby_uv_protection_start') }}"
+        end: "{{ states('sensor.openmeteo_nearby_uv_protection_end') }}"
+        duration: "{{ states('sensor.openmeteo_nearby_uv_protection_duration') }}"
 
 # OpenMeteo Nearby Safe Exposure (Fitzpatrick) from apparent uv_index
 - trigger:
