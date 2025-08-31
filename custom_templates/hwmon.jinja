@@ -24,14 +24,14 @@
   {{ parts[-2:] | join(' · ') if parts|length > 1 else fn }}
 {%- endmacro -%}
 
-{%- macro hw_secondary(eid) -%}
+{%- macro hw_secondary(eid, temp='c') -%}
   {%- set val = states(eid) -%}
   {%- set unit = state_attr(eid,'unit_of_measurement') -%}
   {%- set dc = state_attr(eid,'device_class') -%}
 
   {#- temperature sensors → always celsius -#}
   {%- if dc == 'temperature' -%}
-    {%- set t = convert_temp(val, unit or 'c', 'c') | float(0) -%}
+    {%- set t = convert_temp(val, unit or 'c', temp) | float(0) -%}
     {{ t | round(1) }} °C
 
   {#- humanize bytes + B/s -#}
