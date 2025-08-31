@@ -1,0 +1,62 @@
+# Home instance
+input_datetime:
+  rv_last_remote_reboot:
+    name: RV Last Remote Reboot
+    has_date: true
+    has_time: true
+
+automation:
+  - id: rv_remote_reboot_on_stale_heartbeat
+    alias: RV Remote Reboot on Stale Heartbeat (via MQTT)
+    mode: single
+    trigger:
+      # Heartbeat expired; sensor flips to 'unavailable' due to expire_after: 300
+      - platform: state
+        entity_id: sensor.rv_last_seen
+        to: 'unavailable'
+        for: '00:05:00'   # extra grace; optional
+      # Optional: rising latency approach; fire if heartbeat stops changing for 10 minutes
+      - platform: template
+        value_template: >
+          {% set e = states.sensor.rv_last_seen %}
+          {{ e is not none and e.state not in ['unknown','unavailable',''] and
+             (as_timestamp(now()) - as_timestamp(e.last_changed)) > 600 }}
+    condition:
+      - condition: template
+        # Cooldown: do not send more than once per 30 minutes
+        value_template: >
+          {% set last = states('input_datetime.rv_last_remote_reboot') %}
+          {% if last in ['unknown','unavailable',''] %} true
+          {% else %} {{ (now() - as_datetime(last)).total_seconds() > 30*60 }}
+          {% endif %}
+      - condition: state
+        entity_id: binary_sensor.rv_mqtt_status
+        state: 'on'   # Online; only try reboot if the bus is connected
+    action:
+      - service: mqtt.publish
+        data:
+          topic: site/rv/cmd/ha/reboot
+          payload: "now"
+          qos: 1
+      - service: input_datetime.set_datetime
+        target: { entity_id: input_datetime.rv_last_remote_reboot }
+        data:
+          datetime: "{{ now().isoformat() }}"
+      - service: persistent_notification.create
+        data:
+          title: "RV reboot requested"
+          message: "Heartbeat expired while MQTT was online; reboot command sent."
+
+  - id: rv_notify_when_offline
+    alias: RV Notify when MQTT Offline
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.rv_mqtt_status
+        to: 'off'
+        for: '00:05:00'
+    action:
+      - service: persistent_notification.create
+        data:
+          title: "RV offline"
+          message: "RV MQTT LWT is offline for 5 minutes; reboot cannot be sent. Check power or network."

@@ -10,6 +10,7 @@ homeassistant:
         - 192.168.1.0/24
   auth_mfa_modules:
     - type: totp
+  packages: !include_dir_named packages
 
 http:
   use_x_forwarded_for: true
