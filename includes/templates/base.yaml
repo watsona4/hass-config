@@ -883,3 +883,84 @@
       state: "{{ state_attr('climate.upstairs_thermostat','hvac_action') }}"
       options: "['cooling','drying','fan_only','idle','off']"
       select_option: []
+
+# ===================== Composite Location (Pixel + Work iPhone) =====================
+# Put in a package or templates dir. Adjust entity ids at top.
+- trigger:
+    - platform: state
+      entity_id:
+        - device_tracker.pixel_9_pro_xl
+        - device_tracker.aaron_work_phone
+  variables:
+    ent_pixel: device_tracker.pixel_9_pro_xl
+    ent_iphone: device_tracker.aaron_work_phone
+    pixel: >-
+      {%- set s   = states(ent_pixel) -%}
+      {%- set lat = state_attr(ent_pixel,'latitude') -%}
+      {%- set lon = state_attr(ent_pixel,'longitude') -%}
+      {%- set acc = state_attr(ent_pixel,'gps_accuracy') -%}
+      {%- set ts  = (states[ent_pixel].last_updated | as_timestamp) -%}
+      {%- set age_m = ((now()|as_timestamp) - ts) / 60 if ts else 9e9 -%}
+      {%- set valid = (s not in ['unknown','unavailable'])
+                      and ((lat|float(none)) is not none)
+                      and ((lon|float(none)) is not none)
+                      and ((acc|float(none)) is not none)
+                      and ((lat|float) != 0 or (lon|float) != 0) -%}
+      {%- set acc_f = acc | float(9999) -%}
+      {%- set score = (
+            (50 if valid else 0) +
+            (max(0, 30 - min(30, age_m))) +
+            (max(0, 20 - min(20, (acc_f / 2))))
+          ) -%}
+      {{ {'entity': ent_pixel, 'state': s, 'lat': (lat|float(none)), 'lon': (lon|float(none)),
+          'acc': (acc|float(none)), 'age_m': age_m, 'valid': valid, 'score': score} }}
+    iphone: >-
+      {%- set s   = states(ent_iphone) -%}
+      {%- set lat = state_attr(ent_iphone,'latitude') -%}
+      {%- set lon = state_attr(ent_iphone,'longitude') -%}
+      {%- set acc = state_attr(ent_iphone,'gps_accuracy') -%}
+      {%- set ts  = (states[ent_iphone].last_updated | as_timestamp) -%}
+      {%- set age_m = ((now()|as_timestamp) - ts) / 60 if ts else 9e9 -%}
+      {%- set valid = (s not in ['unknown','unavailable'])
+                      and ((lat|float(none)) is not none)
+                      and ((lon|float(none)) is not none)
+                      and ((acc|float(none)) is not none)
+                      and ((lat|float) != 0 or (lon|float) != 0) -%}
+      {%- set acc_f = acc | float(9999) -%}
+      {%- set score = (
+            (50 if valid else 0) +
+            (max(0, 30 - min(30, age_m))) +
+            (max(0, 20 - min(20, (acc_f / 2))))
+          ) -%}
+      {{ {'entity': ent_iphone, 'state': s, 'lat': (lat|float(none)), 'lon': (lon|float(none)),
+          'acc': (acc|float(none)), 'age_m': age_m, 'valid': valid, 'score': score} }}
+    best: >-
+      {%- if is_state(ent_pixel,'home') and not is_state(ent_iphone,'home') -%}
+        {{ iphone }}
+      {%- elif is_state(ent_iphone,'home') and not is_state(ent_pixel,'home') -%}
+        {{ pixel }}
+      {%- elif pixel.valid and not iphone.valid -%}
+        {{ pixel }}
+      {%- elif iphone.valid and not pixel.valid -%}
+        {{ iphone }}
+      {%- elif pixel.valid and iphone.valid -%}
+        {{ pixel if (pixel.score | float(0)) >= (iphone.score | float(0)) else iphone }}
+      {%- else -%}
+        {{ {'entity': none, 'state': 'unknown', 'lat': none, 'lon': none,
+            'acc': none, 'age_m': 9e9, 'valid': false, 'score': 0} }}
+      {%- endif -%}
+
+  sensor:
+    - name: Aaron Composite Location
+      unique_id: aaron_composite_location
+      icon: mdi:account
+      availability: "{{ best.valid }}"
+      state: "{{ best.state if best.state is string else 'unknown' }}"
+      attributes:
+        source_entity: "{{ best.entity }}"
+        latitude: "{{ best.lat }}"
+        longitude: "{{ best.lon }}"
+        gps_accuracy: "{{ best.acc }}"
+        age_minutes: "{{ (best.age_m | float(0) | round(1)) if (best.age_m|float(none)) is not none else none }}"
+        pixel_score: "{{ pixel.score }}"
+        iphone_score: "{{ iphone.score }}"

@@ -69,11 +69,6 @@
         }
 
 # --- Helper trackers (merged phones) ---
-- device_tracker:
-    name: Michael Helper Tracker
-    unique_id: michael_helper_tracker
-    json_attributes_topic: "site/home/devices/michael_helper_tracker/attributes"
-    qos: 1
 
 - device_tracker:
     name: Aaron Helper Tracker

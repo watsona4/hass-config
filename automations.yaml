@@ -4945,59 +4945,28 @@
 - id: '1726506936783'
   alias: Aaron Location Tracker
   description: 'Publishes Aaron''s location and attributes to MQTT, prioritizing Pixel
-    9 Pro XL  if at home, otherwise using Aaron''s work phone. Sends ''home'' and
-    default coordinates  if both are away. Useful for multi-device location tracking
-    and device presence.
+    9 Pro XL if at home, otherwise using Aaron''s work phone.
 
     '
   triggers:
   - entity_id:
-    - device_tracker.pixel_9_pro_xl
-    - device_tracker.aaron_work_phone
+    - sensor.aaron_composite_location
     trigger: state
-  conditions: []
   actions:
-  - choose:
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.pixel_9_pro_xl
-          state: home
-      - condition: state
-        entity_id: device_tracker.aaron_work_phone
-        state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/aaron_helper_tracker/attributes
-          payload: '{{ states.device_tracker.pixel_9_pro_xl.attributes | default({},
-            true) | tojson }}'
-          retain: true
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.aaron_work_phone
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/aaron_helper_tracker/attributes
-          payload: '{{ states.device_tracker.aaron_work_phone.attributes | default({},
-            true) | tojson }}'
-          retain: true
-    default:
-    - action: mqtt.publish
-      data:
-        topic: site/home/devices/aaron_helper_tracker/attributes
-        payload: "{{\n  dict(\n    latitude=state_attr('zone.home', 'latitude'),\n
-          \   longitude=state_attr('zone.home', 'longitude'),\n    altitude=states('input_number.home_altitude')
-          | float\n  ) | tojson\n}}\n"
-        retain: true
+  - data:
+      topic: site/home/devices/aaron_helper_tracker/attributes
+      retain: true
+      payload: '{{ attrs }}'
+    action: mqtt.publish
   mode: restart
-  trace:
-    stored_traces: 100
+  variables:
+    s: '{{ states(''sensor.aaron_composite_location'') }}'
+    lat: '{{ state_attr(''sensor.aaron_composite_location'',''latitude'') }}'
+    lon: '{{ state_attr(''sensor.aaron_composite_location'',''longitude'') }}'
+    acc: '{{ state_attr(''sensor.aaron_composite_location'',''gps_accuracy'') }}'
+    attrs: "{{ {\n  'source_entity': state_attr('sensor.aaron_composite_location','source_entity'),\n
+      \ 'latitude': lat, 'longitude': lon, 'gps_accuracy': acc,\n  'last_updated':
+      (now()|as_local).isoformat()\n} | tojson }}"
 - id: '1729861910506'
   alias: Shop Lights
   description: ''
