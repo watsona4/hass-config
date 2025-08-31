@@ -3,7 +3,7 @@
 # ---------------------------
 - platform: template
   name: OpenMeteo Weather Nearby
-  unique_id: f37a2941-d599-44e3-bfae-0183a106fbd8
+  unique_id: openmeteo_weather_nearby
 
   condition_template: >
     {% from 'macros.jinja' import wx_condition %}
@@ -85,7 +85,7 @@
 # -------------------------
 - platform: template
   name: OpenMeteo Weather Home
-  unique_id: de8899ac-f7ef-4ed0-89b0-91c407264f2d
+  unique_id: openmeteo_weather_home
 
   condition_template: >
     {% from 'macros.jinja' import wx_condition %}
@@ -167,7 +167,7 @@
 # -----------------------
 - platform: template
   name: OpenMeteo Weather RV
-  unique_id: e679162d-ccbf-4272-8c10-fbba48cc23a3
+  unique_id: openmeteo_weather_rv
 
   condition_template: >
     {% from 'macros.jinja' import wx_condition %}

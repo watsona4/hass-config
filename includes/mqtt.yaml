@@ -71,13 +71,13 @@
 # --- Helper trackers (merged phones) ---
 - device_tracker:
     name: Michael Helper Tracker
-    unique_id: 3c73108a-fa1f-4922-9b18-903349632bd9
+    unique_id: michael_helper_tracker
     json_attributes_topic: "site/home/devices/michael_helper_tracker/attributes"
     qos: 1
 
 - device_tracker:
     name: Aaron Helper Tracker
-    unique_id: 8c9f085a-c71f-4a63-bc78-f8ca3381f601
+    unique_id: aaron_helper_tracker
     json_attributes_topic: "site/home/devices/aaron_helper_tracker/attributes"
     qos: 1
 
@@ -96,7 +96,7 @@
 
 - sensor:
     name: Water Meter
-    unique_id: 1568584050
+    unique_id: water_meter
     unit_of_measurement: gal
     icon: mdi:gauge
     force_update: true
@@ -114,7 +114,7 @@
     enabled_by_default: false
     icon: mdi:clock-in
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/time"
-    unique_id: Acurite-Tower-A-11075-UTC
+    unique_id: acurite_tower_timestamp
     device: &acurite_device
       identifiers: Acurite-Tower-A-11075
       name: Acurite-Tower-A-11075
@@ -127,7 +127,7 @@
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/battery_ok"
     payload_on: 0
     payload_off: 1
-    unique_id: Acurite-Tower-A-11075-B
+    unique_id: acurite_tower_battery
     device: *acurite_device
 - sensor:
     device_class: temperature
@@ -136,7 +136,7 @@
     value_template: "{{ value | float(default=none) | round(1) }}"
     state_class: measurement
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/temperature_C"
-    unique_id: Acurite-Tower-A-11075-T
+    unique_id: acurite_tower_temperature
     device: *acurite_device
 - sensor:
     device_class: humidity
@@ -145,7 +145,7 @@
     value_template: "{{ value | float(default=none) }}"
     state_class: measurement
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/humidity"
-    unique_id: Acurite-Tower-A-11075-H
+    unique_id: acurite_tower_humidity
     device: *acurite_device
 
 # --- rtl_433: AmbientWeather WH31E 1/167 ---
@@ -156,7 +156,7 @@
     enabled_by_default: false
     icon: mdi:clock-in
     state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/time"
-    unique_id: AmbientWeather-WH31E-1-167-UTC
+    unique_id: ambient_weather_timestamp
     device: &ambient_weather_device
       identifiers: AmbientWeather-WH31E-1-167
       name: AmbientWeather-WH31E-1-167
@@ -167,7 +167,7 @@
     name: Battery
     entity_category: diagnostic
     state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/battery_ok"
-    unique_id: AmbientWeather-WH31E-1-167-B
+    unique_id: ambient_weather_battery
     payload_on: 0
     payload_off: 1
     device: *ambient_weather_device
@@ -178,7 +178,7 @@
     value_template: "{{ value | float(default=none) | round(1) }}"
     state_class: measurement
     state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/temperature_C"
-    unique_id: AmbientWeather-WH31E-1-167-T
+    unique_id: ambient_weather_temperature
     device: *ambient_weather_device
 - sensor:
     device_class: humidity
@@ -187,7 +187,7 @@
     value_template: "{{ value | float(default=none) }}"
     state_class: measurement
     state_topic: "site/home/devices/rtl_433/devices/AmbientWeather-WH31E/1/167/humidity"
-    unique_id: AmbientWeather-WH31E-1-167-H
+    unique_id: ambient_weather_humidity
     device: *ambient_weather_device
 
 # --- MQTT climates (SwitchBot IR mirrors) ---
@@ -196,7 +196,7 @@
 
     # Metadata
     name: Gym Minisplit
-    unique_id: 69561e4b-44be-4c84-b897-69df1bf7dc8f
+    unique_id: gym_minisplit
     device:
       identifiers: [01-202403091318-96155051setAll]
       name: Gym Minisplit-setAll
@@ -248,7 +248,7 @@
 
     # Metadata
     name: Playroom Minisplit
-    unique_id: 08a3ced1-41af-4a75-b000-deb0926aacab
+    unique_id: playroom_minisplit
     device:
       identifiers: [03-202502230943-44999586setAll]
       name: Playroom Minisplit-setAll

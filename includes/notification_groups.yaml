@@ -1,7 +1,7 @@
 # This notification group aggregates Aaron's personal and work cell phones
 - platform: group
   name: "Aaron Phones"
-  unique_id: 993317ac-6e54-438e-8757-9d2815a9ca51
+  unique_id: aaron_phones
   services:
     - action: mobile_app_pixel_9_pro_xl
     - action: mobile_app_l144jy6rmq_iphone
@@ -10,7 +10,7 @@
 # Ashley's ce phone.
 - platform: group
   name: "Aaron and Ashley Phones"
-  unique_id: 022c9cb5-59b8-4627-9e42-4824cfafbf5d
+  unique_id: aaron_and_ashley_phones
   services:
     - action: mobile_app_pixel_9_pro_xl
     - action: mobile_app_l144jy6rmq_iphone

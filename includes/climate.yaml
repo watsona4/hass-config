@@ -1,6 +1,6 @@
 - platform: generic_thermostat
   name: Chicken Heat Lamp
-  unique_id: 33145600-3e4c-489a-a1d8-37fd43da1819
+  unique_id: chicken_heat_lamp
   heater: switch.chicken_coop_outlet_2
   target_sensor: sensor.chicken_coop_thermometer_temperature
   keep_alive: "0:03:00"
