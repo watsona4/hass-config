@@ -4,8 +4,6 @@
       entity_id: sensor.openmeteo_nearby
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   variables:
     src: sensor.openmeteo_nearby
     h: "{{ state_attr(src, 'hourly') or {} }}"
@@ -48,8 +46,6 @@
       entity_id: sensor.openmeteo_home
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   variables:
     src: sensor.openmeteo_home
     h: "{{ state_attr(src, 'hourly') or {} }}"
@@ -92,8 +88,6 @@
       entity_id: sensor.openmeteo_rv
     - platform: time
       at: "00:00:15"
-    - platform: homeassistant
-      event: start
   variables:
     src: sensor.openmeteo_rv
     h: "{{ state_attr(src, 'hourly') or {} }}"
