@@ -4827,12 +4827,15 @@
   - topic: site/home/devices/zigbee2mqtt/Master Bedroom Window Button/action
     payload: single
     trigger: mqtt
+    id: Button
   - topic: site/home/devices/zigbee2mqtt/Master Bathroom Window Button/action
     payload: single
     trigger: mqtt
+    id: Button
   - topic: site/home/devices/zigbee2mqtt/Breakfast Room Window Button/action
     payload: single
     trigger: mqtt
+    id: Button
   conditions: []
   actions:
   - choose:
