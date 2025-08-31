@@ -6,7 +6,6 @@
       entity_id:
         - person.aaron_watson
         - device_tracker.rv_device_tracker
-        - zone.home
   variables:
     # distance() returns KM; convert to miles here
     _d_user_home_km: "{{ distance('person.aaron_watson','zone.home') | float(default=none) }}"

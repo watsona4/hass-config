@@ -40,6 +40,8 @@ template:
           - binary_sensor.michael_presence_presence_information
           - binary_sensor.kitchen_door_contact
           - device_tracker.icloud3_michaels_ipad
+      - platform: homeassistant
+        event: start
     variables:
       ent_beacon: device_tracker.michael_tracker
       ent_motion: binary_sensor.michael_presence_presence_information

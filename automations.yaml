@@ -2858,6 +2858,11 @@
     to:
     from: home
   conditions:
+  - condition: template
+    value_template: '{{ (now() - states(''sensor.uptime'')|as_datetime|as_local) >
+      timedelta(minutes=1) }}
+
+      '
   - condition: or
     conditions:
     - condition: state
@@ -4948,9 +4953,13 @@
   triggers:
   - entity_id: sensor.aaron_composite_location
     trigger: state
+  - trigger: homeassistant
+    event: start
   actions:
   - choose:
-    - conditions: '{{ lat is not none and lon is not none }}'
+    - conditions:
+      - condition: template
+        value_template: '{{ lat is not none and lon is not none }}'
       sequence:
       - data:
           dev_id: aaron_helper_tracker

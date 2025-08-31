@@ -891,6 +891,8 @@
       entity_id:
         - device_tracker.pixel_9_pro_xl
         - device_tracker.aaron_work_phone
+    - platform: homeassistant
+      event: start
   variables:
     ent_pixel: device_tracker.pixel_9_pro_xl
     ent_iphone: device_tracker.aaron_work_phone
