@@ -9,7 +9,7 @@
       unique_id: waqi_nearby_aqi
       device_class: aqi
       state_class: measurement
-      availability: "{{ has_value(src) and (states(src) is number) }}"
+      availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
       state: "{{ states(src) | int(default=none) }}"
       attributes:
         station: "{{ (state_attr(src,'city') or {}).get('name') }}"
@@ -24,7 +24,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby Temperature
@@ -34,7 +34,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby Humidity
@@ -44,7 +44,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby Wind Speed
@@ -54,7 +54,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby Wind Gust
@@ -64,7 +64,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby O3
@@ -74,7 +74,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby CO
@@ -84,7 +84,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby PM10
@@ -94,7 +94,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby NO2
@@ -104,7 +104,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Nearby SO2
@@ -114,7 +114,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') | float(default=none) }}"
 
 # Forecast tiles for Nearby (recompute on WAQI change or at midnight via sensor.date)
@@ -142,8 +142,8 @@
       {% for day in dates %}
         {% set m25 = d25 | selectattr('day','equalto',day) | list %}
         {% set m10 = d10 | selectattr('day','equalto',day) | list %}
-        {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
-        {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+        {% set v25 = (m25[0].get('avg') | float(none)) if (m25|count)>0 else none %}
+        {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
         {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
@@ -231,7 +231,7 @@
       unique_id: waqi_home_aqi
       device_class: aqi
       state_class: measurement
-      availability: "{{ has_value(src) and (states(src) is number) }}"
+      availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
       state: "{{ states(src) | int(default=none) }}"
       attributes:
         station: "{{ (state_attr(src,'city') or {}).get('name') }}"
@@ -246,7 +246,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home Temperature
@@ -256,7 +256,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home Humidity
@@ -266,7 +266,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home Wind Speed
@@ -276,7 +276,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home Wind Gust
@@ -286,7 +286,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home O3
@@ -296,7 +296,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home CO
@@ -306,7 +306,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home PM10
@@ -316,7 +316,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home NO2
@@ -326,7 +326,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI Home SO2
@@ -336,7 +336,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') | float(default=none) }}"
 
 # Forecast tiles for Home
@@ -364,8 +364,8 @@
       {% for day in dates %}
         {% set m25 = d25 | selectattr('day','equalto',day) | list %}
         {% set m10 = d10 | selectattr('day','equalto',day) | list %}
-        {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
-        {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+        {% set v25 = (m25[0].get('avg') | float(none)) if (m25|count)>0 else none %}
+        {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
         {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
@@ -453,7 +453,7 @@
       unique_id: waqi_rv_aqi
       device_class: aqi
       state_class: measurement
-      availability: "{{ has_value(src) and (states(src) is number) }}"
+      availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
       state: "{{ states(src) | int(default=none) }}"
       attributes:
         station: "{{ (state_attr(src,'city') or {}).get('name') }}"
@@ -468,7 +468,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm25') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV Temperature
@@ -478,7 +478,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('t') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV Humidity
@@ -488,7 +488,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('h') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV Wind Speed
@@ -498,7 +498,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('w') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV Wind Gust
@@ -508,7 +508,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('wg') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV O3
@@ -518,7 +518,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('o3') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV CO
@@ -528,7 +528,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('co') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV PM10
@@ -538,7 +538,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('pm10') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV NO2
@@ -548,7 +548,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('no2') or {}).get('v') | float(default=none) }}"
 
     - name: WAQI RV SO2
@@ -558,7 +558,7 @@
       state_class: measurement
       availability: >-
         {% set v = ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') %}
-        {{ v is number }}
+        {{ (v | float(none)) is not none }}
       state: "{{ ((state_attr(src,'iaqi') or {}).get('so2') or {}).get('v') | float(default=none) }}"
 
 # Forecast tiles for RV
@@ -586,8 +586,8 @@
       {% for day in dates %}
         {% set m25 = d25 | selectattr('day','equalto',day) | list %}
         {% set m10 = d10 | selectattr('day','equalto',day) | list %}
-        {% set v25 = m25[0].get('avg') if (m25|count)>0 else none %}
-        {% set v10 = m10[0].get('avg') if (m10|count)>0 else none %}
+        {% set v25 = (m25[0].get('avg') | float(none)) if (m25|count)>0 else none %}
+        {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
         {% set label = name_12(aqi) if aqi is not none else 'unknown' %}

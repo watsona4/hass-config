@@ -32,7 +32,7 @@
     {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
     {% set data = value_json.get('data') if ok else {} %}
     {% set raw = data.get('aqi') if data else none %}
-    {% if raw is number %}
+    {% if (raw | float(none)) is not none %}
       {{ raw | int }}
     {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
       {{ states(this.entity_id) }}
@@ -75,7 +75,7 @@
     {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
     {% set data = value_json.get('data') if ok else {} %}
     {% set raw = data.get('aqi') if data else none %}
-    {% if raw is number %}
+    {% if (raw | float(none)) is not none %}
       {{ raw | int }}
     {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
       {{ states(this.entity_id) }}
@@ -131,7 +131,7 @@
     {% set ok = value_json is mapping and value_json.get('status') == 'ok' %}
     {% set data = value_json.get('data') if ok else {} %}
     {% set raw = data.get('aqi') if data else none %}
-    {% if raw is number %}
+    {% if (raw | float(none)) is not none %}
       {{ raw | int }}
     {% elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok %}
       {{ states(this.entity_id) }}

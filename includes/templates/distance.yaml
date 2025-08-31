@@ -22,8 +22,8 @@
       availability: >-
         {{ has_value('person.aaron_watson')
            and has_value('zone.home')
-           and state_attr('person.aaron_watson','latitude') is number
-           and state_attr('zone.home','latitude') is number }}
+           and (state_attr('person.aaron_watson','latitude') | float(none)) is not none
+           and (state_attr('zone.home','latitude') | float(none)) is not none }}
       state: >-
         {% set vkm = _d_user_home_km %}
         {% if vkm is none %}
@@ -40,8 +40,8 @@
       availability: >-
         {{ has_value('person.aaron_watson')
            and has_value('device_tracker.rv_device_tracker')
-           and state_attr('person.aaron_watson','latitude') is number
-           and state_attr('device_tracker.rv_device_tracker','latitude') is number }}
+           and (state_attr('person.aaron_watson','latitude') | float(none)) is not none
+           and (state_attr('device_tracker.rv_device_tracker','latitude') | float(none)) is not none }}
       state: >-
         {% set vkm = _d_user_rv_km %}
         {% if vkm is none %}
@@ -58,8 +58,8 @@
       availability: >-
         {{ has_value('device_tracker.rv_device_tracker')
            and has_value('zone.home')
-           and state_attr('device_tracker.rv_device_tracker','latitude') is number
-           and state_attr('zone.home','latitude') is number }}
+           and (state_attr('device_tracker.rv_device_tracker','latitude') | float(none)) is not none
+           and (state_attr('zone.home','latitude') | float(none)) is not none }}
       state: >-
         {% set vkm = _d_rv_home_km %}
         {% if vkm is none %}
