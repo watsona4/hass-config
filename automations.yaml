@@ -5411,53 +5411,6 @@
         data: {}
         enabled: false
   mode: single
-- id: '1746019229489'
-  alias: Eleanor Location Tracker
-  description: ''
-  triggers:
-  - entity_id:
-    - device_tracker.icloud3_eleanors_iphone
-    - device_tracker.icloud3_eleanors_ipad
-    trigger: state
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.icloud3_eleanors_iphone
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/eleanor_helper_tracker/attributes
-          payload: '{{ states.device_tracker.icloud3_eleanors_iphone.attributes|tojson
-            }}'
-          retain: true
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.icloud3_eleanors_ipad
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/eleanor_helper_tracker/attributes
-          payload: '{{ states.device_tracker.icloud3_eleanors_ipad.attributes|tojson
-            }}'
-          retain: true
-    default:
-    - action: mqtt.publish
-      data:
-        topic: site/home/devices/eleanor_helper_tracker/attributes
-        payload: '{{ dict(latitude=43.09175901944927, longitude=-73.4960849583149,
-          altitude=118.5)|tojson }}'
-        retain: true
-  mode: restart
-  trace:
-    stored_traces: 100
 - id: '1746404911585'
   alias: Master Bathroom Presence
   description: ''
@@ -5943,40 +5896,3 @@
     target:
       entity_id: switch.water_heater_boost
   mode: single
-- id: '1751239412819'
-  alias: Ashley Location Tracker
-  description: Publishes Ashley’s current location and device attributes to MQTT,
-    prioritizing ashley_iphone if not home but the tracker is home, otherwise using
-    ashleys_iphone_tracker. Defaults to “home” and static coordinates if both are
-    away. Useful for external integrations, presence, and multi-device tracking.
-  triggers:
-  - entity_id:
-    - device_tracker.icloud3_ashleys_iphone
-    trigger: state
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.icloud3_ashleys_iphone
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/ashley_helper_tracker/attributes
-          payload: '{{ states.device_tracker.icloud3_ashleys_iphone.attributes|tojson
-            }}'
-          retain: true
-    default:
-    - action: mqtt.publish
-      data:
-        topic: site/home/devices/ashley_helper_tracker/attributes
-        payload: "{{\n  dict(\n    latitude=state_attr('zone.home', 'latitude'),\n
-          \   longitude=state_attr('zone.home', 'longitude'),\n    altitude=states('input_number.home_altitude')
-          | float\n  ) | tojson\n}}\n"
-        retain: true
-  mode: restart
-  trace:
-    stored_traces: 100

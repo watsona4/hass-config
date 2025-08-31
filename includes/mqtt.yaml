@@ -76,21 +76,9 @@
     qos: 1
 
 - device_tracker:
-    name: Eleanor Helper Tracker
-    unique_id: a500ffcc-b81b-43e9-b04c-fb8afdb293e7
-    json_attributes_topic: "site/home/devices/eleanor_helper_tracker/attributes"
-    qos: 1
-
-- device_tracker:
     name: Aaron Helper Tracker
     unique_id: 8c9f085a-c71f-4a63-bc78-f8ca3381f601
     json_attributes_topic: "site/home/devices/aaron_helper_tracker/attributes"
-    qos: 1
-
-- device_tracker:
-    name: Ashley Helper Tracker
-    unique_id: 5594c0fa-c48c-41a0-90a4-221a515eafe8
-    json_attributes_topic: "site/home/devices/ashley_helper_tracker/attributes"
     qos: 1
 
 # --- AMR meters (enforce numeric) ---
