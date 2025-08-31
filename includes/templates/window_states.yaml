@@ -206,27 +206,35 @@
   binary_sensor:
     - name: Breakfast Room Closed Button
       unique_id: breakfast_room_closed_button
+      availability: "{{ has_value('timer.breakfast_room_timer') }}"
       state: "{{ is_state('timer.breakfast_room_timer','active') }}"
     - name: Eleanor Room Closed Button
       unique_id: eleanor_room_closed_button
+      availability: "{{ has_value('timer.eleanor_room_timer') }}"
       state: "{{ is_state('timer.eleanor_room_timer','active') }}"
     - name: Guest Bedroom Closed Button
       unique_id: guest_bedroom_closed_button
+      availability: "{{ has_value('timer.guest_bedroom_timer') }}"
       state: "{{ is_state('timer.guest_bedroom_timer','active') }}"
     - name: Kids Bathroom Closed Button
       unique_id: kids_bathroom_closed_button
+      availability: "{{ has_value('timer.kids_bathroom_timer') }}"
       state: "{{ is_state('timer.kids_bathroom_timer','active') }}"
     - name: Living Room Closed Button
       unique_id: living_room_closed_button
+      availability: "{{ has_value('timer.living_room_timer') }}"
       state: "{{ is_state('timer.living_room_timer','active') }}"
     - name: Master Bathroom Closed Button
       unique_id: master_bathroom_closed_button
+      availability: "{{ has_value('timer.master_bathroom_timer') }}"
       state: "{{ is_state('timer.master_bathroom_timer','active') }}"
     - name: Master Bedroom Closed Button
       unique_id: master_bedroom_closed_button
+      availability: "{{ has_value('timer.master_bedroom_timer') }}"
       state: "{{ is_state('timer.master_bedroom_timer','active') }}"
     - name: Michael Room Closed Button
       unique_id: michael_room_closed_button
+      availability: "{{ has_value('timer.michael_room_timer') }}"
       state: "{{ is_state('timer.michael_room_timer','active') }}"
 
 
@@ -238,6 +246,7 @@
   binary_sensor:
     - name: Kids Bathroom Closed Presence
       unique_id: kids_bathroom_closed_presence
+      device_class: occupancy
       availability: "{{ has_value('binary_sensor.kids_bathroom_presence_presence_information') }}"
       state: "{{ is_state('binary_sensor.kids_bathroom_presence_presence_information','on') }}"
       delay_off: "1:00:00"
@@ -249,6 +258,7 @@
   binary_sensor:
     - name: Master Bathroom Closed Presence
       unique_id: master_bathroom_closed_presence
+      device_class: occupancy
       availability: "{{ has_value('binary_sensor.master_bathroom_presence_presence_information') }}"
       state: "{{ is_state('binary_sensor.master_bathroom_presence_presence_information','on') }}"
       delay_off: "1:00:00"
@@ -314,11 +324,10 @@
     - name: Master Bedroom Closed Morning
       unique_id: master_bedroom_closed_morning
       state: >-
-        {% if trigger.id in ['midnight'] %}
+        {% if trigger and trigger.id in ['midnight'] %}
           true
-        {% elif trigger.id in ['six'] %}
+        {% elif trigger and trigger.id in ['six'] %}
           false
         {% else %}
-          {# initialize on restart #}
           {{ now().hour < 6 }}
         {% endif %}
