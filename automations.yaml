@@ -5598,52 +5598,6 @@
   mode: single
   trace:
     stored_traces: 100
-- id: '1748020685469'
-  alias: Michael Helper Tracker
-  description: ''
-  triggers:
-  - entity_id:
-    - device_tracker.icloud3_michaels_ipad
-    - device_tracker.michael_tracker
-    trigger: state
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.icloud3_michaels_ipad
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/michael_helper_tracker/attributes
-          payload: '{{ states.device_tracker.icloud3_michaels_ipad.attributes|tojson
-            }}'
-          retain: true
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: device_tracker.michael_tracker
-          state: home
-      sequence:
-      - action: mqtt.publish
-        data:
-          topic: site/home/devices/michael_helper_tracker/attributes
-          payload: '{{ states.device_tracker.michael_tracker.attributes|tojson }}'
-          retain: true
-    default:
-    - action: mqtt.publish
-      data:
-        topic: site/home/devices/michael_helper_tracker/attributes
-        payload: '{{ dict(latitude=43.09175901944927, longitude=-73.4960849583149,
-          altitude=118.5)|tojson }}'
-        retain: true
-  mode: restart
-  trace:
-    stored_traces: 100
 - id: '1748389571990'
   alias: Humidifiers
   description: ''
