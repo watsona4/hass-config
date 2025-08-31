@@ -83,18 +83,6 @@
 
 # --- AMR meters (enforce numeric) ---
 - sensor:
-    name: Electric Meter
-    unique_id: 838099
-    unit_of_measurement: kWh
-    icon: mdi:gauge
-    force_update: true
-    state_class: total_increasing
-    qos: 1
-    state_topic: "site/home/devices/rtlamr2mqtt/838099/state"
-    value_template: "{{ value | float(0) }}"
-    json_attributes_topic: "site/home/devices/rtlamr2mqtt/838099/attributes"
-
-- sensor:
     name: Water Meter
     unique_id: water_meter
     unit_of_measurement: gal
@@ -102,9 +90,9 @@
     force_update: true
     state_class: total_increasing
     qos: 1
-    state_topic: "site/home/devices/rtlamr2mqtt/1568584050/state"
-    value_template: "{{ value_json.reading | float(0) }}"
-    json_attributes_topic: "site/home/devices/rtlamr2mqtt/1568584050/attributes"
+    availability_topic: "site/home/devices/rtlamr2mqtt/status"
+    state_topic: "site/home/devices/rtlamr2mqtt/reading/1568584050"
+    value_template: "{{ value | float(0) }}"
 
 # --- rtl_433: Acurite Tower A/11075 ---
 - sensor:
