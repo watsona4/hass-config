@@ -68,14 +68,6 @@
           "last_seen": {{ value | tojson }}
         }
 
-# --- Helper trackers (merged phones) ---
-
-- device_tracker:
-    name: Aaron Helper Tracker
-    unique_id: aaron_helper_tracker
-    json_attributes_topic: "site/home/devices/aaron_helper_tracker/attributes"
-    qos: 1
-
 # --- AMR meters (enforce numeric) ---
 - sensor:
     name: Water Meter

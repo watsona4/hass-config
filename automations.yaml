@@ -4944,29 +4944,43 @@
   mode: single
 - id: '1726506936783'
   alias: Aaron Location Tracker
-  description: 'Publishes Aaron''s location and attributes to MQTT, prioritizing Pixel
-    9 Pro XL if at home, otherwise using Aaron''s work phone.
-
-    '
+  description: Updates Aaron's virtual device_tracker from composite location.
   triggers:
-  - entity_id:
-    - sensor.aaron_composite_location
+  - entity_id: sensor.aaron_composite_location
     trigger: state
   actions:
-  - data:
-      topic: site/home/devices/aaron_helper_tracker/attributes
-      retain: true
-      payload: '{{ attrs }}'
-    action: mqtt.publish
+  - choose:
+    - conditions: '{{ lat is not none and lon is not none }}'
+      sequence:
+      - data:
+          dev_id: aaron_helper_tracker
+          source_type: gps
+          gps:
+          - '{{ lat }}'
+          - '{{ lon }}'
+          gps_accuracy: '{{ acc | int(0) }}'
+          attributes:
+            source_entity: '{{ src }}'
+            last_updated: '{{ (now() | as_local).isoformat() }}'
+        action: device_tracker.see
+    default:
+    - data:
+        dev_id: aaron_helper_tracker
+        location_name: not_home
+        attributes:
+          source_entity: '{{ src }}'
+          last_updated: '{{ (now() | as_local).isoformat() }}'
+      action: device_tracker.see
   mode: restart
   variables:
-    s: '{{ states(''sensor.aaron_composite_location'') }}'
-    lat: '{{ state_attr(''sensor.aaron_composite_location'',''latitude'') }}'
-    lon: '{{ state_attr(''sensor.aaron_composite_location'',''longitude'') }}'
-    acc: '{{ state_attr(''sensor.aaron_composite_location'',''gps_accuracy'') }}'
-    attrs: "{{ {\n  'source_entity': state_attr('sensor.aaron_composite_location','source_entity'),\n
-      \ 'latitude': lat, 'longitude': lon, 'gps_accuracy': acc,\n  'last_updated':
-      (now()|as_local).isoformat()\n} | tojson }}"
+    lat: '{{ state_attr(''sensor.aaron_composite_location'',''latitude'')      | float(default=none)
+      }}'
+    lon: '{{ state_attr(''sensor.aaron_composite_location'',''longitude'')     | float(default=none)
+      }}'
+    acc: '{{ state_attr(''sensor.aaron_composite_location'',''gps_accuracy'')  | float(0)
+      }}'
+    src: '{{ state_attr(''sensor.aaron_composite_location'',''source_entity'') | string
+      }}'
 - id: '1729861910506'
   alias: Shop Lights
   description: ''
