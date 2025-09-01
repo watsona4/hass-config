@@ -216,7 +216,9 @@
     - name: "Netprobe Download"
       unique_id: netprobe_down
       state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "Mbps"
+      unit_of_measurement: "Mbit/s"
+      device_class: data_rate
+      state_class: measurement
       value_template: >-
         {% set v = value_json.download_mbps | float(nan) %}
         {{ value_json.download_mbps }}
@@ -224,7 +226,9 @@
     - name: "Netprobe Upload"
       unique_id: netprobe_up
       state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "Mbps"
+      unit_of_measurement: "Mbit/s"
+      device_class: data_rate
+      state_class: measurement
       value_template: >-
         {% set v = value_json.upload_mbps | float(nan) %}
         {{ v if v == v else states('sensor.netprobe_upload') }}
@@ -233,6 +237,8 @@
       unique_id: netprobe_lat_tcp
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "ms"
+      device_class: duration
+      state_class: measurement
       value_template: "{{ value_json.latency_tcp_ms | float }}"
       icon: mdi:lan-connect
 
@@ -240,6 +246,8 @@
       unique_id: netprobe_lat_icmp
       state_topic: "site/home/devices/netprobe"
       unit_of_measurement: "ms"
+      device_class: duration
+      state_class: measurement
       value_template: >-
         {% if value_json.latency_icmp_ms is not none %}
           {{ value_json.latency_icmp_ms | float }}
