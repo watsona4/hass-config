@@ -7,6 +7,11 @@ water:
   periodically_resetting: False
   always_available: True
 
+water_daily:
+  source: sensor.water_meter
+  name: Water Daily
+  cycle: daily
+
 # Electric meter relay is a energy utility meter object that relays data from
 # the electric meter sensor, which measures absolute usage.
 energy:
@@ -19,6 +24,11 @@ energy:
   offset:
     days: 17
 
+energy_daily:
+  source: sensor.electric_usage
+  name: Electric Daily
+  cycle: daily
+
 # Gas meter relay is a gas utility meter object that relays data from the gas
 # meter sensor, which measures absolute usage.
 gas:
@@ -30,3 +40,8 @@ gas:
   cycle: monthly
   offset:
     days: 17
+
+gas_daily:
+  source: sensor.gas_meter
+  name: Gas Daily
+  cycle: daily
