@@ -5805,27 +5805,6 @@
       value_template: '{{ wait.trigger.event.data.action == action_dismiss }}'
     then: []
   mode: single
-- id: '1749722142807'
-  alias: Request Location Update
-  description: ''
-  triggers:
-  - trigger: time_pattern
-    minutes: /1
-  conditions: []
-  actions:
-  - action: notify.mobile_app_l144jy6rmq_iphone
-    metadata: {}
-    data:
-      message: request_location_update
-  - action: notify.mobile_app_ashleys_iphone
-    metadata: {}
-    data:
-      message: request_location_update
-  - action: notify.mobile_app_the_mousebrains_phone
-    metadata: {}
-    data:
-      message: request_location_update
-  mode: single
 - id: '1750667975418'
   alias: Water Heater Boost
   description: ''
