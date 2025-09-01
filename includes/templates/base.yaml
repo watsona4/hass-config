@@ -132,14 +132,14 @@
       delay_off: "00:15:00"
       availability: >-
         {{ has_value('input_number.downstairs_temperature')
-            and has_value('sensor.outdoor_thermometer_state')
+            and has_value('sensor.outside_temperature_state')
             and state_attr('climate.downstairs_thermostat','current_temperature') is not none
             and state_attr('climate.upstairs_thermostat','current_temperature') is not none }}
       state: >-
         {% set downstairs = state_attr('climate.downstairs_thermostat','current_temperature') | float(0) %}
         {% set upstairs   = state_attr('climate.upstairs_thermostat','current_temperature')   | float(0) %}
         {% set target     = states('input_number.downstairs_temperature') | float(0) %}
-        {% set outdoor    = states('sensor.outdoor_thermometer_state') | float(0) %}
+        {% set outdoor    = states('sensor.outside_temperature_state') | float(0) %}
         {{ (downstairs - target > 1 and upstairs - target > 2) or (outdoor > downstairs) }}
 
     - name: Hot In Study
@@ -149,11 +149,11 @@
       delay_off: "00:15:00"
       availability: >-
         {{ has_value('sensor.chicken_coop_temperature_state')
-            and has_value('sensor.outdoor_thermometer_state')
+            and has_value('sensor.outside_temperature_state')
             and has_value('input_number.downstairs_temperature') }}
       state: >-
         {% set temp         = states('sensor.chicken_coop_temperature_state') | float(0) %}
-        {% set outside_temp = states('sensor.outdoor_thermometer_state') | float(0) %}
+        {% set outside_temp = states('sensor.outside_temperature_state') | float(0) %}
         {% set target_temp  = states('input_number.downstairs_temperature') | float(0) %}
         {{ temp > target_temp + 1 or outside_temp > temp }}
 
@@ -569,7 +569,7 @@
       availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
       state: >-
         {{ (states('sensor.light_sensor_illuminance')|float(0))
-           / ([states('sensor.solar_irradiance')|float(0), 1]|max) }}
+           / ([states('sensor.brightness_publisher_solar_irradiance')|float(0), 1]|max) }}
 
 # ===================================
 # Gas usage meters from on-time (non-triggered)

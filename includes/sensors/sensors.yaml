@@ -160,7 +160,7 @@
 
 - platform: derivative
   name: Outside Temperature Rate
-  source: sensor.outdoor_thermometer_state
+  source: sensor.outside_temperature_state
   unit_time: h
   time_window: "0:30:00"
 
