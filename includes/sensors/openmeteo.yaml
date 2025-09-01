@@ -4,9 +4,9 @@
   unique_id: openmeteo_nearby
   state_class: measurement
   device_class: temperature
-  unit_of_measurement: "°C"
-  scan_interval: 90
-  timeout: 8
+  unit_of_measurement: "°F"
+  scan_interval: 300
+  timeout: 60
   resource_template: >-
     {% set plat = states('sensor.aaron_latitude') | float(0) %}
     {% set hlat = states('sensor.home_latitude')  | float(0) %}
@@ -27,8 +27,11 @@
       {{ plon if plon != 0 else hlon }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    daily: precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
     hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
+    temperature_unit: fahrenheit
+    wind_speed_unit: mph
+    precipitation_unit: inch
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
@@ -63,9 +66,9 @@
   unique_id: openmeteo_home
   state_class: measurement
   device_class: temperature
-  unit_of_measurement: "°C"
-  scan_interval: 90
-  timeout: 8
+  unit_of_measurement: "°F"
+  scan_interval: 300
+  timeout: 60
   resource_template: >-
     {% set lat = states('sensor.home_latitude')  | float(0) %}
     {% set lon = states('sensor.home_longitude')  | float(0) %}
@@ -78,8 +81,11 @@
       {{ states('sensor.home_longitude') | float(0) }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    daily: precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
     hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
+    temperature_unit: fahrenheit
+    wind_speed_unit: mph
+    precipitation_unit: inch
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
@@ -110,9 +116,9 @@
   unique_id: openmeteo_rv
   state_class: measurement
   device_class: temperature
-  unit_of_measurement: "°C"
-  scan_interval: 90
-  timeout: 8
+  unit_of_measurement: "°F"
+  scan_interval: 300
+  timeout: 60
   resource_template: >-
     {% set rlat = states('sensor.rv_latitude')   | float(0) %}
     {% set alat = states('sensor.aaron_latitude')| float(0) %}
@@ -137,8 +143,11 @@
       {{ rlon if rlon != 0 else (alon if alon != 0 else hlon) }}
     timezone: auto
     current: apparent_temperature,cloud_cover,weather_code,dew_point_2m,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,wind_gusts_10m,wind_speed_10m,wind_direction_10m,is_day
-    daily: precipitation_sum,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
+    daily: precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weathercode,winddirection_10m_dominant,windspeed_10m_max,uv_index_max,uv_index_clear_sky_max
     hourly: precipitation,temperature_2m,weathercode,is_day,cloud_cover,uv_index,uv_index_clear_sky
+    temperature_unit: fahrenheit
+    wind_speed_unit: mph
+    precipitation_unit: inch
   headers:
     Accept: application/json
     User-Agent: HomeAssistant
