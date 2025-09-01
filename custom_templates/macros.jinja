@@ -58,3 +58,59 @@
   {%- set x = x | float(0) -%}
   {{ iif(x < 0, -x, x) }}
 {%- endmacro -%}
+
+{# Smart formatter with integer-only rule, sig figs, and commas #}
+{% macro smartfmt(x) -%}
+  {%- set v = x | float(none) -%}
+  {%- if v is not number -%}{{ x }}{%- else -%}
+    {%- set sign = '-' if v < 0 else '' -%}
+    {%- set a = v | abs -%}
+    {%- set s = ("%0.15f") | format(a) -%}
+    {%- set parts = s.split('.') -%}
+    {%- set int = parts[0] -%}
+    {%- set frac = parts[1] -%}
+    {%- set int_nz = int.lstrip('0') -%}
+    {%- set D = int_nz | length -%}
+
+    {# Keep integer only if: starts with 1 and D>3, or starts not 1 and D>2 #}
+    {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0] != '1')) -%}
+
+    {%- if keep_int_only -%}
+      {{ sign ~ '{:,}'.format(int|int) }}
+    {%- else -%}
+      {# Determine decimal places from sig-fig rule #}
+      {%- if D >= 1 -%}
+        {%- set first_sig = int_nz[0] -%}
+        {%- set L = 4 if first_sig == '1' else 3 -%}
+        {%- set decimals = L - D -%}
+      {%- else -%}
+        {# first sig digit in fraction #}
+        {%- set k = -1 -%}
+        {%- for i in range(frac|length) -%}
+          {%- if k == -1 and frac[i] != '0' -%}{%- set k = i -%}{%- endif -%}
+        {%- endfor -%}
+        {%- if k == -1 -%}
+          {{ '0' }}{%- set decimals = none -%}
+        {%- else -%}
+          {%- set first_sig = frac[k] -%}
+          {%- set L = 4 if first_sig == '1' else 3 -%}
+          {%- set decimals = k + L -%}
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if decimals is not none -%}
+        {%- set out = ("%." ~ (decimals if decimals > 0 else 0) ~ "f") | format(a) -%}
+        {%- set op = out.split('.') -%}
+        {%- if op|length == 1 -%}
+          {%- set i = op[0] -%}
+          {{ sign ~ ('{:,}'.format(i|int) if (i|int) >= 1000 else i) }}
+        {%- else -%}
+          {%- set i = op[0] -%}
+          {%- set f = op[1].rstrip('0') -%}
+          {%- set i2 = ('{:,}'.format(i|int) if (i|int) >= 1000 else i) -%}
+          {{ sign ~ i2 ~ ('.' ~ f if f else '') }}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}

@@ -3,19 +3,112 @@
    Reusable macros for Hardware Monitor cards
    ────────────────────────────────────────────────────────────── #}
 
-{%- from 'macros.jinja' import convert_temp -%}
+{%- from 'macros.jinja' import convert_temp, smartfmt -%}
 
-{%- macro human_bytes(n, per_s=False) -%}
-  {%- set n = n|float(0) -%}
-  {%- set base = 1024.0 -%}
-  {%- set units = ['B','KB','MB','GB','TB','PB'] -%}
-  {% set ns = namespace(v=n, i=0) %}
-  {%- for _ in range(5) -%}
-    {%- if ns.v < base -%}{%- break -%}{%- endif -%}
-    {%- set ns.v = ns.v / base -%}
-    {%- set ns.i = loop.index -%}
-  {%- endfor -%}
-  {{ (ns.v if ns.v < 100 else ns.v|round(0))|round(1) }} {{ units[ns.i] }}{{ '/s' if per_s else '' }}
+{%- macro humanize_unit(n, unit='', system='') -%}
+  {# If no unit passed, just smart format the number #}
+  {%- if not unit or unit|trim == '' -%}
+    {{ smartfmt(n) }}
+  {%- else -%}
+    {%- set ns = namespace(
+          sgn = -1 if (n|float(0)) < 0 else 1,
+          v = (n|float(0)) | abs,
+          unit = unit|string|trim,
+          base_unit = '',
+          system = (system or '')|lower,
+          pref_out = ''
+        ) -%}
+
+    {# SI and IEC prefix tables #}
+    {%- set si_list = [
+          ('da', 1e1), ('Y', 1e24), ('Z', 1e21), ('E', 1e18), ('P', 1e15),
+          ('T', 1e12), ('G', 1e9),  ('M', 1e6),  ('k', 1e3),  ('h', 1e2),
+          ('d', 1e-1), ('c', 1e-2), ('m', 1e-3), ('µ', 1e-6), ('u', 1e-6),
+          ('n', 1e-9), ('p', 1e-12), ('f', 1e-15), ('a', 1e-18),
+          ('z', 1e-21), ('y', 1e-24)
+        ] -%}
+    {%- set iec_list = [
+          ('Yi', 2**80), ('Zi', 2**70), ('Ei', 2**60), ('Pi', 2**50), ('Ti', 2**40),
+          ('Gi', 2**30), ('Mi', 2**20), ('Ki', 2**10)
+        ] -%}
+
+    {# detect prefix in unit #}
+    {%- set det = namespace(kind='', pref='', factor=1.0) -%}
+    {%- for p, mult in iec_list -%}
+      {%- if ns.unit.startswith(p) and (ns.unit|length) > (p|length) -%}
+        {%- set det.kind = 'iec' -%}
+        {%- set det.pref = p -%}
+        {%- set det.factor = mult -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if not det.kind -%}
+      {%- for p, mult in si_list -%}
+        {%- if ns.unit.startswith(p) and (ns.unit|length) > (p|length) -%}
+          {%- set det.kind = 'si' -%}
+          {%- set det.pref = p -%}
+          {%- set det.factor = mult -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {# peel prefix and normalize value #}
+    {%- set ns.base_unit = ns.unit[det.pref|length:] if det.pref else ns.unit -%}
+    {%- set ns.v = ns.v * det.factor -%}
+
+    {# system resolution (explicit > preserved > defaults) #}
+    {%- if ns.system in ['si','iec'] -%}
+    {%- else -%}
+      {%- set base_token = ns.base_unit.split('/', 1)[0] -%}
+      {%- set base_token_l = base_token|lower -%}
+      {%- set is_bytes = base_token_l in ['b','byte','bytes'] and base_token[:1] == 'B' -%}
+      {%- set is_bits  = base_token_l in ['b','bit','bits'] and base_token[:1] == 'b' -%}
+      {%- if det.kind == 'iec' -%}
+        {%- set ns.system = 'iec' -%}
+      {%- elif det.kind == 'si' -%}
+        {%- set ns.system = 'si' -%}
+      {%- elif is_bytes -%}
+        {%- set ns.system = 'iec' -%}
+      {%- elif is_bits -%}
+        {%- set ns.system = 'si' -%}
+      {%- else -%}
+        {%- set ns.system = 'si' -%}
+      {%- endif -%}
+    {%- endif -%}
+
+    {# scale #}
+    {%- if ns.system == 'iec' -%}
+      {%- set base = 1024.0 -%}
+      {%- set prefixes = ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'] -%}
+      {%- set idx = namespace(i=0) -%}
+      {%- for _ in range(prefixes|length - 1) -%}
+        {%- if ns.v < base -%}{%- break -%}{%- endif -%}
+        {%- set ns.v = ns.v / base -%}
+        {%- set idx.i = idx.i + 1 -%}
+      {%- endfor -%}
+      {%- set ns.pref_out = prefixes[idx.i] -%}
+    {%- else -%}
+      {%- set base = 1000.0 -%}
+      {%- set prefixes = ['y','z','a','f','p','n','µ','m','','k','M','G','T','P','E','Z','Y'] -%}
+      {%- set idx = namespace(i=8) -%}
+      {%- for _ in range(prefixes|length - 1) -%}
+        {%- if ns.v < base or idx.i >= prefixes|length - 1 -%}{%- break -%}{%- endif -%}
+        {%- set ns.v = ns.v / base -%}
+        {%- set idx.i = idx.i + 1 -%}
+      {%- endfor -%}
+      {%- for _ in range(prefixes|length - 1) -%}
+        {%- if ns.v >= 1 or idx.i <= 0 or ns.v == 0 -%}{%- break -%}{%- endif -%}
+        {%- set ns.v = ns.v * base -%}
+        {%- set idx.i = idx.i - 1 -%}
+      {%- endfor -%}
+      {%- set ns.pref_out = prefixes[idx.i] -%}
+    {%- endif -%}
+
+    {# format #}
+    {%- set out = (ns.v if ns.v < 100 else ns.v|round(0))|round(1) -%}
+    {{ (out * ns.sgn) }} {{ ns.pref_out }}{{ ns.base_unit }}
+  {%- endif -%}
 {%- endmacro -%}
 
 {%- macro hw_primary(eid) -%}
@@ -27,22 +120,15 @@
 {%- macro hw_secondary(eid, temp='c') -%}
   {%- set val = states(eid) -%}
   {%- set unit = state_attr(eid,'unit_of_measurement') -%}
+  {%- set temp_units = {'k': 'K', 'f': '°F', 'c': '°C'} %}
   {%- set dc = state_attr(eid,'device_class') -%}
 
   {#- temperature sensors → always celsius -#}
   {%- if dc == 'temperature' -%}
     {%- set t = convert_temp(val, unit or 'c', temp) | float(0) -%}
-    {{ t | round(1) }} °C
-
-  {#- humanize bytes + B/s -#}
-  {%- elif unit in ['B', 'B/s'] -%}
-    {{ human_bytes(val, unit == 'B/s') }}
-
-  {#- fallback → plain val + unit -#}
-  {%- elif unit -%}
-    {{ val }} {{ unit }}
+    {{ t | round(1) }} {{ temp_units[temp] }}
   {%- else -%}
-    {{ val }}
+    {{ humanize_unit(val, unit) }}
   {%- endif -%}
 {%- endmacro -%}
 

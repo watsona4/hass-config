@@ -473,7 +473,7 @@ window_position:
       sequence:
       - action: script.turn_on
         target:
-          entity_id: script.single_window_2
+          entity_id: script.single_window
         data:
           variables:
             action: '{{ action }}'
