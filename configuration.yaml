@@ -78,3 +78,4 @@ binary_sensor: !include includes/binary_sensor.yaml
 sensor: !include_dir_merge_list includes/sensors
 utility_meter: !include includes/utility_meters.yaml
 weather: !include includes/weather.yaml
+light: !include includes/light.yaml
