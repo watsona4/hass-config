@@ -884,6 +884,77 @@
       options: "['cooling','drying','fan_only','idle','off']"
       select_option: []
 
+- sensor:
+    - name: Open Doors & Windows
+      unique_id: open_doors_windows
+      icon: mdi:door
+      state: >
+        {# List the friendly names, comma-separated, or "None" #}
+        {% set open = states.binary_sensor
+            | selectattr('attributes.device_class','in',['door','window'])
+            | selectattr('state','eq','on')
+            | sort(attribute='name') | list %}
+        {% if open | count == 0 %}All closed
+        {% else %}{{ open | map(attribute='name') | list | join(', ') }}{% endif %}
+      attributes:
+        count: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on') | list %}
+          {{ open | count }}
+        names: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on')
+              | sort(attribute='name') | list %}
+          {{ open | map(attribute='name') | list }}
+        entity_ids: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on')
+              | sort(attribute='name') | list %}
+          {{ open | map(attribute='entity_id') | list }}
+
+- binary_sensor:
+    - name: Any Door/Window Open
+      unique_id: any_door_window_open
+      device_class: opening
+      state: >
+        {{ (state_attr('sensor.open_doors_windows','count') | int(0)) > 0 }}
+
+- binary_sensor:
+    - name: Smoke Any
+      unique_id: smoke_any
+      state: >
+        {{
+          states.binary_sensor
+            | selectattr('entity_id','match','^binary_sensor\\.nest_protect_.*_smoke_status$')
+            | selectattr('state','eq','on') | list | count > 0
+        }}
+      device_class: smoke
+    - name: CO Any
+      unique_id: co_any
+      state: >
+        {{
+          states.binary_sensor
+            | selectattr('entity_id','match','^binary_sensor\\.nest_protect_.*_co_status$')
+            | selectattr('state','eq','on') | list | count > 0
+        }}
+      device_class: carbon_monoxide
+
+- sensor:
+    - name: People Home Count
+      unique_id: people_home_count
+      state: >
+        {{
+          [
+            is_state('person.aaron_watson','home'),
+            is_state('person.ashley_watson','home'),
+            is_state('person.eleanor_watson','home'),
+            is_state('person.michael_watson','home')
+          ] | select('equalto', true) | list | count
+        }}
+
 # ===================== Composite Location (Pixel + Work iPhone) =====================
 # Put in a package or templates dir. Adjust entity ids at top.
 - trigger:
