@@ -27,7 +27,7 @@ automation:
         value_template: >
           {% set last = states('input_datetime.rv_last_remote_reboot') %}
           {% if last in ['unknown','unavailable',''] %} true
-          {% else %} {{ (now() - as_datetime(last)).total_seconds() > 30*60 }}
+          {% else %} {{ (now() - as_datetime(last)|as_local).total_seconds() > 30*60 }}
           {% endif %}
       - condition: state
         entity_id: binary_sensor.rv_mqtt_status
