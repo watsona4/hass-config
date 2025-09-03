@@ -388,7 +388,7 @@ decluttering_templates:
             - type: custom:mushroom-template-card
               primary: CPU
               secondary: >
-                {{ states('[[i_cpu_pct]]') | round(0) }}% , load {{
+                {{ states('[[i_cpu_pct]]') | float(0) | round(0) }}% , load {{
                 states('[[i_load1]]') }}
               icon: mdi:cpu-64-bit
               icon_color: >
@@ -402,7 +402,7 @@ decluttering_templates:
             - type: custom:mushroom-template-card
               primary: Memory
               secondary: |
-                {{ states('[[i_mem_pct]]') | round(0) }}%
+                {{ states('[[i_mem_pct]]') | float(0) | round(0) }}%
               icon: mdi:memory
               icon_color: >
                 {% set v = states('[[i_mem_pct]]')|float(0) %} {{ 'red' if v>85
@@ -416,7 +416,7 @@ decluttering_templates:
               primary: Disk
               secondary: >
                 {% from 'hwmon.jinja' import hw_secondary %} {{
-                states('[[i_disk_pct]]') | round(0) }}% used, {{
+                states('[[i_disk_pct]]') | float(0) | round(0) }}% used, {{
                 hw_secondary('[[i_disk_free]]') }} free
               icon: mdi:harddisk
               icon_color: >
@@ -454,7 +454,7 @@ decluttering_templates:
                   entity: '[[i_gpu_pct]]'
                   state_not: unknown
               secondary: |
-                {{ states('[[i_gpu_pct]]') | round(0) }}%
+                {{ states('[[i_gpu_pct]]') | float(0) | round(0) }}%
               icon: mdi:chip
               icon_color: >
                 {% set v = states('[[i_gpu_pct]]')|float(0) %} {{ 'red' if v>90

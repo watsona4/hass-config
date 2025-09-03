@@ -4,7 +4,7 @@
 {% from 'helpers.jinja' import level_find %}
 
 {# Breakpoints for AQI levels #}
-{% set bps = [0, 50, 100, 150, 200, 300, 500] %}
+{% set bps = [0, 50, 100, 150, 200, 300] %}
 
 {# Names for AQI levels #}
 {% set names = ["Good Air", "Moderate Air", "Unhlthy Sensitive", "Unhealthy Air", "Very Unhealthy", "Hazardous Air"] %}
@@ -46,12 +46,12 @@
 ] %}
 
 {# Breakpoints for individual pollutants #}
-{% set pm25_bps = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4, 500.4] %}
-{% set pm10_bps = [0.0, 54, 154, 254, 354, 424, 604] %}
-{% set o3_bps = [0.0, 0.054, 0.07, 0.085, 0.105, 0.2] %}
-{% set co_bps = [0.0, 4.4, 9.4, 12.4, 15.4, 30.4, 50.4] %}
-{% set no2_bps = [0.0, 0.053, 0.1, 0.36, 0.649, 1.249, 1.649] %}
-{% set so2_bps = [0.0, 0.035, 0.075, 0.185, 0.304, 0.604, 0.804] %}
+{% set pm25_bps = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4] %}
+{% set pm10_bps = [0.0, 54, 154, 254, 354, 424] %}
+{% set o3_bps = [0.0, 0.054, 0.07, 0.085, 0.105] %}
+{% set co_bps = [0.0, 4.4, 9.4, 12.4, 15.4, 30.4] %}
+{% set no2_bps = [0.0, 0.053, 0.1, 0.36, 0.649, 1.249] %}
+{% set so2_bps = [0.0, 0.035, 0.075, 0.185, 0.304, 0.604] %}
 
 {# Macro to calculate AQI from PM2.5 and PM10 concentrations #}
 {% macro aqi_from_pm(pm25, pm10) %}

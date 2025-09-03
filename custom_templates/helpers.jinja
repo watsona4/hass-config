@@ -111,7 +111,9 @@
         0
     {%- else -%}
         {%- set n = bps | length -%}
-        {%- if n < 2 -%}{{ 0 }}{%- else -%}
+        {%- if n < 2 -%}
+            {{ 0 }}
+        {%- else -%}
             {%- set ns = namespace(idx=1, found=false) -%}
             {%- for ub in bps[1:] -%}
                 {%- if not ns.found and v <= (ub | float) -%}

@@ -1,3 +1,4 @@
+{# Weather condition icons based on WMO codes #}
 {%- macro condition(code, is_day=true) -%}
     {%- if code in [0,1] -%}{{ 'sunny' if is_day else 'clear-night' }}
     {%- elif code in [2] -%}partlycloudy
