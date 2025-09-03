@@ -23,7 +23,7 @@ logger:
   default: warning
   logs:
     pyatv: error
-    homeassistant.components.apple_tv: warning
+    homeassistant.components.apple_tv: critical
     homeassistant.components.switchbot.cover: critical
     homeassistant.components.switchbot.coordinator: critical
     homeassistant.components.switchbot: critical
@@ -50,6 +50,61 @@ frontend:
   themes: !include_dir_merge_named themes
   extra_module_url:
     - /local/hass-bha-icons.js
+
+lovelace:
+  mode: yaml
+  resources:
+    - url: /hacsfiles/mushroom-cards/mushroom.js
+      type: module
+    - url: /hacsfiles/auto-entities/auto-entities.js
+      type: module
+    - url: /hacsfiles/decluttering-card/decluttering-card.js
+      type: module
+    - url: /hacsfiles/button-card/button-card.js
+      type: module
+  dashboards:
+    lovelace-overview:
+      mode: yaml
+      title: Overview
+      icon: mdi:view-dashboard
+      show_in_sidebar: true
+      filename: dashboards/overview/dashboard.yaml
+    lovelace-computers:
+      mode: yaml
+      title: Computers
+      icon: mdi:server
+      show_in_sidebar: true
+      filename: dashboards/computers/dashboard.yaml
+    lovelace-environment:
+      mode: yaml
+      title: Environment
+      icon: mdi:leaf
+      show_in_sidebar: true
+      filename: dashboards/environment/dashboard.yaml
+    lovelace-rv:
+      mode: yaml
+      title: RV
+      icon: mdi:caravan
+      show_in_sidebar: true
+      filename: dashboards/rv/dashboard.yaml
+    lovelace-security:
+      mode: yaml
+      title: Security
+      icon: mdi:cctv
+      show_in_sidebar: true
+      filename: dashboards/security/dashboard.yaml
+    lovelace-spaces:
+      mode: yaml
+      title: Spaces
+      icon: mdi:floor-plan
+      show_in_sidebar: true
+      filename: dashboards/spaces/dashboard.yaml
+    lovelace-systems:
+      mode: yaml
+      title: Systems
+      icon: mdi:home-automation
+      show_in_sidebar: true
+      filename: dashboards/systems/dashboard.yaml
 
 sonos:
   media_player:
