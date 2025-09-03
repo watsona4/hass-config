@@ -1,3 +1,12 @@
+
+{%- macro factor_sigmoid(c) -%}
+    {%- set L = 1.0 -%}
+    {%- set x0 = 81.0837 -%}
+    {%- set k = -0.0897371 -%}
+    {%- set denom = 1 + (e ** (-k * ((c|float(0)) - x0))) -%}
+    {{ L / denom }}
+{%- endmacro -%}
+
 {%- macro name_25(i) -%}
     {%- set names = ["Low UV Exposure", "Moderate UV Exposure",
         "High UV Exposure", "Very High UV Exposure",

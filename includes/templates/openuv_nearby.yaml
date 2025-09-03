@@ -34,14 +34,14 @@
       state_class: measurement
       availability: "{{ has_value(uv_src) }}"
       state: >-
-        {% from 'macros.jinja' import uv_factor_sigmoid %}
+        {% from 'uv.jinja' import factor_sigmoid %}
         {% set raw_uv = states(uv_src) | float(0) %}
         {% set clouds = state_attr(wx_src,'cloud_coverage') | float(0) %}
-        {{ (raw_uv * (uv_factor_sigmoid(clouds) | float(1))) | round(2) }}
+        {{ (raw_uv * (factor_sigmoid(clouds) | float(1))) | round(2) }}
       attributes:
         source: "openuv_clear_sky * cloud_correction"
         forecast: >-
-          {% from 'macros.jinja' import uv_factor_sigmoid %}
+          {% from 'uv.jinja' import factor_sigmoid %}
           {%- set out = namespace(items=[]) -%}
           {%- for p in (raw_fc or []) -%}
             {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}
@@ -49,7 +49,7 @@
               {%- set tl = t | as_local -%}
               {%- set hk = (tl.replace(minute=0,second=0,microsecond=0) | as_timestamp | int) -%}
               {%- set c = (pairs | selectattr('hk','eq', hk) | map(attribute='cc') | first) | default(0, true) | float(0) -%}
-              {%- set f = uv_factor_sigmoid(c) | float(1) -%}
+              {%- set f = factor_sigmoid(c) | float(1) -%}
               {%- set out.items = out.items + [ {
                     'datetime': tl.isoformat(),
                     'uv_apparent': (p.get('uv',0) | float(0)) * f

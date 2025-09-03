@@ -6,11 +6,11 @@
   unique_id: openmeteo_weather_nearby
 
   condition_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_nearby','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
-    {{ wx_condition(code, is_day) if code is not none else 'unknown' }}
+    {{ condition(code, is_day) if code is not none else 'unknown' }}
 
   apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('apparent_temperature') }}"
   cloud_coverage_template:      "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('cloud_cover') }}"
@@ -30,7 +30,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_nearby','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -44,7 +44,7 @@
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
-          'condition': wx_condition(w[i]) if i < (w|length) else 'unknown',
+          'condition': condition(w[i]) if i < (w|length) else 'unknown',
           'native_precipitation': ps[i] if i < (ps|length) else none,
           'native_temperature':   tmax[i] if i < (tmax|length) else none,
           'native_templow':       tmin[i] if i < (tmin|length) else none,
@@ -56,7 +56,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_nearby','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_nearby','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
@@ -71,7 +71,7 @@
       {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
-              'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+              'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
               'native_precipitation': pr[i]  if i < (pr|length)  else none,
               'native_temperature':   tmp[i] if i < (tmp|length) else none
             } -%}
@@ -88,11 +88,11 @@
   unique_id: openmeteo_weather_home
 
   condition_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_home','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
-    {{ wx_condition(code, is_day) if code is not none else 'unknown' }}
+    {{ condition(code, is_day) if code is not none else 'unknown' }}
 
   apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('apparent_temperature') }}"
   cloud_coverage_template:      "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('cloud_cover') }}"
@@ -112,7 +112,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_home','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -126,7 +126,7 @@
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
-          'condition': wx_condition(w[i]) if i < (w|length) else 'unknown',
+          'condition': condition(w[i]) if i < (w|length) else 'unknown',
           'native_precipitation': ps[i] if i < (ps|length) else none,
           'native_temperature':   tmax[i] if i < (tmax|length) else none,
           'native_templow':       tmin[i] if i < (tmin|length) else none,
@@ -138,7 +138,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_home','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_home','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
@@ -153,7 +153,7 @@
       {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
-              'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+              'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
               'native_precipitation': pr[i]  if i < (pr|length)  else none,
               'native_temperature':   tmp[i] if i < (tmp|length) else none
             } -%}
@@ -170,11 +170,11 @@
   unique_id: openmeteo_weather_rv
 
   condition_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_rv','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
-    {{ wx_condition(code, is_day) if code is not none else 'unknown' }}
+    {{ condition(code, is_day) if code is not none else 'unknown' }}
 
   apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') }}"
   cloud_coverage_template:      "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') }}"
@@ -194,7 +194,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_rv','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -208,7 +208,7 @@
       {%- set dt = (tt[i] | as_datetime | as_local) -%}
       {%- set entry = {
           'datetime': dt|string,
-          'condition': wx_condition(w[i]) if i < (w|length) else 'unknown',
+          'condition': condition(w[i]) if i < (w|length) else 'unknown',
           'native_precipitation': ps[i] if i < (ps|length) else none,
           'native_temperature':   tmax[i] if i < (tmax|length) else none,
           'native_templow':       tmin[i] if i < (tmin|length) else none,
@@ -220,7 +220,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'macros.jinja' import wx_condition %}
+    {% from 'weather.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_rv','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_rv','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
@@ -235,7 +235,7 @@
       {%- if cur_dt is none or dt >= (cur_dt | as_local) -%}
         {%- set entry = {
               'datetime': dt|string,
-              'condition': wx_condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+              'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
               'native_precipitation': pr[i]  if i < (pr|length)  else none,
               'native_temperature':   tmp[i] if i < (tmp|length) else none
             } -%}
