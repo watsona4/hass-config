@@ -221,8 +221,8 @@ views:
                 entity: sensor.openuv_nearby_apparent_uv_index
                 primary: UV Index
                 secondary: |-
-                  {% from 'uv.jinja' import name_12 %}
-                  {{ name_12(states(entity)) }}
+                  {% from 'uv.jinja' import name %}
+                  {{ name(states(entity)) }}
                 icon: mdi:weather-sunny-alert
                 icon_color: |-
                   {% from 'uv.jinja' import color %}

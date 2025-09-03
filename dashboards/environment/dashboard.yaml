@@ -879,19 +879,19 @@ views:
             segments:
               - from: 0
                 color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                label: '{% from ''uv.jinja'' import name_25 %}{{ name_25(0) }}'
+                label: '{% from ''uv.jinja'' import long %}{{ long(0) }}'
               - from: 2
                 color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                label: '{% from ''uv.jinja'' import name_25 %}{{ name_25(3) }}'
+                label: '{% from ''uv.jinja'' import long %}{{ long(3) }}'
               - from: 5
                 color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                label: '{% from ''uv.jinja'' import name_25 %}{{ name_25(6) }}'
+                label: '{% from ''uv.jinja'' import long %}{{ long(6) }}'
               - from: 7
                 color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                label: '{% from ''uv.jinja'' import name_25 %}{{ name_25(8) }}'
+                label: '{% from ''uv.jinja'' import long %}{{ long(8) }}'
               - from: 10
                 color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                label: '{% from ''uv.jinja'' import name_25 %}{{ name_25(11) }}'
+                label: '{% from ''uv.jinja'' import long %}{{ long(11) }}'
             secondary:
               show_gauge: none
               unit: UVI
@@ -948,8 +948,8 @@ views:
               {{ icon(states(entity)) }}
             primary: Health Advice
             secondary: |
-              {% from 'uv.jinja' import description %}
-              {{ description(states(entity)) }}
+              {% from 'uv.jinja' import desc %}
+              {{ desc(states(entity)) }}
             multiline_secondary: true
             icon_color: |
               {% from 'uv.jinja' import color %}
@@ -967,9 +967,9 @@ views:
                   mdi:numeric-{{ level(v) }}-box-outline
                 primary: Today
                 secondary: |-
-                  {% from 'uv.jinja' import name_8 %}
+                  {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
-                  {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
@@ -982,9 +982,9 @@ views:
                   mdi:numeric-{{ level(v) }}-box-outline
                 primary: Tomorrow
                 secondary: |-
-                  {% from 'uv.jinja' import name_8 %}
+                  {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
-                  {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
@@ -999,9 +999,9 @@ views:
                   {{ (state_attr(entity, 'daily').time[2] |
                   as_datetime).strftime('%A') }}
                 secondary: |-
-                  {% from 'uv.jinja' import name_8 %}
+                  {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
-                  {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
@@ -1026,19 +1026,19 @@ views:
                     segments:
                       - from: 0
                         color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(0) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(0) }}'
                       - from: 2
                         color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(3) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(3) }}'
                       - from: 5
                         color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(6) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(6) }}'
                       - from: 7
                         color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(8) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(8) }}'
                       - from: 10
                         color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(11) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(11) }}'
                     secondary:
                       show_gauge: none
                       unit: UVI
@@ -1063,12 +1063,12 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Today
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1087,12 +1087,12 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Tomorrow
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1113,12 +1113,12 @@ views:
                           {{ (state_attr(entity, 'daily').time[2] |
                           as_datetime).strftime('%A') }}
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1149,19 +1149,19 @@ views:
                     segments:
                       - from: 0
                         color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(0) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(0) }}'
                       - from: 2
                         color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(3) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(3) }}'
                       - from: 5
                         color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(6) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(6) }}'
                       - from: 7
                         color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(8) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(8) }}'
                       - from: 10
                         color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                        label: '{% from ''uv.jinja'' import name_12 %} {{ name_12(11) }}'
+                        label: '{% from ''uv.jinja'' import name %} {{ name(11) }}'
                     secondary:
                       show_gauge: none
                       entity: sensor.openmeteo_rv_apparent_uv_index
@@ -1186,12 +1186,12 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Today
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1210,12 +1210,12 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Tomorrow
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1236,12 +1236,12 @@ views:
                           {{ (state_attr(entity, 'daily').time[2] |
                           as_datetime).strftime('%A') }}
                         secondary: >-
-                          {% from 'uv.jinja' import name_8 %}
+                          {% from 'uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
-                          {{ name_8(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
