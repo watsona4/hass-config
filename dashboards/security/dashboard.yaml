@@ -1,0 +1,72 @@
+views:
+  - title: Overview
+    type: panel
+    cards:
+      - type: custom:frigate-card
+        cameras:
+          - camera_entity: camera.birdseye
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.doorbell_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.garage_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.backyard_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.driveway_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.rv_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+          - camera_entity: camera.side_yard_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+        performance:
+          profile: high
+        live:
+          preload: true
+  - type: sections
+    max_columns: 4
+    title: All Cameras
+    path: all-cameras
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Events
+    path: events
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Alarms & Smoke
+    path: alarms-smoke
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
