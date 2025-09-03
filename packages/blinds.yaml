@@ -1,0 +1,888 @@
+###############################################################################
+# PACKAGE: Blinds with "closed_reason" helpers and tilt-wrapper covers
+###############################################################################
+
+input_text:
+  blind_kitchen_left_window_closed_reason:
+    name: Kitchen Left Window Closed Reason
+    max: 120
+  blind_kitchen_right_window_closed_reason:
+    name: Kitchen Right Window Closed Reason
+    max: 120
+  blind_living_room_left_window_closed_reason:
+    name: Living Room Left Window Closed Reason
+    max: 120
+  blind_living_room_right_window_closed_reason:
+    name: Living Room Right Window Closed Reason
+    max: 120
+  blind_breakfast_room_window_closed_reason:
+    name: Breakfast Room Window Closed Reason
+    max: 120
+  blind_laundry_room_window_closed_reason:
+    name: Laundry Room Window Closed Reason
+    max: 120
+  blind_front_hallway_window_closed_reason:
+    name: Front Hallway Window Closed Reason
+    max: 120
+  blind_study_left_window_closed_reason:
+    name: Study Left Window Closed Reason
+    max: 120
+  blind_study_right_window_closed_reason:
+    name: Study Right Window Closed Reason
+    max: 120
+  blind_study_west_window_closed_reason:
+    name: Study West Window Closed Reason
+    max: 120
+  blind_guest_bedroom_south_window_closed_reason:
+    name: Guest Bedroom South Window Closed Reason
+    max: 120
+  blind_guest_bedroom_left_window_closed_reason:
+    name: Guest Bedroom Left Window Closed Reason
+    max: 120
+  blind_guest_bedroom_right_window_closed_reason:
+    name: Guest Bedroom Right Window Closed Reason
+    max: 120
+  blind_eleanor_room_window_closed_reason:
+    name: Eleanor Room Window Closed Reason
+    max: 120
+  blind_michael_room_window_closed_reason:
+    name: Michael Room Window Closed Reason
+    max: 120
+  blind_back_hallway_window_closed_reason:
+    name: Back Hallway Window Closed Reason
+    max: 120
+  blind_kids_bathroom_window_closed_reason:
+    name: Kids Bathroom Window Closed Reason
+    max: 120
+  blind_master_bathroom_left_window_closed_reason:
+    name: Master Bathroom Left Window Closed Reason
+    max: 120
+  blind_master_bathroom_right_window_closed_reason:
+    name: Master Bathroom Right Window Closed Reason
+    max: 120
+  blind_master_bedroom_left_window_closed_reason:
+    name: Master Bedroom Left Window Closed Reason
+    max: 120
+  blind_master_bedroom_right_window_closed_reason:
+    name: Master Bedroom Right Window Closed Reason
+    max: 120
+
+cover:
+  - platform: template
+    covers:
+
+      kitchen_left_window:
+        friendly_name: Kitchen Left Window
+        unique_id: cover_kitchen_left_window_wrapper
+        availability_template: "{{ has_value('cover.kitchen_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.kitchen_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.kitchen_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.kitchen_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.kitchen_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.kitchen_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.kitchen_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_kitchen_left_window_closed_reason') }}"
+
+      kitchen_right_window:
+        friendly_name: Kitchen Right Window
+        unique_id: cover_kitchen_right_window_wrapper
+        availability_template: "{{ has_value('cover.kitchen_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.kitchen_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.kitchen_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.kitchen_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.kitchen_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.kitchen_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.kitchen_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_kitchen_right_window_closed_reason') }}"
+
+      living_room_left_window:
+        friendly_name: Living Room Left Window
+        unique_id: cover_living_room_left_window_wrapper
+        availability_template: "{{ has_value('cover.living_room_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.living_room_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.living_room_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.living_room_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.living_room_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.living_room_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.living_room_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_living_room_left_window_closed_reason') }}"
+
+      living_room_right_window:
+        friendly_name: Living Room Right Window
+        unique_id: cover_living_room_right_window_wrapper
+        availability_template: "{{ has_value('cover.living_room_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.living_room_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.living_room_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.living_room_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.living_room_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.living_room_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.living_room_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_living_room_right_window_closed_reason') }}"
+
+      breakfast_room_window:
+        friendly_name: Breakfast Room Window
+        unique_id: cover_breakfast_room_window_wrapper
+        availability_template: "{{ has_value('cover.breakfast_room_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.breakfast_room_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.breakfast_room_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.breakfast_room_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.breakfast_room_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.breakfast_room_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.breakfast_room_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_breakfast_room_window_closed_reason') }}"
+
+      laundry_room_window:
+        friendly_name: Laundry Room Window
+        unique_id: cover_laundry_room_window_wrapper
+        availability_template: "{{ has_value('cover.laundry_room_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.laundry_room_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.laundry_room_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.laundry_room_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.laundry_room_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.laundry_room_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.laundry_room_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_laundry_room_window_closed_reason') }}"
+
+      front_hallway_window:
+        friendly_name: Front Hallway Window
+        unique_id: cover_front_hallway_window_wrapper
+        availability_template: "{{ has_value('cover.front_hallway_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.front_hallway_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.front_hallway_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.front_hallway_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.front_hallway_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.front_hallway_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.front_hallway_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_front_hallway_window_closed_reason') }}"
+
+      study_left_window:
+        friendly_name: Study Left Window
+        unique_id: cover_study_left_window_wrapper
+        availability_template: "{{ has_value('cover.study_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.study_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.study_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.study_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.study_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.study_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.study_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_study_left_window_closed_reason') }}"
+
+      study_right_window:
+        friendly_name: Study Right Window
+        unique_id: cover_study_right_window_wrapper
+        availability_template: "{{ has_value('cover.study_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.study_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.study_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.study_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.study_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.study_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.study_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_study_right_window_closed_reason') }}"
+
+      study_west_window:
+        friendly_name: Study West Window
+        unique_id: cover_study_west_window_wrapper
+        availability_template: "{{ has_value('cover.study_west_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.study_west_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.study_west_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.study_west_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.study_west_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.study_west_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.study_west_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_study_west_window_closed_reason') }}"
+
+      guest_bedroom_south_window:
+        friendly_name: Guest Bedroom South Window
+        unique_id: cover_guest_bedroom_south_window_wrapper
+        availability_template: "{{ has_value('cover.guest_bedroom_south_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.guest_bedroom_south_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.guest_bedroom_south_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.guest_bedroom_south_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.guest_bedroom_south_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.guest_bedroom_south_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.guest_bedroom_south_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_guest_bedroom_south_window_closed_reason') }}"
+
+      guest_bedroom_left_window:
+        friendly_name: Guest Bedroom Left Window
+        unique_id: cover_guest_bedroom_left_window_wrapper
+        availability_template: "{{ has_value('cover.guest_bedroom_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.guest_bedroom_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.guest_bedroom_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.guest_bedroom_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.guest_bedroom_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.guest_bedroom_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.guest_bedroom_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_guest_bedroom_left_window_closed_reason') }}"
+
+      guest_bedroom_right_window:
+        friendly_name: Guest Bedroom Right Window
+        unique_id: cover_guest_bedroom_right_window_wrapper
+        availability_template: "{{ has_value('cover.guest_bedroom_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.guest_bedroom_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.guest_bedroom_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.guest_bedroom_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.guest_bedroom_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.guest_bedroom_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.guest_bedroom_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_guest_bedroom_right_window_closed_reason') }}"
+
+      eleanor_room_window:
+        friendly_name: Eleanor Room Window
+        unique_id: cover_eleanor_room_window_wrapper
+        availability_template: "{{ has_value('cover.eleanor_room_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.eleanor_room_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.eleanor_room_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.eleanor_room_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.eleanor_room_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.eleanor_room_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.eleanor_room_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_eleanor_room_window_closed_reason') }}"
+
+      michael_room_window:
+        friendly_name: Michael Room Window
+        unique_id: cover_michael_room_window_wrapper
+        availability_template: "{{ has_value('cover.michael_room_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.michael_room_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.michael_room_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.michael_room_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.michael_room_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.michael_room_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.michael_room_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_michael_room_window_closed_reason') }}"
+
+      back_hallway_window:
+        friendly_name: Back Hallway Window
+        unique_id: cover_back_hallway_window_wrapper
+        availability_template: "{{ has_value('cover.back_hallway_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.back_hallway_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.back_hallway_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.back_hallway_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.back_hallway_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.back_hallway_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.back_hallway_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_back_hallway_window_closed_reason') }}"
+
+      kids_bathroom_window:
+        friendly_name: Kids Bathroom Window
+        unique_id: cover_kids_bathroom_window_wrapper
+        availability_template: "{{ has_value('cover.kids_bathroom_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.kids_bathroom_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.kids_bathroom_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.kids_bathroom_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.kids_bathroom_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.kids_bathroom_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.kids_bathroom_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_kids_bathroom_window_closed_reason') }}"
+
+      master_bathroom_left_window:
+        friendly_name: Master Bathroom Left Window
+        unique_id: cover_master_bathroom_left_window_wrapper
+        availability_template: "{{ has_value('cover.master_bathroom_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.master_bathroom_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.master_bathroom_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.master_bathroom_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.master_bathroom_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.master_bathroom_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.master_bathroom_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_master_bathroom_left_window_closed_reason') }}"
+
+      master_bathroom_right_window:
+        friendly_name: Master Bathroom Right Window
+        unique_id: cover_master_bathroom_right_window_wrapper
+        availability_template: "{{ has_value('cover.master_bathroom_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.master_bathroom_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.master_bathroom_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.master_bathroom_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.master_bathroom_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.master_bathroom_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.master_bathroom_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_master_bathroom_right_window_closed_reason') }}"
+
+      master_bedroom_left_window:
+        friendly_name: Master Bedroom Left Window
+        unique_id: cover_master_bedroom_left_window_wrapper
+        availability_template: "{{ has_value('cover.master_bedroom_left_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.master_bedroom_left_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.master_bedroom_left_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.master_bedroom_left_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.master_bedroom_left_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.master_bedroom_left_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.master_bedroom_left_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_master_bedroom_left_window_closed_reason') }}"
+
+      master_bedroom_right_window:
+        friendly_name: Master Bedroom Right Window
+        unique_id: cover_master_bedroom_right_window_wrapper
+        availability_template: "{{ has_value('cover.master_bedroom_right_window_raw') }}"
+        tilt_position_template: "{{ state_attr('cover.master_bedroom_right_window_raw','current_tilt_position') }}"
+        value_template: "{{ states('cover.master_bedroom_right_window_raw') }}"
+        open_cover_tilt:
+          service: cover.open_cover_tilt
+          target: { entity_id: cover.master_bedroom_right_window_raw }
+        close_cover_tilt:
+          service: cover.close_cover_tilt
+          target: { entity_id: cover.master_bedroom_right_window_raw }
+        stop_cover_tilt:
+          service: cover.stop_cover_tilt
+          target: { entity_id: cover.master_bedroom_right_window_raw }
+        set_cover_tilt_position:
+          service: cover.set_cover_tilt_position
+          target: { entity_id: cover.master_bedroom_right_window_raw }
+          data:
+            tilt_position: "{{ tilt_position }}"
+        extra_state_attributes:
+          closed_reason: "{{ states('input_text.blind_master_bedroom_right_window_closed_reason') }}"
+
+# ---------------------------- TEMPLATE SENSORS --------------------------------
+template:
+
+  # ========================== Brightness Indicators ===========================
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.sunny
+          - input_boolean.someone_is_home
+          - input_boolean.in_a_teams_meeting
+          - sun.sun
+    variables:
+      ent_sunny: binary_sensor.sunny
+      ent_home: input_boolean.someone_is_home
+      ent_teams: input_boolean.in_a_teams_meeting
+      ent_sun: sun.sun
+    binary_sensor:
+      - name: Breakfast Room Closed Brightness
+        unique_id: breakfast_room_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {% set before_church = azi >= 228 and azi < 260 and elv < 59 %}
+          {% set above_church  = azi >= 260 and azi < 311 and elv >= 15 and elv < 59 %}
+          {% set behind_church = azi >= 311 and azi < 336 and elv < 59 %}
+          {{ home and sunny and (before_church or above_church or behind_church) }}
+
+      - name: Kitchen Closed Brightness
+        unique_id: kitchen_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_sun) and ((state_attr(ent_sun,'azimuth') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {{ home and sunny and azi >= 89 and azi < 100 }}
+
+      - name: Laundry Room Closed Brightness
+        unique_id: laundry_room_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_sun) and ((state_attr(ent_sun,'azimuth') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {{ home and sunny and azi >= 204 }}
+
+      - name: Living Room Closed Brightness
+        unique_id: living_room_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {% set before_church               = azi >= 253 and azi < 268 and elv < 22 %}
+          {% set above_steeple              = azi >= 268 and azi < 274 and elv > 30 %}
+          {% set above_church               = azi >= 274 and azi < 315 and elv >= 15 and elv < 22 %}
+          {% set behind_church_left_window  = azi >= 315 and azi < 320 and elv < 22 %}
+          {% set behind_church_right_window = azi >= 338 and azi < 343 and elv < 18 %}
+          {{ home and sunny and (
+              before_church or above_steeple or above_church or
+              behind_church_left_window or behind_church_right_window
+          ) }}
+
+      - name: Study South Closed Brightness
+        unique_id: study_south_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {% set elv_limit = (48 - 28) / (215 - 132) * (azi - 132) + 28 %}
+          {{ home and sunny and azi >= 132 and azi < 215 and elv < elv_limit }}
+
+      - name: Study West Closed Brightness
+        unique_id: study_west_closed_brightness
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and
+             has_value(ent_teams) and
+             has_value(ent_sun) and ((state_attr(ent_sun,'azimuth') | float(none)) is not none) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set teams = is_state(ent_teams,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {{ teams or (home and sunny and azi >= 215 and azi < 300) }}
+
+
+  # ========================== Temperature Indicators ==========================
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.sunny
+          - binary_sensor.hot_inside
+          - binary_sensor.hot_in_study
+          - sun.sun
+    variables:
+      ent_sunny: binary_sensor.sunny
+      ent_hot_inside: binary_sensor.hot_inside
+      ent_hot_study: binary_sensor.hot_in_study
+      ent_sun: sun.sun
+    binary_sensor:
+      - name: Front Hallway Closed Temperature
+        unique_id: front_hallway_closed_temperature
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_hot_inside) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hot_inside = is_state(ent_hot_inside,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {{ sunny and hot_inside and (azi >= 117 and azi < 240 and elv >= 5) }}
+
+      - name: Study South Closed Temperature
+        unique_id: study_south_closed_temperature
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_hot_inside) and has_value(ent_hot_study) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hot_inside = is_state(ent_hot_inside,'on') %}
+          {% set hot_study = is_state(ent_hot_study,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {{ sunny and (hot_inside or hot_study) and (azi >= 117 and azi < 261 and elv >= 5) }}
+
+      - name: Study West Closed Temperature
+        unique_id: study_west_closed_temperature
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_hot_inside) and has_value(ent_hot_study) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hot_inside = is_state(ent_hot_inside,'on') %}
+          {% set hot_study = is_state(ent_hot_study,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {{ sunny and (hot_inside or hot_study) and azi >= 204 and elv >= 5 }}
+
+      - name: Guest South Closed Temperature
+        unique_id: guest_south_closed_temperature
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_hot_inside) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hot_inside = is_state(ent_hot_inside,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {{ sunny and hot_inside and (azi >= 170 and azi < 261 and elv >= 5) }}
+
+      - name: West Windows Closed Temperature
+        unique_id: west_windows_closed_temperature
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_hot_inside) and
+             has_value(ent_sun) and
+             ((state_attr(ent_sun,'azimuth') | float(none)) is not none) and
+             ((state_attr(ent_sun,'elevation') | float(none)) is not none) }}
+        state: >-
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hot_inside = is_state(ent_hot_inside,'on') %}
+          {% set azi = state_attr(ent_sun,'azimuth') | float(0) %}
+          {% set elv = state_attr(ent_sun,'elevation') | float(0) %}
+          {{ sunny and hot_inside and azi >= 204 and elv >= 5 }}
+
+
+  # ========================== Window Button States ============================
+  - trigger:
+      - platform: state
+        entity_id:
+          - timer.breakfast_room_timer
+          - timer.eleanor_room_timer
+          - timer.guest_bedroom_timer
+          - timer.kids_bathroom_timer
+          - timer.living_room_timer
+          - timer.master_bathroom_timer
+          - timer.master_bedroom_timer
+          - timer.michael_room_timer
+    binary_sensor:
+      - name: Breakfast Room Closed Button
+        unique_id: breakfast_room_closed_button
+        availability: "{{ has_value('timer.breakfast_room_timer') }}"
+        state: "{{ is_state('timer.breakfast_room_timer','active') }}"
+      - name: Eleanor Room Closed Button
+        unique_id: eleanor_room_closed_button
+        availability: "{{ has_value('timer.eleanor_room_timer') }}"
+        state: "{{ is_state('timer.eleanor_room_timer','active') }}"
+      - name: Guest Bedroom Closed Button
+        unique_id: guest_bedroom_closed_button
+        availability: "{{ has_value('timer.guest_bedroom_timer') }}"
+        state: "{{ is_state('timer.guest_bedroom_timer','active') }}"
+      - name: Kids Bathroom Closed Button
+        unique_id: kids_bathroom_closed_button
+        availability: "{{ has_value('timer.kids_bathroom_timer') }}"
+        state: "{{ is_state('timer.kids_bathroom_timer','active') }}"
+      - name: Living Room Closed Button
+        unique_id: living_room_closed_button
+        availability: "{{ has_value('timer.living_room_timer') }}"
+        state: "{{ is_state('timer.living_room_timer','active') }}"
+      - name: Master Bathroom Closed Button
+        unique_id: master_bathroom_closed_button
+        availability: "{{ has_value('timer.master_bathroom_timer') }}"
+        state: "{{ is_state('timer.master_bathroom_timer','active') }}"
+      - name: Master Bedroom Closed Button
+        unique_id: master_bedroom_closed_button
+        availability: "{{ has_value('timer.master_bedroom_timer') }}"
+        state: "{{ is_state('timer.master_bedroom_timer','active') }}"
+      - name: Michael Room Closed Button
+        unique_id: michael_room_closed_button
+        availability: "{{ has_value('timer.michael_room_timer') }}"
+        state: "{{ is_state('timer.michael_room_timer','active') }}"
+
+
+  # ============================= Presence States ==============================
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.kids_bathroom_presence_presence_information
+    binary_sensor:
+      - name: Kids Bathroom Closed Presence
+        unique_id: kids_bathroom_closed_presence
+        device_class: occupancy
+        availability: "{{ has_value('binary_sensor.kids_bathroom_presence_presence_information') }}"
+        state: "{{ is_state('binary_sensor.kids_bathroom_presence_presence_information','on') }}"
+        delay_off: "1:00:00"
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.master_bathroom_presence_presence_information
+    binary_sensor:
+      - name: Master Bathroom Closed Presence
+        unique_id: master_bathroom_closed_presence
+        device_class: occupancy
+        availability: "{{ has_value('binary_sensor.master_bathroom_presence_presence_information') }}"
+        state: "{{ is_state('binary_sensor.master_bathroom_presence_presence_information','on') }}"
+        delay_off: "1:00:00"
+
+
+  # ======================== Miscellaneous Conditions ==========================
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.sunny
+          - input_boolean.someone_is_home
+          - media_player.un50j5500
+    variables:
+      ent_sunny: binary_sensor.sunny
+      ent_home: input_boolean.someone_is_home
+      ent_tv: media_player.un50j5500
+    binary_sensor:
+      - name: Living Room Closed TV
+        unique_id: living_room_closed_tv
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and has_value(ent_tv) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set tv_on = is_state(ent_tv,'on') %}
+          {{ home and sunny and tv_on }}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.sunny
+          - input_boolean.someone_is_home
+          - media_player.kitchen_hub
+    variables:
+      ent_sunny: binary_sensor.sunny
+      ent_home: input_boolean.someone_is_home
+      ent_hub: media_player.kitchen_hub
+    binary_sensor:
+      - name: Kitchen Closed Hub
+        unique_id: kitchen_closed_hub
+        availability: >-
+          {{ has_value(ent_sunny) and has_value(ent_home) and has_value(ent_hub) }}
+        state: >-
+          {% set home  = is_state(ent_home,'on') %}
+          {% set sunny = is_state(ent_sunny,'on') %}
+          {% set hub_on = is_state(ent_hub,'on') %}
+          {{ home and sunny and hub_on }}
+
+  # ====================== Time Window: Before 06:00 Local =====================
+  - trigger:
+      - platform: time
+        at: "00:00:01"
+        id: midnight
+      - platform: time
+        at: "06:00:00"
+        id: six
+      - platform: homeassistant
+        event: start
+        id: start
+    binary_sensor:
+      - name: Master Bedroom Closed Morning
+        unique_id: master_bedroom_closed_morning
+        state: >-
+          {% if trigger and trigger.id in ['midnight'] %}
+            true
+          {% elif trigger and trigger.id in ['six'] %}
+            false
+          {% else %}
+            {{ now().hour < 6 }}
+          {% endif %}

@@ -25,6 +25,7 @@ ssh/
 SERVICE_ACCOUNT.JSON
 
 # Ignore heavy binary assets, allow config assets
+www/community 
 www/**/*.jpg
 www/**/*.jpeg
 www/**/*.png
