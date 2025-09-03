@@ -1,0 +1,93 @@
+views:
+  - title: Downstairs
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - alert_classes:
+                  - motion
+                  - moisture
+                sensor_classes:
+                  - temperature
+                  - humidity
+                type: area
+                area: parlor
+              - type: custom:mushroom-title-card
+                title: ''
+                subtitle: Climate & Comfort
+              - type: custom:auto-entities
+                card:
+                  type: grid
+                  columns: 2
+                  square: false
+                card_param: cards
+                filter:
+                  include:
+                    - area: parlor
+                      domain: sensor
+                      attributes:
+                        device_class: temperature
+                      options:
+                        type: custom:mushroom-template-card
+                    - area: parlor
+                      domain: sensor
+                      attributes:
+                        device_class: humidity
+                      options:
+                        type: custom:mushroom-template-card
+                        entity: this.entity_id
+                        primary: '{{ state_attr(entity,''friendly_name'') }}'
+                        secondary: >-
+                          {% from 'hwmon.jinja' import hw_secondary %}{{
+                          hw_secondary(entity) }}
+                        icon: mdi:water-percent
+                        icon_color: blue
+                  exclude: []
+  - type: sections
+    max_columns: 4
+    title: Upstairs
+    path: upstairs
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Exterior
+    path: exterior
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Garage
+    path: garage
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Garage Rooms
+    path: garage-rooms
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+  - type: sections
+    max_columns: 4
+    title: Attic & Basement
+    path: attic-basement
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
