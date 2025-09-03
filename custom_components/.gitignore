@@ -2,6 +2,9 @@
 aquanta/**
 !aquanta/.gitkeep
 
+browser_mod/**
+!browser_mod/.gitkeep
+
 emporia_vue/**
 !emporia_vue/.gitkeep
 
