@@ -7,23 +7,33 @@
 {% set bps = [0, 50, 100, 150, 200, 300, 500] %}
 
 {# Names for AQI levels #}
-{% set names = ["Good Air", "Moderate Air", "Unhlthy Sensitive",
-    "Unhealthy Air", "Very Unhealthy", "Hazardous Air"] %}
+{% set names = ["Good Air", "Moderate Air", "Unhlthy Sensitive", "Unhealthy Air", "Very Unhealthy", "Hazardous Air"] %}
 
 {# Short names for AQI levels #}
 {% set shorts = ["Good", "Mod", "U-Sens", "Unhlthy", "V-Unhlt", "Hazard"] %}
 
 {# Long names for AQI levels #}
-{% set longs = ["Good Air Quality", "Moderate Air Quality",
-    "Unhealthy for Sensitive Groups", "Unhealthy Air Quality",
-    "Very Unhealthy Air Quality", "Hazardous Air Quality"] %}
+{% set longs = [
+    "Good Air Quality",
+    "Moderate Air Quality",
+    "Unhealthy for Sensitive Groups",
+    "Unhealthy Air Quality",
+    "Very Unhealthy Air Quality",
+    "Hazardous Air Quality"
+] %}
 
 {# Icons for AQI levels #}
-{% set icons = ["mdi:emoticon-happy-outline", "mdi:emoticon-neutral-outlined", "mdi:emoticon-sad-outline",
-    "mdi:alert-circle-outline", "mdi:biohazard", "mdi:skull-crossbones"] %}
+{% set icons = [
+    "mdi:emoticon-happy-outline",
+    "mdi:emoticon-neutral-outlined",
+    "mdi:emoticon-sad-outline",
+    "mdi:alert-circle-outline",
+    "mdi:biohazard",
+    "mdi:skull-crossbones"
+] %}
 
 {# Colors for AQI levels #}
-{% set colors = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', 'disabled'] %}
+{% set colors = ["#009966", "#ffde33", "#ff9933", "#cc0033", "#660099", "#7e0023", "disabled"] %}
 
 {# Descriptions for AQI levels #}
 {% set descriptions = [
@@ -38,15 +48,15 @@
 {# Breakpoints for individual pollutants #}
 {% set pm25_bps = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4, 500.4] %}
 {% set pm10_bps = [0.0, 54, 154, 254, 354, 424, 604] %}
-{% set o3_bps = [0.0, 0.054, 0.070, 0.085, 0.105, 0.200] %}
+{% set o3_bps = [0.0, 0.054, 0.07, 0.085, 0.105, 0.2] %}
 {% set co_bps = [0.0, 4.4, 9.4, 12.4, 15.4, 30.4, 50.4] %}
-{% set no2_bps = [0.0, 0.053, 0.100, 0.360, 0.649, 1.249, 1.649] %}
+{% set no2_bps = [0.0, 0.053, 0.1, 0.36, 0.649, 1.249, 1.649] %}
 {% set so2_bps = [0.0, 0.035, 0.075, 0.185, 0.304, 0.604, 0.804] %}
 
 {# Macro to calculate AQI from PM2.5 and PM10 concentrations #}
 {% macro aqi_from_pm(pm25, pm10) %}
     {%- set c25 = (((pm25 | float) * 10) | int) / 10 -%}
-    {%- set c10 =  (pm10 | float) | int -%}
+    {%- set c10 = (pm10 | float) | int -%}
     {%- set i25 = _subindex(c25, pm25_bps, bps) -%}
     {%- set i10 = _subindex(c10, pm10_bps, bps) -%}
     {{ [i25, i10] | max }}
@@ -54,39 +64,43 @@
 
 {# Macro to get dominant pollutant name #}
 {% macro dominant(entity_id, short=false) %}
-  {%- set pol = state_attr(entity_id, "dominentpol") | upper -%}
-  {%- if pol == "O3" -%}
-    {{ short and "Ozone Gas" or "Ozone (O₃)" }}
-  {%- elif pol == "CO" -%}
-    {{ short and "CarbonMono" or "Carbon Monoxide (CO)" }}
-  {%- elif pol == "NO2" -%}
-    {{ short and "NitroDiox" or "Nitrogen Dioxide (NO₂)" }}
-  {%- elif pol == "SO2" -%}
-    {{ short and "SulfurDiox" or "Sulfur Dioxide (SO₂)" }}
-  {%- elif pol in ["PM25", "PM2.5"] -%}
-    {{ short and "PM₂.₅ Fine" or "Fine Particulate Matter (PM₂.₅)" }}
-  {%- elif pol == "PM10" -%}
-    {{ short and "PM₁₀ Coarse" or "Particulate Matter (PM₁₀)" }}
-  {%- else -%}
-    Unknown ({{ pol }})
-  {%- endif -%}
+    {%- set pol = state_attr(entity_id, "dominentpol") | upper -%}
+    {%- if pol == "O3" -%}
+        {{ short and "Ozone Gas" or "Ozone (O₃)" }}
+    {%- elif pol == "CO" -%}
+        {{ short and "CarbonMono" or "Carbon Monoxide (CO)" }}
+    {%- elif pol == "NO2" -%}
+        {{ short and "NitroDiox" or "Nitrogen Dioxide (NO₂)" }}
+    {%- elif pol == "SO2" -%}
+        {{ short and "SulfurDiox" or "Sulfur Dioxide (SO₂)" }}
+    {%- elif pol in ["PM25", "PM2.5"] -%}
+        {{ short and "PM₂.₅ Fine" or "Fine Particulate Matter (PM₂.₅)" }}
+    {%- elif pol == "PM10" -%}
+        {{ short and "PM₁₀ Coarse" or "Particulate Matter (PM₁₀)" }}
+    {%- else -%}
+        Unknown ({{ pol }})
+    {%- endif -%}
 {% endmacro %}
 
 {# Macros to get AQI level from individual pollutant concentrations #}
+{# djlint:off #}
 {% macro pm25_level(i) %}{{ level_find(i, pm25_bps) }}{% endmacro %}
 {% macro pm10_level(i) %}{{ level_find(i, pm10_bps) }}{% endmacro %}
 {% macro o3_level(i) %}{{ level_find(i, o3_bps) }}{% endmacro %}
 {% macro co_level(i) %}{{ level_find(i, co_bps) }}{% endmacro %}
 {% macro no2_level(i) %}{{ level_find(i, no2_bps) }}{% endmacro %}
 {% macro so2_level(i) %}{{ level_find(i, so2_bps) }}{% endmacro %}
+{# djlint:on #}
 
 {# Macros to get AQI level from individual pollutant concentrations #}
-{% macro pm25_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
-{% macro pm10_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
-{% macro o3_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
-{% macro co_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
-{% macro no2_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
-{% macro so2_color(i) %}{{ colors[pm25_level(i)|int-1] }}{% endmacro %}
+{# djlint:off #}
+{% macro pm25_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{% macro pm10_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{% macro o3_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{% macro co_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{% macro no2_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{% macro so2_color(i) %}{{ colors[pm25_level(i) |int-1] }}{% endmacro %}
+{# djlint:on #}
 
 {# Sub-index calculation using linear interpolation #}
 {% macro _subindex(c, bp, ai) %}
@@ -94,24 +108,26 @@
     {%- elif c <= bp[0] -%}{{ ai[0] }}
     {%- elif c >= bp[-1] -%}{{ ai[-1] }}
     {%- else -%}
-    {%- for i in range(1, bp|length) -%}
-        {%- if c <= bp[i] -%}
-        {%- set Cl = bp[i-1] -%}
-        {%- set Ch = bp[i] -%}
-        {%- set Il = ai[i-1] -%}
-        {%- set Ih = ai[i] -%}
-        {{ ((Ih - Il) / (Ch - Cl) * (c - Cl) + Il) | round(0) }}
-        {%- break -%}
-        {%- endif -%}
-    {%- endfor -%}
+        {%- for i in range(1, bp|length) -%}
+            {%- if c <= bp[i] -%}
+                {%- set Cl = bp[i-1] -%}
+                {%- set Ch = bp[i] -%}
+                {%- set Il = ai[i-1] -%}
+                {%- set Ih = ai[i] -%}
+                {{ ((Ih - Il) / (Ch - Cl) * (c - Cl) + Il) | round(0) }}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
     {%- endif -%}
 {% endmacro %}
 
 {# Wrappers for standard functions #}
-{% macro name(i) %}{{ names[level(i)|int-1] }}{% endmacro %}
-{% macro short(i) %}{{ shorts[level(i)|int-1] }}{% endmacro %}
-{% macro long(i) %}{{ longs[level(i)|int-1] }}{% endmacro %}
-{% macro icon(i) %}{{ icons[level(i)|int-1] }}{% endmacro %}
-{% macro desc(i) %}{{ descriptions[level(i)|int-1] }}{% endmacro %}
-{% macro color(i) %}{{ colors[level(i)|int-1] }}{% endmacro %}
+{# djlint:off #}
+{% macro name(i) %}{{ names[level(i) |int-1] }}{% endmacro %}
+{% macro short(i) %}{{ shorts[level(i) |int-1] }}{% endmacro %}
+{% macro long(i) %}{{ longs[level(i) |int-1] }}{% endmacro %}
+{% macro icon(i) %}{{ icons[level(i) |int-1] }}{% endmacro %}
+{% macro desc(i) %}{{ descriptions[level(i) |int-1] }}{% endmacro %}
+{% macro color(i) %}{{ colors[level(i) |int-1] }}{% endmacro %}
 {% macro level(i) %}{{ level_find(i, bps) }}{% endmacro %}
+{# djlint:on #}
