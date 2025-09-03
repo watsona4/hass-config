@@ -22,7 +22,7 @@ decluttering_templates:
         - icon: >-
             {{ 'mdi:check-circle' if is_state(entity,'on') else
             'mdi:alert-circle' }}
-        - color: '{{ ''green'' if is_state(entity,''on'') else ''red'' }}'
+        - color: "{{ 'green' if is_state(entity,'on') else 'red' }}"
         - content: Overall Status {{ states('[[overall_status_summary]]') }}
   load_badge:
     card:
@@ -249,7 +249,7 @@ decluttering_templates:
       icon: >-
         {% set ok = is_state('[[ok]]','on') %} {{ 'mdi:heart-pulse' if ok else
         'mdi:heart-broken' }}
-      icon_color: '{% set ok = is_state(''[[ok]]'',''on'') %} {{ ''green'' if ok else ''red'' }}'
+      icon_color: "{% set ok = is_state('[[ok]]','on') %} {{ 'green' if ok else 'red' }}"
   lhm_block:
     default:
       - columns: 2
@@ -753,7 +753,7 @@ views:
     max_columns: 2
     cards: []
   - title: Laptop
-    icon: ''
+    icon: ""
     path: laptop
     type: sections
     max_columns: 3
@@ -969,7 +969,7 @@ views:
               - columns: 2
     cards: []
   - title: Michael's Desktop
-    icon: ''
+    icon: ""
     path: desktop
     type: sections
     max_columns: 3
@@ -1212,7 +1212,7 @@ views:
               - columns: 2
     cards: []
   - title: Frigate Server
-    icon: ''
+    icon: ""
     path: frigate
     type: sections
     max_columns: 3
@@ -1542,7 +1542,7 @@ views:
               - columns: 2
     cards: []
   - title: OPNSense Router
-    icon: ''
+    icon: ""
     path: opnsense
     type: sections
     max_columns: 3

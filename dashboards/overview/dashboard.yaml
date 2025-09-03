@@ -37,7 +37,7 @@ decluttering_templates:
   numeric_card:
     default:
       - temp_unit: c
-      - secondary_state: ''
+      - secondary_state: ""
     card:
       type: custom:decluttering-card
       template: template_card
@@ -60,7 +60,7 @@ decluttering_templates:
       variables:
         - entity: '[[entity]]'
         - icon: '[[icon]]'
-        - icon_color: '{% set v = states(entity) | float(0) %} [[icon_color_spec]]'
+        - icon_color: "{% set v = states(entity) | float(0) %} [[icon_color_spec]]"
         - primary: '[[primary]]'
         - tap_action:
             - - tap_action
@@ -193,7 +193,7 @@ views:
                   - entity: sensor.outside_temperature_state
                   - primary: Outside Temp
                   - icon: mdi:thermometer
-                  - icon_color_spec: '{{ ''blue'' if v < 50 else ''green'' if v < 80 else ''red'' }}'
+                  - icon_color_spec: "{{ 'blue' if v < 50 else 'green' if v < 80 else 'red' }}"
                   - temp_unit: f
               - type: custom:decluttering-card
                 template: numeric_color_card
@@ -201,7 +201,7 @@ views:
                   - entity: sensor.outside_humidity_state
                   - primary: Outside Humidity
                   - icon: mdi:water-percent
-                  - icon_color_spec: '{{ ''orange'' if v > 70 else ''green'' }}'
+                  - icon_color_spec: "{{ 'orange' if v > 70 else 'green' }}"
           - type: horizontal-stack
             cards:
               - type: custom:decluttering-card
@@ -366,7 +366,7 @@ views:
                     entity: this.entity_id
                     icon: mdi:fire-alert
                     icon_color: red
-                    primary: '{{ area_name(entity) }}'
+                    primary: "{{ area_name(entity) }}"
                     tap_action:
                       action: more-info
                 - entity_id: binary_sensor.nest_protect_*_co_status
@@ -376,7 +376,7 @@ views:
                     entity: this.entity_id
                     icon: mdi:molecule-co
                     icon_color: red
-                    primary: '{{ area_name(entity) }}'
+                    primary: "{{ area_name(entity) }}"
                     tap_action:
                       action: more-info
               exclude: []
@@ -416,7 +416,7 @@ views:
                   options:
                     type: custom:mushroom-template-card
                     entity: this.entity_id
-                    primary: '{{ area_name(entity) }}'
+                    primary: "{{ area_name(entity) }}"
                     icon: mdi:door-open
                     icon_color: amber
                     tap_action:
@@ -428,7 +428,7 @@ views:
                   options:
                     type: custom:mushroom-template-card
                     entity: this.entity_id
-                    primary: '{{ area_name(entity) }}'
+                    primary: "{{ area_name(entity) }}"
                     icon: mdi:window-open
                     icon_color: amber
                     tap_action:
@@ -647,7 +647,7 @@ views:
                               - name: Parlor Humidifier
                           - type: custom:mushroom-template-card
                             entity: binary_sensor.sunny
-                            primary: '{{ state_attr(entity,''friendly_name'') }}'
+                            primary: "{{ state_attr(entity,'friendly_name') }}"
                             secondary: >-
                               {%- from 'hwmon.jinja' import hw_secondary -%} {{
                               state_translated(entity) }} · {{
@@ -660,7 +660,7 @@ views:
                               %}blue{% endif %}
                           - type: custom:mushroom-template-card
                             entity: binary_sensor.rainy
-                            primary: '{{ state_attr(entity,''friendly_name'') }}'
+                            primary: "{{ state_attr(entity,'friendly_name') }}"
                             secondary: >-
                               {{ state_translated(entity) }} · {{
                               state_translated('binary_sensor.rain_probe_fresh')
@@ -674,8 +674,8 @@ views:
                               %}disabled{% endif %}
                           - type: custom:mushroom-template-card
                             entity: binary_sensor.dark_outside
-                            primary: '{{ state_attr(entity,''friendly_name'') }}'
-                            secondary: '{{ state_translated(entity) }}'
+                            primary: "{{ state_attr(entity,'friendly_name') }}"
+                            secondary: "{{ state_translated(entity) }}"
                             icon: >-
                               {% if is_state(entity,'on') %}mdi:weather-night{%
                               else %}mdi:weather-partly-cloudy{% endif %}
@@ -684,8 +684,8 @@ views:
                               %}disabled{% endif %}
                           - type: custom:mushroom-template-card
                             entity: binary_sensor.hot_inside
-                            primary: '{{ state_attr(entity,''friendly_name'') }}'
-                            secondary: '{{ state_translated(entity) }}'
+                            primary: "{{ state_attr(entity,'friendly_name') }}"
+                            secondary: "{{ state_translated(entity) }}"
                             icon: >-
                               {% if is_state(entity,'on') %}mdi:radiator{% else
                               %}mdi:radiator-off{% endif %}

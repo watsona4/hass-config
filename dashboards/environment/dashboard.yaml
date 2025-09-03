@@ -85,7 +85,7 @@ views:
           {% endif %}
         tap_action:
           action: more-info
-        label: ''
+        label: ""
         entity: sensor.nearby_uv_safe_exposure_minutes_forecast_st1_open_meteo
       - type: custom:mushroom-template-badge
         content: |-
@@ -108,7 +108,7 @@ views:
           {% endif %}
         tap_action:
           action: more-info
-        label: ''
+        label: ""
         entity: sensor.openuv_nearby_apparent_uv_index
     sections:
       - type: grid
@@ -179,7 +179,7 @@ views:
                       Dominant: {{ states(entity) }}
                     secondary: >
                       {{ state_attr(entity,'dominant_category') or 'unknown' }}
-                      • Index {{ state_attr(entity,'dominant_value') if
+                      · Index {{ state_attr(entity,'dominant_value') if
                       state_attr(entity,'dominant_value') is not none else '–'
                       }}
                     icon_color: |
@@ -256,7 +256,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 0 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -275,7 +275,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 1 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -294,7 +294,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 2 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -323,7 +323,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 0 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -342,7 +342,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 1 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -361,7 +361,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 2 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -393,7 +393,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 0 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -412,7 +412,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 1 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -431,7 +431,7 @@ views:
                         {% else %}{{ d.strftime("%A") }}
                         {% endif %}
                       {% else %}Day 2 {% endif %}
-                    secondary: '{{ state_attr(entity, ''species_name'') }}'
+                    secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
                       {% from 'pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
@@ -572,23 +572,23 @@ views:
             adaptive_state_color: true
             segments:
               - from: 0
-                color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(0) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(0) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(0) }}"
               - from: 51
-                color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(51) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(51) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(51) }}"
               - from: 101
-                color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(101) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(101) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(101) }}"
               - from: 151
-                color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(151) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(151) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(151) }}"
               - from: 201
-                color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(201) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(201) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(201) }}"
               - from: 301
-                color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
-                label: '{% from ''aqi.jinja'' import long %}{{ long(301) }}'
+                color: "{% from 'aqi.jinja' import color %}{{ color(301) }}"
+                label: "{% from 'aqi.jinja' import long %}{{ long(301) }}"
             secondary:
               unit: AQI
               show_gauge: none
@@ -609,42 +609,42 @@ views:
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, pm25_level %} {{
                   level_color(pm25_level(states(entity))) }}
-                content: ''
+                content: ""
               - type: template
                 entity: sensor.waqi_nearby_pm10
                 icon: mdi:blur-radial
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, pm10_level %} {{
                   level_color(pm10_level(states(entity))) }}
-                content: ''
+                content: ""
               - type: template
                 entity: sensor.waqi_nearby_o3
                 icon: mdi:chemical-weapon
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, o3_level %} {{
                   level_color(o3_level(states(entity))) }}
-                content: ''
+                content: ""
               - type: template
                 entity: sensor.waqi_nearby_co
                 icon: mdi:molecule-co
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, co_level %} {{
                   level_color(co_level(states(entity))) }}
-                content: ''
+                content: ""
               - type: template
                 entity: sensor.waqi_nearby_no2
                 icon: mdi:periodic-table
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, no2_level %} {{
                   level_color(no2_level(states(entity))) }}
-                content: ''
+                content: ""
               - type: template
                 entity: sensor.waqi_nearby_so2
                 icon: mdi:factory
                 icon_color: >-
                   {% from 'aqi.jinja' import level_color, so2_level %} {{
                   level_color(so2_level(states(entity))) }}
-                content: ''
+                content: ""
           - type: custom:mushroom-template-card
             entity: sensor.waqi_nearby_aqi
             icon: |
@@ -666,30 +666,30 @@ views:
               - type: custom:mushroom-template-card
                 entity: sensor.aqi_forecast_nearby_day_0
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
-                primary: '{{ state_attr(entity, ''title'') }}'
+                primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
                   {% from 'aqi.jinja' import short %} {{
-                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
-                icon_color: '{{ state_attr(entity, ''hex'') }}'
+                icon_color: "{{ state_attr(entity, 'hex') }}"
               - type: custom:mushroom-template-card
                 entity: sensor.aqi_forecast_nearby_day_1
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
-                primary: '{{ state_attr(entity, ''title'') }}'
+                primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
                   {% from 'aqi.jinja' import short %} {{
-                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
-                icon_color: '{{ state_attr(entity, ''hex'') }}'
+                icon_color: "{{ state_attr(entity, 'hex') }}"
               - type: custom:mushroom-template-card
                 entity: sensor.aqi_forecast_nearby_day_2
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
-                primary: '{{ state_attr(entity, ''title'') }}'
+                primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
                   {% from 'aqi.jinja' import short %} {{
-                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
-                icon_color: '{{ state_attr(entity, ''hex'') }}'
+                icon_color: "{{ state_attr(entity, 'hex') }}"
           - type: vertical-stack
             visibility:
               - condition: state
@@ -706,28 +706,28 @@ views:
                     adaptive_state_color: true
                     segments:
                       - from: 0
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''aqi.jinja'' import name %}{{ name(0) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'aqi.jinja' import name %}{{ name(0) }}"
                       - from: 51
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                        label: '{% from ''aqi.jinja'' import name %}{{ name(51) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(51) }}"
+                        label: "{% from 'aqi.jinja' import name %}{{ name(51) }}"
                       - from: 101
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(101) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(151) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(201) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(301) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(301)
                           }}
@@ -752,31 +752,31 @@ views:
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_home_day_1
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_home_day_2
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
           - type: vertical-stack
             visibility:
               - condition: state
@@ -799,28 +799,28 @@ views:
                     adaptive_state_color: true
                     segments:
                       - from: 0
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''aqi.jinja'' import name %}{{ name(0) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'aqi.jinja' import name %}{{ name(0) }}"
                       - from: 51
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                        label: '{% from ''aqi.jinja'' import name %}{{ name(51) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(51) }}"
+                        label: "{% from 'aqi.jinja' import name %}{{ name(51) }}"
                       - from: 101
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(101) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(151) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(201) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
-                        color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
+                        color: "{% from 'aqi.jinja' import color %}{{ color(301) }}"
                         label: >-
                           {% from 'aqi.jinja' import name %}{{ name(301)
                           }}
@@ -842,56 +842,56 @@ views:
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_rv_day_1
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_rv_day_2
                         icon: >-
                           mdi:numeric-{{ state_attr(entity, 'level')
                           }}-box-outline
-                        primary: '{{ state_attr(entity, ''title'') }}'
+                        primary: "{{ state_attr(entity, 'title') }}"
                         secondary: >-
-                          {{ states(entity) ~ ' • ' ~ state_attr(entity, 'aqi')
+                          {{ states(entity) ~ ' · ' ~ state_attr(entity, 'aqi')
                           }}
-                        icon_color: '{{ state_attr(entity, ''hex'') }}'
+                        icon_color: "{{ state_attr(entity, 'hex') }}"
       - type: grid
         cards:
           - type: custom:mushroom-title-card
             title: Local UV Index & Exposure
           - type: custom:modern-circular-gauge
-            name: ''
-            unit: ''
+            name: ""
+            unit: ""
             entity: sensor.openmeteo_nearby_apparent_uv_index
             max: 11
             segments:
               - from: 0
-                color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                label: '{% from ''uv.jinja'' import long %}{{ long(0) }}'
+                color: "{% from 'uv.jinja' import color %}{{ color(0) }}"
+                label: "{% from 'uv.jinja' import long %}{{ long(0) }}"
               - from: 2
-                color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                label: '{% from ''uv.jinja'' import long %}{{ long(3) }}'
+                color: "{% from 'uv.jinja' import color %}{{ color(3) }}"
+                label: "{% from 'uv.jinja' import long %}{{ long(3) }}"
               - from: 5
-                color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                label: '{% from ''uv.jinja'' import long %}{{ long(6) }}'
+                color: "{% from 'uv.jinja' import color %}{{ color(6) }}"
+                label: "{% from 'uv.jinja' import long %}{{ long(6) }}"
               - from: 7
-                color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                label: '{% from ''uv.jinja'' import long %}{{ long(8) }}'
+                color: "{% from 'uv.jinja' import color %}{{ color(8) }}"
+                label: "{% from 'uv.jinja' import long %}{{ long(8) }}"
               - from: 10
-                color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                label: '{% from ''uv.jinja'' import long %}{{ long(11) }}'
+                color: "{% from 'uv.jinja' import color %}{{ color(11) }}"
+                label: "{% from 'uv.jinja' import long %}{{ long(11) }}"
             secondary:
               show_gauge: none
               unit: UVI
@@ -910,7 +910,7 @@ views:
               - type: template
                 entity: sensor.openuv_nearby_uv_max_index
                 icon: mdi:weather-sunny-alert
-                content: 'Max UV: {{ states(entity)|float(0)|round(1) }}'
+                content: "Max UV: {{ states(entity)|float(0)|round(1) }}"
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {{ color(states(entity)) }}
@@ -922,17 +922,17 @@ views:
                   {% elif cc <= 50 %} grey
                   {% else %} blue
                   {% endif %}
-                content: 'Clouds: {{states(entity)|int(0)}}%'
+                content: "Clouds: {{states(entity)|int(0)}}%"
                 entity: sensor.nearby_uv_adjusted_max_cloud_cover_today
               - type: template
-                content: 'Adj UV: {{states(entity)|float(0)|round(1)}}'
+                content: "Adj UV: {{states(entity)|float(0)|round(1)}}"
                 icon: mdi:white-balance-sunny
                 entity: sensor.nearby_uv_adjusted_max_today_2
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {{ color(states(entity)) }}
               - type: template
-                content: 'Safe Min: {{states(entity)}}'
+                content: "Safe Min: {{states(entity)}}"
                 entity: sensor.openmeteo_nearby_safe_exposure_skin_type_1
                 icon: mdi:timer-sand
                 icon_color: |-
@@ -969,7 +969,7 @@ views:
                 secondary: |-
                   {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
-                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
@@ -984,7 +984,7 @@ views:
                 secondary: |-
                   {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
-                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
@@ -1001,7 +1001,7 @@ views:
                 secondary: |-
                   {% from 'uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
-                  {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                  {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
                   {% from 'uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
@@ -1019,26 +1019,26 @@ views:
                 cards:
                   - type: custom:modern-circular-gauge
                     entity: sensor.openmeteo_home_apparent_uv_index
-                    name: ''
-                    unit: ''
+                    name: ""
+                    unit: ""
                     icon: mdi:white-balance-sunny
                     max: 11
                     segments:
                       - from: 0
-                        color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(0) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(0) }}"
                       - from: 2
-                        color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(3) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(3) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(3) }}"
                       - from: 5
-                        color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(6) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(6) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(6) }}"
                       - from: 7
-                        color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(8) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(8) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(8) }}"
                       - from: 10
-                        color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(11) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(11) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(11) }}"
                     secondary:
                       show_gauge: none
                       unit: UVI
@@ -1068,7 +1068,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1092,7 +1092,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1118,7 +1118,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1142,26 +1142,26 @@ views:
                 cards:
                   - type: custom:modern-circular-gauge
                     entity: sensor.openmeteo_rv_apparent_uv_index
-                    name: ''
-                    unit: ''
+                    name: ""
+                    unit: ""
                     icon: mdi:white-balance-sunny
                     max: 11
                     segments:
                       - from: 0
-                        color: '{% from ''uv.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(0) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(0) }}"
                       - from: 2
-                        color: '{% from ''uv.jinja'' import color %}{{ color(3) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(3) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(3) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(3) }}"
                       - from: 5
-                        color: '{% from ''uv.jinja'' import color %}{{ color(6) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(6) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(6) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(6) }}"
                       - from: 7
-                        color: '{% from ''uv.jinja'' import color %}{{ color(8) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(8) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(8) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(8) }}"
                       - from: 10
-                        color: '{% from ''uv.jinja'' import color %}{{ color(11) }}'
-                        label: '{% from ''uv.jinja'' import name %} {{ name(11) }}'
+                        color: "{% from 'uv.jinja' import color %}{{ color(11) }}"
+                        label: "{% from 'uv.jinja' import name %} {{ name(11) }}"
                     secondary:
                       show_gauge: none
                       entity: sensor.openmeteo_rv_apparent_uv_index
@@ -1191,7 +1191,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1215,7 +1215,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
@@ -1241,7 +1241,7 @@ views:
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
-                          {{ short(v) ~ ' • ' ~ v|float(0)|round(1) }}
+                          {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
                           {% from 'uv.jinja' import color %}
 
