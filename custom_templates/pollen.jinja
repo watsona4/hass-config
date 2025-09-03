@@ -1,29 +1,41 @@
+{# # File: config/custom_templates/pollen.jinja ## #}
+{# Macros for Pollen Count Index calculations and representations #}
 
-{% macro name_25(i) -%}
-    {%- set names = ["Low Pollen Count", "Moderate Pollen Count", "High Pollen Count", "Very High Pollen Count",] -%}
-    {{ names[int(level(i))-1] }}
-{%- endmacro %}
+{% from 'macros.jinja' import level %}
 
-{% macro name_12(i) -%}
-    {%- set names = ["Low Pollen", "Moderate Pol", "High Pollen", "Very High Pol",] -%}
-    {{ names[int(level(i))-1] }}
-{%- endmacro %}
+{# Breakpoints for Pollen Count Index levels #}
+{% set bps = [0, 2.5, 4.9, 9.7] %}
 
-{% macro name_8(i) -%}
-    {%- set names = ["LowPol", "ModPol", "HighPol", "VHighPol",] -%}
-    {{ names[int(level(i))-1] }}
-{%- endmacro %}
+{# Names for Pollen Count Index levels #}
+{% set names = ["Low Pollen", "Moderate Pol", "High Pollen", "Very High Pol"] %}
 
-{% macro color(i) -%}
-    {%- set names = ["#009966", "#ffde33", "#ff9933", "#cc0033", "disabled"] -%}
-    {{ names[int(level(i))-1] }}
-{%- endmacro %}
+{# Short names for Pollen Count Index levels #}
+{% set shorts = ["LowPol", "ModPol", "HighPol", "VHighPol"] %}
 
-{% macro level(i) -%}
-    {%- set i = i | float(0) %}
-    {%- if i < 2.5 -%} 1
-    {%- elif i < 4.9 -%} 2
-    {%- elif i < 9.7 -%} 3
-    {%- else -%} 4
-    {%- endif -%}
-{%- endmacro %}
+{# Long names for Pollen Count Index levels #}
+{% set longs = ["Low Pollen Count", "Moderate Pollen Count", "High Pollen Count", "Very High Pollen Count"] %}
+
+{# Icons for Pollen Count Index levels #}
+{% set icons = ["mdi:flower-tulip-outline", "mdi:flower-tulip", "mdi:flower-poppy", "mdi:flower-shamrock"] %}
+
+{# Colors for Pollen Count Index levels #}
+{% set colors = ["#009966", "#ffde33", "#ff9933", "#cc0033", "disabled"] %}
+
+{# Descriptions for Pollen Count Index levels #}
+{% set descriptions = [
+    "Low pollen count. No special precautions needed.",
+    "Moderate pollen count. Individuals who are sensitive to pollen may experience mild symptoms.",
+    "High pollen count. Sensitive individuals may experience more severe symptoms. Consider limiting outdoor activities.",
+    "Very high pollen count. Sensitive individuals should take extra precautions, such as staying indoors and using air purifiers."
+] %}
+
+{# Wrappers for standard functions #}
+{# djlint:off #}
+{% macro name(i) %}{{ names[level(i) |int-1] }}{% endmacro %}
+{% macro short(i) %}{{ shorts[level(i) |int-1] }}{% endmacro %}
+{% macro long(i) %}{{ longs[level(i) |int-1] }}{% endmacro %}
+{% macro icon(i) %}{{ icons[level(i) |int-1] }}{% endmacro %}
+{% macro desc(i) %}{{ descriptions[level(i) |int-1] }}{% endmacro %}
+{% macro color(i) %}{{ colors[level(i) |int-1] }}{% endmacro %}
+{% macro level(i) %}{{ level_find(i, bps) }}{% endmacro %}
+{# djlint:on #}
