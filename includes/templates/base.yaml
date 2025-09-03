@@ -829,6 +829,7 @@
     - name: Rain Probe Fresh
       unique_id: rain_probe_fresh
       icon: mdi:timer-sand
+      device_class: connectivity
       availability: "{{ has_value('binary_sensor.rain_sensor_moisture') }}"
       state: "{{ trigger.platform == 'state' }}"
       delay_off: "00:30:00"

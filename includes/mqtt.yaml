@@ -13,13 +13,22 @@
     name: Water Meter
     unique_id: water_meter
     unit_of_measurement: gal
+    device_class: water
     icon: mdi:gauge
     force_update: true
     state_class: total_increasing
     qos: 1
     availability_topic: "site/home/devices/rtlamr2mqtt/status"
-    state_topic: "site/home/devices/rtlamr2mqtt/reading/1568584050"
-    value_template: "{{ value | float(0) }}"
+    state_topic: "site/home/devices/rtlamr2mqtt/1568584050/state"
+    value_template: "{{ value_json.reading | float(0) }}"
+    json_attributes_topic: "site/home/devices/rtlamr2mqtt/1568584050/attributes"
+- sensor:
+    name: Water Meter Last Seen
+    unique_id: water_meter_last_seen
+    device_class: timestamp
+    availability_topic: "site/home/devices/rtlamr2mqtt/status"
+    state_topic: "site/home/devices/rtlamr2mqtt/1568584050/state"
+    value_template: "{{ value_json.lastseen }}"
 
 # --- rtl_433: Acurite Tower A/11075 ---
 - sensor:
