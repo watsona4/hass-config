@@ -130,7 +130,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level as sev %}
+      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}
@@ -146,7 +146,7 @@
         {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
-        {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+        {% set label = name(aqi) if aqi is not none else 'unknown' %}
         {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
         {% set level = sev(aqi) if aqi is not none else 0 %}
         {% set dts = day | as_datetime(default=none) %}
@@ -352,7 +352,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level as sev %}
+      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}
@@ -368,7 +368,7 @@
         {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
-        {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+        {% set label = name(aqi) if aqi is not none else 'unknown' %}
         {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
         {% set level = sev(aqi) if aqi is not none else 0 %}
         {% set dts = day | as_datetime(default=none) %}
@@ -574,7 +574,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name_12, color, level as sev %}
+      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}
@@ -590,7 +590,7 @@
         {% set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none %}
         {% set have = (v25 is number) or (v10 is number) %}
         {% set aqi = (aqi_from_pm(v25, v10) | int(0)) if have else none %}
-        {% set label = name_12(aqi) if aqi is not none else 'unknown' %}
+        {% set label = name(aqi) if aqi is not none else 'unknown' %}
         {% set hex = color(aqi) if aqi is not none else '#9e9e9e' %}
         {% set level = sev(aqi) if aqi is not none else 0 %}
         {% set dts = day | as_datetime(default=none) %}

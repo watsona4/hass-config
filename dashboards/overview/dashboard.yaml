@@ -306,8 +306,8 @@ views:
                 entity: sensor.waqi_nearby_aqi
                 primary: Air Quality
                 secondary: |-
-                  {% from 'aqi.jinja' import name_12 %}
-                  {{ name_12(states(entity)) }}
+                  {% from 'aqi.jinja' import name %}
+                  {{ name(states(entity)) }}
                 icon: mdi:smog
                 icon_color: |-
                   {% from 'aqi.jinja' import color %}

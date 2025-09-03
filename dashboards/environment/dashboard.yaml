@@ -573,22 +573,22 @@ views:
             segments:
               - from: 0
                 color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(0) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(0) }}'
               - from: 51
                 color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(51) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(51) }}'
               - from: 101
                 color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(101) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(101) }}'
               - from: 151
                 color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(151) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(151) }}'
               - from: 201
                 color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(201) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(201) }}'
               - from: 301
                 color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
-                label: '{% from ''aqi.jinja'' import name_25 %}{{ name_25(301) }}'
+                label: '{% from ''aqi.jinja'' import long %}{{ long(301) }}'
             secondary:
               unit: AQI
               show_gauge: none
@@ -652,8 +652,8 @@ views:
               {{ icon(states(entity)) }}
             primary: Health Advice
             secondary: |
-              {% from 'aqi.jinja' import description %}
-              {{ description(states(entity)) }}
+              {% from 'aqi.jinja' import desc %}
+              {{ desc(states(entity)) }}
             multiline_secondary: true
             icon_color: |
               {% from 'aqi.jinja' import color %}
@@ -668,8 +668,8 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: '{{ state_attr(entity, ''title'') }}'
                 secondary: >-
-                  {% from 'aqi.jinja' import name_8 %} {{
-                  name_8(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  {% from 'aqi.jinja' import short %} {{
+                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: '{{ state_attr(entity, ''hex'') }}'
               - type: custom:mushroom-template-card
@@ -677,8 +677,8 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: '{{ state_attr(entity, ''title'') }}'
                 secondary: >-
-                  {% from 'aqi.jinja' import name_8 %} {{
-                  name_8(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  {% from 'aqi.jinja' import short %} {{
+                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: '{{ state_attr(entity, ''hex'') }}'
               - type: custom:mushroom-template-card
@@ -686,8 +686,8 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: '{{ state_attr(entity, ''title'') }}'
                 secondary: >-
-                  {% from 'aqi.jinja' import name_8 %} {{
-                  name_8(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
+                  {% from 'aqi.jinja' import short %} {{
+                  short(state_attr(entity, 'aqi')) ~ ' • ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: '{{ state_attr(entity, ''hex'') }}'
           - type: vertical-stack
@@ -707,29 +707,29 @@ views:
                     segments:
                       - from: 0
                         color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''aqi.jinja'' import name_12 %}{{ name_12(0) }}'
+                        label: '{% from ''aqi.jinja'' import name %}{{ name(0) }}'
                       - from: 51
                         color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                        label: '{% from ''aqi.jinja'' import name_12 %}{{ name_12(51) }}'
+                        label: '{% from ''aqi.jinja'' import name %}{{ name(51) }}'
                       - from: 101
                         color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(101)
+                          {% from 'aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
                         color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(151)
+                          {% from 'aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
                         color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(201)
+                          {% from 'aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
                         color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(301)
+                          {% from 'aqi.jinja' import name %}{{ name(301)
                           }}
                     secondary:
                       unit: AQI
@@ -800,29 +800,29 @@ views:
                     segments:
                       - from: 0
                         color: '{% from ''aqi.jinja'' import color %}{{ color(0) }}'
-                        label: '{% from ''aqi.jinja'' import name_12 %}{{ name_12(0) }}'
+                        label: '{% from ''aqi.jinja'' import name %}{{ name(0) }}'
                       - from: 51
                         color: '{% from ''aqi.jinja'' import color %}{{ color(51) }}'
-                        label: '{% from ''aqi.jinja'' import name_12 %}{{ name_12(51) }}'
+                        label: '{% from ''aqi.jinja'' import name %}{{ name(51) }}'
                       - from: 101
                         color: '{% from ''aqi.jinja'' import color %}{{ color(101) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(101)
+                          {% from 'aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
                         color: '{% from ''aqi.jinja'' import color %}{{ color(151) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(151)
+                          {% from 'aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
                         color: '{% from ''aqi.jinja'' import color %}{{ color(201) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(201)
+                          {% from 'aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
                         color: '{% from ''aqi.jinja'' import color %}{{ color(301) }}'
                         label: >-
-                          {% from 'aqi.jinja' import name_12 %}{{ name_12(301)
+                          {% from 'aqi.jinja' import name %}{{ name(301)
                           }}
                     secondary:
                       unit: AQI
