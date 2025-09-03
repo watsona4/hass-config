@@ -125,7 +125,7 @@
 
   {#- temperature sensors → always celsius -#}
   {%- if dc == 'temperature' -%}
-    {%- set t = convert_temp(val, unit or 'c', temp) | float(0) -%}
+    {%- set t = convert_temp_value(val, unit or 'c', temp) | float(0) -%}
     {{ t | round(1) }} {{ temp_units[temp] }}
   {%- else -%}
     {{ humanize_unit(val, unit) }}

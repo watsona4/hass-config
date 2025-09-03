@@ -1,0 +1,350 @@
+{###################### custom_templates/devices.jinja ######################}
+{# Macros related to device class icons and colors #}
+
+{# Returns a best-guess default icon for an entity based on domain + device_class.
+Priority: explicit icon attr > device_class map > domain state map > fallback. #}
+{% macro icon(eid) %}
+    {%- set dom = (eid.split('.', 1)[0] if '.' in eid else '') -%}
+    {%- set dc = state_attr(eid, 'device_class') -%}
+    {%- set ic = state_attr(eid, 'icon') -%}
+    {%- set st = states(eid) | lower -%}
+
+    {# If the entity itself defines an icon, respect it #}
+    {%- if ic -%}
+        {{ ic }}
+    {%- else -%}
+
+        {# ---------- sensor device_class icons ---------- #}
+        {# djlint:off #}
+        {%- set SENSOR_ICONS = {
+            'temperature':                 'mdi:thermometer',
+            'humidity':                    'mdi:water-percent',
+            'pressure':                    'mdi:gauge',
+            'atmospheric_pressure':       'mdi:gauge',
+            'voltage':                     'mdi:flash-outline',
+            'current':                     'mdi:current-ac',
+            'power':                       'mdi:lightning-bolt-outline',
+            'reactive_power':              'mdi:lightning-bolt',
+            'apparent_power':              'mdi:lightning-bolt',
+            'energy':                      'mdi:lightning-bolt',
+            'power_factor':                'mdi:sine-wave',
+            'frequency':                   'mdi:sine-wave',
+            'signal_strength':             'mdi:wifi',
+            'illuminance':                 'mdi:brightness-5',
+            'irradiance':                  'mdi:weather-sunny-alert',
+            'timestamp':                   'mdi:clock-outline',
+            'date':                        'mdi:calendar',
+            'duration':                    'mdi:timer-outline',
+            'data_rate':                   'mdi:swap-vertical',
+            'data_size':                   'mdi:database',
+            'monetary':                    'mdi:currency-usd',
+            'aqi':                         'mdi:air-filter',
+            'pm1':                         'mdi:blur',
+            'pm10':                        'mdi:blur-linear',
+            'pm25':                        'mdi:blur',
+            'carbon_dioxide':              'mdi:molecule-co2',
+            'carbon_monoxide':             'mdi:molecule-co',
+            'nitrogen_dioxide':            'mdi:chemical-weapon',
+            'sulphur_dioxide':             'mdi:factory',
+            'ozone':                       'mdi:molecule',
+            'volatile_organic_compounds':  'mdi:chemical-weapon',
+            'volatile_organic_compounds_parts': 'mdi:chemical-weapon',
+            'water':                       'mdi:water',
+            'volume':                      'mdi:beaker',
+            'weight':                      'mdi:scale',
+            'distance':                    'mdi:map-marker-distance',
+            'speed':                       'mdi:speedometer',
+            'wind_speed':                  'mdi:weather-windy',
+            'sound_pressure':              'mdi:volume-high',
+            'uv_index':                    'mdi:sun-wireless'
+        } -%}
+
+        {# ---------- binary_sensor device_class icons (on/off) ---------- #}
+        {%- set BS_ON = {
+            'battery':           'mdi:battery-alert',
+            'battery_charging':  'mdi:battery-charging',
+            'cold':              'mdi:snowflake',
+            'heat':              'mdi:fire',
+            'gas':               'mdi:gas-cylinder',
+            'moisture':          'mdi:water',
+            'smoke':             'mdi:smoke',
+            'sound':             'mdi:volume-high',
+            'vibration':         'mdi:vibrate',
+            'opening':           'mdi:square',
+            'door':              'mdi:door-open',
+            'garage_door':       'mdi:garage-open',
+            'window':            'mdi:window-open',
+            'motion':            'mdi:motion-sensor',
+            'occupancy':         'mdi:account-multiple',
+            'presence':          'mdi:account',
+            'problem':           'mdi:alert-circle',
+            'safety':            'mdi:shield-check',
+            'plug':              'mdi:power-plug',
+            'power':             'mdi:lightning-bolt'
+        } -%}
+        {%- set BS_OFF = {
+            'battery':           'mdi:battery',
+            'battery_charging':  'mdi:battery-charging',
+            'cold':              'mdi:snowflake',
+            'heat':              'mdi:fire',
+            'gas':               'mdi:gas-cylinder',
+            'moisture':          'mdi:water-off',
+            'smoke':             'mdi:smoke-detector-off',
+            'sound':             'mdi:volume-mute',
+            'vibration':         'mdi:vibrate-off',
+            'opening':           'mdi:square-outline',
+            'door':              'mdi:door-closed',
+            'garage_door':       'mdi:garage',
+            'window':            'mdi:window-closed',
+            'motion':            'mdi:motion-sensor-off',
+            'occupancy':         'mdi:account-multiple-outline',
+            'presence':          'mdi:account-outline',
+            'problem':           'mdi:check-circle-outline',
+            'safety':            'mdi:shield-off',
+            'plug':              'mdi:power-plug-off',
+            'power':             'mdi:lightning-bolt-outline'
+        } -%}
+
+        {# ---------- domain defaults (some depend on state) ---------- #}
+        {%- set DOMAIN_DEFAULTS = {
+            'switch':       {'on': 'mdi:toggle-switch',         'off': 'mdi:toggle-switch-off'},
+            'light':        {'on': 'mdi:lightbulb',             'off': 'mdi:lightbulb-off'},
+            'fan':          {'on': 'mdi:fan',                   'off': 'mdi:fan-off'},
+            'climate':      {'on': 'mdi:thermostat',            'off': 'mdi:thermostat-off'},
+            'media_player': {'on': 'mdi:cast',                  'off': 'mdi:cast-off'},
+            'lock':         {'on': 'mdi:lock-open-variant',     'off': 'mdi:lock'},
+            'update':       {'on': 'mdi:package-up',            'off': 'mdi:package'},
+            'humidifier':   {'on': 'mdi:air-humidifier',        'off': 'mdi:air-humidifier-off'},
+            'water_heater': {'on': 'mdi:water-boiler',          'off': 'mdi:water-boiler-off'},
+            'valve':        {'on': 'mdi:valve-open',            'off': 'mdi:valve-closed'}
+        } -%}
+
+        {# ---------- cover device_class → icons (open/closed) ---------- #}
+        {%- set COVER_ICONS = {
+            'door':     {'open': 'mdi:door-open',     'closed': 'mdi:door-closed'},
+            'garage':   {'open': 'mdi:garage-open',   'closed': 'mdi:garage'},
+            'gate':     {'open': 'mdi:gate-open',     'closed': 'mdi:gate'},
+            'shutter':  {'open': 'mdi:window-shutter-open','closed':'mdi:window-shutter'},
+            'blind':    {'open': 'mdi:blinds-open',   'closed': 'mdi:blinds'},
+            'curtain':  {'open': 'mdi:curtains',      'closed': 'mdi:curtains-closed'},
+            'window':   {'open': 'mdi:window-open',   'closed': 'mdi:window-closed'}
+        } -%}
+        {# djlint:on #}
+
+        {# ---------- decision tree ---------- #}
+        {%- if dom == 'sensor' and dc in SENSOR_ICONS -%}
+            {{ SENSOR_ICONS[dc] }}
+
+        {%- elif dom == 'binary_sensor' -%}
+            {%- if dc in BS_ON -%}
+                {{ BS_ON[dc] if st == 'on' else BS_OFF[dc] }}
+            {%- else -%}
+                {{ 'mdi:toggle-switch' if st == 'on' else 'mdi:toggle-switch-off' }}
+            {%- endif -%}
+
+        {%- elif dom == 'cover' -%}
+            {%- set pair = COVER_ICONS.get(dc, {'open':'mdi:window-open','closed':'mdi:window-closed'}) -%}
+            {{ pair['open'] if st not in ['closed','closing','unknown','unavailable'] else pair['closed'] }}
+
+        {%- elif dom in DOMAIN_DEFAULTS -%}
+            {# map state to on/off-ish; many domains use 'on'/'off', but lock/cover differ #}
+            {%- set on_states = ["on", "heat", "cool", "heating", "cooling", "playing", "open", "unlocked"] -%}
+            {%- set is_on = st in on_states -%}
+            {{ DOMAIN_DEFAULTS[dom]['on'] if is_on else DOMAIN_DEFAULTS[dom]['off'] }}
+        {%- else -%}
+            mdi:help-circle-outline
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{# Returns a color name/var for an entity based on state/class. #}
+{% macro icon_color(eid) %}
+    {%- set dom = (eid.split('.', 1)[0] if '.' in eid else '') -%}
+    {%- set dc = state_attr(eid, 'device_class') -%}
+    {%- set st = states(eid) | lower -%}
+
+    {# ---- helpers ---- #}
+    {%- set DISABLED = "disabled" -%}
+    {%- set GOOD = "green" -%}
+    {%- set WARN = "orange" -%}
+    {%- set ALERT = "red" -%}
+    {%- set ACTIVE = "blue" -%}
+    {%- set INFO = "amber" -%}   {# yellow-ish for “on/active but not alarm” #}
+
+    {# Unavailable/unknown #}
+    {%- if not has_value(eid) -%}
+        {{ DISABLED }}
+
+        {# ---------- Domain: binary_sensor ---------- #}
+    {%- elif dom == 'binary_sensor' -%}
+        {# classes that are “bad” when ON #}
+        {%- set danger = ["smoke", "gas", "carbon_monoxide", "moisture", "problem", "safety"] -%}
+        {# openings are caution when ON (open) #}
+        {%- set openings = ["door", "window", "garage_door", "opening"] -%}
+        {# activity/occupancy when ON (informational/active) #}
+        {%- set activity = ["motion", "occupancy", "presence", "sound", "vibration"] -%}
+
+        {%- if is_state(eid,'on') -%}
+            {%- if dc in danger -%}
+                {{ ALERT }}
+            {%- elif dc == 'heat' -%}
+                {{ ALERT }}
+            {%- elif dc == 'cold' -%}
+                {{ ACTIVE }}     {# blue for cold #}
+            {%- elif dc in openings -%}
+                {{ WARN }}
+            {%- elif dc in activity -%}
+                {{ ACTIVE }}
+            {%- elif dc in ['power','plug','battery','battery_charging'] -%}
+                {{ INFO }}
+            {%- else -%}
+                {{ ACTIVE }}
+            {%- endif -%}
+        {%- else -%}
+            {# OFF: danger classes are “good”; others neutral #}
+            {%- if dc in danger -%}
+                {{ GOOD }}
+            {%- else -%}
+                {{ DISABLED }}
+            {%- endif -%}
+        {%- endif -%}
+
+        {# ---------- Domain: lock ---------- #}
+    {%- elif dom == 'lock' -%}
+        {%- if st in ['locked'] -%}
+            {{ GOOD }}
+        {%- elif st in ['unlocking','locking'] -%}
+            {{ INFO }}
+        {%- elif st in ['unlocked','jammed'] -%}
+            {{ ALERT }}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Domain: cover ---------- #}
+    {%- elif dom == 'cover' -%}
+        {%- if st in ['open'] -%}
+            {{ WARN }}
+        {%- elif st in ['opening','closing','opening','closing'] -%}
+            {{ INFO }}
+        {%- elif st in ['closed'] -%}
+            {{ DISABLED }}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Domain: climate ---------- #}
+    {%- elif dom == 'climate' -%}
+        {%- if st in ['heat','heating'] -%}
+            {{ ALERT }}
+        {%- elif st in ['cool','cooling'] -%}
+            {{ ACTIVE }}
+        {%- elif st in ['dry','fan_only'] -%}
+            {{ INFO }}
+        {%- elif st in ['auto'] -%}
+            {{ GOOD }}
+        {%- elif st in ['off'] -%}
+            {{ DISABLED }}
+        {%- else -%}
+            {{ INFO }}
+        {%- endif -%}
+
+        {# ---------- Domain: light / switch / fan / humidifier / water_heater ---------- #}
+    {%- elif dom in ['light','switch','fan','humidifier','water_heater','valve'] -%}
+        {%- if is_state(eid,'on') -%}
+            {{ INFO }}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Domain: media_player ---------- #}
+    {%- elif dom == 'media_player' -%}
+        {%- if st in ['playing'] -%}
+            {{ ACTIVE }}
+        {%- elif st in ['paused'] -%}
+            {{ INFO }}
+        {%- elif st in ['idle','standby','off'] -%}
+            {{ DISABLED }}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Domain: update ---------- #}
+    {%- elif dom == 'update' -%}
+        {%- if is_state(eid,'on') -%}
+            {{ WARN }}   {# update available #}
+        {%- elif st in ['installing'] -%}
+            {{ ACTIVE }}
+        {%- else -%}
+            {{ GOOD }}   {# up-to-date #}
+        {%- endif -%}
+
+        {# ---------- Domain: alarm_control_panel ---------- #}
+    {%- elif dom == 'alarm_control_panel' -%}
+        {%- if st in ['armed_away','armed_home','armed_night','armed_custom_bypass'] -%}
+            {{ GOOD }}
+        {%- elif st in ['arming','disarming','pending'] -%}
+            {{ INFO }}
+        {%- elif st in ['triggered'] -%}
+            {{ ALERT }}
+        {%- elif st in ['disarmed'] -%}
+            {{ DISABLED }}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Domain: person / device_tracker ---------- #}
+    {%- elif dom in ['person','device_tracker'] -%}
+        {%- if st in ['home'] -%}
+            {{ GOOD }}
+        {%- elif st in ['not_home','away'] -%}
+            {{ DISABLED }}
+        {%- else -%}
+            {{ ACTIVE }}  {# in a named zone #}
+        {%- endif -%}
+
+        {# ---------- Domain: sensor (special cases) ---------- #}
+    {%- elif dom == 'sensor' -%}
+        {%- if dc == 'battery' -%}
+            {%- set v = states(eid) | float(none) -%}
+            {%- if v is number -%}
+                {%- if v < 10 -%}
+                    {{ ALERT }}
+                {%- elif v < 20 -%}
+                    {{ WARN }}
+                {%- elif v < 50 -%}
+                    {{ INFO }}
+                {%- else -%}
+                    {{ GOOD }}
+                {%- endif -%}
+            {%- else -%}
+                {{ DISABLED }}
+            {%- endif -%}
+        {%- elif dc in ['aqi','pm25','pm10','carbon_monoxide','carbon_dioxide','nitrogen_dioxide','sulphur_dioxide','ozone'] -%}
+            {%- import 'aqi.jinja' as aqi -%}
+            {%- if dc == 'aqi' -%}
+                {{ aqi.color(v) }}
+            {%- elif dc == 'pm25' -%}
+                {{ aqi.pm25_color(v) }}
+            {%- elif dc == 'pm10' -%}
+                {{ aqi.pm10_color(v) }}
+            {%- elif dc == 'carbon_monoxide' -%}
+                {{ aqi.co_color(v) }}
+            {%- elif dc == 'nitrogen_dioxide' -%}
+                {{ aqi.no2_color(v) }}
+            {%- elif dc == 'sulphur_dioxide' -%}
+                {{ aqi.so2_color(v) }}
+            {%- elif dc == 'ozone' -%}
+                {{ aqi.o3_color(v) }}
+            {%- else -%}
+                {{ INFO }}
+            {%- endif -%}
+        {%- else -%}
+            {{ DISABLED }}
+        {%- endif -%}
+
+        {# ---------- Fallback ---------- #}
+    {%- else -%}
+        {{ DISABLED }}
+    {%- endif -%}
+{% endmacro %}
