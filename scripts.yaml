@@ -138,27 +138,32 @@ close_all_windows:
         entities:
         - cover.living_room_right_window
         - cover.living_room_left_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.breakfast_room_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.laundry_room_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.kitchen_left_window
         - cover.kitchen_right_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.front_hallway_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
@@ -166,23 +171,27 @@ close_all_windows:
         - cover.guest_bedroom_left_window
         - cover.guest_bedroom_right_window
         - cover.guest_bedroom_south_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.kids_bathroom_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.master_bathroom_left_window
         - cover.master_bathroom_right_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.master_bedroom_left_window
         - cover.master_bedroom_right_window
+        reason: Nighttime
       action: script.window_position
     - if:
       - condition: state
@@ -195,6 +204,7 @@ close_all_windows:
           - cover.study_left_window
           - cover.study_right_window
           - cover.study_west_window
+          reason: Nighttime
         action: script.window_position
   mode: restart
   icon: mdi:blinds-horizontal-closed
@@ -459,8 +469,19 @@ window_position:
           - Closed Up
           - Closed Down
       required: true
+    reason:
+      selector:
+        select:
+          options:
+          - Brightness
+          - Temperature
+          - Device
+          - Button
+          - Presence
+          - Nighttime
   variables:
     switches: '{{ switches | default([]) }}'
+    reason: '{{ reason | default('''') }}'
   sequence:
   - if:
     - condition: template
@@ -477,6 +498,7 @@ window_position:
         data:
           variables:
             action: '{{ action }}'
+            reason: '{{ reason }}'
             window: '{{ repeat.item }}'
   mode: parallel
   description: ''
@@ -552,16 +574,19 @@ kids_windows_closed:
         action: Closed Down
         entities:
         - cover.eleanor_room_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.michael_room_window
+        reason: Nighttime
       action: script.window_position
     - data:
         action: Closed Down
         entities:
         - cover.back_hallway_window
+        reason: Nighttime
       action: script.window_position
     - if:
       - condition: state
@@ -574,6 +599,7 @@ kids_windows_closed:
           - cover.study_left_window
           - cover.study_right_window
           - cover.study_west_window
+          reason: Nighttime
         action: script.window_position
   mode: restart
   icon: mdi:blinds-horizontal-closed
@@ -875,6 +901,18 @@ single_window:
           - Closed Up
           - Closed Down
       required: true
+    reason:
+      selector:
+        select:
+          options:
+          - Brightness
+          - Temperature
+          - Device
+          - Button
+          - Presence
+          - Nighttime
+  variables:
+    reason: '{{ reason | default('''') }}'
   sequence:
   - choose:
     - conditions:
@@ -925,6 +963,11 @@ single_window:
     - wait_template: '{{ (states(window) | string) not in [''opening'',''closing'']
         }}'
       timeout: 00:01:00
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.blind_{{ window.split('.')[1] }}_closed_reason
+      data:
+        value: '{{ reason if final == ''closed'' else '''' }}'
     - action: cover.set_cover_tilt_position
       data:
         tilt_position: '{{ tilt }}'

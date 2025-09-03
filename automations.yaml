@@ -273,6 +273,7 @@
             entities:
             - cover.front_hallway_window
             action: Closed Up
+            reason: Temperature
           action: script.window_position
         else:
         - data:
@@ -294,6 +295,7 @@
             - cover.study_left_window
             - cover.study_right_window
             action: Closed Up
+            reason: Temperature
           action: script.window_position
         else:
         - if:
@@ -326,6 +328,7 @@
             entities:
             - cover.study_west_window
             action: Closed Up
+            reason: Temperature
           action: script.window_position
         else:
         - if:
@@ -356,6 +359,7 @@
             entities:
             - cover.guest_bedroom_south_window
             action: Closed Up
+            reason: Temperature
           action: script.window_position
         else:
         - wait_template: '{{ not is_state(''binary_sensor.guest_bedroom_presence_delay'',
@@ -383,27 +387,32 @@
               - cover.guest_bedroom_left_window
               - cover.guest_bedroom_right_window
               action: Closed Up
+              reason: Temperature
             action: script.window_position
           - data:
               entities:
               - cover.study_west_window
               action: Closed Up
+              reason: Temperature
             action: script.window_position
           - data:
               entities:
               - cover.living_room_left_window
               - cover.living_room_right_window
               action: Closed Up
+              reason: Temperature
             action: script.window_position
           - data:
               entities:
               - cover.breakfast_room_window
               action: Closed Up
+              reason: Temperature
             action: script.window_position
           - data:
               entities:
               - cover.laundry_room_window
               action: Closed Up
+              reason: Temperature
             action: script.window_position
           - if:
             - condition: state
@@ -415,11 +424,13 @@
                   entities:
                   - cover.michael_room_window
                   action: Closed Up
+                  reason: Temperature
                 action: script.window_position
               - data:
                   entities:
                   - cover.eleanor_room_window
                   action: Closed Up
+                  reason: Temperature
                 action: script.window_position
         else:
         - parallel:
@@ -2450,6 +2461,7 @@
             entities:
             - cover.breakfast_room_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - data:
@@ -2474,6 +2486,7 @@
             entities:
             - cover.kitchen_right_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - metadata: {}
@@ -2497,6 +2510,7 @@
             - cover.living_room_right_window
             - cover.living_room_left_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - metadata: {}
@@ -2525,6 +2539,7 @@
             - cover.study_left_window
             - cover.study_right_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - if:
@@ -2558,6 +2573,7 @@
             entities:
             - cover.study_west_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - if:
@@ -2591,6 +2607,7 @@
             entities:
             - cover.laundry_room_window
             action: Closed Up
+            reason: Brightness
           action: script.window_position
         else:
         - metadata: {}
@@ -2608,16 +2625,16 @@
 - id: '1711147287901'
   alias: Living Room TV
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - binary_sensor.living_room_closed_tv
-  - platform: state
-    entity_id:
+    trigger: state
+  - entity_id:
     - input_boolean.all_windows
     to:
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - if:
     - condition: state
       entity_id: binary_sensor.living_room_closed_tv
@@ -2634,6 +2651,7 @@
           - cover.living_room_right_window
           - cover.living_room_left_window
           action: Closed Up
+          reason: Device
         action: script.window_position
     else:
     - if:
@@ -3371,6 +3389,7 @@
             entities:
             - cover.breakfast_room_window
             action: Closed Up
+            reason: Button
           action: script.window_position
         else:
         - metadata: {}
@@ -3378,6 +3397,7 @@
             entities:
             - cover.breakfast_room_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - condition: state
@@ -3428,6 +3448,7 @@
             - cover.living_room_right_window
             - cover.living_room_left_window
             action: Closed Up
+            reason: Button
           action: script.window_position
         else:
         - metadata: {}
@@ -3436,6 +3457,7 @@
             - cover.living_room_right_window
             - cover.living_room_left_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - or:
@@ -3564,12 +3586,14 @@
               entities:
               - cover.guest_bedroom_south_window
               action: Closed Up
+              reason: Button
             action: script.window_position
           - data:
               entities:
               - cover.guest_bedroom_left_window
               - cover.guest_bedroom_right_window
               action: Closed Up
+              reason: Button
             action: script.window_position
         else:
         - parallel:
@@ -3577,11 +3601,13 @@
               entities:
               - cover.guest_bedroom_south_window
               action: Closed Down
+              reason: Button
             action: script.window_position
           - data:
               entities:
               - cover.guest_bedroom_left_window
               - cover.guest_bedroom_right_window
+              reason: Button
               action: Closed Down
             action: script.window_position
     - conditions:
@@ -3647,6 +3673,7 @@
             entities:
             - cover.eleanor_room_window
             action: Closed Up
+            reason: Button
           action: script.window_position
         else:
         - metadata: {}
@@ -3654,6 +3681,7 @@
             entities:
             - cover.eleanor_room_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - condition: state
@@ -3696,12 +3724,14 @@
             entities:
             - cover.michael_room_window
             action: Closed Up
+            reason: Button
           action: script.window_position
         else:
         - data:
             entities:
             - cover.michael_room_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - condition: state
@@ -3752,6 +3782,7 @@
             entities:
             - cover.kids_bathroom_window
             action: Closed Down
+            reason: Button
           action: script.window_position
         else:
         - metadata: {}
@@ -3759,6 +3790,7 @@
             entities:
             - cover.kids_bathroom_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - condition: state
@@ -3809,6 +3841,7 @@
             - cover.master_bathroom_left_window
             - cover.master_bathroom_right_window
             action: Closed Down
+            reason: Button
           action: script.window_position
         else:
         - data:
@@ -3875,6 +3908,7 @@
             - cover.master_bedroom_left_window
             - cover.master_bedroom_right_window
             action: Closed Down
+            reason: Button
           action: script.window_position
         else:
         - data:
@@ -3882,6 +3916,7 @@
             - cover.master_bedroom_left_window
             - cover.master_bedroom_right_window
             action: Closed Down
+            reason: Button
           action: script.window_position
     - conditions:
       - or:
@@ -4665,25 +4700,25 @@
 - id: '1724715439449'
   alias: Kitchen Hub Playing
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - binary_sensor.kitchen_closed_hub
     for:
       hours: 0
       minutes: 0
       seconds: 10
     to: 'on'
-  - platform: state
-    entity_id:
+    trigger: state
+  - entity_id:
     - binary_sensor.kitchen_closed_hub
     for:
       hours: 0
       minutes: 5
       seconds: 0
     to: 'off'
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - if:
     - condition: state
       entity_id: binary_sensor.kitchen_closed_hub
@@ -4699,6 +4734,7 @@
           entities:
           - cover.kitchen_right_window
           action: Closed Up
+          reason: Device
     else:
     - if:
       - condition: state
@@ -4719,6 +4755,7 @@
           entities:
           - cover.kitchen_right_window
           action: Closed Down
+          reason: Device
   mode: queued
   trace:
     stored_traces: 100
@@ -5403,21 +5440,6 @@
         data: {}
         enabled: false
   mode: single
-- id: '1746404911585'
-  alias: Master Bathroom Presence
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.master_bathroom_presence_presence_information
-    to: 'off'
-  conditions: []
-  actions:
-  - data: {}
-    action: timer.start
-    target:
-      entity_id: timer.master_bathroom_presence_timer
-  mode: single
 - id: '1747133593742'
   alias: Home Alone
   description: ''
@@ -5558,21 +5580,6 @@
         data: {}
         target:
           entity_id: input_boolean.home_alone
-  mode: single
-- id: '1747183578447'
-  alias: Kids Bathroom Presence
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.kids_bathroom_presence_presence_information
-    to: 'off'
-  conditions: []
-  actions:
-  - data: {}
-    action: timer.start
-    target:
-      entity_id: timer.kids_bathroom_presence_timer
   mode: single
 - id: '1747574542794'
   alias: Chicken Roosting Box
