@@ -1,0 +1,1718 @@
+decluttering_templates:
+  title_section:
+    card:
+      type: custom:mushroom-title-card
+      title: '[[title]]'
+      subtitle: '[[subtitle]]'
+  badge:
+    card:
+      type: custom:mushroom-template-badge
+      entity: '[[entity]]'
+      icon: '[[icon]]'
+      color: '[[color]]'
+      content: '[[content]]'
+      tap_action:
+        action: more-info
+  status_badge:
+    card:
+      type: custom:decluttering-card
+      template: badge
+      variables:
+        - entity: '[[overall_status_ok]]'
+        - icon: >-
+            {{ 'mdi:check-circle' if is_state(entity,'on') else
+            'mdi:alert-circle' }}
+        - color: '{{ ''green'' if is_state(entity,''on'') else ''red'' }}'
+        - content: Overall Status {{ states('[[overall_status_summary]]') }}
+  load_badge:
+    card:
+      type: custom:mushroom-template-badge
+      entity: '[[cpu_load_1m]]'
+      icon: >-
+        {% set l = states(entity)|float(0) %} {% set c =
+        states('[[cpu_cores]]')|int(0) %} {% if l >= 1.5*c %} mdi:alert {% elif
+        l >= 0.7*c %} mdi:cpu-32-bit {% else %} mdi:cpu-64-bit {% endif %}
+      color: >-
+        {% set l = states(entity)|float(0) %} {% set c =
+        states('[[cpu_cores]]')|int(0) %} {% if l >= 1.5*c %} red {% elif l >=
+        0.7*c %} orange {% else %} green {% endif %}
+      content: >-
+        {% set c = states('[[cpu_cores]]')|int(0) %} CPU Load: {{ states(entity)
+        }} / {{ c }} cores
+  cpu_badge:
+    card:
+      type: custom:mushroom-template-badge
+      entity: '[[cpu_utilization]]'
+      icon: >-
+        {% set v = states(entity)|float(0) %} {% if v >= 90 %} mdi:cpu-alert {%
+        elif v >= 70 %} mdi:cpu-32-bit {% else %} mdi:cpu-64-bit {% endif %}
+      color: >-
+        {% set v = states(entity)|float(0) %} {% if v >= 90 %} red {% elif v >=
+        70 %} orange {% elif v >= 50 %} amber {% else %} green {% endif %}
+      content: 'CPU Utilization: {{ states(entity)|float(0)|round(1) }} %'
+  memory_badge:
+    card:
+      type: custom:mushroom-template-badge
+      entity: '[[memory_percent]]'
+      icon: mdi:memory
+      color: >-
+        {% set p = states(entity)|float(0) %} {{ 'green' if p < 60 else 'orange'
+        if p < 80 else 'red' }}
+      content: 'RAM: {{ states(entity)|float(0)|round(1) }}% used'
+  temp_badge:
+    card:
+      type: custom:mushroom-template-badge
+      entity: '[[cpu_temp_pkg]]'
+      icon: >-
+        {% from 'macros.jinja' import entity_temp %} {% set raw =
+        entity_temp(entity) %} {% set unknown = raw in ['unknown','unavailable',
+        None] %} {% set t = (0 if unknown else (raw | float(0))) %} {% if
+        unknown %} mdi:thermometer-off {% elif t >= 90 %} mdi:thermometer-alert
+        {% elif t >= 80 %} mdi:thermometer-high {% else %} mdi:thermometer {%
+        endif %}
+      color: >-
+        {% from 'macros.jinja' import entity_temp %} {% set raw =
+        entity_temp(entity) %} {% set unknown = raw in ['unknown','unavailable',
+        None] %} {% set t = (0 if unknown else (raw | float(0))) %} {% if
+        unknown %} disabled {% elif t >= 90 %} red {% elif t >= 80 %} orange {%
+        elif t >= 70 %} amber {% else %} green {% endif %}
+      content: >-
+        {% from 'hwmon.jinja' import hw_secondary %} CPU Temp: {{
+        hw_secondary(entity) }}
+  info_cpu_load:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[load1m]]'
+      primary: CPU Load (1m/5m/15m)
+      secondary: >-
+        {% set c = states('[[cores]]')|int(0) %} 1 min: {{ states('[[load1m]]')
+        }} · 5 min: {{ states('[[load5m]]') }} · 15 min: {{
+        states('[[load15m]]') }} · {{ c }} cores
+      icon: >-
+        {% set l = states('[[load1m]]')|float(0) %} {% set c =
+        states('[[cores]]')|int(0) %} {% if l >= 1.5*c %} mdi:alert {% elif l >=
+        0.7*c %} mdi:cpu-32-bit {% else %} mdi:cpu-64-bit {% endif %}
+      icon_color: |-
+        {%- if has_value('[[cpu_utilization]]') -%}
+          {% set v = states('[[cpu_utilization]]')|float(0) %} {% if v >= 90 %} red {% elif v >=
+          70 %} orange {% elif v >= 50 %} amber {% else %} green {% endif %}
+        {%- else -%}
+          {% set l = states('[[load1m]]')|float(0) %} {% set c =
+          states('[[cores]]')|int(0) %} {% if l >= 1.5*c %} red {% elif l >= 0.7*c
+          %} orange {% else %} green {% endif %}
+        {%- endif -%}
+  info_memory:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[mem_pct]]'
+      primary: Memory
+      secondary: >-
+        {% from 'hwmon.jinja' import hw_secondary %} Used: {{
+        hw_secondary('[[mem_used]]') }} / {{ hw_secondary('[[mem_total]]') }} ·
+        Free: {{ hw_secondary('[[mem_free]]') }} · {{ hw_secondary(entity) }}
+      icon: mdi:memory
+      icon_color: >-
+        {% set p = states(entity)|float(0) %} {{ 'green' if p < 60 else 'orange'
+        if p < 80 else 'red' }}
+  info_cpu_temp:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[temp_entity]]'
+      primary: '[[label]]'
+      secondary: |-
+        {% from 'hwmon.jinja' import hw_secondary %}
+        {{ hw_secondary(entity) }}
+      icon: >-
+        {% from 'macros.jinja' import entity_temp %} {% set raw =
+        entity_temp(entity) %} {% set unknown = raw in ['unknown',
+        'unavailable', None] %} {% set t = (0 if unknown else (raw | float(0)))
+        %} {% if unknown %}
+          mdi:thermometer-off
+        {% elif t >= 90 %}
+          mdi:thermometer-alert
+        {% elif t >= 80 %}
+          mdi:thermometer-high
+        {% else %}
+          mdi:thermometer
+        {% endif %}
+      icon_color: >-
+        {% from 'macros.jinja' import entity_temp %} {% set raw =
+        entity_temp(entity) %} {% set unknown = raw in ['unknown',
+        'unavailable', None] %} {% set t = (0 if unknown else (raw | float(0)))
+        %} {% if unknown %}
+          disabled
+        {% elif t >= 90 %}
+          red
+        {% elif t >= 80 %}
+          orange
+        {% elif t >= 70 %}
+          amber
+        {% else %}
+          green
+        {% endif %}
+  info_network_active:
+    default:
+      - title: Active NIC
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[nic_name]]'
+      primary: '[[title]]'
+      secondary: >-
+        {%- from 'hwmon.jinja' import hw_secondary -%} {{ states('[[nic_name]]')
+        }} · {{ states('[[ipv4]]') }} · Up: {{ hw_secondary('[[up_bps]]') }} ·
+        Down: {{ hw_secondary('[[down_bps]]') }}
+      icon: mdi:lan-check
+      icon_color: blue
+  info_fs:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[total]]'
+      primary: '[[label]]'
+      secondary: >-
+        {%- from 'hwmon.jinja' import hw_secondary -%} Total: {{
+        hw_secondary('[[total]]') }} · Used: {{ hw_secondary('[[used]]') }} · {{
+        hw_secondary('[[pct]]') }}
+      icon: mdi:harddisk
+      icon_color: >-
+        {% set p = states('[[pct]]')|float(0) %} {{ 'green' if p < 70 else
+        'orange' if p < 85 else 'red' }}
+  info_disk_io:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      primary: '[[name]] I/O Rates'
+      secondary: >-
+        {%- from 'hwmon.jinja' import hw_secondary -%} Read: {{
+        hw_secondary('[[read_bps]]') }} · Write: {{
+        hw_secondary('[[write_bps]]') }}
+
+        Total Read: {{ hw_secondary('[[read_bytes]]') }} · Total Write: {{
+        hw_secondary('[[write_bytes]]') }}
+      multiline_secondary: true
+      icon: mdi:swap-horizontal
+      icon_color: >-
+        {% set r = states('[[read_bps]]')|float(0) %} {% set w =
+        states('[[write_bps]]')|float(0) %} {% if (r+w) > 150*1024*1024 %} red
+        {% elif (r+w) > 40*1024*1024 %} orange {% else %} blue {% endif %}
+  info_battery:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      entity: '[[pct]]'
+      primary: Battery
+      secondary: >-
+        {{ states(entity)|float(0)|round(0) }}% · {{ 'Plugged' if
+        is_state('[[plugged]]','on') else 'On battery' }}
+      icon: >-
+        {% set p = states('[[pct]]')|float(0) %} {% if p >= 90 %} mdi:battery {%
+        elif p >= 70 %} mdi:battery-80 {% elif p >= 50 %} mdi:battery-60 {% elif
+        p >= 30 %} mdi:battery-40 {% elif p >= 15 %} mdi:battery-20 {% else %}
+        mdi:battery-alert {% endif %}
+      icon_color: >-
+        {% set p = states('[[pct]]')|float(0) %} {% if p < 15 %} red {% elif p <
+        30 %} orange {% else %} green {% endif %}
+  info_smart:
+    card:
+      type: custom:mushroom-template-card
+      layout: horizontal
+      tap_action:
+        action: more-info
+      primary: Health / Temp / Life ([[name]])
+      secondary: >-
+        {%- from 'hwmon.jinja' import hw_secondary -%} {{ 'Healthy' if
+        is_state('[[ok]]','on') else 'Fail' }} · {{ hw_secondary('[[temp]]') }}
+        {{ (' · Used ' ~ hw_secondary('[[life_pct]]')) if
+        has_value('[[life_pct]]') else '' }} · POH {{ hw_secondary('[[poh]]') }}
+
+        Bytes Read: {{ hw_secondary('[[read]]') }} · Bytes Written: {{
+        hw_secondary('[[written]]') }}
+      multiline_secondary: true
+      icon: >-
+        {% set ok = is_state('[[ok]]','on') %} {{ 'mdi:heart-pulse' if ok else
+        'mdi:heart-broken' }}
+      icon_color: '{% set ok = is_state(''[[ok]]'',''on'') %} {{ ''green'' if ok else ''red'' }}'
+  lhm_block:
+    default:
+      - columns: 2
+    card:
+      type: custom:auto-entities
+      card:
+        type: vertical-stack
+      card_param: cards
+      filter:
+        template: >-
+          {# --- parameters --- #} {%- set MACHINE_MATCH = '[[machine_match]]'
+          -%} {%- set ROOT_MATCH    = '[[root_match]]' -%} {%- set COLUMNS =
+          [[columns]] -%}
+
+          {# --- sorting prefs --- #} {%- set SECTION_ORDER = {
+            'Throughput':0,'Load':1,'Data':2,'Levels':3,
+            'Voltages':10,'Powers':11,'Clocks':12,'Temperatures':13,
+            'Factors':14,'Other':999 } -%}
+          {%- set LEAF_PRIO = {
+            'bus speed':0,'cpu total':0,'cpu core max':1,
+            'upload speed':0,'download speed':1,'total activity':2,
+            'network utilization':3,'data downloaded':4,'data uploaded':5 } -%}
+
+          {# --- collect sensors --- #} {%- set tree = namespace(by_root={}) -%}
+          {%- for s in states.sensor
+                if s.attributes.friendly_name is defined
+                and ' LHM ' in s.attributes.friendly_name -%}
+            {%- set fn = s.attributes.friendly_name -%}
+            {%- set p1 = fn.split(' LHM ') -%}
+            {%- if p1|length >= 2 -%}
+              {%- set host = p1[0] -%}
+              {%- set rest = p1[1] -%}
+              {%- set p2 = rest.split(' / ') -%}
+              {%- set root = p2[0] -%}
+              {%- set section = p2[1] if p2|length > 1 else 'Other' -%}
+              {%- if host is match(MACHINE_MATCH) and root is match(ROOT_MATCH) -%}
+                {%- set secmap = tree.by_root.get(root, {}) -%}
+                {%- set lst = (secmap.get(section, []) + [s]) -%}
+                {%- set secmap = secmap | combine({section: lst}) -%}
+                {%- set tree.by_root = tree.by_root | combine({root: secmap}) -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          {# --- card rendering helpers --- #} {%- set sec_tpl  = "{% from
+          'hwmon.jinja' import hw_secondary %} {{ hw_secondary(entity) }}" -%}
+          {%- set icon_tpl = "{% from 'hwmon.jinja' import hw_icon %} {{
+          hw_icon(entity) }}" -%} {%- set col_tpl  = "{% from 'hwmon.jinja'
+          import hw_icon_color %} {{ hw_icon_color(entity) }}" -%}
+
+          {# --- build output cards --- #} {%- set out = namespace(cards=[]) -%}
+          {%- for root, secmap in tree.by_root | dictsort -%}
+            {# Root heading #}
+            {%- set out.cards = out.cards + [ {
+              "type":"heading",
+              "heading": root,
+              "heading_style": "title"
+            } ] -%}
+
+            {# Gather section list with ordering #}
+            {%- set ns = namespace(sections=[]) -%}
+            {%- for secname, lst in secmap.items() -%}
+              {%- set ns.sections = ns.sections + [ (SECTION_ORDER.get(secname,999), secname, lst) ] -%}
+            {%- endfor -%}
+
+            {%- for _, secname, lst in ns.sections | sort(attribute=0) -%}
+              {%- set ns2 = namespace(items=[]) -%}
+              {%- for s in lst -%}
+                {%- set leaf = s.attributes.friendly_name.split(' / ')[-1] -%}
+                {%- set pr = LEAF_PRIO.get(leaf|lower, 1000) -%}
+                {%- set nums = leaf | regex_findall('(\d+)') -%}
+                {%- set num  = (nums[0]|int(0) if nums|length>0 else 0) -%}
+                {%- set base = (leaf | regex_replace('\s*#\d+','') | lower) -%}
+                {%- set card = {
+                  "type":"custom:mushroom-template-card",
+                  "entity": s.entity_id,
+                  "primary": leaf,
+                  "secondary": sec_tpl,
+                  "icon": icon_tpl,
+                  "icon_color": col_tpl,
+                  "layout":"horizontal",
+                  "tap_action":{"action":"more-info"}
+                } -%}
+                {%- set ns2.items = ns2.items + [ (pr, base, num, card) ] -%}
+              {%- endfor -%}
+
+              {%- set sorted = ns2.items
+                               | sort(attribute=2)
+                               | sort(attribute=1)
+                               | sort(attribute=0)
+                               | map(attribute=3)
+                               | list -%}
+
+              {%- set out.cards = out.cards + [
+                { "type":"heading", "heading": secname, "heading_style":"subtitle" },
+                { "type":"grid", "columns": COLUMNS, "square": false, "cards": sorted }
+              ] -%}
+            {%- endfor -%}
+          {%- endfor -%}
+
+          {{ out.cards }}
+  machine_summary:
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:mushroom-title-card
+          title: '[[i_name]]'
+        - type: custom:mushroom-chips-card
+          alignment: center
+          chips:
+            - type: template
+              entity: '[[i_uptime]]'
+              icon: mdi:calendar-clock
+              content: |
+                {{ states('[[i_uptime]]') | default('—') | as_timedelta }}
+              tap_action:
+                action: more-info
+            - type: template
+              entity: '[[i_updates]]'
+              icon: mdi:package-up
+              content: Updates
+              icon_color: |
+                {{ 'red' if states('[[i_updates]]')|int(0) > 0 else 'green' }}
+              tap_action:
+                action: more-info
+            - type: template
+              entity: '[[i_alerts_any]]'
+              icon: mdi:alert
+              content: Alerts
+              icon_color: |
+                {{ 'red' if is_state('[[i_alerts_any]]','on') else 'green' }}
+              tap_action:
+                action: more-info
+        - type: horizontal-stack
+          cards:
+            - type: custom:mushroom-template-card
+              primary: CPU
+              secondary: >
+                {{ states('[[i_cpu_pct]]') | round(0) }}% , load {{
+                states('[[i_load1]]') }}
+              icon: mdi:cpu-64-bit
+              icon_color: >
+                {% set v = states('[[i_cpu_pct]]')|float(0) %} {{ 'red' if v>85
+                else 'orange' if v>65 else 'green' }}
+              entity: '[[i_cpu_pct]]'
+              layout: vertical
+              multiline_secondary: true
+              tap_action:
+                action: more-info
+            - type: custom:mushroom-template-card
+              primary: Memory
+              secondary: |
+                {{ states('[[i_mem_pct]]') | round(0) }}%
+              icon: mdi:memory
+              icon_color: >
+                {% set v = states('[[i_mem_pct]]')|float(0) %} {{ 'red' if v>85
+                else 'orange' if v>70 else 'green' }}
+              entity: '[[i_mem_pct]]'
+              layout: vertical
+              multiline_secondary: true
+              tap_action:
+                action: more-info
+            - type: custom:mushroom-template-card
+              primary: Disk
+              secondary: >
+                {% from 'hwmon.jinja' import hw_secondary %} {{
+                states('[[i_disk_pct]]') | round(0) }}% used, {{
+                hw_secondary('[[i_disk_free]]') }} free
+              icon: mdi:harddisk
+              icon_color: >
+                {% set v = states('[[i_disk_pct]]')|float(0) %} {{ 'red' if v>90
+                else 'orange' if v>80 else 'green' }}
+              entity: '[[i_disk_pct]]'
+              layout: vertical
+              multiline_secondary: true
+              tap_action:
+                action: more-info
+            - type: custom:mushroom-template-card
+              primary: Temp
+              visibility:
+                - condition: state
+                  entity: '[[i_temp]]'
+                  state_not: unavailable
+              secondary: |
+                {% from 'hwmon.jinja' import hw_secondary %}
+                {{ hw_secondary('[[i_temp]]') }}
+              icon: mdi:thermometer
+              icon_color: >
+                {% from 'macros.jinja' import convert_temp %} {% set t =
+                states('[[i_temp]]')|float(0) %} {% set t = convert_temp(t,
+                state_attr('[[i_temp]]','unit_of_measurement'),'c')|float %} {{
+                'red' if t>85 else 'orange' if t>75 else 'green' }}
+              entity: '[[i_temp]]'
+              layout: vertical
+              multiline_secondary: true
+              tap_action:
+                action: more-info
+            - type: custom:mushroom-template-card
+              primary: GPU
+              visibility:
+                - condition: state
+                  entity: '[[i_gpu_pct]]'
+                  state_not: unknown
+              secondary: |
+                {{ states('[[i_gpu_pct]]') | round(0) }}%
+              icon: mdi:chip
+              icon_color: >
+                {% set v = states('[[i_gpu_pct]]')|float(0) %} {{ 'red' if v>90
+                else 'orange' if v>70 else 'green' }}
+              entity: '[[i_gpu_pct]]'
+              layout: vertical
+              multiline_secondary: true
+              tap_action:
+                action: more-info
+        - type: custom:mushroom-title-card
+          subtitle: Services
+        - type: custom:auto-entities
+          card:
+            type: custom:mushroom-chips-card
+            alignment: start
+          card_param: chips
+          filter:
+            include:
+              - entity_id: '[[i_services_glob]]'
+                state: 'off'
+                options:
+                  type: template
+                  entity: this.entity_id
+                  icon: |
+                    {{ 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' }}
+                  icon_color: |
+                    {{ 'green' if is_state(entity,'on') else 'red' }}
+                  content: >
+                    {%- set s = state_attr(entity,'friendly_name') %} {{
+                    (s.partition('Service')[2]) if 'Service' in s else '' }}
+                  tap_action: none
+            exclude: []
+          sort:
+            method: name
+        - type: custom:mushroom-title-card
+          subtitle: Containers
+          visibility:
+            - condition: state
+              entity: '[[i_containers_display]]'
+              state: 'on'
+        - type: custom:auto-entities
+          card:
+            type: custom:mushroom-chips-card
+            alignment: start
+          card_param: chips
+          filter:
+            include:
+              - entity_id: '[[i_containers_glob]]'
+                options:
+                  type: template
+                  entity: this.entity_id
+                  icon: >
+                    {{ 'mdi:server' if is_state(entity,'on') else
+                    'mdi:server-off' }}
+                  icon_color: |
+                    {{ 'green' if is_state(entity,'on') else 'red' }}
+                  content: >
+                    {%- set s = state_attr(entity,'friendly_name') %} {{
+                    (s.partition('Container')[2]) if 'Container' in s else '' }}
+                  tap_action: none
+            exclude: []
+          sort:
+            method: name
+title: Hardware
+icon: mdi:chip
+theme: default
+views:
+  - title: Systems Overview
+    type: sections
+    path: overview
+    badges:
+      - type: custom:mushroom-template-badge
+        entity: sensor.laptop_oo58t6kn_cpu_utilization
+        icon: mdi:cpu-64-bit
+        color: |
+          {% set v = states(entity) | float(0) %}
+          {% if v < 25 %} green
+          {% elif v < 50 %} blue
+          {% elif v < 75 %} orange
+          {% else %} red
+          {% endif %}
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          CPU: {{ hw_secondary(entity) }}
+        label: Laptop
+      - type: custom:mushroom-template-badge
+        entity: sensor.frigate_cpu_utilization
+        icon: mdi:cpu-64-bit
+        color: |
+          {% set v = states(entity) | float(0) %}
+          {% if v < 25 %} green
+          {% elif v < 50 %} blue
+          {% elif v < 75 %} orange
+          {% else %} red
+          {% endif %}
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          CPU: {{ hw_secondary(entity) }}
+        label: Frigate
+      - type: custom:mushroom-template-badge
+        entity: sensor.desktop_bq063ig_cpu_utilization
+        icon: mdi:cpu-64-bit
+        color: |
+          {% set v = states(entity) | float(0) %}
+          {% if v < 25 %} green
+          {% elif v < 50 %} blue
+          {% elif v < 75 %} orange
+          {% else %} red
+          {% endif %}
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          CPU: {{ hw_secondary(entity) }}
+        label: Desktop
+      - type: custom:mushroom-template-badge
+        entity: sensor.opnsense_cpu_utilization
+        icon: mdi:cpu-64-bit
+        color: |
+          {% set v = states(entity) | float(0) %}
+          {% if v < 25 %} green
+          {% elif v < 50 %} blue
+          {% elif v < 75 %} orange
+          {% else %} red
+          {% endif %}
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          CPU: {{ hw_secondary(entity) }}
+        label: OPNSense
+      - type: custom:mushroom-template-badge
+        entity: sensor.netprobe_download
+        icon: mdi:download-network
+        label: Download
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          {{ hw_secondary(entity) }}
+        color: >-
+          {% set v = states(entity)|float(0) %}{% set m = 1000 %}{% if v > 0.8*m
+          %}#43A047{% elif v > 0.5*m %}#FDD835{% elif v > 0.2*m %}#FB8C00{% elif
+          v > 0.05*m %}#E53935{% else %}#9E9E9E{% endif %}
+      - type: custom:mushroom-template-badge
+        entity: sensor.netprobe_upload
+        icon: mdi:upload-network
+        label: Upload
+        content: |-
+          {% from 'hwmon.jinja' import hw_secondary %}
+          {{ hw_secondary(entity) }}
+        color: >-
+          {% set v = states(entity)|float(0) %}{% set m = 50 %}{% if v > 0.8*m
+          %}#43A047{% elif v > 0.5*m %}#FDD835{% elif v > 0.2*m %}#FB8C00{% elif
+          v > 0.05*m %}#E53935{% else %}#9E9E9E{% endif %}
+      - type: custom:mushroom-template-badge
+        entity: sensor.netprobe_latency_icmp
+        label: Latency
+        content: |
+          {% from 'hwmon.jinja' import hw_secondary %}{{ hw_secondary(entity) }}
+        icon: mdi:speedometer
+        color: >-
+          {% set v = states(entity)|float(0) %} {% if v < 20 %}#43A047 {% elif v
+          < 40 %}#FDD835 {% elif v < 70 %}#FB8C00 {% elif v < 120 %}#E53935 {%
+          else %}#9E9E9E {% endif %}
+    sections:
+      - type: grid
+        cards:
+          - type: custom:decluttering-card
+            template: machine_summary
+            variables:
+              - i_name: Laptop
+              - i_uptime: sensor.laptop_oo58t6kn_uptime_s
+              - i_cpu_pct: sensor.laptop_oo58t6kn_cpu_utilization
+              - i_load1: sensor.laptop_oo58t6kn_cpu_load_1m
+              - i_mem_pct: sensor.laptop_oo58t6kn_memory_used
+              - i_disk_pct: sensor.laptop_oo58t6kn_fs_c_percent
+              - i_disk_free: sensor.laptop_oo58t6kn_fs_c_free
+              - i_temp: sensor.laptop_oo58t6kn_cpu_temp_pkg
+              - i_gpu_pct: sensor.laptop_oo58t6kn_gpu_utilization
+              - i_updates: sensor.laptop_oo58t6kn_updates_pending
+              - i_alerts_any: binary_sensor.laptop_oo58t6kn_overall_status_ok
+              - i_services_glob: binary_sensor.laptop_oo58t6kn*_service_*
+              - i_containers_display: binary_sensor.laptop_display_containers
+          - type: custom:decluttering-card
+            template: machine_summary
+            variables:
+              - i_name: Frigate
+              - i_uptime: sensor.frigate_uptime_s
+              - i_cpu_pct: sensor.frigate_cpu_utilization
+              - i_load1: sensor.frigate_cpu_load_1m
+              - i_mem_pct: sensor.frigate_memory_percent
+              - i_disk_pct: sensor.frigate_fs_percent
+              - i_disk_free: sensor.frigate_fs_free
+              - i_temp: sensor.frigate_cpu_temp_package_id_0
+              - i_gpu_pct: sensor.frigate_gpu_utilization
+              - i_updates: sensor.frigate_updates_pending
+              - i_alerts_any: binary_sensor.frigate_overall_status_ok
+              - i_services_glob: binary_sensor.frigate*_service_*
+              - i_containers_glob: binary_sensor.frigate*_container_*
+              - i_containers_display: binary_sensor.frigate_display_containers
+          - type: custom:decluttering-card
+            template: machine_summary
+            variables:
+              - i_name: Desktop
+              - i_uptime: sensor.desktop_bq063ig_uptime_s
+              - i_cpu_pct: sensor.desktop_bq063ig_cpu_utilization
+              - i_load1: sensor.desktop_bq063ig_cpu_load_1m
+              - i_mem_pct: sensor.desktop_bq063ig_memory_used
+              - i_disk_pct: sensor.desktop_bq063ig_fs_c_percent
+              - i_disk_free: sensor.desktop_bq063ig_fs_c_free
+              - i_temp: sensor.desktop_bq063ig_cpu_temp_pkg
+              - i_gpu_pct: sensor.desktop_bq063ig_gpu_utilization
+              - i_updates: sensor.desktop_bq063ig_updates_pending
+              - i_alerts_any: binary_sensor.desktop_bq063ig_overall_status_ok
+              - i_services_glob: binary_sensor.desktop_bq063ig*_service_*
+              - i_containers_display: binary_sensor.desktop_display_containers
+          - type: custom:decluttering-card
+            template: machine_summary
+            variables:
+              - i_name: OPNSense
+              - i_uptime: sensor.opnsense_uptime_s
+              - i_cpu_pct: sensor.opnsense_cpu_utilization
+              - i_load1: sensor.opnsense_cpu_load_1m
+              - i_mem_pct: sensor.opnsense_memory_percent
+              - i_disk_pct: sensor.opnsense_fs_percent
+              - i_disk_free: sensor.opnsense_fs_free
+              - i_temp: sensor.opnsense_cpu_temp_avg
+              - i_gpu_pct: sensor.opnsense_gpu_utilization
+              - i_updates: sensor.opnsense_updates_pending
+              - i_alerts_any: binary_sensor.opnsense_overall_status_ok
+              - i_services_glob: binary_sensor.opnsense*_service_*
+              - i_containers_display: binary_sensor.opnsense_display_containers
+        column_span: 2
+      - type: grid
+        cards:
+          - type: custom:mini-graph-card
+            name: Download Speed
+            icon: mdi:download-network
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#d32f2f'
+              - value: 5
+                color: '#ef6c00'
+              - value: 25
+                color: '#fbc02d'
+              - value: 100
+                color: '#7cb342'
+              - value: 300
+                color: '#388e3c'
+              - value: 700
+                color: '#2962ff'
+            entities:
+              - entity: sensor.netprobe_download
+                show_state: true
+          - type: custom:mini-graph-card
+            name: Upload Speed
+            icon: mdi:upload-network
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#d32f2f'
+              - value: 0.25
+                color: '#ef6c00'
+              - value: 1.25
+                color: '#fbc02d'
+              - value: 5
+                color: '#7cb342'
+              - value: 15
+                color: '#388e3c'
+              - value: 35
+                color: '#2962ff'
+            entities:
+              - entity: sensor.netprobe_upload
+                show_state: true
+          - type: custom:mini-graph-card
+            name: Latency
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#43A047'
+              - value: 20
+                color: '#FDD835'
+              - value: 40
+                color: '#FB8C00'
+              - value: 70
+                color: '#E53935'
+              - value: 120
+                color: '#9E9E9E'
+            entities:
+              - entity: sensor.netprobe_latency_icmp
+                name: ICMP Latency
+                show_state: true
+              - entity: sensor.netprobe_latency_tcp
+                name: TCP Latency
+                show_state: true
+        column_span: 2
+    max_columns: 2
+    cards: []
+  - title: Laptop
+    icon: ''
+    path: laptop
+    type: sections
+    max_columns: 3
+    badges:
+      - type: custom:decluttering-card
+        template: status_badge
+        variables:
+          - overall_status_ok: binary_sensor.laptop_oo58t6kn_overall_status_ok
+          - overall_status_summary: sensor.laptop_oo58t6kn_overall_status_summary
+      - type: custom:decluttering-card
+        template: load_badge
+        variables:
+          - cpu_load_1m: sensor.laptop_oo58t6kn_cpu_load_1m
+          - cpu_cores: sensor.laptop_oo58t6kn_cpu_cores
+      - type: custom:decluttering-card
+        template: cpu_badge
+        variables:
+          - cpu_utilization: sensor.laptop_oo58t6kn_cpu_utilization
+      - type: custom:decluttering-card
+        template: temp_badge
+        variables:
+          - cpu_temp_pkg: sensor.laptop_oo58t6kn_cpu_temp_pkg
+      - type: custom:decluttering-card
+        template: memory_badge
+        variables:
+          - memory_percent: sensor.laptop_oo58t6kn_memory_percent
+    dense_section_placement: true
+    sections:
+      - type: grid
+        columns: 3
+        grid_options:
+          columns: full
+        column_span: 3
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU & Memory
+                  - subtitle: Utilization and system load
+              - type: custom:decluttering-card
+                template: info_cpu_load
+                variables:
+                  - cpu_utilization: sensor.laptop_oo58t6kn_cpu_utilization
+                  - load1m: sensor.laptop_oo58t6kn_cpu_load_1m
+                  - load5m: sensor.laptop_oo58t6kn_cpu_load_5m
+                  - load15m: sensor.laptop_oo58t6kn_cpu_load_15m
+                  - cores: sensor.laptop_oo58t6kn_cpu_cores
+              - type: custom:decluttering-card
+                template: info_memory
+                variables:
+                  - mem_pct: sensor.laptop_oo58t6kn_memory_percent
+                  - mem_used: sensor.laptop_oo58t6kn_memory_used
+                  - mem_total: sensor.laptop_oo58t6kn_memory_total
+                  - mem_free: sensor.laptop_oo58t6kn_memory_available
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU Temperatures
+                  - subtitle: Thermal status and cooling headroom
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
+                  - label: CPU Package Temp
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.laptop_oo58t6kn_cpu_temp_max
+                  - label: CPU Max Core Temp
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Network
+                  - subtitle: Connectivity, latency, and throughput
+              - type: custom:decluttering-card
+                template: info_network_active
+                variables:
+                  - nic_name: sensor.laptop_oo58t6kn_network_active_name
+                  - ipv4: sensor.laptop_oo58t6kn_network_active_ipv4
+                  - up_bps: sensor.laptop_oo58t6kn_network_active_up
+                  - down_bps: sensor.laptop_oo58t6kn_network_active_down
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Filesystems
+                  - subtitle: Storage capacity and usage
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: C:\\
+                  - total: sensor.laptop_oo58t6kn_fs_c_total
+                  - used: sensor.laptop_oo58t6kn_fs_c_used
+                  - pct: sensor.laptop_oo58t6kn_fs_c_percent
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Disk I/O
+                  - subtitle: Read/write activity and performance
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: PhysicalDrive0
+                  - read_bps: sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate
+                  - write_bps: sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate
+                  - read_bytes: sensor.laptop_oo58t6kn_disk_physicaldrive0_read_bytes
+                  - write_bytes: sensor.laptop_oo58t6kn_disk_physicaldrive0_write_bytes
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Battery
+                  - subtitle: Charge level and health status
+              - type: custom:decluttering-card
+                template: info_battery
+                variables:
+                  - pct: sensor.laptop_oo58t6kn_battery_percent
+                  - plugged: binary_sensor.laptop_oo58t6kn_battery_plugged
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: SMART Monitors
+                  - subtitle: Drive health and diagnostics
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/sda
+                  - ok: binary_sensor.laptop_oo58t6kn_smart_dev_sda_health
+                  - temp: sensor.laptop_oo58t6kn_smart_dev_sda_temperature
+                  - life_pct: sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used
+                  - poh: sensor.laptop_oo58t6kn_smart_dev_sda_power_on_hours
+                  - read: sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_read
+                  - written: sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_written
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU Metrics
+            subtitle: Core utilization, system load, and clock speeds
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: ^AMD Ryzen 7 PRO 7840
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: GPU Metrics
+            subtitle: Graphics load, temperature, and memory activity
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: ^AMD Radeon.*$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Drive Metrics
+            subtitle: Storage usage, I/O performance, and health checks
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: ^(SAMSUNG|WD|SK hynix).*$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Memory Metrics
+            subtitle: Active usage, free capacity, and bandwidth
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: ^Generic Memory$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Battery Metrics
+            subtitle: Charge status, wear level, and runtime estimation
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: ^5B11M90037
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Network Connection Metrics
+            subtitle: Interfaces, throughput, and latency monitoring
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^LAPTOP-OO58T6KN$
+              - root_match: >-
+                  ^(Ethernet|Wi-Fi|Bluetooth Network
+                  Connection|Tailscale)(\\s+\\d+)?$
+              - columns: 2
+    cards: []
+  - title: Michael's Desktop
+    icon: ''
+    path: desktop
+    type: sections
+    max_columns: 3
+    badges:
+      - type: custom:decluttering-card
+        template: status_badge
+        variables:
+          - overall_status_ok: binary_sensor.desktop_bq063ig_overall_status_ok
+          - overall_status_summary: sensor.desktop_bq063ig_overall_status_summary
+      - type: custom:decluttering-card
+        template: load_badge
+        variables:
+          - cpu_load_1m: sensor.desktop_bq063ig_cpu_load_1m
+          - cpu_cores: sensor.desktop_bq063ig_cpu_cores
+      - type: custom:decluttering-card
+        template: cpu_badge
+        variables:
+          - cpu_utilization: sensor.desktop_bq063ig_cpu_utilization
+      - type: custom:decluttering-card
+        template: temp_badge
+        variables:
+          - cpu_temp_pkg: sensor.desktop_bq063ig_cpu_temp_pkg
+      - type: custom:decluttering-card
+        template: memory_badge
+        variables:
+          - memory_percent: sensor.desktop_bq063ig_memory_percent
+    dense_section_placement: true
+    sections:
+      - type: grid
+        columns: 3
+        grid_options:
+          columns: full
+        column_span: 3
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU & Memory
+                  - subtitle: Utilization and system load
+              - type: custom:decluttering-card
+                template: info_cpu_load
+                variables:
+                  - cpu_utilization: sensor.desktop_bq063ig_cpu_utilization
+                  - load1m: sensor.desktop_bq063ig_cpu_load_1m
+                  - load5m: sensor.desktop_bq063ig_cpu_load_5m
+                  - load15m: sensor.desktop_bq063ig_cpu_load_15m
+                  - cores: sensor.desktop_bq063ig_cpu_cores
+              - type: custom:decluttering-card
+                template: info_memory
+                variables:
+                  - mem_pct: sensor.desktop_bq063ig_memory_percent
+                  - mem_used: sensor.desktop_bq063ig_memory_used
+                  - mem_total: sensor.desktop_bq063ig_memory_total
+                  - mem_free: sensor.desktop_bq063ig_memory_available
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU Temperatures
+                  - subtitle: Thermal status and cooling headroom
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.desktop_bq063ig_cpu_temp_pkg
+                  - label: CPU Package Temp
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.desktop_bq063ig_cpu_temp_max
+                  - label: CPU Max Core Temp
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Network
+                  - subtitle: Connectivity, latency, and throughput
+              - type: custom:decluttering-card
+                template: info_network_active
+                variables:
+                  - nic_name: sensor.desktop_bq063ig_network_active_name
+                  - ipv4: sensor.desktop_bq063ig_network_active_ipv4
+                  - up_bps: sensor.desktop_bq063ig_network_active_up
+                  - down_bps: sensor.desktop_bq063ig_network_active_down
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Filesystems
+                  - subtitle: Storage capacity and usage
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: C:\\
+                  - total: sensor.desktop_bq063ig_fs_c_total
+                  - used: sensor.desktop_bq063ig_fs_c_used
+                  - pct: sensor.desktop_bq063ig_fs_c_percent
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: C:\\ProgramData\\Microsoft\\Windows\\Containers
+                  - total: >-
+                      sensor.desktop_bq063ig_fs_c_programdata_microsoft_windows_containers_baseimages_4a320b79_89a9_4c19_b02a_518fd230a6bc_baselayer_total
+                  - used: >-
+                      sensor.desktop_bq063ig_fs_c_programdata_microsoft_windows_containers_baseimages_4a320b79_89a9_4c19_b02a_518fd230a6bc_baselayer_used
+                  - pct: >-
+                      sensor.desktop_bq063ig_fs_c_programdata_microsoft_windows_containers_baseimages_4a320b79_89a9_4c19_b02a_518fd230a6bc_baselayer_percent
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: D:\\
+                  - total: sensor.desktop_bq063ig_fs_d_total
+                  - used: sensor.desktop_bq063ig_fs_d_used
+                  - pct: sensor.desktop_bq063ig_fs_d_percent
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: E:\\
+                  - total: sensor.desktop_bq063ig_fs_e_total
+                  - used: sensor.desktop_bq063ig_fs_e_used
+                  - pct: sensor.desktop_bq063ig_fs_e_percent
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Disk I/O
+                  - subtitle: Read/write activity and performance
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: PhysicalDrive0
+                  - read_bps: sensor.desktop_bq063ig_disk_physicaldrive0_read_rate
+                  - write_bps: sensor.desktop_bq063ig_disk_physicaldrive0_write_rate
+                  - read_bytes: sensor.desktop_bq063ig_disk_physicaldrive0_read_bytes
+                  - write_bytes: sensor.desktop_bq063ig_disk_physicaldrive0_write_bytes
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: PhysicalDrive1
+                  - read_bps: sensor.desktop_bq063ig_disk_physicaldrive1_read_rate
+                  - write_bps: sensor.desktop_bq063ig_disk_physicaldrive1_write_rate
+                  - read_bytes: sensor.desktop_bq063ig_disk_physicaldrive1_read_bytes
+                  - write_bytes: sensor.desktop_bq063ig_disk_physicaldrive1_write_bytes
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: PhysicalDrive2
+                  - read_bps: sensor.desktop_bq063ig_disk_physicaldrive2_read_rate
+                  - write_bps: sensor.desktop_bq063ig_disk_physicaldrive2_write_rate
+                  - read_bytes: sensor.desktop_bq063ig_disk_physicaldrive2_read_bytes
+                  - write_bytes: sensor.desktop_bq063ig_disk_physicaldrive2_write_bytes
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: SMART Monitors
+                  - subtitle: Drive health and diagnostics
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/sda
+                  - ok: binary_sensor.desktop_bq063ig_smart_dev_sda_health
+                  - temp: sensor.desktop_bq063ig_smart_dev_sda_temperature
+                  - life_pct: sensor.desktop_bq063ig_smart_dev_sda_percentage_used
+                  - poh: sensor.desktop_bq063ig_smart_dev_sda_power_on_hours
+                  - read: sensor.desktop_bq063ig_smart_dev_sda_total_bytes_read
+                  - written: sensor.desktop_bq063ig_smart_dev_sda_total_bytes_written
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/sdb
+                  - ok: binary_sensor.desktop_bq063ig_smart_dev_sdb_health
+                  - temp: sensor.desktop_bq063ig_smart_dev_sdb_temperature
+                  - life_pct: sensor.desktop_bq063ig_smart_dev_sdb_percentage_used
+                  - poh: sensor.desktop_bq063ig_smart_dev_sdb_power_on_hours
+                  - read: sensor.desktop_bq063ig_smart_dev_sdb_total_bytes_read
+                  - written: sensor.desktop_bq063ig_smart_dev_sdb_total_bytes_written
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU Metrics
+            subtitle: Core utilization, system load, and clock speeds
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^DESKTOP-BQ063IG$
+              - root_match: ^Intel Core i7-4790
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: GPU Metrics
+            subtitle: Graphics load, temperature, and memory activity
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^DESKTOP-BQ063IG$
+              - root_match: ^(Intel\\(R\\) HD Graphics 4600|NVIDIA GeForce GTX 1070).*$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Drive Metrics
+            subtitle: Storage usage, I/O performance, and health checks
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^DESKTOP-BQ063IG$
+              - root_match: ^(SAMSUNG|WDC|SK hynix).*$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Memory Metrics
+            subtitle: Active usage, free capacity, and bandwidth
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^DESKTOP-BQ063IG$
+              - root_match: ^Generic Memory$
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Network Connection Metrics
+            subtitle: Interfaces, throughput, and latency monitoring
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: ^DESKTOP-BQ063IG$
+              - root_match: >-
+                  ^(Ethernet|Wi-Fi|Bluetooth Network Connection|Tailscale|Local
+                  Area Connection\\*|vEthernet.*?)(\\s+\\d+)?$
+              - columns: 2
+    cards: []
+  - title: Frigate Server
+    icon: ''
+    path: frigate
+    type: sections
+    max_columns: 3
+    badges:
+      - type: custom:decluttering-card
+        template: status_badge
+        variables:
+          - overall_status_ok: binary_sensor.frigate_overall_status_ok
+          - overall_status_summary: sensor.frigate_overall_status_summary
+      - type: custom:decluttering-card
+        template: load_badge
+        variables:
+          - cpu_load_1m: sensor.frigate_cpu_load_1m
+          - cpu_cores: sensor.frigate_cpu_cores
+      - type: custom:decluttering-card
+        template: temp_badge
+        variables:
+          - cpu_temp_pkg: sensor.frigate_cpu_temp_package_id_0
+      - type: custom:decluttering-card
+        template: memory_badge
+        variables:
+          - memory_percent: sensor.frigate_memory_percent
+    dense_section_placement: true
+    sections:
+      - type: grid
+        columns: 3
+        grid_options:
+          columns: full
+        column_span: 3
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU & Memory
+                  - subtitle: Utilization and system load
+              - type: custom:decluttering-card
+                template: info_cpu_load
+                variables:
+                  - load1m: sensor.frigate_cpu_load_1m
+                  - load5m: sensor.frigate_cpu_load_5m
+                  - load15m: sensor.frigate_cpu_load_15m
+                  - cores: sensor.frigate_cpu_cores
+              - type: custom:decluttering-card
+                template: info_memory
+                variables:
+                  - mem_pct: sensor.frigate_memory_percent
+                  - mem_used: sensor.frigate_memory_used
+                  - mem_total: sensor.frigate_memory_total
+                  - mem_free: sensor.frigate_memory_available
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU Temperatures
+                  - subtitle: Thermal status and cooling headroom
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_package_id_0
+                  - label: CPU Package Temp
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_composite
+                  - label: CPU Composite Temp
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_core_0
+                  - label: CPU Temp Core 0
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_core_1
+                  - label: CPU Temp Core 1
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_core_2
+                  - label: CPU Temp Core 2
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.frigate_cpu_temp_core_3
+                  - label: CPU Temp Core 3
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Network
+                  - subtitle: Connectivity, latency, and throughput
+              - type: custom:decluttering-card
+                template: info_network_active
+                variables:
+                  - nic_name: sensor.frigate_network_active_name
+                  - ipv4: sensor.frigate_network_active_ipv4
+                  - up_bps: sensor.frigate_network_active_up
+                  - down_bps: sensor.frigate_network_active_down
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Filesystems
+                  - subtitle: Storage capacity and usage
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: /
+                  - total: sensor.frigate_fs_total
+                  - used: sensor.frigate_fs_used
+                  - pct: sensor.frigate_fs_percent
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: /home
+                  - total: sensor.frigate_fs_home_total
+                  - used: sensor.frigate_fs_home_used
+                  - pct: sensor.frigate_fs_home_percent
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: /data
+                  - total: sensor.frigate_fs_data_total
+                  - used: sensor.frigate_fs_data_used
+                  - pct: sensor.frigate_fs_data_percent
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Disk I/O
+                  - subtitle: Read/write activity and performance
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: nvme0n1
+                  - read_bps: sensor.frigate_disk_nvme0n1_read_rate
+                  - write_bps: sensor.frigate_disk_nvme0n1_write_rate
+                  - read_bytes: sensor.frigate_disk_nvme0n1_read_bytes
+                  - write_bytes: sensor.frigate_disk_nvme0n1_write_bytes
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: sda
+                  - read_bps: sensor.frigate_disk_sda_read_rate
+                  - write_bps: sensor.frigate_disk_sda_write_rate
+                  - read_bytes: sensor.frigate_disk_sda_read_bytes
+                  - write_bytes: sensor.frigate_disk_sda_write_bytes
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: SMART Monitors
+                  - subtitle: Drive health and diagnostics
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/nvme0n1
+                  - ok: binary_sensor.frigate_smart_dev_nvme0n1_health
+                  - temp: sensor.frigate_smart_dev_nvme0n1_temperature
+                  - life_pct: sensor.frigate_smart_dev_nvme0n1_percentage_used
+                  - poh: sensor.frigate_smart_dev_nvme0n1_power_on_hours
+                  - read: sensor.frigate_smart_dev_nvme0n1_total_bytes_read
+                  - written: sensor.frigate_smart_dev_nvme0n1_total_bytes_written
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/sda
+                  - ok: binary_sensor.frigate_smart_dev_sda_health
+                  - temp: sensor.frigate_smart_dev_sda_temperature
+                  - life_pct: sensor.frigate_smart_dev_sda_percentage_used
+                  - poh: sensor.frigate_smart_dev_sda_power_on_hours
+                  - read: sensor.frigate_smart_dev_sda_total_bytes_read
+                  - written: sensor.frigate_smart_dev_sda_total_bytes_written
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Borg Backup
+                  - subtitle: Archive status, sizes, and runtime history
+              - type: custom:mushroom-template-card
+                primary: Last Run
+                secondary: >-
+                  {{
+                  (states('sensor.frigate_borg_last_run_utc')|as_datetime(default=None)|default(now()))|as_local|relative_time
+                  }} ago · {{ states('sensor.frigate_borg_archives_count')
+                  }}                  archives · Runtime: {{
+                  states('sensor.frigate_borg_last_duration') }} sec
+                icon: >-
+                  {{ 'mdi:cloud-check' if
+                  is_state('binary_sensor.frigate_borg_last_run_success','on')
+                  else 'mdi:cloud-alert' }}
+                icon_color: >-
+                  {{ 'green' if
+                  is_state('binary_sensor.frigate_borg_last_run_success','on')
+                  else 'red' }}
+                layout: horizontal
+              - type: custom:mushroom-template-card
+                primary: Borg Repository
+                secondary: >-
+                  {% from 'hwmon.jinja' import hw_secondary %} {{
+                  states('sensor.frigate_borg_repo') }} · Unique {{
+                  hw_secondary('sensor.frigate_borg_repo_unique_bytes') }} ·
+                  Archives {{ states('sensor.frigate_borg_archives_count') }}
+                icon: mdi:server
+                icon_color: blue
+                layout: horizontal
+              - type: custom:mushroom-template-card
+                primary: Last Backup
+                secondary: >-
+                  {% from 'hwmon.jinja' import hw_secondary %} {{
+                  (states('sensor.frigate_borg_last_run_utc')|as_datetime|as_local).strftime('%c')
+                  }} · {{ states('sensor.frigate_borg_last_archive') }}
+
+                  {{ hw_secondary('sensor.frigate_borg_size_original') }} ➝ {{
+                  hw_secondary('sensor.frigate_borg_size_compressed') }} ➝ {{
+                  hw_secondary('sensor.frigate_borg_size_deduplicated') }}
+                icon: >-
+                  {{ 'mdi:cloud-check' if
+                  is_state('binary_sensor.frigate_borg_success','on') else
+                  'mdi:cloud-alert' }}
+                icon_color: >-
+                  {% if
+                  is_state('binary_sensor.frigate_borg_last_run_success','on')
+                  %}
+                    {% if is_state('binary_sensor.frigate_borg_warnings','on') %} orange {% else %} green {% endif %}
+                  {% else %} red {% endif %}
+                layout: horizontal
+                multiline_secondary: true
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Coral TPU
+                  - subtitle: Temperature monitoring and throttle controls
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_coral_apex_0_temp
+                primary: Thermal Setpoints
+                secondary: >-
+                  {% from 'hwmon.jinja' import hw_secondary %} {% from
+                  'macros.jinja' import convert_temp %} {% set t =
+                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+                  %} {% set tp1 =
+                  states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+                  %} {% set tp2 =
+                  states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+                  %} {% set w2 =
+                  states('number.frigate_coral_apex_0_hw_temp_warn2')|float(0)
+                  %} {% set w2e =
+                  is_state('switch.frigate_coral_apex_0_hw_temp_warn2_en','on')
+                  %}
+
+                  Now: {{ hw_secondary(entity) }} · Warn2: {{
+                  hw_secondary('number.frigate_coral_apex_0_hw_temp_warn2') }}
+                  ({{ 'on' if
+                  is_state('switch.frigate_coral_apex_0_hw_temp_warn2_en','on')
+                  else 'off' }})
+
+                  TP0: {{
+                  hw_secondary('number.frigate_coral_apex_0_trip_point0_temp')
+                  }} — mild throttling begins
+
+                  TP1: {{
+                  hw_secondary('number.frigate_coral_apex_0_trip_point1_temp')
+                  }} — stronger throttling
+
+                  TP2: {{
+                  hw_secondary('number.frigate_coral_apex_0_trip_point2_temp')
+                  }} — critical; device may reset/disable
+                icon: >-
+                  {% from 'macros.jinja' import convert_temp %} {% set t =
+                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+                  %} {% set tp1 =
+                  states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+                  %} {% set tp2 =
+                  states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+                  %} {% if tp2>0 and t >= tp2 %} mdi:thermometer-alert {% elif
+                  tp1>0 and t >= tp1 %} mdi:thermometer-high {% elif tp0>0 and t
+                  >= tp0 %} mdi:thermometer {% else %} mdi:thermometer-low {%
+                  endif %}
+                icon_color: >-
+                  {% from 'macros.jinja' import convert_temp %} {% set t =
+                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+                  %} {% set tp1 =
+                  states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+                  %} {% set tp2 =
+                  states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+                  %} {% if tp2>0 and t >= tp2 %} red {% elif tp1>0 and t >= tp1
+                  %} orange {% elif tp0>0 and t >= tp0 %} amber {% else %} green
+                  {% endif %}
+                layout: horizontal
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU Metrics
+            subtitle: Core utilization, system load, and clock speeds
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: frigate
+              - root_match: CPU
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Network Connection Metrics
+            subtitle: Interfaces, throughput, and latency monitoring
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: frigate
+              - root_match: Network
+              - columns: 2
+    cards: []
+  - title: OPNSense Router
+    icon: ''
+    path: opnsense
+    type: sections
+    max_columns: 3
+    badges:
+      - type: custom:decluttering-card
+        template: status_badge
+        variables:
+          - overall_status_ok: binary_sensor.opnsense_overall_status_ok
+          - overall_status_summary: sensor.opnsense_overall_status_summary
+      - type: custom:decluttering-card
+        template: load_badge
+        variables:
+          - cpu_load_1m: sensor.opnsense_cpu_load_1m
+          - cpu_cores: sensor.opnsense_cpu_cores
+      - type: custom:decluttering-card
+        template: temp_badge
+        variables:
+          - cpu_temp_pkg: sensor.opnsense_cpu_temp_avg
+      - type: custom:decluttering-card
+        template: memory_badge
+        variables:
+          - memory_percent: sensor.opnsense_memory_percent
+    dense_section_placement: true
+    sections:
+      - type: grid
+        columns: 3
+        grid_options:
+          columns: full
+        column_span: 3
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU & Memory
+                  - subtitle: Utilization and system load
+              - type: custom:decluttering-card
+                template: info_cpu_load
+                variables:
+                  - load1m: sensor.opnsense_cpu_load_1m
+                  - load5m: sensor.opnsense_cpu_load_5m
+                  - load15m: sensor.opnsense_cpu_load_15m
+                  - cores: sensor.opnsense_cpu_cores
+              - type: custom:decluttering-card
+                template: info_memory
+                variables:
+                  - mem_pct: sensor.opnsense_memory_percent
+                  - mem_used: sensor.opnsense_memory_used
+                  - mem_total: sensor.opnsense_memory_total
+                  - mem_free: sensor.opnsense_memory_free
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: CPU Temperatures
+                  - subtitle: Thermal status and cooling headroom
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.opnsense_cpu_temp_avg
+                  - label: CPU Average Temp
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.opnsense_cpu_temp_core0
+                  - label: CPU Temp Core 0
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.opnsense_cpu_temp_core1
+                  - label: CPU Temp Core 1
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.opnsense_cpu_temp_core2
+                  - label: CPU Temp Core 2
+              - type: custom:decluttering-card
+                template: info_cpu_temp
+                variables:
+                  - temp_entity: sensor.opnsense_cpu_temp_core3
+                  - label: CPU Temp Core 3
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Network
+                  - subtitle: Connectivity, latency, and throughput
+              - type: custom:decluttering-card
+                template: info_network_active
+                variables:
+                  - title: 'Active NIC #1'
+                  - nic_name: sensor.opnsense_net_active_1_name
+                  - ipv4: sensor.opnsense_net_active_1_ipv4
+                  - up_bps: sensor.opnsense_net_active_1_up
+                  - down_bps: sensor.opnsense_net_active_1_down
+              - type: custom:decluttering-card
+                template: info_network_active
+                variables:
+                  - title: 'Active NIC #2'
+                  - nic_name: sensor.opnsense_net_active_2_name
+                  - ipv4: sensor.opnsense_net_active_2_ipv4
+                  - up_bps: sensor.opnsense_net_active_2_up
+                  - down_bps: sensor.opnsense_net_active_2_down
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Filesystems
+                  - subtitle: Storage capacity and usage
+              - type: custom:decluttering-card
+                template: info_fs
+                variables:
+                  - label: /
+                  - total: sensor.opnsense_fs_total
+                  - used: sensor.opnsense_fs_used
+                  - pct: sensor.opnsense_fs_percent
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: Disk I/O
+                  - subtitle: Read/write activity and performance
+              - type: custom:decluttering-card
+                template: info_disk_io
+                variables:
+                  - name: ada0
+                  - read_bps: sensor.opnsense_disk_ada0_read_rate
+                  - write_bps: sensor.opnsense_disk_ada0_write_rate
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: title_section
+                variables:
+                  - title: SMART Monitors
+                  - subtitle: Drive health and diagnostics
+              - type: custom:decluttering-card
+                template: info_smart
+                variables:
+                  - name: /dev/ada0
+                  - ok: binary_sensor.opnsense_smart_dev_ada0_health
+                  - temp: sensor.opnsense_smart_dev_ada0_temp
+                  - life_pct: sensor.opnsense_smart_dev_ada0_used
+                  - poh: sensor.opnsense_smart_dev_ada0_poh
+                  - read: sensor.opnsense_smart_dev_ada0_tbr
+                  - written: sensor.opnsense_smart_dev_ada0_tbw
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU Metrics
+            subtitle: Core utilization, system load, and clock speeds
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: opnsense
+              - root_match: CPU
+              - columns: 2
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Network Connection Metrics
+            subtitle: Interfaces, throughput, and latency monitoring
+          - type: custom:decluttering-card
+            template: lhm_block
+            variables:
+              - machine_match: opnsense
+              - root_match: Network
+              - columns: 2
+    cards: []
