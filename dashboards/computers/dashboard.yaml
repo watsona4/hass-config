@@ -64,15 +64,15 @@ decluttering_templates:
       type: custom:mushroom-template-badge
       entity: '[[cpu_temp_pkg]]'
       icon: >-
-        {% from 'macros.jinja' import entity_temp %} {% set raw =
-        entity_temp(entity) %} {% set unknown = raw in ['unknown','unavailable',
+        {% from 'helpers.jinja' import convert_temp_entity %} {% set raw =
+        convert_temp_entity(entity) %} {% set unknown = raw in ['unknown','unavailable',
         None] %} {% set t = (0 if unknown else (raw | float(0))) %} {% if
         unknown %} mdi:thermometer-off {% elif t >= 90 %} mdi:thermometer-alert
         {% elif t >= 80 %} mdi:thermometer-high {% else %} mdi:thermometer {%
         endif %}
       color: >-
-        {% from 'macros.jinja' import entity_temp %} {% set raw =
-        entity_temp(entity) %} {% set unknown = raw in ['unknown','unavailable',
+        {% from 'helpers.jinja' import convert_temp_entity %} {% set raw =
+        convert_temp_entity(entity) %} {% set unknown = raw in ['unknown','unavailable',
         None] %} {% set t = (0 if unknown else (raw | float(0))) %} {% if
         unknown %} disabled {% elif t >= 90 %} red {% elif t >= 80 %} orange {%
         elif t >= 70 %} amber {% else %} green {% endif %}
@@ -132,8 +132,8 @@ decluttering_templates:
         {% from 'hwmon.jinja' import hw_secondary %}
         {{ hw_secondary(entity) }}
       icon: >-
-        {% from 'macros.jinja' import entity_temp %} {% set raw =
-        entity_temp(entity) %} {% set unknown = raw in ['unknown',
+        {% from 'helpers.jinja' import convert_temp_entity %} {% set raw =
+        convert_temp_entity(entity) %} {% set unknown = raw in ['unknown',
         'unavailable', None] %} {% set t = (0 if unknown else (raw | float(0)))
         %} {% if unknown %}
           mdi:thermometer-off
@@ -145,8 +145,8 @@ decluttering_templates:
           mdi:thermometer
         {% endif %}
       icon_color: >-
-        {% from 'macros.jinja' import entity_temp %} {% set raw =
-        entity_temp(entity) %} {% set unknown = raw in ['unknown',
+        {% from 'helpers.jinja' import convert_temp_entity %} {% set raw =
+        convert_temp_entity(entity) %} {% set unknown = raw in ['unknown',
         'unavailable', None] %} {% set t = (0 if unknown else (raw | float(0)))
         %} {% if unknown %}
           disabled
@@ -438,8 +438,8 @@ decluttering_templates:
                 {{ hw_secondary('[[i_temp]]') }}
               icon: mdi:thermometer
               icon_color: >
-                {% from 'macros.jinja' import convert_temp %} {% set t =
-                states('[[i_temp]]')|float(0) %} {% set t = convert_temp(t,
+                {% from 'helpers.jinja' import convert_temp_value %} {% set t =
+                states('[[i_temp]]')|float(0) %} {% set t = convert_temp_value(t,
                 state_attr('[[i_temp]]','unit_of_measurement'),'c')|float %} {{
                 'red' if t>85 else 'orange' if t>75 else 'green' }}
               entity: '[[i_temp]]'
@@ -1461,8 +1461,8 @@ views:
                 primary: Thermal Setpoints
                 secondary: >-
                   {% from 'hwmon.jinja' import hw_secondary %} {% from
-                  'macros.jinja' import convert_temp %} {% set t =
-                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  'helpers.jinja' import convert_temp_value %} {% set t =
+                  convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
                   states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
                   %} {% set tp1 =
                   states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
@@ -1492,8 +1492,8 @@ views:
                   hw_secondary('number.frigate_coral_apex_0_trip_point2_temp')
                   }} — critical; device may reset/disable
                 icon: >-
-                  {% from 'macros.jinja' import convert_temp %} {% set t =
-                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  {% from 'helpers.jinja' import convert_temp_value %} {% set t =
+                  convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
                   states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
                   %} {% set tp1 =
                   states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
@@ -1504,8 +1504,8 @@ views:
                   >= tp0 %} mdi:thermometer {% else %} mdi:thermometer-low {%
                   endif %}
                 icon_color: >-
-                  {% from 'macros.jinja' import convert_temp %} {% set t =
-                  convert_temp(states(entity),"f","c")|float(0) %} {% set tp0 =
+                  {% from 'helpers.jinja' import convert_temp_value %} {% set t =
+                  convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
                   states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
                   %} {% set tp1 =
                   states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)

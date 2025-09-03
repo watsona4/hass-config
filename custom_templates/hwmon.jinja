@@ -3,7 +3,7 @@
    Reusable macros for Hardware Monitor cards
    ────────────────────────────────────────────────────────────── #}
 
-{%- from 'macros.jinja' import convert_temp, smartfmt -%}
+{%- from 'helpers.jinja' import convert_temp_value, smartfmt -%}
 
 {%- macro humanize_unit(n, unit='', system='') -%}
   {# If no unit passed, just smart format the number #}
@@ -148,7 +148,7 @@
   {%- set raw = states(eid) -%}
   {%- set unit = state_attr(eid,'unit_of_measurement') -%}
   {%- if dc == 'temperature' -%}
-    {% set t = convert_temp(raw, unit or 'c', 'c') | float(0) %}
+    {% set t = convert_temp_value(raw, unit or 'c', 'c') | float(0) %}
     {{ 'red' if t >= 90 else 'orange' if t >= 80 else 'green' }}
   {%- elif unit == '%' or 'percent' in eid -%}
     {% set v = raw|float(0) %}

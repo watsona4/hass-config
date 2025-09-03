@@ -1,7 +1,7 @@
 {# # File: config/custom_templates/aqi.jinja ## #}
 {# Macros for Air Quality Index (AQI) calculations and representations #}
 
-{% from 'macros.jinja' import level_find %}
+{% from 'helpers.jinja' import level_find %}
 
 {# Breakpoints for AQI levels #}
 {% set bps = [0, 50, 100, 150, 200, 300, 500] %}
