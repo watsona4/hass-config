@@ -6,7 +6,7 @@
   unique_id: openmeteo_weather_nearby
 
   condition_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_nearby','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
@@ -30,7 +30,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_nearby','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -56,7 +56,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_nearby','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_nearby','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
@@ -88,7 +88,7 @@
   unique_id: openmeteo_weather_home
 
   condition_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_home','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
@@ -112,7 +112,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_home','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -138,7 +138,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_home','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_home','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}
@@ -170,7 +170,7 @@
   unique_id: openmeteo_weather_rv
 
   condition_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set c = state_attr('sensor.openmeteo_rv','current') or {} -%}
     {%- set code = c.get('weather_code') -%}
     {%- set is_day = (c.get('is_day')|int(1))|bool -%}
@@ -194,7 +194,7 @@
   wind_speed_unit: "mph"
 
   forecast_daily_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set d = state_attr('sensor.openmeteo_rv','daily') or {} -%}
     {%- set tt = d.get('time', []) -%}
     {%- set out = namespace(items=[]) -%}
@@ -220,7 +220,7 @@
     {{ out.items | tojson }}
 
   forecast_hourly_template: >
-    {% from 'weather.jinja' import condition %}
+    {% from 'weather/helpers.jinja' import condition %}
     {%- set h = state_attr('sensor.openmeteo_rv','hourly') or {} -%}
     {%- set cur = state_attr('sensor.openmeteo_rv','current') or {} -%}
     {%- set cur_dt = (cur.get('time') | as_datetime(default=none)) -%}

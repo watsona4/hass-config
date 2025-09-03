@@ -130,7 +130,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
+      {% from 'weather/aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}
@@ -352,7 +352,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
+      {% from 'weather/aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}
@@ -574,7 +574,7 @@
       {% set d = states('sensor.date') | as_datetime(default=none) %}
       {{ (d + timedelta(days=1)).date().isoformat() if d else none }}
     aqi_days: >-
-      {% from 'aqi.jinja' import aqi_from_pm, name, color, level as sev %}
+      {% from 'weather/aqi.jinja' import aqi_from_pm, name, color, level as sev %}
       {% set f = (state_attr(src, 'forecast') or {}) %}
       {% set daily = f.get('daily') or {} %}
       {% set d25 = daily.get('pm25') or [] %}

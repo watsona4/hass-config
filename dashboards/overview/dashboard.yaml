@@ -221,11 +221,11 @@ views:
                 entity: sensor.openuv_nearby_apparent_uv_index
                 primary: UV Index
                 secondary: |-
-                  {% from 'uv.jinja' import name %}
+                  {% from 'weather/uv.jinja' import name %}
                   {{ name(states(entity)) }}
                 icon: mdi:weather-sunny-alert
                 icon_color: |-
-                  {% from 'uv.jinja' import color %}
+                  {% from 'weather/uv.jinja' import color %}
                   {{ color(states(entity)) }}
                 badge_icon: >-
                   {% set u = states(entity)|float(0)|round(0) %} mdi:numeric-{{
@@ -233,7 +233,7 @@ views:
                 tap_action:
                   action: more-info
                 badge_color: |-
-                  {% from 'uv.jinja' import color %}
+                  {% from 'weather/uv.jinja' import color %}
                   {{ color(states(entity)) }}
           - type: horizontal-stack
             cards:
@@ -306,17 +306,17 @@ views:
                 entity: sensor.waqi_nearby_aqi
                 primary: Air Quality
                 secondary: |-
-                  {% from 'aqi.jinja' import name %}
+                  {% from 'weather/aqi.jinja' import name %}
                   {{ name(states(entity)) }}
                 icon: mdi:smog
                 icon_color: |-
-                  {% from 'aqi.jinja' import color %}
+                  {% from 'weather/aqi.jinja' import color %}
                   {{ color(states(entity)) }}
                 badge_icon: >-
                   {% set a = states(entity)|int(0) %} mdi:numeric-{{ a//10 if
                   a<100 else '9-plus' }}-circle
                 badge_color: |-
-                  {% from 'aqi.jinja' import color %}
+                  {% from 'weather/aqi.jinja' import color %}
                   {{ color(states(entity)) }}
                 tap_action:
                   action: more-info
