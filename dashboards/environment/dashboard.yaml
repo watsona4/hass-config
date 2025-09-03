@@ -607,43 +607,43 @@ views:
                 entity: sensor.waqi_nearby_pm2_5
                 icon: mdi:blur
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, pm25_level %} {{
-                  level_color(pm25_level(states(entity))) }}
+                  {% from 'aqi.jinja' import pm25_color %}
+                  {{ pm25_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_pm10
                 icon: mdi:blur-radial
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, pm10_level %} {{
-                  level_color(pm10_level(states(entity))) }}
+                  {% from 'aqi.jinja' import pm10_color %}
+                  {{ pm10_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_o3
                 icon: mdi:chemical-weapon
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, o3_level %} {{
-                  level_color(o3_level(states(entity))) }}
+                  {% from 'aqi.jinja' import o3_color %}
+                  {{ o3_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_co
                 icon: mdi:molecule-co
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, co_level %} {{
-                  level_color(co_level(states(entity))) }}
+                  {% from 'aqi.jinja' import co_color %}
+                  {{ co_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_no2
                 icon: mdi:periodic-table
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, no2_level %} {{
-                  level_color(no2_level(states(entity))) }}
+                  {% from 'aqi.jinja' import no2_color %}
+                  {{ no2_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_so2
                 icon: mdi:factory
                 icon_color: >-
-                  {% from 'aqi.jinja' import level_color, so2_level %} {{
-                  level_color(so2_level(states(entity))) }}
+                  {% from 'aqi.jinja' import so2_color %}
+                  {{ so2_color(states(entity)) }}
                 content: ""
           - type: custom:mushroom-template-card
             entity: sensor.waqi_nearby_aqi
