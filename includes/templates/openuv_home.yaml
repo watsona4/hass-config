@@ -34,14 +34,14 @@
       state_class: measurement
       availability: "{{ has_value(uv_src) }}"
       state: >-
-        {% from 'weather/uv.jinja' import factor_sigmoid %}
+        {% from 'env/uv.jinja' import factor_sigmoid %}
         {% set raw_uv = states(uv_src) | float(0) %}
         {% set clouds = state_attr(wx_src,'cloud_coverage') | float(0) %}
         {{ (raw_uv * (factor_sigmoid(clouds) | float(1))) | round(2) }}
       attributes:
         source: "openuv_clear_sky * cloud_correction"
         forecast: >-
-          {% from 'weather/uv.jinja' import factor_sigmoid %}
+          {% from 'env/uv.jinja' import factor_sigmoid %}
           {%- set out = namespace(items=[]) -%}
           {%- for p in (raw_fc or []) -%}
             {%- set t = (p.get('uv_time') | as_datetime(default=none)) -%}

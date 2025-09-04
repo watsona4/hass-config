@@ -17,9 +17,9 @@ decluttering_templates:
       primary: '[[primary]]'
       secondary: '[[secondary]]'
       multiline_secondary:
-        - - multiline_secondary
+        - multiline_secondary
       tap_action:
-        - - tap_action
+        - tap_action
   climate_card:
     card:
       type: custom:mushroom-climate-card
@@ -52,7 +52,7 @@ decluttering_templates:
             endset %} {{ hw_secondary(entity, temp='[[temp_unit]]') }}{% if
             extra %} · {{ extra }}{% endif %}
         - tap_action:
-            - - tap_action
+            - tap_action
   numeric_color_card:
     card:
       type: custom:decluttering-card
@@ -63,7 +63,7 @@ decluttering_templates:
         - icon_color: "{% set v = states(entity) | float(0) %} [[icon_color_spec]]"
         - primary: '[[primary]]'
         - tap_action:
-            - - tap_action
+            - tap_action
         - temp_unit: '[[temp_unit]]'
         - secondary_state: '[[secondary_state]]'
   data_rate_card:
@@ -221,11 +221,11 @@ views:
                 entity: sensor.openuv_nearby_apparent_uv_index
                 primary: UV Index
                 secondary: |-
-                  {% from 'weather/uv.jinja' import name %}
+                  {% from 'env/uv.jinja' import name %}
                   {{ name(states(entity)) }}
                 icon: mdi:weather-sunny-alert
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {{ color(states(entity)) }}
                 badge_icon: >-
                   {% set u = states(entity)|float(0)|round(0) %} mdi:numeric-{{
@@ -233,7 +233,7 @@ views:
                 tap_action:
                   action: more-info
                 badge_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {{ color(states(entity)) }}
           - type: horizontal-stack
             cards:
@@ -306,17 +306,17 @@ views:
                 entity: sensor.waqi_nearby_aqi
                 primary: Air Quality
                 secondary: |-
-                  {% from 'weather/aqi.jinja' import name %}
+                  {% from 'env/aqi.jinja' import name %}
                   {{ name(states(entity)) }}
                 icon: mdi:smog
                 icon_color: |-
-                  {% from 'weather/aqi.jinja' import color %}
+                  {% from 'env/aqi.jinja' import color %}
                   {{ color(states(entity)) }}
                 badge_icon: >-
                   {% set a = states(entity)|int(0) %} mdi:numeric-{{ a//10 if
                   a<100 else '9-plus' }}-circle
                 badge_color: |-
-                  {% from 'weather/aqi.jinja' import color %}
+                  {% from 'env/aqi.jinja' import color %}
                   {{ color(states(entity)) }}
                 tap_action:
                   action: more-info

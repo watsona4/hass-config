@@ -19,7 +19,7 @@ views:
       - type: custom:mushroom-template-badge
         icon: mdi:cloud
         color: |
-          {% from 'weather/aqi.jinja' import color %}
+          {% from 'env/aqi.jinja' import color %}
           {{ color(states(entity)) }}
         content: |
           {% set aqi = states(entity) | int(0) %}
@@ -47,7 +47,7 @@ views:
       - type: custom:mushroom-template-badge
         icon: mdi:weather-sunny-alert
         color: |
-          {% from 'weather/uv.jinja' import color %} {{ color(states(entity)) }}
+          {% from 'env/uv.jinja' import color %} {{ color(states(entity)) }}
         content: |
           UV Index: {{ states(entity)|float(0)|round(1) }}
         tap_action:
@@ -89,11 +89,11 @@ views:
         entity: sensor.nearby_uv_safe_exposure_minutes_forecast_st1_open_meteo
       - type: custom:mushroom-template-badge
         content: |-
-          {% from 'weather/uv.jinja' import vitd_label %}
+          {% from 'env/uv.jinja' import vitd_label %}
           Vitamin D: {{ vitd_label(states(entity), 3) }}
         icon: mdi:pill
         color: |-
-          {% from 'weather/uv.jinja' import vitd_minutes %}
+          {% from 'env/uv.jinja' import vitd_minutes %}
           {% set r = vitd_minutes(states(entity), 3) | from_json %}
           {% if r is none %}
             disabled
@@ -183,7 +183,7 @@ views:
                       state_attr(entity,'dominant_value') is not none else '–'
                       }}
                     icon_color: |
-                      {% from 'weather/pollen.jinja' import color %}
+                      {% from 'env/pollen.jinja' import color %}
                       {{ color(state_attr(entity,'dominant_value')) }}
                     fill_container: false
                     multiline_secondary: false
@@ -206,7 +206,7 @@ views:
                       {% set v = state_attr(entity,'grass_value') %} {{ 'Index '
                       ~ v if v is not none else '–' }}
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'grass_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.google_pollen_nearby_today
@@ -216,7 +216,7 @@ views:
                       {% set v = state_attr(entity,'tree_value') %} {{ 'Index '
                       ~ v if v is not none else '–' }}
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'tree_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.google_pollen_nearby_today
@@ -226,7 +226,7 @@ views:
                       {% set v = state_attr(entity,'weed_value') %} {{ 'Index '
                       ~ v if v is not none else '–' }}
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'weed_value')) }}
               - type: custom:mushroom-template-card
                 entity: sensor.google_pollen_nearby_today
@@ -237,7 +237,7 @@ views:
                   recs | join(' ') if recs else '—' }}
                 multiline_secondary: true
                 icon_color: |
-                  {% from 'weather/pollen.jinja' import color %}
+                  {% from 'env/pollen.jinja' import color %}
                   {{ color(state_attr(entity,'dominant_value')) }}
               - type: horizontal-stack
                 cards:
@@ -258,7 +258,7 @@ views:
                       {% else %}Day 0 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_nearby_day_1
@@ -277,7 +277,7 @@ views:
                       {% else %}Day 1 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_nearby_day_2
@@ -296,7 +296,7 @@ views:
                       {% else %}Day 2 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
           - type: vertical-stack
             visibility:
@@ -325,7 +325,7 @@ views:
                       {% else %}Day 0 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_home_day_1
@@ -344,7 +344,7 @@ views:
                       {% else %}Day 1 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_home_day_2
@@ -363,7 +363,7 @@ views:
                       {% else %}Day 2 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
           - type: vertical-stack
             visibility:
@@ -395,7 +395,7 @@ views:
                       {% else %}Day 0 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_rv_day_1
@@ -414,7 +414,7 @@ views:
                       {% else %}Day 1 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
                   - type: custom:mushroom-template-card
                     entity: sensor.pollen_forecast_rv_day_2
@@ -433,7 +433,7 @@ views:
                       {% else %}Day 2 {% endif %}
                     secondary: "{{ state_attr(entity, 'species_name') }}"
                     icon_color: >
-                      {% from 'weather/pollen.jinja' import color %} {{
+                      {% from 'env/pollen.jinja' import color %} {{
                       color(state_attr(entity,'dominant_value')) }}
           - type: vertical-stack
             cards:
@@ -565,30 +565,30 @@ views:
             title: Local Air Quality
           - type: custom:modern-circular-gauge
             name: >-
-              {% from 'weather/aqi.jinja' import dominant %}{{
+              {% from 'env/aqi.jinja' import dominant %}{{
               dominant("sensor.waqi_nearby") }}
             entity: sensor.waqi_nearby_aqi
             max: 500
             adaptive_state_color: true
             segments:
               - from: 0
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(0) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(0) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(0) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(0) }}"
               - from: 51
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(51) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(51) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(51) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(51) }}"
               - from: 101
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(101) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(101) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(101) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(101) }}"
               - from: 151
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(151) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(151) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(151) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(151) }}"
               - from: 201
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(201) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(201) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(201) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(201) }}"
               - from: 301
-                color: "{% from 'weather/aqi.jinja' import color %}{{ color(301) }}"
-                label: "{% from 'weather/aqi.jinja' import long %}{{ long(301) }}"
+                color: "{% from 'env/aqi.jinja' import color %}{{ color(301) }}"
+                label: "{% from 'env/aqi.jinja' import long %}{{ long(301) }}"
             secondary:
               unit: AQI
               show_gauge: none
@@ -607,56 +607,56 @@ views:
                 entity: sensor.waqi_nearby_pm2_5
                 icon: mdi:blur
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import pm25_color %}
+                  {% from 'env/aqi.jinja' import pm25_color %}
                   {{ pm25_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_pm10
                 icon: mdi:blur-radial
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import pm10_color %}
+                  {% from 'env/aqi.jinja' import pm10_color %}
                   {{ pm10_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_o3
                 icon: mdi:chemical-weapon
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import o3_color %}
+                  {% from 'env/aqi.jinja' import o3_color %}
                   {{ o3_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_co
                 icon: mdi:molecule-co
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import co_color %}
+                  {% from 'env/aqi.jinja' import co_color %}
                   {{ co_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_no2
                 icon: mdi:periodic-table
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import no2_color %}
+                  {% from 'env/aqi.jinja' import no2_color %}
                   {{ no2_color(states(entity)) }}
                 content: ""
               - type: template
                 entity: sensor.waqi_nearby_so2
                 icon: mdi:factory
                 icon_color: >-
-                  {% from 'weather/aqi.jinja' import so2_color %}
+                  {% from 'env/aqi.jinja' import so2_color %}
                   {{ so2_color(states(entity)) }}
                 content: ""
           - type: custom:mushroom-template-card
             entity: sensor.waqi_nearby_aqi
             icon: |
-              {% from 'weather/aqi.jinja' import icon %}
+              {% from 'env/aqi.jinja' import icon %}
               {{ icon(states(entity)) }}
             primary: Health Advice
             secondary: |
-              {% from 'weather/aqi.jinja' import desc %}
+              {% from 'env/aqi.jinja' import desc %}
               {{ desc(states(entity)) }}
             multiline_secondary: true
             icon_color: |
-              {% from 'weather/aqi.jinja' import color %}
+              {% from 'env/aqi.jinja' import color %}
               {{ color(states(entity)) }}
             grid_options:
               columns: full
@@ -668,7 +668,7 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
-                  {% from 'weather/aqi.jinja' import short %} {{
+                  {% from 'env/aqi.jinja' import short %} {{
                   short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: "{{ state_attr(entity, 'hex') }}"
@@ -677,7 +677,7 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
-                  {% from 'weather/aqi.jinja' import short %} {{
+                  {% from 'env/aqi.jinja' import short %} {{
                   short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: "{{ state_attr(entity, 'hex') }}"
@@ -686,7 +686,7 @@ views:
                 icon: mdi:numeric-{{ state_attr(entity, 'level') }}-box-outline
                 primary: "{{ state_attr(entity, 'title') }}"
                 secondary: >-
-                  {% from 'weather/aqi.jinja' import short %} {{
+                  {% from 'env/aqi.jinja' import short %} {{
                   short(state_attr(entity, 'aqi')) ~ ' · ' ~ state_attr(entity,
                   'aqi') }}
                 icon_color: "{{ state_attr(entity, 'hex') }}"
@@ -706,30 +706,30 @@ views:
                     adaptive_state_color: true
                     segments:
                       - from: 0
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(0) }}"
-                        label: "{% from 'weather/aqi.jinja' import name %}{{ name(0) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'env/aqi.jinja' import name %}{{ name(0) }}"
                       - from: 51
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(51) }}"
-                        label: "{% from 'weather/aqi.jinja' import name %}{{ name(51) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(51) }}"
+                        label: "{% from 'env/aqi.jinja' import name %}{{ name(51) }}"
                       - from: 101
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(101) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(101) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(101)
+                          {% from 'env/aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(151) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(151) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(151)
+                          {% from 'env/aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(201) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(201) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(201)
+                          {% from 'env/aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(301) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(301) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(301)
+                          {% from 'env/aqi.jinja' import name %}{{ name(301)
                           }}
                     secondary:
                       unit: AQI
@@ -743,7 +743,7 @@ views:
                       rows: 2
                     tertiary: {}
                     name: >-
-                      {% from "weather/aqi.jinja" import dominant %} {{
+                      {% from "env/aqi.jinja" import dominant %} {{
                       dominant("sensor.waqi_home", short=True) }}       
                   - type: vertical-stack
                     cards:
@@ -793,36 +793,36 @@ views:
                   - type: custom:modern-circular-gauge
                     entity: sensor.waqi_rv_aqi
                     name: >-
-                      {% from "weather/aqi.jinja" import dominant %} {{
+                      {% from "env/aqi.jinja" import dominant %} {{
                       dominant("sensor.waqi_rv", short=True) }}       
                     max: 500
                     adaptive_state_color: true
                     segments:
                       - from: 0
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(0) }}"
-                        label: "{% from 'weather/aqi.jinja' import name %}{{ name(0) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'env/aqi.jinja' import name %}{{ name(0) }}"
                       - from: 51
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(51) }}"
-                        label: "{% from 'weather/aqi.jinja' import name %}{{ name(51) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(51) }}"
+                        label: "{% from 'env/aqi.jinja' import name %}{{ name(51) }}"
                       - from: 101
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(101) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(101) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(101)
+                          {% from 'env/aqi.jinja' import name %}{{ name(101)
                           }}
                       - from: 151
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(151) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(151) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(151)
+                          {% from 'env/aqi.jinja' import name %}{{ name(151)
                           }}
                       - from: 201
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(201) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(201) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(201)
+                          {% from 'env/aqi.jinja' import name %}{{ name(201)
                           }}
                       - from: 301
-                        color: "{% from 'weather/aqi.jinja' import color %}{{ color(301) }}"
+                        color: "{% from 'env/aqi.jinja' import color %}{{ color(301) }}"
                         label: >-
-                          {% from 'weather/aqi.jinja' import name %}{{ name(301)
+                          {% from 'env/aqi.jinja' import name %}{{ name(301)
                           }}
                     secondary:
                       unit: AQI
@@ -878,20 +878,20 @@ views:
             max: 11
             segments:
               - from: 0
-                color: "{% from 'weather/uv.jinja' import color %}{{ color(0) }}"
-                label: "{% from 'weather/uv.jinja' import long %}{{ long(0) }}"
+                color: "{% from 'env/uv.jinja' import color %}{{ color(0) }}"
+                label: "{% from 'env/uv.jinja' import long %}{{ long(0) }}"
               - from: 2
-                color: "{% from 'weather/uv.jinja' import color %}{{ color(3) }}"
-                label: "{% from 'weather/uv.jinja' import long %}{{ long(3) }}"
+                color: "{% from 'env/uv.jinja' import color %}{{ color(3) }}"
+                label: "{% from 'env/uv.jinja' import long %}{{ long(3) }}"
               - from: 5
-                color: "{% from 'weather/uv.jinja' import color %}{{ color(6) }}"
-                label: "{% from 'weather/uv.jinja' import long %}{{ long(6) }}"
+                color: "{% from 'env/uv.jinja' import color %}{{ color(6) }}"
+                label: "{% from 'env/uv.jinja' import long %}{{ long(6) }}"
               - from: 7
-                color: "{% from 'weather/uv.jinja' import color %}{{ color(8) }}"
-                label: "{% from 'weather/uv.jinja' import long %}{{ long(8) }}"
+                color: "{% from 'env/uv.jinja' import color %}{{ color(8) }}"
+                label: "{% from 'env/uv.jinja' import long %}{{ long(8) }}"
               - from: 10
-                color: "{% from 'weather/uv.jinja' import color %}{{ color(11) }}"
-                label: "{% from 'weather/uv.jinja' import long %}{{ long(11) }}"
+                color: "{% from 'env/uv.jinja' import color %}{{ color(11) }}"
+                label: "{% from 'env/uv.jinja' import long %}{{ long(11) }}"
             secondary:
               show_gauge: none
               unit: UVI
@@ -912,7 +912,7 @@ views:
                 icon: mdi:weather-sunny-alert
                 content: "Max UV: {{ states(entity)|float(0)|round(1) }}"
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {{ color(states(entity)) }}
               - type: template
                 icon: mdi:weather-cloudy
@@ -929,7 +929,7 @@ views:
                 icon: mdi:white-balance-sunny
                 entity: sensor.nearby_uv_adjusted_max_today_2
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {{ color(states(entity)) }}
               - type: template
                 content: "Safe Min: {{states(entity)}}"
@@ -944,15 +944,15 @@ views:
             alignment: center
           - type: custom:mushroom-template-card
             icon: |
-              {% from 'weather/uv.jinja' import icon %}
+              {% from 'env/uv.jinja' import icon %}
               {{ icon(states(entity)) }}
             primary: Health Advice
             secondary: |
-              {% from 'weather/uv.jinja' import desc %}
+              {% from 'env/uv.jinja' import desc %}
               {{ desc(states(entity)) }}
             multiline_secondary: true
             icon_color: |
-              {% from 'weather/uv.jinja' import color %}
+              {% from 'env/uv.jinja' import color %}
               {{ color(states(entity)) }}
             grid_options:
               columns: full
@@ -962,48 +962,48 @@ views:
             cards:
               - type: custom:mushroom-template-card
                 icon: |-
-                  {% from 'weather/uv.jinja' import level %}
+                  {% from 'env/uv.jinja' import level %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
                   mdi:numeric-{{ level(v) }}-box-outline
                 primary: Today
                 secondary: |-
-                  {% from 'weather/uv.jinja' import short %}
+                  {% from 'env/uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
                   {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[0] %}
                   {{ color(v) }}
                 entity: sensor.openmeteo_nearby
               - type: custom:mushroom-template-card
                 icon: |-
-                  {% from 'weather/uv.jinja' import level %}
+                  {% from 'env/uv.jinja' import level %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
                   mdi:numeric-{{ level(v) }}-box-outline
                 primary: Tomorrow
                 secondary: |-
-                  {% from 'weather/uv.jinja' import short %}
+                  {% from 'env/uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
                   {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[1] %}
                   {{ color(v) }}
                 entity: sensor.openmeteo_nearby
               - type: custom:mushroom-template-card
                 icon: |-
-                  {% from 'weather/uv.jinja' import level %}
+                  {% from 'env/uv.jinja' import level %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
                   mdi:numeric-{{ level(v) }}-box-outline
                 primary: >-
                   {{ (state_attr(entity, 'daily').time[2] |
                   as_datetime).strftime('%A') }}
                 secondary: |-
-                  {% from 'weather/uv.jinja' import short %}
+                  {% from 'env/uv.jinja' import short %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
                   {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                 icon_color: |-
-                  {% from 'weather/uv.jinja' import color %}
+                  {% from 'env/uv.jinja' import color %}
                   {% set v = state_attr(entity,'daily').uv_index_max[2] %}
                   {{ color(v) }}
                 entity: sensor.openmeteo_nearby
@@ -1025,20 +1025,20 @@ views:
                     max: 11
                     segments:
                       - from: 0
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(0) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(0) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(0) }}"
                       - from: 2
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(3) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(3) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(3) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(3) }}"
                       - from: 5
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(6) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(6) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(6) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(6) }}"
                       - from: 7
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(8) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(8) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(8) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(8) }}"
                       - from: 10
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(11) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(11) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(11) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(11) }}"
                     secondary:
                       show_gauge: none
                       unit: UVI
@@ -1055,7 +1055,7 @@ views:
                     cards:
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
@@ -1063,14 +1063,14 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Today
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
@@ -1079,7 +1079,7 @@ views:
                         entity: sensor.openmeteo_home
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
@@ -1087,14 +1087,14 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Tomorrow
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
@@ -1103,7 +1103,7 @@ views:
                         entity: sensor.openmeteo_home
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
@@ -1113,14 +1113,14 @@ views:
                           {{ (state_attr(entity, 'daily').time[2] |
                           as_datetime).strftime('%A') }}
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
@@ -1148,20 +1148,20 @@ views:
                     max: 11
                     segments:
                       - from: 0
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(0) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(0) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(0) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(0) }}"
                       - from: 2
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(3) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(3) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(3) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(3) }}"
                       - from: 5
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(6) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(6) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(6) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(6) }}"
                       - from: 7
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(8) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(8) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(8) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(8) }}"
                       - from: 10
-                        color: "{% from 'weather/uv.jinja' import color %}{{ color(11) }}"
-                        label: "{% from 'weather/uv.jinja' import name %} {{ name(11) }}"
+                        color: "{% from 'env/uv.jinja' import color %}{{ color(11) }}"
+                        label: "{% from 'env/uv.jinja' import name %} {{ name(11) }}"
                     secondary:
                       show_gauge: none
                       entity: sensor.openmeteo_rv_apparent_uv_index
@@ -1178,7 +1178,7 @@ views:
                     cards:
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
@@ -1186,14 +1186,14 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Today
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[0]
                           %}
@@ -1202,7 +1202,7 @@ views:
                         entity: sensor.openmeteo_rv
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
@@ -1210,14 +1210,14 @@ views:
                           mdi:numeric-{{ level(v) }}-box-outline
                         primary: Tomorrow
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[1]
                           %}
@@ -1226,7 +1226,7 @@ views:
                         entity: sensor.openmeteo_rv
                       - type: custom:mushroom-template-card
                         icon: >-
-                          {% from 'weather/uv.jinja' import level %}
+                          {% from 'env/uv.jinja' import level %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
@@ -1236,14 +1236,14 @@ views:
                           {{ (state_attr(entity, 'daily').time[2] |
                           as_datetime).strftime('%A') }}
                         secondary: >-
-                          {% from 'weather/uv.jinja' import short %}
+                          {% from 'env/uv.jinja' import short %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}
 
                           {{ short(v) ~ ' · ' ~ v|float(0)|round(1) }}
                         icon_color: >-
-                          {% from 'weather/uv.jinja' import color %}
+                          {% from 'env/uv.jinja' import color %}
 
                           {% set v = state_attr(entity,'daily').uv_index_max[2]
                           %}

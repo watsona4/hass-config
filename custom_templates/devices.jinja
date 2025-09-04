@@ -321,7 +321,7 @@ Priority: explicit icon attr > device_class map > domain state map > fallback. #
                 {{ DISABLED }}
             {%- endif -%}
         {%- elif dc in ['aqi','pm25','pm10','carbon_monoxide','carbon_dioxide','nitrogen_dioxide','sulphur_dioxide','ozone'] -%}
-            {%- import 'weather/aqi.jinja' as aqi -%}
+            {%- import 'env/aqi.jinja' as aqi -%}
             {%- if dc == 'aqi' -%}
                 {{ aqi.color(v) }}
             {%- elif dc == 'pm25' -%}
