@@ -111,13 +111,13 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{%- macro hw_primary(eid) -%}
+{% macro hw_primary(eid) %}
   {%- set fn = state_attr(eid, 'friendly_name') or eid -%}
   {%- set parts = (fn or '') .split(' / ') -%}
   {{ parts[-2:] | join(' · ') if parts|length > 1 else fn }}
-{%- endmacro -%}
+{% endmacro %}
 
-{%- macro hw_secondary(eid, temp='c') -%}
+{% macro hw_secondary(eid, temp='c') %}
   {%- set val = states(eid) -%}
   {%- set unit = state_attr(eid,'unit_of_measurement') -%}
   {%- set temp_units = {'k': 'K', 'f': '°F', 'c': '°C'} %}
@@ -130,9 +130,9 @@
   {%- else -%}
     {{ humanize_unit(val, unit) }}
   {%- endif -%}
-{%- endmacro -%}
+{% endmacro %}
 
-{%- macro hw_icon(eid) -%}
+{% macro hw_icon(eid) %}
   {%- set dc = state_attr(eid, 'device_class') -%}
   {%- if dc == 'temperature' -%} mdi:thermometer
   {%- elif dc == 'voltage' -%} mdi:flash-outline
@@ -141,9 +141,9 @@
   {%- elif 'load' in eid or 'level' in eid -%} mdi:gauge
   {%- else -%} mdi:database
   {%- endif -%}
-{%- endmacro -%}
+{% endmacro %}
 
-{%- macro hw_icon_color(eid) -%}
+{% macro hw_icon_color(eid) %}
   {%- set dc = state_attr(eid,'device_class') -%}
   {%- set raw = states(eid) -%}
   {%- set unit = state_attr(eid,'unit_of_measurement') -%}
@@ -156,9 +156,9 @@
   {%- else -%}
     blue
   {%- endif -%}
-{%- endmacro -%}
+{% endmacro %}
 
-{%- macro hw_adapter_name(eid) -%}
+{% macro hw_adapter_name(eid) %}
   {%- set fn = state_attr(eid, 'friendly_name') or '' -%}
   {%- set parts = fn.split(' / ') -%}
   {%- if parts|length > 0 -%}
@@ -166,9 +166,9 @@
   {%- else -%}
     Network
   {%- endif -%}
-{%- endmacro -%}
+{% endmacro %}
 
-{%- macro hw_sensor_label(eid) -%}
+{% macro hw_sensor_label(eid) %}
   {%- set fn = state_attr(eid, 'friendly_name') or '' -%}
   {%- set parts = fn.split(' / ') -%}
   {%- if parts|length > 1 -%}
@@ -176,4 +176,4 @@
   {%- else -%}
     {{ fn }}
   {%- endif -%}
-{%- endmacro -%}
+{% endmacro %}
