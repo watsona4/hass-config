@@ -1,0 +1,222 @@
+{# # File: config/custom_templates/fan_speed.jinja ## #}
+{# Macros for Fan Speed (PC/server/AV/IoT fans): categories, icons, colors, labels, and helpers.
+   Defaults:
+     - Speed input: RPM
+     - Typical range: rpm_min=0, rpm_max=2000
+     - If you pass %/PWM duty, we map it linearly to RPM between [rpm_min, rpm_max]
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ------------------------------------------------------------------
+   Buckets: lower bounds in % of maximum speed
+   0–10%   : Off / Stopped
+   10–25%  : Silent
+   25–40%  : Quiet
+   40–60%  : Moderate
+   60–80%  : High
+   80–95%  : Very High
+   >=95%   : Max / Full
+   ------------------------------------------------------------------ #}
+{% set bps_pct = [0, 10, 25, 40, 60, 80, 95] %}
+
+{% set names = [
+  "Stopped",
+  "Silent",
+  "Quiet",
+  "Moderate",
+  "High",
+  "Very High",
+  "Max"
+] %}
+
+{% set shorts = [
+  "Off",
+  "Silent",
+  "Quiet",
+  "Moder",
+  "High",
+  "V High",
+  "Max"
+] %}
+
+{% set longs = [
+  "Fan: Stopped",
+  "Fan: Silent",
+  "Fan: Quiet",
+  "Fan: Moderate",
+  "Fan: High",
+  "Fan: Very High",
+  "Fan: Maximum Speed"
+] %}
+
+{# Material Design Icons #}
+{% set icons = [
+  "mdi:fan-off",       # Stopped
+  "mdi:fan-speed-1",   # Silent
+  "mdi:fan-speed-1",   # Quiet
+  "mdi:fan-speed-2",   # Moderate
+  "mdi:fan-speed-3",   # High
+  "mdi:fan",           # Very High
+  "mdi:fan-alert"      # Max / near-alarm
+] %}
+
+{% set colors = [
+  "#9ca3af",  # Off (gray)
+  "#10b981",  # Silent (green)
+  "#84cc16",  # Quiet (lime)
+  "#eab308",  # Moderate (amber)
+  "#f59e0b",  # High (orange)
+  "#f97316",  # Very High (deep orange)
+  "#ef4444",  # Max (red)
+  "disabled"
+] %}
+
+{% set descriptions = [
+  "Fan stopped (Zero-RPM mode or stall).",
+  "Very low speed; near inaudible.",
+  "Low speed for quiet operation.",
+  "Balanced cooling vs. noise.",
+  "High speed; clearly audible.",
+  "Very high speed; loud.",
+  "Maximum speed; near thermal limit or manual full."
+] %}
+
+{# -------------------- Unit helpers -------------------- #}
+{# Convert between rpm and percent/duty. Percent is 0..100 mapped to [rpm_min, rpm_max]. #}
+{% macro to_rpm(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set u = (unit|string|lower) -%}
+  {%- set v = value|float -%}
+  {%- set rmin = rpm_min|float -%}
+  {%- set rmax = rpm_max|float -%}
+  {%- if u in ['%','pct','percent','duty','pwm'] -%}
+    {{ rmin + ( (v if v>0 else 0.0) / 100.0 ) * ( (rmax - rmin) if (rmax>rmin) else 1.0 ) }}
+  {%- else -%}
+    {{ v }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro to_pct(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set rpm = to_rpm(value, unit, rpm_min, rpm_max)|float -%}
+  {%- set span = (rpm_max|float - rpm_min|float) -%}
+  {%- if span <= 0 -%}0
+  {%- else -%}
+    {%- set p = ((rpm - (rpm_min|float)) / span) * 100.0 -%}
+    {{ 0 if p < 0 else (100 if p > 100 else p) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# Bars 0..4 from percent (for UI strength glyphs) #}
+{% macro bars(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set p = to_pct(value, unit, rpm_min, rpm_max)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Core level & lookups -------------------- #}
+{% macro level(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {{ level_find(to_pct(value, unit, rpm_min, rpm_max)|float, bps_pct) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ names[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{% macro short(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ shorts[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{% macro long(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ longs[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{% macro icon(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ icons[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{% macro color(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ colors[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{% macro desc(value, unit='rpm', rpm_min=0, rpm_max=2000) %}{{ descriptions[level(value, unit, rpm_min, rpm_max)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Labels -------------------- #}
+{# Example: "Quiet • 34% • 820 rpm" (assuming 0–2400 rpm range) #}
+{% macro label(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set rpm = to_rpm(value, unit, rpm_min, rpm_max)|float -%}
+  {%- set pct = to_pct(value, unit, rpm_min, rpm_max)|float -%}
+  {{ name(rpm, 'rpm', rpm_min, rpm_max) }} • {{ pct|round(0) }}% • {{ rpm|round(0) }} rpm
+{%- endmacro %}
+
+{% macro chip(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set rpm = to_rpm(value, unit, rpm_min, rpm_max)|float -%}
+  {{ short(rpm, 'rpm', rpm_min, rpm_max) }} • {{ rpm|round(0) }} rpm
+{%- endmacro %}
+
+{# -------------------- Health & diagnostics -------------------- #}
+{# Considered "stopped" if RPM <= stall_rpm. Many 120mm PC fans stall ~200–350 rpm. #}
+{% macro is_stopped(value, unit='rpm', stall_rpm=200, rpm_min=0, rpm_max=2000) -%}
+  {{ to_rpm(value, unit, rpm_min, rpm_max)|float <= (stall_rpm|float) }}
+{%- endmacro %}
+
+{% macro is_high(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {{ level(value, unit, rpm_min, rpm_max)|int >= 5 }}
+{%- endmacro %}
+
+{% macro is_maxing(value, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {{ level(value, unit, rpm_min, rpm_max)|int >= 7 }}
+{%- endmacro %}
+
+{# Expected rpm for a given duty % (linear). Flag slip if measured rpm << expected. #}
+{% macro expected_rpm(duty_pct, rpm_min=0, rpm_max=2000) -%}
+  {{ to_rpm(duty_pct, '%', rpm_min, rpm_max) }}
+{%- endmacro %}
+
+{% macro slip_detected(measured, duty_pct, rpm_min=0, rpm_max=2000, tolerance=0.8) -%}
+  {%- set exp = expected_rpm(duty_pct, rpm_min, rpm_max)|float -%}
+  {%- set rpm = to_rpm(measured, 'rpm', rpm_min, rpm_max)|float -%}
+  {{ rpm < (exp * (tolerance|float)) }}
+{%- endmacro %}
+
+{% macro slip_label(measured, duty_pct, rpm_min=0, rpm_max=2000, tolerance=0.8) -%}
+  {%- if slip_detected(measured, duty_pct, rpm_min, rpm_max, tolerance) -%}
+    Suspected tach/fan slip: {{ measured|round(0) }} rpm vs expected {{ expected_rpm(duty_pct, rpm_min, rpm_max)|round(0) }} rpm
+  {%- else -%}
+    RPM within expected range for duty.
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Trend helpers -------------------- #}
+{% macro delta_rpm(curr, prev, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {{ to_rpm(curr, unit, rpm_min, rpm_max)|float - to_rpm(prev, unit, rpm_min, rpm_max)|float }}
+{%- endmacro %}
+
+{% macro trend_label(curr, prev, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set d = delta_rpm(curr, prev, unit, rpm_min, rpm_max)|float -%}
+  {%- if d > 25 -%}
+    Spinning up (+{{ d|round(0) }} rpm)
+  {%- elif d < -25 -%}
+    Spinning down ({{ d|round(0) }} rpm)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Multi-fan helpers (aggregate) -------------------- #}
+{# Pass arrays (lists) of rpm values; returns average in rpm and % #}
+{% macro avg_rpm(rpms, rpm_min=0, rpm_max=2000) -%}
+  {%- set n = rpms|count -%}
+  {%- if n == 0 -%}0
+  {%- else -%}
+    {%- set total = 0 -%}
+    {%- for r in rpms -%}{% set total = total + (r|float) %}{%- endfor -%}
+    {{ total / n }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro avg_pct(values, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set n = values|count -%}
+  {%- if n == 0 -%}0
+  {%- else -%}
+    {%- set total = 0 -%}
+    {%- for v in values -%}{% set total = total + (to_pct(v, unit, rpm_min, rpm_max)|float) %}{%- endfor -%}
+    {{ total / n }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro group_label(values, unit='rpm', rpm_min=0, rpm_max=2000) -%}
+  {%- set p = avg_pct(values, unit, rpm_min, rpm_max)|float -%}
+  {%- set r = avg_rpm(values, rpm_min, rpm_max)|float -%}
+  {{ names[level_find(p, bps_pct)|int - 1] }} • {{ p|round(0) }}% • ~{{ r|round(0) }} rpm (avg)
+{%- endmacro %}

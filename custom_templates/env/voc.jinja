@@ -1,0 +1,105 @@
+{# # File: config/custom_templates/voc.jinja ## #}
+{# Macros for Total Volatile Organic Compounds (TVOC) categories, icons, colors, and guidance #}
+{# Default input unit: ppb. You may also pass 'ugm3' or 'mgm3' and we will convert using a toluene-equivalent approximation. #}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ------------------------------------------------------------------
+   Breakpoints for TVOC in ppb (lower bounds of each band)
+   Based on common indoor-TVOC guidance adapted for ppb:
+   Excellent <65, Good 65–219, Moderate 220–659, Poor 660–2199,
+   Very Poor 2200–5499, Severe 5500–10999, Hazardous >=11000
+   ------------------------------------------------------------------ #}
+{% set bps_ppb = [0, 65, 220, 660, 2200, 5500, 11000] %}
+
+{# Names for categories #}
+{% set names = ["Excellent", "Good", "Moderate", "Poor", "Very Poor", "Severe", "Hazardous"] %}
+
+{# Short names for compact UIs #}
+{% set shorts = ["Excel", "Good", "Moder", "Poor", "V Poor", "Severe", "Hazard"] %}
+
+{# Long names for descriptive titles #}
+{% set longs = [
+    "Excellent TVOC",
+    "Good TVOC",
+    "Moderate TVOC",
+    "Poor TVOC",
+    "Very Poor TVOC",
+    "Severe TVOC",
+    "Hazardous TVOC"
+] %}
+
+{# Icons for VOC categories #}
+{% set icons = ['mdi:leaf', 'mdi:check-circle-outline', 'mdi:air-filter', 'mdi:alert', 'mdi:alert-octagon-outline', 'mdi:skull-alert-outline', 'mdi:biohazard'] %}
+
+{# Colors from fresh green to warning purple #}
+{% set colors = ['#10b981', '#84cc16', '#eab308', '#f59e0b', '#ef4444', '#b91c1c', '#7c3aed', 'disabled'] %}
+
+{# Descriptions for each level #}
+{% set descriptions = [
+    "Very clean indoor air; no action needed.",
+    "Good air quality; minimal sources present.",
+    "Some VOCs detected; increase ventilation if possible.",
+    "Elevated VOCs; ventilate and identify sources such as cleaners, paints, or off-gassing materials.",
+    "High VOCs; ventilate strongly, consider source removal and filtration with activated carbon.",
+    "Very high VOCs; limit exposure, isolate sources, and use aggressive ventilation and filtration.",
+    "Dangerously high VOCs; evacuate the space, eliminate sources, and ensure effective ventilation."
+] %}
+
+{# -------------------- Unit helper (optional) -------------------- #}
+{# Convert VOC between 'ppb', 'ugm3', 'mgm3' using toluene-equivalent approximation at 25°C.
+   ppb ≈ µg/m³ * (24.45 / MW). MW for toluene = 92.14 g/mol.
+   This is an approximation; sensor vendors may use different references. #}
+{% macro convert_voc_value(value, from_unit='ppb', to_unit='ppb') -%}
+    {%- set v = value|float -%}
+    {%- set fu = (from_unit|string|lower) -%}
+    {%- set tu = (to_unit|string|lower) -%}
+    {%- set MW = 92.14 -%}
+    {%- set MV = 24.45 -%} {# molar volume L/mol at 25°C, 1 atm #}
+
+    {# normalize unit keys #}
+    {%- if fu in ['µg/m³','μg/m³','ug/m3','ugm3'] -%}{% set fu = "ugm3" %}
+    {% endif -%}
+    {%- if fu in ['mg/m³','mg/m3','mgm3'] -%}{% set fu = "mgm3" %}
+    {% endif -%}
+    {%- if tu in ['µg/m³','μg/m³','ug/m3','ugm3'] -%}{% set tu = "ugm3" %}
+    {% endif -%}
+    {%- if tu in ['mg/m³','mg/m3','mgm3'] -%}{% set tu = "mgm3" %}
+    {% endif -%}
+
+    {# convert source to ppb #}
+    {%- if fu == 'ugm3' -%}
+        {%- set ppb = v * MV / MW -%}
+    {%- elif fu == 'mgm3' -%}
+        {%- set ppb = v * 1000 * MV / MW -%}
+    {%- else -%}
+        {%- set ppb = v -%}
+    {%- endif -%}
+
+    {# convert ppb to target #}
+    {%- if tu == 'ugm3' -%}
+        {{ ppb * MW / MV }}
+    {%- elif tu == 'mgm3' -%}
+        {{ (ppb * MW / MV) / 1000 }}
+    {%- else -%}
+        {{ ppb }}
+    {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{# Return category level (1-based) for given TVOC value. Default input unit is ppb. #}
+{% macro level(voc, unit='ppb') -%}
+    {%- set ppb = convert_voc_value(voc, unit, 'ppb')|float -%}
+    {%- set val = 0 if ppb < 0 else (100000 if ppb > 100000 else ppb) -%}
+    {{ level_find(val, bps_ppb) }}
+{%- endmacro %}
+
+{# -------------------- Wrappers for lookups -------------------- #}
+{# djlint:off #}
+{% macro name(voc, unit='ppb') %}{{ names[level(voc, unit)|int - 1] }}{% endmacro %}
+{% macro short(voc, unit='ppb') %}{{ shorts[level(voc, unit)|int - 1] }}{% endmacro %}
+{% macro long(voc, unit='ppb') %}{{ longs[level(voc, unit)|int - 1] }}{% endmacro %}
+{% macro icon(voc, unit='ppb') %}{{ icons[level(voc, unit)|int - 1] }}{% endmacro %}
+{% macro desc(voc, unit='ppb') %}{{ descriptions[level(voc, unit)|int - 1] }}{% endmacro %}
+{% macro color(voc, unit='ppb') %}{{ colors[level(voc, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}

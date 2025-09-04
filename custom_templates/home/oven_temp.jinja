@@ -1,0 +1,25 @@
+{# # File: config/custom_templates/oven_temp.jinja ## #}
+{# Oven temperature vs setpoint: preheat state, error bars, overshoot #}
+
+{% from 'helpers.jinja' import level_find, convert_temp_value %}
+
+{% macro to_f(t, unit='f') -%}{{ convert_temp_value(t, unit, 'f') }}{%- endmacro %}
+
+{# Breakpoints by absolute error |T - setpoint| (°F) #}
+{% set bps_err = [0, 5, 15, 30, 60] %}
+{% set names = ["At Temp","Near","Warming","Far","Way Off"] %}
+{% set icons = ["mdi:check-circle","mdi:progress-check","mdi:progress-clock","mdi:progress-alert","mdi:alert-decagram"] %}
+{% set colors = ["#22c55e","#84cc16","#eab308","#f97316","#ef4444","disabled"] %}
+
+{% macro error_f(curr, setpoint, unit='f') -%}{{ (to_f(curr, unit)|float - to_f(setpoint, unit)|float) }}{%- endmacro %}
+{% macro err_abs(curr, setpoint, unit='f') -%}{{ (error_f(curr, setpoint, unit)|float)|abs }}{%- endmacro %}
+{% macro level(curr, setpoint, unit='f') -%}{{ level_find(err_abs(curr,setpoint,unit), bps_err) }}{%- endmacro %}
+
+{% macro name(curr, setpoint, unit='f') -%}{{ names[level(curr,setpoint,unit)|int-1] }}{%- endmacro %}
+{% macro icon(curr, setpoint, unit='f') -%}{{ icons[level(curr,setpoint,unit)|int-1] }}{%- endmacro %}
+{% macro color(curr, setpoint, unit='f') -%}{{ colors[level(curr,setpoint,unit)|int-1] }}{%- endmacro %}
+
+{% macro label(curr, setpoint, unit='f') -%}
+  {%- set e = error_f(curr, setpoint, unit)|float -%}
+    {{ name(curr,setpoint,unit) }} • {{ (to_f(curr,unit)|round(0)) }}°F (set {{ (to_f(setpoint,unit)|round(0)) }}°F){{ ' • overshoot +' ~ (e|round(0)) ~ '°' if e>5 else '' }}
+    {%- endmacro %}

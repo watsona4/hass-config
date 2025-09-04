@@ -1,0 +1,52 @@
+{# # File: config/custom_templates/cold_storage_th.jinja ## #}
+{# Refrigerator / Freezer / Deep Freezer / Basement temp & humidity #}
+
+{% from 'helpers.jinja' import level_find, convert_temp_value %}
+
+{% macro to_c(t, unit='f') -%}{{ convert_temp_value(t, unit, 'c') }}{%- endmacro %}
+
+{# ---- Temperature breakpoints (°C) per profile ---- #}
+{% set bps_fridge = [ -5, 0, 1, 4, 7, 10 ] %}      {# target ~1–4°C (34–39°F) #}
+{% set bps_freezer = [ -40, -30, -23, -18, -12, -8 ] %} {# target ≤ -18°C (0°F) #}
+{% set bps_deep   = [ -50, -40, -30, -25, -20, -15 ] %} {# colder than standard freezer #}
+{% set bps_basemt = [  0, 10, 15, 22, 27, 32 ] %}   {# comfort ~16–22°C #}
+
+{% set names = ["Too Cold","Cold","Optimal","Warm","Hot","Too Hot"] %}
+{% set icons = ["mdi:snowflake","mdi:thermometer-low","mdi:thermometer-check","mdi:thermometer","mdi:thermometer-high","mdi:fire"] %}
+{% set colors = ["#60a5fa","#3b82f6","#22c55e","#eab308","#f97316","#ef4444","disabled"] %}
+
+{% macro t_level(temp, profile='fridge', unit='f') -%}
+  {%- set T = to_c(temp, unit)|float -%}
+    {%- set p = (profile|string|lower) -%}
+      {%- if p in ['freezer','f'] -%}{{ level_find(T, bps_freezer) }}
+        {%- elif p in ['deep','deep_freezer','deepfreezer'] -%}{{ level_find(T, bps_deep) }}
+          {%- elif p in ['basement','cellar'] -%}{{ level_find(T, bps_basemt) }}
+            {%- else -%}{{ level_find(T, bps_fridge) }}{%- endif -%}
+            {%- endmacro %}
+
+            {% macro t_name(temp, profile='fridge', unit='f') -%}{{ names[t_level(temp, profile, unit)|int-1] }}{%- endmacro %}
+            {% macro t_icon(temp, profile='fridge', unit='f') -%}{{ icons[t_level(temp, profile, unit)|int-1] }}{%- endmacro %}
+            {% macro t_color(temp, profile='fridge', unit='f') -%}{{ colors[t_level(temp, profile, unit)|int-1] }}{%- endmacro %}
+
+            {# ---- Humidity buckets (%) (generic; basement target ~30–50%) ---- #}
+            {% set bps_rh = [0, 30, 40, 50, 60, 70, 80] %}
+            {% set rh_names = ["Very Dry","Dry","Comfort","Humid","Very Humid","Wet","Saturated"] %}
+            {% set rh_icons = ["mdi:water-off","mdi:water-outline","mdi:water-check","mdi:water","mdi:water","mdi:water-alert","mdi:waves"] %}
+            {% set rh_colors= ["#f59e0b","#eab308","#22c55e","#84cc16","#f59e0b","#ef4444","#7c3aed","disabled"] %}
+            {% macro rh_level(rh) -%}{{ level_find((rh|float), bps_rh) }}{%- endmacro %}
+            {% macro rh_name(rh) -%}{{ rh_names[rh_level(rh)|int-1] }}{%- endmacro %}
+            {% macro rh_icon(rh) -%}{{ rh_icons[rh_level(rh)|int-1] }}{%- endmacro %}
+            {% macro rh_color(rh) -%}{{ rh_colors[rh_level(rh)|int-1] }}{%- endmacro %}
+
+            {% macro label(temp, rh=None, profile='fridge', unit='f') -%}
+              {{ t_name(temp, profile, unit) }} • {{ (convert_temp_value(temp, unit, 'f')|round(0)) }}°F{{ ' • ' ~ rh_name(rh) ~ ' ' ~ (rh|float)|round(0) ~ '%' if rh is not none else '' }}
+              {%- endmacro %}
+
+              {% macro alarms(temp, rh=None, profile='fridge', unit='f') -%}
+                {%- set L = t_level(temp, profile, unit)|int -%}
+                  {%- set warn = [] -%}
+                    {%- if profile|string|lower in ['fridge'] and L>=4 -%}{% set _ = warn.append('Fridge too warm—check door/gasket & power') %}{% endif -%}
+                      {%- if profile|string|lower in ['freezer','deep','deep_freezer','deepfreezer'] and L>=4 -%}{% set _ = warn.append('Freezer warming—food safety risk') %}{% endif -%}
+                        {%- if profile|string|lower in ['basement','cellar'] and rh is not none and (rh|float) >= 60 -%}{% set _ = warn.append('Basement humidity high—run dehumidifier') %}{% endif -%}
+                          {{ warn|join(' • ') }}
+                          {%- endmacro %}

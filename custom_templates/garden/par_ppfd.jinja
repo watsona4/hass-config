@@ -1,0 +1,287 @@
+{# # File: config/custom_templates/par_ppfd.jinja ## #}
+{# Macros for PAR / PPFD and DLI:
+   - Inputs:
+       • PPFD (default unit: µmol·m⁻²·s⁻¹) or lux (approx. via factor)
+       • Photoperiod (hours) for DLI calculations
+       • Stage: seedling, veg, flower, flower_co2, general
+   - Outputs:
+       • Categories, icons, colors, descriptions
+       • Stage-aware levels & quality %, 0–4 bars
+       • DLI calculators & labels
+       • Inverse-square distance estimator
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ========================= Unit helpers ========================= #}
+{# Normalize to PPFD (µmol·m⁻²·s⁻¹). Supports synonyms and lux via factor.
+   Note: lux→PPFD factor depends on spectrum; default ~0.0185 for white LEDs. #}
+{% macro to_umol(value, unit='umol', lux_factor=0.0185) -%}
+  {%- set v = (value|float if value is not none else 0.0) -%}
+  {%- set u = (unit|string|lower).replace('μ','u') -%}
+  {%- if u in ['umol','umol/m2/s','umol·m-2·s-1','umol m-2 s-1','ppfd'] -%}
+    {{ v }}
+  {%- elif u in ['lux','lx'] -%}
+    {{ v * (lux_factor|float) }}
+  {%- else -%} {# assume already PPFD #}
+    {{ v }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_ppfd(ppfd) -%}
+  {{ (ppfd|float)|round(0) }} µmol·m⁻²·s⁻¹
+{%- endmacro %}
+
+{% macro format_dli(dli) -%}
+  {{ (dli|float)|round(1) }} mol·m⁻²·day⁻¹
+{%- endmacro %}
+
+{# ========================= DLI (Daily Light Integral) ========================= #}
+{# DLI = PPFD * 3600 * hours / 1e6  (mol·m⁻²·day⁻¹) #}
+{% macro dli_from_ppfd(ppfd, hours) -%}
+  {{ (to_umol(ppfd, 'umol')|float) * 3600.0 * (hours|float) / 1_000_000.0 }}
+{%- endmacro %}
+
+{# Required PPFD for a target DLI over given hours #}
+{% macro ppfd_for_dli(target_dli, hours) -%}
+  {{ (target_dli|float) * 1_000_000.0 / (3600.0 * (hours|float if hours else 1.0)) }}
+{%- endmacro %}
+
+{# Required hours for a target DLI at a given PPFD #}
+{% macro hours_for_dli(target_dli, ppfd) -%}
+  {{ (target_dli|float) * 1_000_000.0 / (3600.0 * (to_umol(ppfd, 'umol')|float if ppfd else 1.0)) }}
+{%- endmacro %}
+
+{# ========================= Stages & buckets (PPFD) ========================= #}
+{# Buckets are lower bounds in µmol·m⁻²·s⁻¹ for 6 categories:
+   ["Too Low","Low","Optimal","High","Very High","Excessive"] #}
+{% set bps_general   = [0, 200, 400, 700, 900, 1100] %}
+{% set bps_seedling  = [0,  75, 150, 300, 450,  600] %}
+{% set bps_veg       = [0, 150, 300, 600, 800, 1000] %}
+{% set bps_flower    = [0, 300, 500, 900,1100, 1300] %}
+{% set bps_flower_c  = [0, 300, 600,1000,1200, 1500] %} {# CO₂ enriched #}
+
+{% set names = ["Too Low","Low","Optimal","High","Very High","Excessive"] %}
+{% set shorts = ["TooLow","Low","Opt","High","V High","Excess"] %}
+{% set longs = [
+  "PAR: Too Low (insufficient for growth)",
+  "PAR: Low (suboptimal growth)",
+  "PAR: Optimal (strong photosynthesis)",
+  "PAR: High (watch for light stress)",
+  "PAR: Very High (risk of photoinhibition)",
+  "PAR: Excessive (likely bleaching or stress)"
+] %}
+{% set icons = [
+  "mdi:weather-night",     # Too Low
+  "mdi:white-balance-sunny",
+  "mdi:leaf",
+  "mdi:weather-sunny-alert",
+  "mdi:solar-power",
+  "mdi:alert-decagram"
+] %}
+{% set colors = [
+  "#3b82f6",  # Too Low (blue)
+  "#60a5fa",  # Low
+  "#22c55e",  # Optimal (green)
+  "#eab308",  # High (amber)
+  "#f97316",  # Very High (orange)
+  "#ef4444",  # Excessive (red)
+  "disabled"
+] %}
+{% set descriptions = [
+  "Insufficient light; elongation likely.",
+  "Below target; growth is slow.",
+  "In the sweet spot for this stage.",
+  "Slightly high; monitor leaf temps and stress.",
+  "Very high; consider dimming or raising lights.",
+  "Excessive; reduce intensity or duration immediately."
+] %}
+
+{# DLI target windows by stage (mol·m⁻²·day⁻¹) #}
+{% set dli_seedling = [6, 12] %}
+{% set dli_veg      = [12, 25] %}
+{% set dli_flower   = [20, 40] %}
+{% set dli_general  = [12, 25] %}
+{% set dli_flower_c = [25, 45] %}
+
+{% macro _pick_stage(stage='general') -%}
+  {%- set s = (stage|string|lower) -%}
+  {%- if s in ['seed','seedling','clone','clones'] -%}seedling
+  {%- elif s in ['veg','vegetative'] -%}veg
+  {%- elif s in ['flower','bloom'] -%}flower
+  {%- elif s in ['flower_co2','bloom_co2','flower-co2'] -%}flower_co2
+  {%- else -%}general
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro _bps_for(stage='general') -%}
+  {%- set st = _pick_stage(stage) -%}
+  {%- if st == 'seedling' -%}seedling
+  {%- elif st == 'veg' -%}veg
+  {%- elif st == 'flower' -%}flower
+  {%- elif st == 'flower_co2' -%}flower_c
+  {%- else -%}general
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro _dli_window(stage='general') -%}
+  {%- set st = _pick_stage(stage) -%}
+  {%- if st == 'seedling' -%}[6, 12]
+  {%- elif st == 'veg' -%}[12, 25]
+  {%- elif st == 'flower' -%}[20, 40]
+  {%- elif st == 'flower_co2' -%}[25, 45]
+  {%- else -%}[12, 25]
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Level & lookups ========================= #}
+{% macro level_from_ppfd(ppfd, stage='general') -%}
+  {%- set p = to_umol(ppfd, 'umol')|float -%}
+  {%- set which = _bps_for(stage) -%}
+  {%- if which == 'seedling' -%}
+    {{ level_find(p, bps_seedling) }}
+  {%- elif which == 'veg' -%}
+    {{ level_find(p, bps_veg) }}
+  {%- elif which == 'flower' -%}
+    {{ level_find(p, bps_flower) }}
+  {%- elif which == 'flower_c' -%}
+    {{ level_find(p, bps_flower_c) }}
+  {%- else -%}
+    {{ level_find(p, bps_general) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(ppfd, unit='umol', stage='general') %}{{ names[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{% macro short(ppfd, unit='umol', stage='general') %}{{ shorts[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{% macro long(ppfd, unit='umol', stage='general') %}{{ longs[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{% macro icon(ppfd, unit='umol', stage='general') %}{{ icons[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{% macro color(ppfd, unit='umol', stage='general') %}{{ colors[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{% macro desc(ppfd, unit='umol', stage='general') %}{{ descriptions[level_from_ppfd(to_umol(ppfd, unit), stage)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# ========================= Quality & bars ========================= #}
+{# Quality %: 100 inside DLI target window (for given photoperiod), taper to 0 outside. #}
+{% macro quality_pct(ppfd, hours, unit='umol', stage='general', cap_low=0.0, cap_high=60.0) -%}
+  {%- set dli = dli_from_ppfd(to_umol(ppfd, unit), hours)|float -%}
+  {%- set w = _dli_window(stage) -%}
+  {%- set low = (w|string).strip('[]').split(',')[0]|float -%}
+  {%- set high = (w|string).strip('[]').split(',')[1]|float -%}
+  {%- if dli >= low and dli <= high -%}
+    100
+  {%- elif dli < low -%}
+    {%- set q = 100.0 * ( (dli - (cap_low|float)) / ( (low - (cap_low|float)) if (low - (cap_low|float))>0 else 1e-9 ) ) -%}
+    {{ 0 if q < 0 else q }}
+  {%- else -%}
+    {%- set q = 100.0 * ( ((cap_high|float) - dli) / ( ((cap_high|float) - high) if ((cap_high|float) - high)>0 else 1e-9 ) ) -%}
+    {{ 0 if q < 0 else q }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro bars(ppfd, hours, unit='umol', stage='general') -%}
+  {%- set p = quality_pct(ppfd, hours, unit, stage)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Labels & chips ========================= #}
+{% macro label(ppfd, hours=None, unit='umol', stage='general') -%}
+  {%- set p = to_umol(ppfd, unit)|float -%}
+  {%- if hours is not none -%}
+    {%- set dli = dli_from_ppfd(p, hours)|float -%}
+    {{ name(p, 'umol', stage) }} • {{ format_ppfd(p) }} • DLI {{ format_dli(dli) }} ({{ (hours|float)|round(1) }}h)
+  {%- else -%}
+    {{ name(p, 'umol', stage) }} • {{ format_ppfd(p) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro chip(ppfd, unit='umol', stage='general') -%}
+  {%- set p = to_umol(ppfd, unit)|float -%}
+  {{ short(p, 'umol', stage) }} • {{ (p|round(0)) }}µmol
+{%- endmacro %}
+
+{% macro dli_label_from_ppfd(ppfd, hours, unit='umol', stage='general') -%}
+  {%- set p = to_umol(ppfd, unit)|float -%}
+  {%- set d = dli_from_ppfd(p, hours)|float -%}
+  {%- set w = _dli_window(stage) -%}
+  {%- set low = (w|string).strip('[]').split(',')[0]|float -%}
+  {%- set high = (w|string).strip('[]').split(',')[1]|float -%}
+  DLI {{ format_dli(d) }} (target {{ low|round(0) }}–{{ high|round(0) }}) • {{ format_ppfd(p) }} @ {{ (hours|float)|round(1) }}h
+{%- endmacro %}
+
+{% macro dli_target_ppfd_label(target_dli, hours) -%}
+  {%- set needed = ppfd_for_dli(target_dli, hours)|float -%}
+  Target {{ format_dli(target_dli) }} → ~{{ format_ppfd(needed) }} @ {{ (hours|float)|round(1) }}h
+{%- endmacro %}
+
+{% macro dli_target_hours_label(target_dli, ppfd, unit='umol') -%}
+  {%- set p = to_umol(ppfd, unit)|float -%}
+  {%- set h = hours_for_dli(target_dli, p)|float -%}
+  Target {{ format_dli(target_dli) }} → ~{{ h|round(1) }}h @ {{ format_ppfd(p) }}
+{%- endmacro %}
+
+{# ========================= Guidance & booleans ========================= #}
+{% macro is_optimal(ppfd, unit='umol', stage='general') -%}
+  {{ level_from_ppfd(to_umol(ppfd, unit), stage)|int == 3 }}
+{%- endmacro %}
+{% macro is_low(ppfd, unit='umol', stage='general') -%}
+  {{ level_from_ppfd(to_umol(ppfd, unit), stage)|int <= 2 }}
+{%- endmacro %}
+{% macro is_high(ppfd, unit='umol', stage='general') -%}
+  {{ level_from_ppfd(to_umol(ppfd, unit), stage)|int >= 4 }}
+{%- endmacro %}
+{% macro is_excessive(ppfd, unit='umol', stage='general') -%}
+  {{ level_from_ppfd(to_umol(ppfd, unit), stage)|int >= 6 }}
+{%- endmacro %}
+
+{% macro advice(ppfd, hours=16, unit='umol', stage='general') -%}
+  {%- set L = level_from_ppfd(to_umol(ppfd, unit), stage)|int -%}
+  {%- if L <= 2 -%}
+    Increase intensity (lower light or raise dimmer) or extend photoperiod (e.g., {{ (hours|float + 2)|round(0) }}h) to reach target DLI.
+  {%- elif L == 3 -%}
+    Light is in the optimal range—maintain distance and monitor canopy temps.
+  {%- elif L == 4 -%}
+    Slightly high—consider dimming 10–20% or raising fixture a few cm.
+  {%- elif L == 5 -%}
+    Very high—reduce intensity or shorten photoperiod; watch for leaf curl/bleach.
+  {%- else -%}
+    Excessive—immediately reduce intensity/duration and check CO₂ & nutrients.
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Distance estimator ========================= #}
+{# Inverse-square approximation: PPFD₂ ≈ PPFD₁ * (d₁ / d₂)² #}
+{% macro ppfd_at_distance(ppfd_now, dist_now_cm, dist_new_cm, unit='umol') -%}
+  {%- set p = to_umol(ppfd_now, unit)|float -%}
+  {%- set d1 = (dist_now_cm|float if dist_now_cm else 1.0) -%}
+  {%- set d2 = (dist_new_cm|float if dist_new_cm else 1.0) -%}
+  {{ p * (d1 / (d2 if d2>0 else 1.0))**2 }}
+{%- endmacro %}
+
+{% macro distance_for_target_ppfd(ppfd_now, dist_now_cm, target_ppfd, unit='umol') -%}
+  {%- set p = to_umol(ppfd_now, unit)|float -%}
+  {%- set t = to_umol(target_ppfd, 'umol')|float -%}
+  {%- set d1 = (dist_now_cm|float if dist_now_cm else 1.0) -%}
+  {{ d1 * (p / (t if t>0 else 1.0))**0.5 }}
+{%- endmacro %}
+
+{# ========================= Aggregates ========================= #}
+{% macro avg_ppfd(values, unit='umol') -%}
+  {%- set n = values|count -%}
+  {%- if n == 0 -%}0
+  {%- else -%}
+    {%- set total = 0 -%}
+    {%- for v in values -%}{% set total = total + (to_umol(v, unit)|float) %}{%- endfor -%}
+    {{ total / n }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro canopy_label(values, hours, unit='umol', stage='general') -%}
+  {%- set avg = avg_ppfd(values, unit)|float -%}
+  {%- set dli = dli_from_ppfd(avg, hours)|float -%}
+  {{ 'Canopy • ' ~ format_ppfd(avg) ~ ' • DLI ' ~ (format_dli(dli)) ~ ' (' ~ (hours|float)|round(1) ~ 'h) • ' ~ name(avg, 'umol', stage) }}
+{%- endmacro %}

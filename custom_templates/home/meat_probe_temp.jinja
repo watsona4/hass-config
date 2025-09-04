@@ -1,0 +1,40 @@
+{# # File: config/custom_templates/meat_probe_temp.jinja ## #}
+{# Meat probe temps with target/doneness by cut #}
+
+{% from 'helpers.jinja' import convert_temp_value %}
+
+{% macro to_f(t, unit='f') -%}{{ convert_temp_value(t, unit, 'f') }}{%- endmacro %}
+
+{# Targets (°F) #}
+{% set targets = {
+      'chicken': 165,
+        'turkey': 165,
+          'pork': 145,
+            'beef_steak_rare': 125,
+              'beef_steak_med': 135,
+                'beef_steak_well': 155,
+                  'brisket': 203,
+                    'pork_butt': 203,
+                      'salmon': 125
+} %}
+
+{% macro target_f(cut='pork', doneness='') -%}
+  {%- set key = (cut|string|lower) ~ ( '_' ~ (doneness|string|lower) if doneness else '' ) -%}
+    {{ targets.get(key, targets.get(cut|string|lower, 145)) }}
+    {%- endmacro %}
+
+    {% macro delta_to_target(curr, cut='pork', doneness='', unit='f') -%}
+      {{ target_f(cut, doneness)|float - to_f(curr, unit)|float }}
+      {%- endmacro %}
+
+      {% macro progress_pct(curr, cut='pork', doneness='', unit='f', start_assumed_f=40) -%}
+        {%- set C = to_f(curr, unit)|float -%}
+          {%- set T = target_f(cut, doneness)|float -%}
+            {{ 0 if C <= start_assumed_f else (100 if C>=T else ( (C - start_assumed_f) / (T - start_assumed_f) * 100.0 )) }}
+            {%- endmacro %}
+
+            {% macro label(curr, cut='pork', doneness='', unit='f') -%}
+              {%- set tgt = target_f(cut, doneness)|float -%}
+                {{ (to_f(curr,unit)|round(0)) }}°F / {{ tgt|round(0) }}°F {{ '(' ~ (100.0*progress_pct(curr,cut,doneness,unit)/100.0)|round(0) ~ '%)' }}
+                {%- endmacro %}
+}}

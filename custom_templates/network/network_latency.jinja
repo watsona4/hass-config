@@ -1,0 +1,275 @@
+{# # File: config/custom_templates/network_latency.jinja ## #}
+{# Macros for Network Latency, Jitter, Packet Loss, and Composite Quality.
+   Defaults:
+     - Latency unit: milliseconds ('ms'). Supported: 'ms', 's', 'us'.
+     - Jitter unit: milliseconds ('ms').
+     - Packet loss unit: percent ('pct' or '%').
+   Provides:
+     - Levels, icons, colors, descriptions
+     - Quality % and bars (0–4)
+     - Labels, chips, trend helpers
+     - Composite “Network Quality” score & VoIP/Gaming fitness checks
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ========================= Unit helpers ========================= #}
+{% macro to_ms(value, unit='ms') -%}
+  {%- set v = value|float -%}
+  {%- set u = (unit|string|lower) -%}
+  {%- if u in ['s','sec','secs','second','seconds'] -%}
+    {{ v * 1000.0 }}
+  {%- elif u in ['us','µs','micro','microseconds'] -%}
+    {{ v / 1000.0 }}
+  {%- else -%}
+    {{ v }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_latency_ms(ms) -%}
+  {%- set t = ms|float -%}
+  {%- if t >= 1000.0 -%}
+    {{ (t/1000.0)|round(2) }} s
+  {%- else -%}
+    {{ t|round(1) }} ms
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_pct(p) -%}
+  {{ (p|float)|round(2) }}%
+{%- endmacro %}
+
+{# ========================= LATENCY ========================= #}
+{# Breakpoints (lower bounds) in milliseconds.
+   Excellent <10, Very Good 10–20, Good 20–40, Fair 40–80,
+   Poor 80–150, Very Poor 150–300, Unusable >=300 #}
+{% set bps_lat_ms = [0, 10, 20, 40, 80, 150, 300] %}
+
+{% set lat_names = ["Excellent", "Very Good", "Good", "Fair", "Poor", "Very Poor", "Unusable"] %}
+{% set lat_shorts = ["Excel", "V Good", "Good", "Fair", "Poor", "V Poor", "Unusable"] %}
+{% set lat_longs  = [
+  "Latency: Excellent",
+  "Latency: Very Good",
+  "Latency: Good",
+  "Latency: Fair",
+  "Latency: Poor",
+  "Latency: Very Poor",
+  "Latency: Unusable"
+] %}
+{% set lat_icons  = [
+  "mdi:speedometer",
+  "mdi:speedometer",
+  "mdi:speedometer-medium",
+  "mdi:speedometer-medium",
+  "mdi:speedometer-slow",
+  "mdi:alert",
+  "mdi:alert-decagram"
+] %}
+{% set lat_colors = [
+  "#10b981",  # Excellent
+  "#22c55e",  # Very Good
+  "#84cc16",  # Good
+  "#eab308",  # Fair
+  "#f59e0b",  # Poor
+  "#ef4444",  # Very Poor
+  "#7c3aed",  # Unusable
+  "disabled"
+] %}
+{% set lat_desc = [
+  "Snappy—great for gaming, VoIP, and remote work.",
+  "Very responsive—good for calls and streaming.",
+  "Good—most apps feel responsive.",
+  "Fair—noticeable delay on interactive apps.",
+  "Poor—video calls and gaming may suffer.",
+  "Very poor—frequent stutter and lag.",
+  "Unusable—connections likely to time out."
+] %}
+
+{% macro latency_level(latency, unit='ms') -%}
+  {%- set ms = to_ms(latency, unit)|float -%}
+  {%- set v = 0 if ms < 0 else (100000 if ms > 100000 else ms) -%}
+  {{ level_find(v, bps_lat_ms) }}
+{%- endmacro %}
+
+{# Map 0..300+ ms → 100..0% quality (linear clamp) #}
+{% macro latency_quality_pct(latency, unit='ms', max_ref_ms=300) -%}
+  {%- set ms = to_ms(latency, unit)|float -%}
+  {%- set M = (max_ref_ms|float if max_ref_ms else 300.0) -%}
+  {%- set q = (1.0 - (ms / M)) * 100.0 -%}
+  {{ 100 if q > 100 else (0 if q < 0 else q) }}
+{%- endmacro %}
+
+{% macro latency_bars(latency, unit='ms') -%}
+  {%- set p = latency_quality_pct(latency, unit)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro latency_name(latency, unit='ms') %}{{ lat_names[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{% macro latency_short(latency, unit='ms') %}{{ lat_shorts[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{% macro latency_long(latency, unit='ms') %}{{ lat_longs[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{% macro latency_icon(latency, unit='ms') %}{{ lat_icons[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{% macro latency_color(latency, unit='ms') %}{{ lat_colors[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{% macro latency_desc_text(latency, unit='ms') %}{{ lat_desc[latency_level(latency, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro latency_label(latency, unit='ms') -%}
+  {%- set ms = to_ms(latency, unit)|float -%}
+  {%- set p = latency_quality_pct(ms, 'ms')|float -%}
+  {{ latency_name(ms, 'ms') }} • {{ format_latency_ms(ms) }} • {{ p|round(0) }}%
+{%- endmacro %}
+
+{# ========================= JITTER (one-way or RTT variation) ========================= #}
+{# Breakpoints (lower bounds) in ms. #}
+{% set bps_jit_ms = [0, 2, 5, 10, 20, 30, 50] %}
+{% set jit_names = ["Excellent","Very Good","Good","Fair","Poor","Very Poor","Unusable"] %}
+{% set jit_icons = ["mdi:chart-bell-curve","mdi:chart-bell-curve","mdi:chart-bell-curve",
+                    "mdi:chart-bell-curve","mdi:alert","mdi:alert","mdi:alert-decagram"] %}
+{% set jit_colors = lat_colors %}
+{% set jit_desc = [
+  "Very stable timing.",
+  "Stable timing.",
+  "Good timing.",
+  "Some variation.",
+  "Noticeable stutter in real-time apps.",
+  "Severe variation; calls/gaming suffer.",
+  "Unusable for real-time traffic."
+] %}
+
+{% macro jitter_level(jitter, unit='ms') -%}
+  {{ level_find(to_ms(jitter, unit)|float, bps_jit_ms) }}
+{%- endmacro %}
+
+{% macro jitter_quality_pct(jitter, unit='ms', max_ref_ms=50) -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  {%- set M = (max_ref_ms|float if max_ref_ms else 50.0) -%}
+  {%- set q = (1.0 - (ms / M)) * 100.0 -%}
+  {{ 100 if q > 100 else (0 if q < 0 else q) }}
+{%- endmacro %}
+
+{% macro jitter_label(jitter, unit='ms') -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  {{ jit_names[jitter_level(ms, 'ms')|int - 1] }} • {{ format_latency_ms(ms) }}
+{%- endmacro %}
+
+{# ========================= PACKET LOSS ========================= #}
+{# Breakpoints (lower bounds) in percent loss. #}
+{% set bps_loss_pct = [0, 0.1, 0.5, 1, 2, 5, 10] %}
+{% set loss_names = ["None","Trace","Low","Moderate","High","Very High","Severe"] %}
+{% set loss_icons = ["mdi:checkbox-marked-circle-outline","mdi:circle-small","mdi:progress-check",
+                     "mdi:progress-alert","mdi:alert","mdi:alert-octagon","mdi:alert-decagram"] %}
+{% set loss_colors = ["#10b981","#84cc16","#eab308","#f59e0b","#ef4444","#dc2626","#7c3aed","disabled"] %}
+{% set loss_desc = [
+  "No loss detected.",
+  "Trace loss—usually unnoticeable.",
+  "Low loss—minor impact.",
+  "Moderate loss—calls may clip.",
+  "High loss—visible artifacts & retries.",
+  "Very high loss—poor connectivity.",
+  "Severe loss—connections fail."
+] %}
+
+{% macro loss_level(loss_pct) -%}
+  {{ level_find((loss_pct|float), bps_loss_pct) }}
+{%- endmacro %}
+
+{% macro loss_quality_pct(loss_pct, max_ref_pct=10) -%}
+  {%- set p = (loss_pct|float) -%}
+  {%- set M = (max_ref_pct|float if max_ref_pct else 10.0) -%}
+  {%- set q = (1.0 - (p / M)) * 100.0 -%}
+  {{ 100 if q > 100 else (0 if q < 0 else q) }}
+{%- endmacro %}
+
+{% macro loss_label(loss_pct) -%}
+  {{ loss_names[loss_level(loss_pct)|int - 1] }} • {{ format_pct(loss_pct) }} loss
+{%- endmacro %}
+
+{# ========================= Composite Network Quality ========================= #}
+{# Weighted score (0..100): latency 60%, jitter 25%, loss 15% (weights tweakable). #}
+{% macro quality_score(latency, jitter=None, loss_pct=None, unit_lat='ms', unit_jit='ms',
+                       w_lat=0.60, w_jit=0.25, w_loss=0.15) -%}
+  {%- set ql = latency_quality_pct(latency, unit_lat)|float -%}
+  {%- set qj = (jitter_quality_pct(jitter, unit_jit)|float) if jitter is not none else ql -%}
+  {%- set qp = (loss_quality_pct(loss_pct)|float) if loss_pct is not none else ql -%}
+  {{ (w_lat|float)*ql + (w_jit|float)*qj + (w_loss|float)*qp }}
+{%- endmacro %}
+
+{# Quality buckets for score % (lower bounds): 0..100 bad→great #}
+{% set bps_qpct = [0, 20, 40, 60, 75, 85, 95] %}
+{% set q_names = ["Unusable","Very Poor","Poor","Fair","Good","Very Good","Excellent"] %}
+{% set q_icons = ["mdi:alert-decagram","mdi:alert","mdi:alert","mdi:checkbox-blank-circle-outline","mdi:check-circle-outline","mdi:check-circle","mdi:check-decagram"] %}
+{% set q_colors = ["#7c3aed","#ef4444","#f97316","#eab308","#84cc16","#22c55e","#10b981","disabled"] %}
+
+{% macro quality_level(score_pct) -%}
+  {{ level_find((score_pct|float), bps_qpct) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro quality_name(score_pct) %}{{ q_names[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{% macro quality_icon(score_pct) %}{{ q_icons[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{% macro quality_color(score_pct) %}{{ q_colors[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro quality_label(latency, jitter=None, loss_pct=None, unit_lat='ms', unit_jit='ms') -%}
+  {%- set s = quality_score(latency, jitter, loss_pct, unit_lat, unit_jit)|float -%}
+  {%- set l_ms = to_ms(latency, unit_lat)|float -%}
+  {%- set j_ms = (to_ms(jitter, unit_jit)|float) if jitter is not none else none -%}
+  {{ quality_name(s) }} • {{ s|round(0) }}% • {{ format_latency_ms(l_ms) }}{{ ' • jitter ' ~ format_latency_ms(j_ms) if j_ms is not none else '' }}{{ ' • loss ' ~ format_pct(loss_pct) if loss_pct is not none else '' }}
+{%- endmacro %}
+
+{# ========================= Fitness checks ========================= #}
+{% macro ok_for_voip(latency, jitter=None, loss_pct=None, unit_lat='ms', unit_jit='ms') -%}
+  {%- set l = to_ms(latency, unit_lat)|float -%}
+  {%- set j = (to_ms(jitter, unit_jit)|float) if jitter is not none else 0.0 -%}
+  {%- set p = (loss_pct|float if loss_pct is not none else 0.0) -%}
+  {{ (l <= 150.0) and (j <= 30.0) and (p < 1.0) }}
+{%- endmacro %}
+
+{% macro ok_for_gaming(latency, jitter=None, loss_pct=None, unit_lat='ms', unit_jit='ms') -%}
+  {%- set l = to_ms(latency, unit_lat)|float -%}
+  {%- set j = (to_ms(jitter, unit_jit)|float) if jitter is not none else 0.0 -%}
+  {%- set p = (loss_pct|float if loss_pct is not none else 0.0) -%}
+  {{ (l <= 80.0) and (j <= 20.0) and (p < 0.5) }}
+{%- endmacro %}
+
+{% macro ok_for_streaming(latency, loss_pct=None, unit_lat='ms') -%}
+  {%- set l = to_ms(latency, unit_lat)|float -%}
+  {%- set p = (loss_pct|float if loss_pct is not none else 0.0) -%}
+  {{ (l <= 200.0) and (p < 1.0) }}
+{%- endmacro %}
+
+{# ========================= Trends ========================= #}
+{% macro delta_ms(curr_latency, prev_latency, unit='ms') -%}
+  {{ to_ms(curr_latency, unit)|float - to_ms(prev_latency, unit)|float }}
+{%- endmacro %}
+
+{% macro trend_label(curr_latency, prev_latency, unit='ms') -%}
+  {%- set d = delta_ms(curr_latency, prev_latency, unit)|float -%}
+  {%- if d < -5 -%}
+    Improving ({{ d|round(1) }} ms)
+  {%- elif d > 5 -%}
+    Worsening (+{{ d|round(1) }} ms)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Convenience chips ========================= #}
+{% macro latency_chip(latency, unit='ms') -%}
+  {%- set ms = to_ms(latency, unit)|float -%}
+  {{ latency_short(ms, 'ms') }} • {{ format_latency_ms(ms) }}
+{%- endmacro %}
+
+{% macro jitter_chip(jitter, unit='ms') -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  Jitter • {{ jit_names[jitter_level(ms, 'ms')|int - 1] }} • {{ format_latency_ms(ms) }}
+{%- endmacro %}
+
+{% macro loss_chip(loss_pct) -%}
+  Loss • {{ loss_names[loss_level(loss_pct)|int - 1] }} • {{ format_pct(loss_pct) }}
+{%- endmacro %}

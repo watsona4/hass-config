@@ -1,0 +1,185 @@
+{# # File: config/custom_templates/wind_speed.jinja ## #}
+{# Macros for Wind Speed categories using the Beaufort scale, with names, icons, colors, and guidance #}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ------------------------------------------------------------------
+   Breakpoints for Beaufort scale by wind speed.
+   Units: miles per hour (mph), lower bounds of each band.
+   B0..B12 -> 13 bands total
+   ------------------------------------------------------------------ #}
+{% set bps_mph = [0, 1, 4, 8, 13, 19, 25, 32, 39, 47, 55, 64, 73] %}
+
+{# Names for categories (Beaufort) #}
+{% set names = [
+  "Calm",            # B0
+  "Light Air",       # B1
+  "Light Breeze",    # B2
+  "Gentle Breeze",   # B3
+  "Moderate Breeze", # B4
+  "Fresh Breeze",    # B5
+  "Strong Breeze",   # B6
+  "Near Gale",       # B7
+  "Gale",            # B8
+  "Strong Gale",     # B9
+  "Storm",           # B10
+  "Violent Storm",   # B11
+  "Hurricane"        # B12
+] %}
+
+{# Short names for compact UIs #}
+{% set shorts = [
+  "Calm",
+  "L Air",
+  "L Breeze",
+  "Gent Breeze",
+  "Mod Breeze",
+  "Fresh",
+  "Strong",
+  "Near Gale",
+  "Gale",
+  "Str Gale",
+  "Storm",
+  "Violent",
+  "Hurricane"
+] %}
+
+{# Long names for descriptive titles #}
+{% set longs = [
+  "Beaufort 0: Calm",
+  "Beaufort 1: Light Air",
+  "Beaufort 2: Light Breeze",
+  "Beaufort 3: Gentle Breeze",
+  "Beaufort 4: Moderate Breeze",
+  "Beaufort 5: Fresh Breeze",
+  "Beaufort 6: Strong Breeze",
+  "Beaufort 7: Near Gale",
+  "Beaufort 8: Gale",
+  "Beaufort 9: Strong Gale",
+  "Beaufort 10: Storm",
+  "Beaufort 11: Violent Storm",
+  "Beaufort 12: Hurricane"
+] %}
+
+{# Icons for wind categories #}
+{% set icons = [
+  "mdi:weather-windy",         # Calm (placeholder icon)
+  "mdi:flag-variant",          # Light Air
+  "mdi:flag-variant",          # Light Breeze
+  "mdi:windsock",              # Gentle Breeze
+  "mdi:windsock",              # Moderate Breeze
+  "mdi:weather-windy",         # Fresh Breeze
+  "mdi:weather-windy-variant", # Strong Breeze
+  "mdi:weather-windy-variant", # Near Gale
+  "mdi:weather-windy-variant", # Gale
+  "mdi:weather-windy-variant", # Strong Gale
+  "mdi:weather-windy-variant", # Storm
+  "mdi:tornado",               # Violent Storm
+  "mdi:weather-hurricane"      # Hurricane
+] %}
+
+{# Colors across calm->hurricane (green -> yellow -> orange -> red -> purple) #}
+{% set colors = [
+  "#10b981",  # Calm
+  "#22c55e",  # Light Air
+  "#84cc16",  # Light Breeze
+  "#a3e635",  # Gentle Breeze
+  "#facc15",  # Moderate Breeze
+  "#f59e0b",  # Fresh Breeze
+  "#f97316",  # Strong Breeze
+  "#fb923c",  # Near Gale
+  "#ef4444",  # Gale
+  "#dc2626",  # Strong Gale
+  "#b91c1c",  # Storm
+  "#7c3aed",  # Violent Storm
+  "#581c87",  # Hurricane
+  "disabled"
+] %}
+
+{# Descriptions for each level #}
+{% set descriptions = [
+  "Smoke rises vertically; water like a mirror.",
+  "Ripples on water; wind direction shown by smoke drift.",
+  "Leaves rustle; vanes begin to move.",
+  "Leaves and small twigs constantly moving; light flags extend.",
+  "Small branches sway; dust and loose paper raised.",
+  "Small trees in leaf sway; wavelets with many whitecaps.",
+  "Large branches in motion; whistling in wires.",
+  "Whole trees in motion; walking against wind is difficult.",
+  "Twigs break off trees; progress on foot is seriously impeded.",
+  "Slight structural damage occurs; trees may be uprooted.",
+  "Trees uprooted; considerable structural damage.",
+  "Widespread damage; very rare on land.",
+  "Devastating damage; seek shelter immediately."
+] %}
+
+{# -------------------- Speed conversion helper -------------------- #}
+{# Convert wind speed between: mph, kph (km/h), mps (m/s), kt (knots)
+   Default input/output unit is mph. #}
+{% macro convert_speed_value(value, from_unit='mph', to_unit='mph') -%}
+  {%- set v = value|float -%}
+  {%- set fu = (from_unit|string|lower) -%}
+  {%- set tu = (to_unit|string|lower) -%}
+
+  {%- if fu in ['km/h','kmh','kph'] -%}{% set fu = 'kph' %}{% endif -%}
+  {%- if fu in ['m/s','ms','mps','meter_per_second','metre_per_second'] -%}{% set fu = 'mps' %}{% endif -%}
+  {%- if fu in ['knot','knots','kt','kts'] -%}{% set fu = 'kt' %}{% endif -%}
+  {%- if fu in ['mph','mi/h','mihr'] -%}{% set fu = 'mph' %}{% endif -%}
+
+  {%- if tu in ['km/h','kmh','kph'] -%}{% set tu = 'kph' %}{% endif -%}
+  {%- if tu in ['m/s','ms','mps','meter_per_second','metre_per_second'] -%}{% set tu = 'mps' %}{% endif -%}
+  {%- if tu in ['knot','knots','kt','kts'] -%}{% set tu = 'kt' %}{% endif -%}
+  {%- if tu in ['mph','mi/h','mihr'] -%}{% set tu = 'mph' %}{% endif -%}
+
+  {# to mph #}
+  {%- if fu == 'kph' -%}
+    {%- set mph = v / 1.609344 -%}
+  {%- elif fu == 'mps' -%}
+    {%- set mph = v * 2.2369362921 -%}
+  {%- elif fu == 'kt' -%}
+    {%- set mph = v * 1.150779448 -%}
+  {%- else -%}
+    {%- set mph = v -%}
+  {%- endif -%}
+
+  {# from mph #}
+  {%- if tu == 'kph' -%}
+    {{ mph * 1.609344 }}
+  {%- elif tu == 'mps' -%}
+    {{ mph / 2.2369362921 }}
+  {%- elif tu == 'kt' -%}
+    {{ mph / 1.150779448 }}
+  {%- else -%}
+    {{ mph }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{# Return Beaufort level (1-based index for names arrays) for given speed. Assume mph input by default. #}
+{% macro level(speed, unit='mph') -%}
+  {%- set mph = convert_speed_value(speed, unit, 'mph')|float -%}
+  {%- set v = 0 if mph < 0 else (250 if mph > 250 else mph) -%}
+  {{ level_find(v, bps_mph) }}
+{%- endmacro %}
+
+{# Return Beaufort number 0..12 (B0..B12) #}
+{% macro beaufort(speed, unit='mph') -%}
+  {{ (level(speed, unit)|int - 1) }}
+{%- endmacro %}
+
+{# -------------------- Wrappers for standard lookups -------------------- #}
+{# djlint:off #}
+{% macro name(speed, unit='mph') %}{{ names[level(speed, unit)|int - 1] }}{% endmacro %}
+{% macro short(speed, unit='mph') %}{{ shorts[level(speed, unit)|int - 1] }}{% endmacro %}
+{% macro long(speed, unit='mph') %}{{ longs[level(speed, unit)|int - 1] }}{% endmacro %}
+{% macro icon(speed, unit='mph') %}{{ icons[level(speed, unit)|int - 1] }}{% endmacro %}
+{% macro desc(speed, unit='mph') %}{{ descriptions[level(speed, unit)|int - 1] }}{% endmacro %}
+{% macro color(speed, unit='mph') %}{{ colors[level(speed, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Convenience formatters -------------------- #}
+{# Label like "B7 Near Gale" #}
+{% macro label(speed, unit='mph') -%}
+  {%- set b = beaufort(speed, unit)|int -%}
+  B{{ b }} {{ names[b] }}
+{%- endmacro %}

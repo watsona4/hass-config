@@ -1,0 +1,225 @@
+{# # File: config/custom_templates/battery_soc.jinja ## #}
+{# Macros for Battery State of Charge (SoC): categories, icons, colors, labels, and runtime helpers.
+   Defaults:
+     - SoC input: percent 0..100
+     - Capacity unit: Wh (supports kWh too)
+     - Power unit: W (supports kW too)
+     - Positive power => discharging (net load on battery); negative => charging
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# -------------------- SoC Categories -------------------- #}
+{# Breakpoints by % filled (lower bounds) #}
+{% set bps_soc = [0, 5, 20, 40, 60, 80, 95] %}
+
+{% set names = ["Empty", "Critical", "Low", "Mid", "High", "Very High", "Full"] %}
+{% set shorts = ["Empty", "Crit", "Low", "Mid", "High", "V High", "Full"] %}
+{% set longs = [
+  "Battery: Empty",
+  "Battery: Critical",
+  "Battery: Low",
+  "Battery: Mid",
+  "Battery: High",
+  "Battery: Very High",
+  "Battery: Full"
+] %}
+
+{# Colors from red → amber → green #}
+{% set colors = [
+  "#dc2626",  # Empty
+  "#f97316",  # Critical
+  "#f59e0b",  # Low
+  "#eab308",  # Mid
+  "#84cc16",  # High
+  "#22c55e",  # Very High
+  "#10b981",  # Full
+  "disabled"
+] %}
+
+{# Descriptions #}
+{% set descriptions = [
+  "0% SoC — shutdown imminent.",
+  "Very low charge — charge immediately.",
+  "Low charge — consider charging soon.",
+  "Around halfway.",
+  "Comfortable level.",
+  "Plenty of charge available.",
+  "Fully charged."
+] %}
+
+{# -------------------- Power/Energy helpers -------------------- #}
+{% macro convert_power_value(value, from_unit='W', to_unit='W') -%}
+  {%- set v = value|float -%}
+  {%- set fu = (from_unit|string|lower) -%}
+  {%- set tu = (to_unit|string|lower) -%}
+  {%- if fu in ['kw','kilowatt','kilowatts'] -%}{% set fu = 'kw' %}{% endif -%}
+  {%- if fu in ['w','watt','watts'] -%}{% set fu = 'w' %}{% endif -%}
+  {%- if tu in ['kw','kilowatt','kilowatts'] -%}{% set tu = 'kw' %}{% endif -%}
+  {%- if tu in ['w','watt','watts'] -%}{% set tu = 'w' %}{% endif -%}
+  {%- if fu == 'kw' -%}{% set w = v * 1000.0 %}{% else %}{% set w = v %}{% endif -%}
+  {%- if tu == 'kw' -%}{{ w / 1000.0 }}{% else %}{{ w }}{% endif -%}
+{%- endmacro %}
+
+{% macro convert_energy_value(value, from_unit='Wh', to_unit='Wh') -%}
+  {%- set v = value|float -%}
+  {%- set fu = (from_unit|string|lower) -%}
+  {%- set tu = (to_unit|string|lower) -%}
+  {%- if fu in ['kwh','kilowatt-hour','kilowatt-hours'] -%}{% set fu = 'kwh' %}{% endif -%}
+  {%- if fu in ['wh','watt-hour','watt-hours'] -%}{% set fu = 'wh' %}{% endif -%}
+  {%- if tu in ['kwh','kilowatt-hour','kilowatt-hours'] -%}{% set tu = 'kwh' %}{% endif -%}
+  {%- if tu in ['wh','watt-hour','watt-hours'] -%}{% set tu = 'wh' %}{% endif -%}
+  {%- if fu == 'kwh' -%}{% set wh = v * 1000.0 %}{% else %}{% set wh = v %}{% endif -%}
+  {%- if tu == 'kwh' -%}{{ wh / 1000.0 }}{% else %}{{ wh }}{% endif -%}
+{%- endmacro %}
+
+{# Ah <-> Wh using pack nominal voltage #}
+{% macro wh_from_ah(ah, nominal_volts=12.8) -%}
+  {{ (ah|float) * (nominal_volts|float) }}
+{%- endmacro %}
+{% macro ah_from_wh(wh, nominal_volts=12.8) -%}
+  {{ (wh|float) / (nominal_volts|float if nominal_volts else 12.8) }}
+{%- endmacro %}
+
+{# -------------------- Core categorization -------------------- #}
+{% macro level(pct) -%}
+  {%- set p = 0 if (pct|float) < 0 else (100 if (pct|float) > 100 else pct|float) -%}
+  {{ level_find(p, bps_soc) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(pct) %}{{ names[level(pct)|int - 1] }}{% endmacro %}
+{% macro short(pct) %}{{ shorts[level(pct)|int - 1] }}{% endmacro %}
+{% macro long(pct) %}{{ longs[level(pct)|int - 1] }}{% endmacro %}
+{% macro color(pct) %}{{ colors[level(pct)|int - 1] }}{% endmacro %}
+{% macro desc(pct) %}{{ descriptions[level(pct)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Icons (MDI battery set) -------------------- #}
+{# charging: use mdi:battery-charging-XX; discharging/idle: mdi:battery-XX; empty: mdi:battery-alert-variant-outline; full: mdi:battery #}
+{% macro icon(pct, charging=false) -%}
+  {%- set p = (pct|float) -%}
+  {%- set bucket = ( (p // 10) * 10 )|int -%}
+  {%- if p <= 5 -%}
+    mdi:battery-alert-variant-outline
+  {%- elif p >= 95 and (not charging) -%}
+    mdi:battery
+  {%- else -%}
+    {%- set base = 'mdi:battery-charging-' if charging else 'mdi:battery-' -%}
+    {{ base ~ ( (100 if bucket > 100 else (0 if bucket < 0 else bucket)) ) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# Status from net power: >thr = discharging, < -thr = charging, else idle #}
+{% macro status_name(net_power, unit='W', threshold=10) -%}
+  {%- set w = convert_power_value(net_power, unit, 'W')|float -%}
+  {%- set thr = convert_power_value(threshold, unit, 'W')|float -%}
+  {%- if w > thr -%}Discharging
+  {%- elif w < -thr -%}Charging
+  {%- else -%}Idle
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro status_icon(net_power, unit='W', threshold=10) -%}
+  {%- set s = status_name(net_power, unit, threshold) -%}
+  {%- if s == 'Charging' -%}mdi:battery-charging
+  {%- elif s == 'Discharging' -%}mdi:battery-minus
+  {%- else -%}mdi:battery-outline
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Labels -------------------- #}
+{# "High • 72% • 2.9 kWh of 4.0 kWh" #}
+{% macro label_pct(pct, capacity=0, cap_unit='Wh') -%}
+  {%- set cap_wh = convert_energy_value(capacity, cap_unit, 'Wh')|float -%}
+  {%- set cur_wh = (pct|float / 100.0) * cap_wh -%}
+  {%- set cur_kwh = convert_energy_value(cur_wh, 'Wh', 'kWh')|float -%}
+  {%- set cap_kwh = convert_energy_value(cap_wh, 'Wh', 'kWh')|float -%}
+  {{ name(pct) }} • {{ pct|round(0) }}%{{ ' • ' ~ cur_kwh|round(2) ~ ' kWh of ' ~ cap_kwh|round(2) ~ ' kWh' if cap_wh > 0 else '' }}
+{%- endmacro %}
+
+{# Adds flow status and rate: "Charging • 72% • -450 W" (negative for charge) #}
+{% macro label_status(pct, net_power, p_unit='W') -%}
+  {%- set w = convert_power_value(net_power, p_unit, 'W')|float -%}
+  {{ status_name(w, 'W') }} • {{ pct|round(0) }}% • {{ w|round(0) }} W
+{%- endmacro %}
+
+{# -------------------- Runtime / Time-to-full estimates -------------------- #}
+{# Net power convention: positive = discharging, negative = charging.
+   Returns hours (float). If direction doesn't fit (e.g., trying to charge with positive net), returns None-like 0. #}
+{% macro hours_to_empty(pct, capacity, net_power, cap_unit='Wh', p_unit='W', reserve_pct=0) -%}
+  {%- set cap_wh = convert_energy_value(capacity, cap_unit, 'Wh')|float -%}
+  {%- set p = convert_power_value(net_power, p_unit, 'W')|float -%}
+  {%- set usable_wh = ( (pct|float - (reserve_pct|float)) / 100.0 ) * cap_wh -%}
+  {%- if p <= 0 or usable_wh <= 0 -%}0
+  {%- else -%}{{ usable_wh / p }}{%- endif -%}
+{%- endmacro %}
+
+{% macro hours_to_full(pct, capacity, charge_power, cap_unit='Wh', p_unit='W', charge_eff=0.95) -%}
+  {%- set cap_wh = convert_energy_value(capacity, cap_unit, 'Wh')|float -%}
+  {%- set p = convert_power_value(charge_power, p_unit, 'W')|float -%}
+  {%- set needed_wh = ( (100.0 - (pct|float)) / 100.0 ) * cap_wh -%}
+  {%- set eff_p = p * (charge_eff|float if charge_eff else 1.0) -%}
+  {%- if eff_p <= 0 or needed_wh <= 0 -%}0
+  {%- else -%}{{ needed_wh / eff_p }}{%- endif -%}
+{%- endmacro %}
+
+{# Pretty duration formatter (e.g., "2h 15m") #}
+{% macro fmt_duration(hours) -%}
+  {%- set h = (hours|float) -%}
+  {%- if h <= 0 -%}0m
+  {%- else -%}
+    {%- set ih = (h // 1)|int -%}
+    {%- set m = ((h - ih) * 60)|round(0)|int -%}
+    {{ (ih|string ~ 'h ' if ih > 0 else '') ~ (m|string ~ 'm') }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# Combined runtime label depending on sign of net power #}
+{% macro runtime_label(pct, capacity, net_power, cap_unit='Wh', p_unit='W', reserve_pct=0, charge_eff=0.95) -%}
+  {%- set w = convert_power_value(net_power, p_unit, 'W')|float -%}
+  {%- if w > 0 -%}
+    {%- set hrs = hours_to_empty(pct, capacity, w, cap_unit, 'W', reserve_pct)|float -%}
+    {{ '≈ ' ~ fmt_duration(hrs) ~ ' until ' ~ (reserve_pct|round(0)|string) ~ '% reserve' if reserve_pct|float > 0 else '≈ ' ~ fmt_duration(hrs) ~ ' remaining' }}
+  {%- elif w < 0 -%}
+    {%- set hrs = hours_to_full(pct, capacity, -w, cap_unit, 'W', charge_eff)|float -%}
+    ≈ {{ fmt_duration(hrs) }} to full
+  {%- else -%}
+    Idle (no net power)
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Chemistry-aware guidance (optional) -------------------- #}
+{# Simple advice based on chemistry and SoC. chem in ['li-ion','lifepo4','lead-acid'] #}
+{% macro advice(pct, chem='li-ion') -%}
+  {%- set p = pct|float -%}
+  {%- set c = (chem|string|lower) -%}
+  {%- if c in ['lead','lead-acid','sla','agm','flooded'] -%}
+    {%- if p <= 50 -%}Lead-acid below ~50% can shorten life; recharge soon.
+    {%- elif p >= 95 -%}Avoid long float at 100% in heat; maintain ventilation.
+    {%- else -%}Normal range for lead-acid use.
+    {%- endif -%}
+  {%- elif c in ['lifepo4','liofe','lmp'] -%}
+    {%- if p <= 10 -%}LFP near empty—okay occasionally, but avoid deep storage at low SoC.
+    {%- elif p >= 95 -%}For longevity, daily charge to ~80–90% if possible.
+    {%- else -%}Healthy operating range for LiFePO₄.
+    {%- endif -%}
+  {%- else -%} {# generic li-ion NMC/NCA #}
+    {%- if p <= 10 -%}Very low SoC—charge soon to protect lifespan.
+    {%- elif p >= 95 -%}Staying at 100% for long periods ages cells; target 80–90% daily if possible.
+    {%- else -%}Healthy operating range for Li-ion.
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Convenience booleans -------------------- #}
+{% macro is_low(pct) -%}{{ (pct|float) < 20.0 }}{%- endmacro %}
+{% macro is_critical(pct) -%}{{ (pct|float) <= 5.0 }}{%- endmacro %}
+{% macro should_charge(pct, chem='li-ion') -%}
+  {%- set p = pct|float -%}
+  {%- if chem|string|lower in ['lead','lead-acid','sla','agm','flooded'] -%}
+    {{ p < 50.0 }}
+  {%- else -%}
+    {{ p < 20.0 }}
+  {%- endif -%}
+{%- endmacro %}

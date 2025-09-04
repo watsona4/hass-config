@@ -1,0 +1,286 @@
+{# # File: config/custom_templates/packet_loss_jitter.jinja ## #}
+{# Macros for Packet Loss & Jitter:
+   - Units:
+       * Jitter: ms by default (supports 'ms', 's', 'us')
+       * Loss: percent (0..100)
+   - Provides: levels, names, icons, colors, descriptions
+               quality % and 0–4 bars
+               labels, chips, trends, fitness checks, advice
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ========================= Unit & format helpers ========================= #}
+{% macro to_ms(value, unit='ms') -%}
+  {%- set v = value|float -%}
+  {%- set u = (unit|string|lower) -%}
+  {%- if u in ['s','sec','secs','second','seconds'] -%}
+    {{ v * 1000.0 }}
+  {%- elif u in ['us','µs','micro','microseconds'] -%}
+    {{ v / 1000.0 }}
+  {%- else -%}
+    {{ v }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_ms(ms) -%}
+  {%- set t = ms|float -%}
+  {%- if t >= 1000.0 -%}{{ (t/1000.0)|round(2) }} s
+  {%- else -%}{{ t|round(1) }} ms
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_pct(p) -%}
+  {{ (p|float)|round(2) }}%
+{%- endmacro %}
+
+{# ========================= JITTER ========================= #}
+{# Breakpoints (lower bounds) in milliseconds #}
+{% set bps_jit_ms = [0, 2, 5, 10, 20, 30, 50] %}
+
+{% set jit_names = ["Excellent","Very Good","Good","Fair","Poor","Very Poor","Unusable"] %}
+{% set jit_shorts = ["Excel","V Good","Good","Fair","Poor","V Poor","Unusable"] %}
+{% set jit_longs  = [
+  "Jitter: Excellent",
+  "Jitter: Very Good",
+  "Jitter: Good",
+  "Jitter: Fair",
+  "Jitter: Poor",
+  "Jitter: Very Poor",
+  "Jitter: Unusable"
+] %}
+{% set jit_icons  = [
+  "mdi:chart-bell-curve",
+  "mdi:chart-bell-curve",
+  "mdi:chart-bell-curve",
+  "mdi:chart-bell-curve",
+  "mdi:alert",
+  "mdi:alert",
+  "mdi:alert-decagram"
+] %}
+{% set jit_colors = [
+  "#10b981", "#22c55e", "#84cc16", "#eab308", "#f59e0b", "#ef4444", "#7c3aed", "disabled"
+] %}
+{% set jit_desc = [
+  "Very stable timing—great for real-time traffic.",
+  "Stable timing—good for calls and streaming.",
+  "Good—minor variation.",
+  "Some variation—may affect live apps.",
+  "Noticeable stutter risk.",
+  "Severe variation; calls/gaming suffer.",
+  "Unusable for real-time traffic."
+] %}
+
+{% macro jitter_level(jitter, unit='ms') -%}
+  {{ level_find(to_ms(jitter, unit)|float, bps_jit_ms) }}
+{%- endmacro %}
+
+{% macro jitter_quality_pct(jitter, unit='ms', max_ref_ms=50) -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  {%- set M = (max_ref_ms|float if max_ref_ms else 50.0) -%}
+  {%- set q = (1.0 - (ms / M)) * 100.0 -%}
+  {{ 100 if q > 100 else (0 if q < 0 else q) }}
+{%- endmacro %}
+
+{% macro jitter_bars(jitter, unit='ms') -%}
+  {%- set p = jitter_quality_pct(jitter, unit)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro jitter_name(jitter, unit='ms') %}{{ jit_names[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{% macro jitter_short(jitter, unit='ms') %}{{ jit_shorts[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{% macro jitter_long(jitter, unit='ms') %}{{ jit_longs[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{% macro jitter_icon(jitter, unit='ms') %}{{ jit_icons[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{% macro jitter_color(jitter, unit='ms') %}{{ jit_colors[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{% macro jitter_desc_text(jitter, unit='ms') %}{{ jit_desc[jitter_level(jitter, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro jitter_label(jitter, unit='ms') -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  {{ jitter_name(ms, 'ms') }} • {{ format_ms(ms) }} • {{ jitter_quality_pct(ms, 'ms')|round(0) }}%
+{%- endmacro %}
+
+{% macro jitter_chip(jitter, unit='ms') -%}
+  {%- set ms = to_ms(jitter, unit)|float -%}
+  Jitter • {{ jitter_short(ms, 'ms') }} • {{ format_ms(ms) }}
+{%- endmacro %}
+
+{# ========================= PACKET LOSS ========================= #}
+{# Breakpoints (lower bounds) in percent loss #}
+{% set bps_loss_pct = [0, 0.1, 0.5, 1, 2, 5, 10] %}
+{% set loss_names = ["None","Trace","Low","Moderate","High","Very High","Severe"] %}
+{% set loss_shorts = ["None","Trace","Low","Moder","High","V High","Severe"] %}
+{% set loss_longs = [
+  "Loss: None",
+  "Loss: Trace",
+  "Loss: Low",
+  "Loss: Moderate",
+  "Loss: High",
+  "Loss: Very High",
+  "Loss: Severe"
+] %}
+{% set loss_icons = [
+  "mdi:checkbox-marked-circle-outline",
+  "mdi:circle-small",
+  "mdi:progress-check",
+  "mdi:progress-alert",
+  "mdi:alert",
+  "mdi:alert-octagon",
+  "mdi:alert-decagram"
+] %}
+{% set loss_colors = ["#10b981","#84cc16","#eab308","#f59e0b","#ef4444","#dc2626","#7c3aed","disabled"] %}
+{% set loss_desc = [
+  "No loss detected.",
+  "Tiny, usually unnoticeable.",
+  "Minor impact possible.",
+  "Some clipping/drops in real-time traffic.",
+  "High loss; visible artifacts & retries.",
+  "Very high loss; poor connectivity.",
+  "Severe loss; connections fail."
+] %}
+
+{% macro loss_level(loss_pct) -%}
+  {{ level_find((loss_pct|float), bps_loss_pct) }}
+{%- endmacro %}
+
+{% macro loss_quality_pct(loss_pct, max_ref_pct=10) -%}
+  {%- set p = (loss_pct|float) -%}
+  {%- set M = (max_ref_pct|float if max_ref_pct else 10.0) -%}
+  {%- set q = (1.0 - (p / M)) * 100.0 -%}
+  {{ 100 if q > 100 else (0 if q < 0 else q) }}
+{%- endmacro %}
+
+{% macro loss_bars(loss_pct) -%}
+  {%- set p = loss_quality_pct(loss_pct)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro loss_name(loss_pct) %}{{ loss_names[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{% macro loss_short(loss_pct) %}{{ loss_shorts[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{% macro loss_long(loss_pct) %}{{ loss_longs[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{% macro loss_icon(loss_pct) %}{{ loss_icons[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{% macro loss_color(loss_pct) %}{{ loss_colors[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{% macro loss_desc_text(loss_pct) %}{{ loss_desc[loss_level(loss_pct)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro loss_label(loss_pct) -%}
+  {{ loss_name(loss_pct) }} • {{ format_pct(loss_pct) }} loss • {{ loss_quality_pct(loss_pct)|round(0) }}%
+{%- endmacro %}
+
+{% macro loss_chip(loss_pct) -%}
+  Loss • {{ loss_short(loss_pct) }} • {{ format_pct(loss_pct) }}
+{%- endmacro %}
+
+{# ========================= Composite Quality (Jitter + Loss) ========================= #}
+{# Weighted score (0..100): jitter 60%, loss 40% (tweak as needed) #}
+{% macro quality_score(jitter, loss_pct, unit_jit='ms', w_jit=0.60, w_loss=0.40) -%}
+  {%- set qj = jitter_quality_pct(jitter, unit_jit)|float -%}
+  {%- set ql = loss_quality_pct(loss_pct)|float -%}
+  {{ (w_jit|float)*qj + (w_loss|float)*ql }}
+{%- endmacro %}
+
+{% set bps_qpct = [0, 20, 40, 60, 75, 85, 95] %}
+{% set q_names = ["Unusable","Very Poor","Poor","Fair","Good","Very Good","Excellent"] %}
+{% set q_icons = ["mdi:alert-decagram","mdi:alert","mdi:alert","mdi:checkbox-blank-circle-outline","mdi:check-circle-outline","mdi:check-circle","mdi:check-decagram"] %}
+{% set q_colors = ["#7c3aed","#ef4444","#f97316","#eab308","#84cc16","#22c55e","#10b981","disabled"] %}
+
+{% macro quality_level(score_pct) -%}
+  {{ level_find((score_pct|float), bps_qpct) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro quality_name(score_pct) %}{{ q_names[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{% macro quality_icon(score_pct) %}{{ q_icons[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{% macro quality_color(score_pct) %}{{ q_colors[quality_level(score_pct)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro quality_label(jitter, loss_pct, unit_jit='ms') -%}
+  {%- set s = quality_score(jitter, loss_pct, unit_jit)|float -%}
+  {{ quality_name(s) }} • {{ s|round(0) }}% • jitter {{ format_ms(to_ms(jitter, unit_jit)) }} • loss {{ format_pct(loss_pct) }}
+{%- endmacro %}
+
+{# ========================= Fitness checks & advice ========================= #}
+{% macro ok_for_voip(jitter, loss_pct, unit_jit='ms') -%}
+  {%- set j = to_ms(jitter, unit_jit)|float -%}
+  {%- set p = (loss_pct|float) -%}
+  {{ (j <= 30.0) and (p < 1.0) }}
+{%- endmacro %}
+
+{% macro ok_for_gaming(jitter, loss_pct, unit_jit='ms') -%}
+  {%- set j = to_ms(jitter, unit_jit)|float -%}
+  {%- set p = (loss_pct|float) -%}
+  {{ (j <= 20.0) and (p < 0.5) }}
+{%- endmacro %}
+
+{% macro jitter_advice(jitter, unit='ms') -%}
+  {%- set L = jitter_level(jitter, unit)|int -%}
+  {%- if L <= 3 -%}
+    Timing is stable.
+  {%- elif L == 4 -%}
+    Some variation—ensure QoS/DSCP for real-time traffic.
+  {%- elif L == 5 -%}
+    High jitter—check Wi-Fi congestion, interferences, or enable jitter buffers.
+  {%- elif L == 6 -%}
+    Very high—reduce contention, switch to wired, or prioritize traffic.
+  {%- else -%}
+    Unusable—investigate link quality, bufferbloat, and routing issues.
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro loss_advice(loss_pct) -%}
+  {%- set L = loss_level(loss_pct)|int -%}
+  {%- if L <= 2 -%}
+    Loss is acceptable.
+  {%- elif L == 3 -%}
+    Moderate loss—retransmissions may increase; check RF noise or cable quality.
+  {%- elif L == 4 -%}
+    High loss—inspect duplex mismatches, SNR, and queue drops.
+  {%- elif L == 5 -%}
+    Very high—possible congestion or bad link; consider QoS and path changes.
+  {%- else -%}
+    Severe—link is failing; replace hardware or route around the problem.
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Trends ========================= #}
+{% macro delta_jitter_ms(curr, prev, unit='ms') -%}
+  {{ to_ms(curr, unit)|float - to_ms(prev, unit)|float }}
+{%- endmacro %}
+
+{% macro jitter_trend_label(curr, prev, unit='ms') -%}
+  {%- set d = delta_jitter_ms(curr, prev, unit)|float -%}
+  {%- if d > 2 -%}
+    Worsening (+{{ d|round(1) }} ms)
+  {%- elif d < -2 -%}
+    Improving ({{ d|round(1) }} ms)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro delta_loss_pct(curr_pct, prev_pct) -%}
+  {{ (curr_pct|float) - (prev_pct|float) }}
+{%- endmacro %}
+
+{% macro loss_trend_label(curr_pct, prev_pct) -%}
+  {%- set d = delta_loss_pct(curr_pct, prev_pct)|float -%}
+  {%- if d > 0.2 -%}
+    Worsening (+{{ d|round(2) }}%)
+  {%- elif d < -0.2 -%}
+    Improving ({{ d|round(2) }}%)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}

@@ -1,0 +1,205 @@
+{# # File: config/custom_templates/precip_rate.jinja ## #}
+{# Macros for precipitation rate categories, icons, colors, and guidance #}
+{# Default input unit: mm/h. Supported: 'mm/h', 'in/h'. #}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ------------------------------------------------------------------
+   Breakpoints for precipitation rate, lower bounds in mm/h (liquid)
+   Trace <0.1, Very Light 0.1–0.25, Light 0.25–1, Moderate 1–2.5,
+   Heavy 2.5–7.6, Very Heavy 7.6–20, Intense 20–50, Torrential >=50
+   These align with common NWS and WMO guidance.
+   ------------------------------------------------------------------ #}
+{% set bps_mmh = [0, 0.1, 0.25, 1.0, 2.5, 7.6, 20.0, 50.0] %}
+
+{# Names for categories #}
+{% set names = [
+  "None or Trace",
+  "Very Light",
+  "Light",
+  "Moderate",
+  "Heavy",
+  "Very Heavy",
+  "Intense",
+  "Torrential"
+] %}
+
+{# Short names for compact UIs #}
+{% set shorts = [
+  "Trace",
+  "V Light",
+  "Light",
+  "Moder",
+  "Heavy",
+  "V Heavy",
+  "Intense",
+  "Torrential"
+] %}
+
+{# Long names for descriptive titles #}
+{% set longs = [
+  "Precipitation: None or Trace",
+  "Precipitation: Very Light",
+  "Precipitation: Light",
+  "Precipitation: Moderate",
+  "Precipitation: Heavy",
+  "Precipitation: Very Heavy",
+  "Precipitation: Intense",
+  "Precipitation: Torrential"
+] %}
+
+{# Icons for categories #}
+{% set icons = [
+  "mdi:weather-partly-rainy",  # Trace
+  "mdi:weather-rainy",         # Very Light
+  "mdi:weather-rainy",         # Light
+  "mdi:weather-rainy",         # Moderate
+  "mdi:weather-pouring",       # Heavy
+  "mdi:weather-pouring",       # Very Heavy
+  "mdi:weather-pouring",       # Intense
+  "mdi:weather-hurricane"      # Torrential
+] %}
+
+{# Colors from light blue to warning purple #}
+{% set colors = [
+  "#93c5fd",  # Trace
+  "#60a5fa",  # Very Light
+  "#3b82f6",  # Light
+  "#2563eb",  # Moderate
+  "#0ea5e9",  # Heavy
+  "#f59e0b",  # Very Heavy
+  "#ef4444",  # Intense
+  "#7c3aed",  # Torrential
+  "disabled"
+] %}
+
+{# Descriptions for each level #}
+{% set descriptions = [
+  "No measurable rain or only a trace.",
+  "Fine droplets or mist; little accumulation.",
+  "Light rain; umbrellas useful.",
+  "Steady rain; noticeable accumulation.",
+  "Heavy rain; ponding likely. Reduce speed if driving.",
+  "Very heavy rain; visibility reduced. Localized flooding possible.",
+  "Intense rain; flooding risk increases quickly.",
+  "Torrential rain; flash flooding likely. Avoid low spots."
+] %}
+
+{# -------------------- Unit conversion helper -------------------- #}
+{# Convert precipitation rate between 'mm/h' and 'in/h'. Default in/out: mm/h. #}
+{% macro convert_precip_rate_value(value, from_unit='mm/h', to_unit='mm/h') -%}
+  {%- set v = value|float -%}
+  {%- set fu = (from_unit|string|lower) -%}
+  {%- set tu = (to_unit|string|lower) -%}
+
+  {# normalize keys #}
+  {%- if fu in ['mmh','mm/hr','mmph'] -%}{% set fu = 'mm/h' %}{% endif -%}
+  {%- if fu in ['in/h','inph','in/hr','iph'] -%}{% set fu = 'in/h' %}{% endif -%}
+  {%- if tu in ['mmh','mm/hr','mmph'] -%}{% set tu = 'mm/h' %}{% endif -%}
+  {%- if tu in ['in/h','inph','in/hr','iph'] -%}{% set tu = 'in/h' %}{% endif -%}
+
+  {# to mm/h #}
+  {%- if fu == 'in/h' -%}
+    {%- set mmh = v * 25.4 -%}
+  {%- else -%}
+    {%- set mmh = v -%}
+  {%- endif -%}
+
+  {# from mm/h #}
+  {%- if tu == 'in/h' -%}
+    {{ mmh / 25.4 }}
+  {%- else -%}
+    {{ mmh }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{# Return category level (1-based) for a given precip rate. Default input is mm/h. #}
+{% macro level(rate, unit='mm/h') -%}
+  {%- set mmh = convert_precip_rate_value(rate, unit, 'mm/h')|float -%}
+  {%- set val = 0 if mmh < 0 else (500 if mmh > 500 else mmh) -%}
+  {{ level_find(val, bps_mmh) }}
+{%- endmacro %}
+
+{# -------------------- Wrappers for lookups -------------------- #}
+{# djlint:off #}
+{% macro name(rate, unit='mm/h') %}{{ names[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro short(rate, unit='mm/h') %}{{ shorts[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro long(rate, unit='mm/h') %}{{ longs[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro icon(rate, unit='mm/h') %}{{ icons[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro desc(rate, unit='mm/h') %}{{ descriptions[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro color(rate, unit='mm/h') %}{{ colors[level(rate, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Labels and accumulation helpers -------------------- #}
+{# Label like "Moderate (3.2 mm/h • 0.13 in/h)" #}
+{% macro label(rate, unit='mm/h') -%}
+  {%- set mmh = convert_precip_rate_value(rate, unit, 'mm/h')|float -%}
+  {%- set inh = convert_precip_rate_value(mmh, 'mm/h', 'in/h')|float -%}
+  {{ names[level(mmh, 'mm/h')|int - 1] }} ({{ mmh|round(1) }} mm/h • {{ inh|round(2) }} in/h)
+{%- endmacro %}
+
+{# Compute accumulation after N hours. Returns a dict-like string for convenience. #}
+{% macro accumulation(rate, hours=1, unit='mm/h', out_unit='mm') -%}
+  {%- set mmh = convert_precip_rate_value(rate, unit, 'mm/h')|float -%}
+  {%- set mm = mmh * (hours|float) -%}
+  {%- if out_unit|string|lower in ['in','inch','inches'] -%}
+    {{ (mm / 25.4) }}
+  {%- else -%}
+    {{ mm }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# A formatted accumulation label, e.g., "≈ 9.6 mm in 3 h (0.38 in)" #}
+{% macro accumulation_label(rate, hours=3, unit='mm/h') -%}
+  {%- set mm = accumulation(rate, hours, unit, 'mm')|float -%}
+  {%- set inch = accumulation(rate, hours, unit, 'in')|float -%}
+  ≈ {{ mm|round(1) }} mm in {{ hours }} h ({{ inch|round(2) }} in)
+{%- endmacro %}
+
+{# -------------------- Snowfall helpers (depth rate to liquid rate) -------------------- #}
+{# Convert snowfall depth rate to liquid mm/h using a snow to liquid ratio (SLR).
+   Default SLR is 10:1. #}
+{% macro snow_depth_rate_to_mmh(depth_rate, depth_unit='in/h', slr=10) -%}
+  {%- set u = (depth_unit|string|lower) -%}
+  {%- set dr = depth_rate|float -%}
+  {%- if u in ['cm/h','cmph','cm/hr'] -%}
+    {%- set depth_mm_h = dr * 10 -%}
+  {%- elif u in ['mm/h','mmph','mm/hr'] -%}
+    {%- set depth_mm_h = dr -%}
+  {%- else -%} {# assume inches per hour #}
+    {%- set depth_mm_h = dr * 25.4 -%}
+  {%- endif -%}
+  {{ depth_mm_h / (slr|float if slr else 10.0) }}
+{%- endmacro %}
+
+{# Categorize snowfall depth rate directly (by converting to liquid rate first) #}
+{% macro snow_level(depth_rate, depth_unit='in/h', slr=10) -%}
+  {{ level(snow_depth_rate_to_mmh(depth_rate, depth_unit, slr), 'mm/h') }}
+{%- endmacro %}
+
+{# Wrapper names for snowfall rates #}
+{# djlint:off #}
+{% macro snow_name(depth_rate, depth_unit='in/h', slr=10) %}{{ names[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{% macro snow_short(depth_rate, depth_unit='in/h', slr=10) %}{{ shorts[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{% macro snow_long(depth_rate, depth_unit='in/h', slr=10) %}{{ longs[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{% macro snow_icon(depth_rate, depth_unit='in/h', slr=10) %}{{ icons[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{% macro snow_desc(depth_rate, depth_unit='in/h', slr=10) %}{{ descriptions[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{% macro snow_color(depth_rate, depth_unit='in/h', slr=10) %}{{ colors[snow_level(depth_rate, depth_unit, slr)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# A snowfall label that shows depth rate and liquid equivalent #}
+{% macro snow_label(depth_rate, depth_unit='in/h', slr=10) -%}
+  {%- set mmh_liq = snow_depth_rate_to_mmh(depth_rate, depth_unit, slr)|float -%}
+  {%- set inh_liq = convert_precip_rate_value(mmh_liq, 'mm/h', 'in/h')|float -%}
+  {{ snow_name(depth_rate, depth_unit, slr) }} (liq eq {{ mmh_liq|round(1) }} mm/h • {{ inh_liq|round(2) }} in/h)
+{%- endmacro %}
+
+{# -------------------- Convenience booleans -------------------- #}
+{% macro is_heavy(rate, unit='mm/h') -%}
+  {{ level(rate, unit)|int >= 5 }}
+{%- endmacro %}
+
+{% macro is_flood_risk(rate, unit='mm/h') -%}
+  {{ level(rate, unit)|int >= 7 }}
+{%- endmacro %}

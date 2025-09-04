@@ -1,0 +1,147 @@
+{# # File: config/custom_templates/wind_chill.jinja ## #}
+{# Macros for Wind Chill calculation, levels, icons, colors, and guidance #}
+
+{% from 'helpers.jinja' import convert_temp_value, level_find %}
+
+{# Breakpoints for Wind Chill categories, in °C (lower bounds of each band) #}
+{# Bands correspond to approximate frostbite-risk tiers #}
+{% set bps = [-80, -45, -35, -28, -20, -10, 0] %}
+
+{# Names for categories #}
+{% set names = ["Extreme Danger", "Danger", "Extreme Caution", "Caution", "Very Cold", "Cold", "Chilly"] %}
+
+{# Short names for compact UIs #}
+{% set shorts = ["X Danger", "Danger", "X Caution", "Caution", "V Cold", "Cold", "Chilly"] %}
+
+{# Long names for descriptive titles #}
+{% set longs = [
+    "Wind Chill Extreme Danger",
+    "Wind Chill Danger",
+    "Wind Chill Extreme Caution",
+    "Wind Chill Caution",
+    "Very Cold Wind Chill",
+    "Cold Wind Chill",
+    "Chilly Wind"
+] %}
+
+{# Icons for categories #}
+{% set icons = ['mdi:snowflake-alert', 'mdi:weather-snowy-heavy', 'mdi:alert-octagon', 'mdi:snowflake', 'mdi:thermometer-low', 'mdi:thermometer-minus', 'mdi:thermometer'] %}
+
+{# Colors for categories: deep cold purples/reds through blues to green #}
+{% set colors = ['#4c1d95', '#dc2626', '#f59e0b', '#eab308', '#3b82f6', '#60a5fa', '#10b981', 'disabled'] %}
+
+{# Descriptions for each level (approximate frostbite-risk guidance) #}
+{% set descriptions = [
+    "Life-threatening cold; frostbite in under 5–10 minutes. Avoid exposure.",
+    "Severe risk; frostbite possible in 10–30 minutes. Limit time outside and cover all skin.",
+    "High risk; exposed skin may freeze within 30–60 minutes. Wear windproof layers.",
+    "Elevated risk; bundle up and reduce exposure.",
+    "Very cold; heavy winter gear recommended.",
+    "Cold; hat and gloves advised.",
+    "Chilly; a light jacket may be comfortable."
+] %}
+
+{# -------------------- Speed conversion helper -------------------- #}
+{# Convert wind speed between: mph, kph (km/h), mps (m/s), kt (knots) #}
+{% macro convert_speed_value(value, from_unit, to_unit) -%}
+    {%- set v = value|float -%}
+    {%- set fu = (from_unit|string|lower) -%}
+    {%- set tu = (to_unit|string|lower) -%}
+    {# Normalize unit keys #}
+    {%- if fu in ['km/h','kmh','kph'] -%}{% set fu = "kph" %}
+    {% endif -%}
+    {%- if fu in ['m/s','ms','mps','meter_per_second','metre_per_second'] -%}{% set fu = "mps" %}
+    {% endif -%}
+    {%- if fu in ['knot','knots','kt','kts'] -%}{% set fu = "kt" %}
+    {% endif -%}
+    {%- if fu in ['mph','mi/h','mihr'] -%}{% set fu = "mph" %}
+    {% endif -%}
+    {%- if tu in ['km/h','kmh','kph'] -%}{% set tu = "kph" %}
+    {% endif -%}
+    {%- if tu in ['m/s','ms','mps','meter_per_second','metre_per_second'] -%}{% set tu = "mps" %}
+    {% endif -%}
+    {%- if tu in ['knot','knots','kt','kts'] -%}{% set tu = "kt" %}
+    {% endif -%}
+    {%- if tu in ['mph','mi/h','mihr'] -%}{% set tu = "mph" %}
+    {% endif -%}
+
+    {# Convert from source to mph #}
+    {%- if fu == 'kph' -%}
+        {%- set mph = v / 1.609344 -%}
+    {%- elif fu == 'mps' -%}
+        {%- set mph = v * 2.2369362921 -%}
+    {%- elif fu == 'kt' -%}
+        {%- set mph = v * 1.150779448 -%}
+    {%- else -%}
+        {%- set mph = v -%}
+    {%- endif -%}
+
+    {# Convert mph to target #}
+    {%- if tu == 'kph' -%}
+        {{ mph * 1.609344 }}
+    {%- elif tu == 'mps' -%}
+        {{ mph / 2.2369362921 }}
+    {%- elif tu == 'kt' -%}
+        {{ mph / 1.150779448 }}
+    {%- else -%}
+        {{ mph }}
+    {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Wind Chill calculation -------------------- #}
+{# NWS wind chill, valid for T <= 50°F and wind >= 3 mph. Returns °F. #}
+{% macro wc_f(t_f, wind_mph) -%}
+    {%- set T = t_f|float -%}
+    {%- set V = wind_mph|float -%}
+    {%- set T = regex.T -%}
+    {%- set V = 0 if V < 0 else (150 if V > 150 else V) -%}
+
+    {%- if T <= 50 and V >= 3 -%}
+        {{ 35.74 + 0.6215*T - 35.75*(V**0.16) + 0.4275*T*(V**0.16) }}
+    {%- else -%}
+        {{ T }}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Wrapper that returns Wind Chill in requested unit.
+   Assume input temperature is Fahrenheit and wind speed is mph by default. #}
+{% macro wc(t, wind, temp_unit='f', wind_unit='mph', out_unit=None) -%}
+    {%- set outu = (out_unit if out_unit is not none else temp_unit) -%}
+    {%- set Tf = convert_temp_value(t, temp_unit, 'f')|float -%}
+    {%- set Vm = convert_speed_value(wind, wind_unit, 'mph')|float -%}
+    {%- set wcf = wc_f(Tf, Vm)|float -%}
+    {{ convert_temp_value(wcf, 'f', outu) }}
+{%- endmacro %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{# Categorize a known Wind Chill value #}
+{% macro level(wc_value, unit='f') -%}
+    {%- set v = convert_temp_value(wc_value, unit, 'c')|float -%}
+    {%- set v = -80 if v < -80 else (10 if v > 10 else v) -%}
+    {{ level_find(v, bps) }}
+{%- endmacro %}
+
+{# Categorize from ambient temperature and wind directly #}
+{% macro level_from(t, wind, temp_unit='f', wind_unit='mph') -%}
+    {{ level(wc(t, wind, temp_unit, wind_unit) , temp_unit) }}
+{%- endmacro %}
+
+{# -------------------- Wrappers by Wind Chill value -------------------- #}
+{# djlint:off #}
+{% macro name(wc_value, unit='f') %}{{ names[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{% macro short(wc_value, unit='f') %}{{ shorts[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{% macro long(wc_value, unit='f') %}{{ longs[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{% macro icon(wc_value, unit='f') %}{{ icons[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{% macro desc(wc_value, unit='f') %}{{ descriptions[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{% macro color(wc_value, unit='f') %}{{ colors[level(wc_value, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Convenience wrappers from T and wind -------------------- #}
+{# djlint:off #}
+{% macro name_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ names[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{% macro short_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ shorts[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{% macro long_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ longs[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{% macro icon_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ icons[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{% macro desc_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ descriptions[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{% macro color_from(t, wind, temp_unit='f', wind_unit='mph') %}{{ colors[level_from(t, wind, temp_unit, wind_unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}

@@ -1,0 +1,64 @@
+{# # File: config/custom_templates/co2.jinja ## #}
+{# Macros for CO₂ categories, icons, colors, and guidance (ppm) #}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# Breakpoints for CO₂ in ppm (lower bounds of each band) #}
+{# Bands: Outdoor, Excellent, Good, Fair, Moderate, Poor, Unhealthy, Severe, Dangerous #}
+{% set bps = [0, 450, 600, 800, 1000, 1400, 2000, 3000, 5000] %}
+
+{# Names for categories #}
+{% set names = ["Outdoor", "Excellent", "Good", "Fair", "Moderate", "Poor", "Unhealthy", "Severe", "Dangerous"] %}
+
+{# Short names for compact UIs #}
+{% set shorts = ["Outdoor", "Excel", "Good", "Fair", "Moder", "Poor", "Unhlthy", "Severe", "Danger"] %}
+
+{# Long names for descriptive titles #}
+{% set longs = [
+    "Outdoor-level CO₂",
+    "Excellent Indoor CO₂",
+    "Good Indoor CO₂",
+    "Fair Indoor CO₂",
+    "Moderate Indoor CO₂",
+    "Poor Indoor CO₂",
+    "Unhealthy Indoor CO₂",
+    "Severe CO₂",
+    "Dangerous CO₂"
+] %}
+
+{# Icons for categories #}
+{% set icons = ['mdi:pine-tree', 'mdi:leaf', 'mdi:emoticon-happy-outline', 'mdi:emoticon-neutral-outline', 'mdi:emoticon-sad-outline', 'mdi:air-filter', 'mdi:alert', 'mdi:alert-octagon-outline', 'mdi:alert-decagram'] %}
+
+{# Colors from fresh green to warning purple #}
+{% set colors = ['#10b981', '#22c55e', '#84cc16', '#eab308', '#f59e0b', '#f97316', '#ef4444', '#b91c1c', '#7c3aed', 'disabled'] %}
+
+{# Descriptions for each level #}
+{% set descriptions = [
+    "Near outdoor background. Ventilation is excellent.",
+    "Very good. No action needed.",
+    "Good. Typical for well ventilated rooms.",
+    "Fair. Consider increasing fresh air.",
+    "Moderate. Raise ventilation or reduce occupancy.",
+    "Poor. Open windows or boost HVAC outside air.",
+    "Unhealthy. Performance and drowsiness impacted; ventilate strongly.",
+    "Severe. Immediate ventilation required; check HVAC operation.",
+    "Dangerous. Evacuate area and ensure fresh air supply."
+] %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{# Assume CO₂ input is in ppm. Clamp to plausible range, then bucket. #}
+{% macro level(ppm) -%}
+    {%- set v = ppm|float -%}
+    {%- set v = 0 if v < 0 else (10000 if v > 10000 else v) -%}
+    {{ level_find(v, bps) }}
+{%- endmacro %}
+
+{# -------------------- Wrappers for lookups -------------------- #}
+{# djlint:off #}
+{% macro name(ppm) %}{{ names[level(ppm)|int - 1] }}{% endmacro %}
+{% macro short(ppm) %}{{ shorts[level(ppm)|int - 1] }}{% endmacro %}
+{% macro long(ppm) %}{{ longs[level(ppm)|int - 1] }}{% endmacro %}
+{% macro icon(ppm) %}{{ icons[level(ppm)|int - 1] }}{% endmacro %}
+{% macro desc(ppm) %}{{ descriptions[level(ppm)|int - 1] }}{% endmacro %}
+{% macro color(ppm) %}{{ colors[level(ppm)|int - 1] }}{% endmacro %}
+{# djlint:on #}

@@ -1,0 +1,254 @@
+{# # File: config/custom_templates/water_temp.jinja ## #}
+{# Macros for Water Temperature:
+   - Inputs:
+       • Temperature (defaults to °F). Use unit in {'f','c','k'} as needed.
+       • Profile: 'general', 'hydro', 'tropical', 'coldwater', 'pond'
+   - Provides:
+       • Categories, icons, colors, descriptions
+       • Profile-aware levels & 0–4 bars
+       • Labels, chips, advice
+       • Dissolved oxygen (DO) saturation estimate @ 1 atm (freshwater)
+       • Target helpers & trends
+#}
+
+{% from 'helpers.jinja' import level_find, convert_temp_value %}
+
+{# ========================= Unit helpers ========================= #}
+{% macro to_c(t, unit='f') -%}{{ convert_temp_value(t, unit, 'c') }}{%- endmacro %}
+{% macro to_f(t, unit='f') -%}{{ convert_temp_value(t, unit, 'f') }}{%- endmacro %}
+
+{% macro format_c(tc) -%}{{ (tc|float)|round(1) }} °C{%- endmacro %}
+{% macro format_f(tf) -%}{{ (tf|float)|round(0) }} °F{%- endmacro %}
+
+{# ========================= Profiles & breakpoints (lower bounds in °C) ========================= #}
+{# 7 buckets: ["Too Cold","Very Cool","Cool","Optimal","Warm","Hot","Too Hot"] #}
+{% set names = ["Too Cold","Very Cool","Cool","Optimal","Warm","Hot","Too Hot"] %}
+{% set shorts = ["Cold","V Cool","Cool","Opt","Warm","Hot","X Hot"] %}
+{% set longs = [
+  "Water: Too Cold",
+  "Water: Very Cool",
+  "Water: Cool",
+  "Water: Optimal",
+  "Water: Warm",
+  "Water: Hot",
+  "Water: Too Hot"
+] %}
+{% set icons = [
+  "mdi:snowflake",
+  "mdi:thermometer-low",
+  "mdi:thermometer",
+  "mdi:thermometer-check",
+  "mdi:thermometer",
+  "mdi:thermometer-high",
+  "mdi:fire"
+] %}
+{% set colors = [
+  "#60a5fa",  # Too Cold (blue)
+  "#3b82f6",  # Very Cool
+  "#22c55e",  # Cool (tending to good)
+  "#10b981",  # Optimal (green)
+  "#eab308",  # Warm (amber)
+  "#f97316",  # Hot (orange)
+  "#ef4444",  # Too Hot (red)
+  "disabled"
+] %}
+{% set descriptions = [
+  "Much colder than ideal; growth and metabolism slow.",
+  "Below target range; monitor for stress.",
+  "Cool but acceptable for many uses.",
+  "In the sweet spot for the selected profile.",
+  "Warmer than ideal; oxygen drops and stress may rise.",
+  "Hot; oxygen low and pathogens/algæ may thrive.",
+  "Excessively hot; immediate cooling recommended."
+] %}
+
+{# Breakpoints per profile (°C lower bounds for above 7 categories) #}
+{# General irrigation / ponds (temperate) #}
+{% set bps_general = [ -2, 5, 10, 18, 22, 26, 30 ] %}
+
+{# Hydroponic nutrient solution: ideal ~18–22°C #}
+{% set bps_hydro =   [ -2, 12, 15, 18, 22, 25, 28 ] %}
+
+{# Tropical aquarium: ideal ~24–27°C #}
+{% set bps_tropical = [ 10, 20, 22, 24, 27, 29, 31 ] %}
+
+{# Coldwater aquarium/pond fish: ideal ~10–18°C #}
+{% set bps_cold =    [ -2, 6, 10, 14, 18, 20, 22 ] %}
+
+{# Outdoor pond (mixed): mild preference ~15–22°C #}
+{% set bps_pond =    [ -2, 8, 12, 15, 22, 26, 30 ] %}
+
+{% macro _pick(profile='general') -%}
+  {%- set p = (profile|string|lower) -%}
+  {%- if p in ['hydro','hydroponic','nutrient','root'] -%}hydro
+  {%- elif p in ['tropical','reef','warmfish'] -%}tropical
+  {%- elif p in ['cold','coldwater','koi'] -%}cold
+  {%- elif p in ['pond','outdoor'] -%}pond
+  {%- else -%}general
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro _bps(profile='general') -%}
+  {%- set which = _pick(profile) -%}
+  {%- if which == 'hydro' -%}hydro
+  {%- elif which == 'tropical' -%}tropical
+  {%- elif which == 'cold' -%}cold
+  {%- elif which == 'pond' -%}pond
+  {%- else -%}general
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Levels & lookups ========================= #}
+{% macro level(temp, unit='f', profile='general') -%}
+  {%- set tc = to_c(temp, unit)|float -%}
+  {%- set which = _bps(profile) -%}
+  {%- if which == 'hydro' -%}
+    {{ level_find(tc, bps_hydro) }}
+  {%- elif which == 'tropical' -%}
+    {{ level_find(tc, bps_tropical) }}
+  {%- elif which == 'cold' -%}
+    {{ level_find(tc, bps_cold) }}
+  {%- elif which == 'pond' -%}
+    {{ level_find(tc, bps_pond) }}
+  {%- else -%}
+    {{ level_find(tc, bps_general) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(temp, unit='f', profile='general') %}{{ names[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{% macro short(temp, unit='f', profile='general') %}{{ shorts[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{% macro long(temp, unit='f', profile='general') %}{{ longs[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{% macro icon(temp, unit='f', profile='general') %}{{ icons[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{% macro color(temp, unit='f', profile='general') %}{{ colors[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{% macro desc(temp, unit='f', profile='general') %}{{ descriptions[level(temp, unit, profile)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# Bars 0..4 centered on "optimal" #}
+{% macro bars(temp, unit='f', profile='general') -%}
+  {%- set L = level(temp, unit, profile)|int -%}
+  {%- if L <= 1 -%}0
+  {%- elif L == 2 -%}1
+  {%- elif L == 3 -%}2
+  {%- elif L == 4 -%}4
+  {%- elif L == 5 -%}3
+  {%- else -%}2
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Labels & chips ========================= #}
+{% macro label(temp, unit='f', profile='general') -%}
+  {%- set tc = to_c(temp, unit)|float -%}
+  {%- set tf = to_f(temp, unit)|float -%}
+  {{ name(tc, 'c', profile) }} • {{ format_c(tc) }} ({{ format_f(tf) }})
+{%- endmacro %}
+
+{% macro chip(temp, unit='f', profile='general') -%}
+  {%- set tc = to_c(temp, unit)|float -%}
+  {{ short(tc, 'c', profile) }} • {{ tc|round(1) }}°C
+{%- endmacro %}
+
+{# ========================= Dissolved Oxygen (DO) saturation (freshwater @ 1 atm) ========================= #}
+{# Empirical polynomial (T in °C), approximate:
+   DO_sat (mg/L) ≈ 14.621 - 0.4106*T + 0.007991*T² - 0.000077774*T³ #}
+{% macro do_saturation_mgL(temp, unit='f') -%}
+  {%- set T = to_c(temp, unit)|float -%}
+  {{ 14.621 - 0.4106*T + 0.007991*(T*T) - 0.000077774*(T*T*T) }}
+{%- endmacro %}
+
+{% macro do_label(temp, unit='f') -%}
+  {%- set do = do_saturation_mgL(temp, unit)|float -%}
+  DO sat ~{{ do|round(2) }} mg/L @ {{ format_c(to_c(temp, unit)) }}
+{%- endmacro %}
+
+{# ========================= Guidance & booleans ========================= #}
+{% macro is_cold(temp, unit='f', profile='general') -%}{{ level(temp, unit, profile)|int <= 3 }}{%- endmacro %}
+{% macro is_optimal(temp, unit='f', profile='general') -%}{{ level(temp, unit, profile)|int == 4 }}{%- endmacro %}
+{% macro is_hot(temp, unit='f', profile='general') -%}{{ level(temp, unit, profile)|int >= 6 }}{%- endmacro %}
+
+{% macro advice(temp, unit='f', profile='general') -%}
+  {%- set L = level(temp, unit, profile)|int -%}
+  {%- set tc = to_c(temp, unit)|float -%}
+  {%- if _pick(profile) == 'hydro' -%}
+    {%- if L <= 3 -%}
+      Solution is cool ({{ tc|round(1) }}°C); growth may slow. Consider a small aquarium heater to reach ~18–22°C.
+    {%- elif L == 4 -%}
+      Ideal nutrient temperature; DO and root health favored.
+    {%- elif L == 5 -%}
+      Warm; increase aeration and watch for pythium. Aim back to 18–22°C.
+    {%- else -%}
+      Too hot; add cooling (chiller/ice bottles), reduce reservoir exposure, and boost aeration.
+    {%- endif -%}
+  {%- elif _pick(profile) == 'tropical' -%}
+    {%- if L <= 3 -%}
+      Too cool for tropical species; raise heater gradually (0.5–1°C per hour).
+    {%- elif L == 4 -%}
+      Within tropical comfort range.
+    {%- elif L == 5 -%}
+      Warm; ensure strong aeration and shading.
+    {%- else -%}
+      Excess heat; immediate cooling and aeration recommended.
+    {%- endif -%}
+  {%- elif _pick(profile) == 'cold' -%}
+    {%- if L <= 3 -%}
+      Good for coldwater species; avoid sudden warming.
+    {%- elif L == 4 -%}
+      Upper comfort range—monitor oxygen.
+    {%- else -%}
+      Too warm; aerate and provide shade/flow to cool.
+    {%- endif -%}
+  {%- else -%}
+    {%- if L <= 3 -%}
+      Cool; generally safe but growth may be slower.
+    {%- elif L == 4 -%}
+      Optimal for most garden/pond uses.
+    {%- elif L == 5 -%}
+      Warm; increase shade and aeration.
+    {%- else -%}
+      Too hot; cool water if possible and avoid mid-day irrigation to reduce plant stress.
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{# ========================= Targets & deltas ========================= #}
+{% macro target_c(profile='general') -%}
+  {%- set which = _pick(profile) -%}
+  {%- if which == 'hydro' -%}[18, 22]
+  {%- elif which == 'tropical' -%}[24, 27]
+  {%- elif which == 'cold' -%}[10, 18]
+  {%- elif which == 'pond' -%}[15, 22]
+  {%- else -%}[18, 22]
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro delta_to_center(temp, unit='f', profile='general') -%}
+  {%- set tc = to_c(temp, unit)|float -%}
+  {%- set tgt = target_c(profile) -%}
+  {%- set low = (tgt|string).strip('[]').split(',')[0]|float -%}
+  {%- set high = (tgt|string).strip('[]').split(',')[1]|float -%}
+  {{ tc - ((low + high) / 2.0) }}
+{%- endmacro %}
+
+{% macro target_label(temp, unit='f', profile='general') -%}
+  {%- set d = delta_to_center(temp, unit, profile)|float -%}
+  {%- set tgt = target_c(profile) -%}
+  {%- set low = (tgt|string).strip('[]').split(',')[0]|float -%}
+  {%- set high = (tgt|string).strip('[]').split(',')[1]|float -%}
+  Target {{ low|round(0) }}–{{ high|round(0) }}°C • {{ 'cool ' ~ (d|abs|round(1)) ~ '°C' if d>0 else ('heat ' ~ (d|abs|round(1)) ~ '°C') if d<0 else 'on target' }}
+{%- endmacro %}
+
+{# ========================= Trends ========================= #}
+{% macro delta_c(curr, prev, unit='f') -%}
+  {{ to_c(curr, unit)|float - to_c(prev, unit)|float }}
+{%- endmacro %}
+
+{% macro trend_label(curr, prev, unit='f') -%}
+  {%- set d = delta_c(curr, prev, unit)|float -%}
+  {%- if d > 0.5 -%}
+    Rising (+{{ d|round(1) }}°C)
+  {%- elif d < -0.5 -%}
+    Falling ({{ d|round(1) }}°C)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}

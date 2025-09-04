@@ -1,0 +1,318 @@
+{# # File: config/custom_templates/memory_usage.jinja ## #}
+{# Macros for system Memory Usage and Swap Usage:
+   - Works with % or raw bytes.
+   - Prefers "available" semantics if provided (Linux-friendly).
+   - Includes icons, colors, labels, bars, and guidance.
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# -------------------- Buckets (lower bounds) in % used -------------------- #}
+{# 0–5 Idle, 5–20 Low, 20–40 Moderate, 40–60 High, 60–80 Very High, 80–95 Near Max, >=95 Exhausted #}
+{% set bps_pct = [0, 5, 20, 40, 60, 80, 95] %}
+
+{% set names = [
+  "Idle",
+  "Low",
+  "Moderate",
+  "High",
+  "Very High",
+  "Near Max",
+  "Exhausted"
+] %}
+
+{% set shorts = [
+  "Idle",
+  "Low",
+  "Moder",
+  "High",
+  "V High",
+  "Near",
+  "Exhaust"
+] %}
+
+{% set longs = [
+  "Memory Usage: Idle",
+  "Memory Usage: Low",
+  "Memory Usage: Moderate",
+  "Memory Usage: High",
+  "Memory Usage: Very High",
+  "Memory Usage: Near Maximum",
+  "Memory Usage: Exhausted"
+] %}
+
+{% set icons = [
+  "mdi:memory",             # Idle
+  "mdi:memory",             # Low
+  "mdi:memory",             # Moderate
+  "mdi:memory",             # High
+  "mdi:memory",             # Very High
+  "mdi:alert",              # Near Max
+  "mdi:alert-decagram"      # Exhausted
+] %}
+
+{% set colors = [
+  "#22c55e",  # Idle
+  "#84cc16",  # Low
+  "#eab308",  # Moderate
+  "#f59e0b",  # High
+  "#f97316",  # Very High
+  "#ef4444",  # Near Max
+  "#7c3aed",  # Exhausted
+  "disabled"
+] %}
+
+{% set descriptions = [
+  "Plenty of free memory.",
+  "Comfortable headroom.",
+  "Healthy usage.",
+  "Elevated usage; apps may compete for cache.",
+  "Very high usage; watch for swapping.",
+  "Near capacity; performance may degrade.",
+  "Memory exhausted; heavy swapping or OOM possible."
+] %}
+
+{# -------------------- Byte conversion & formatting -------------------- #}
+{# Binary units by default. Accepts B, KB/ KiB, MB/ MiB, GB/ GiB, TB/ TiB. #}
+{% macro to_bytes(value, unit='B') -%}
+  {%- set v = value|float -%}
+  {%- set u = (unit|string|lower) -%}
+  {%- if u in ['b','byte','bytes'] -%}{% set m = 1 %}
+  {%- elif u in ['kb','kib'] -%}{% set m = 1024 %}
+  {%- elif u in ['mb','mib'] -%}{% set m = 1024**2 %}
+  {%- elif u in ['gb','gib'] -%}{% set m = 1024**3 %}
+  {%- elif u in ['tb','tib'] -%}{% set m = 1024**4 %}
+  {%- else -%}{% set m = 1 %}{% endif -%}
+  {{ v * m }}
+{%- endmacro %}
+
+{% macro from_bytes(bytes_val, to_unit='GB') -%}
+  {%- set b = bytes_val|float -%}
+  {%- set u = (to_unit|string|lower) -%}
+  {%- if u in ['b','byte','bytes'] -%}{% set d = 1 %}
+  {%- elif u in ['kb','kib'] -%}{% set d = 1024 %}
+  {%- elif u in ['mb','mib'] -%}{% set d = 1024**2 %}
+  {%- elif u in ['gb','gib'] -%}{% set d = 1024**3 %}
+  {%- elif u in ['tb','tib'] -%}{% set d = 1024**4 %}
+  {%- else -%}{% set d = 1 %}{% endif -%}
+  {{ b / d }}
+{%- endmacro %}
+
+{% macro format_bytes(bytes_val) -%}
+  {%- set b = (bytes_val|float if bytes_val is not none else 0.0) -%}
+  {%- if b >= 1024**4 -%}{{ (b / 1024**4)|round(2) }} TiB
+  {%- elif b >= 1024**3 -%}{{ (b / 1024**3)|round(2) }} GiB
+  {%- elif b >= 1024**2 -%}{{ (b / 1024**2)|round(2) }} MiB
+  {%- elif b >= 1024 -%}{{ (b / 1024)|round(2) }} KiB
+  {%- else -%}{{ b|round(0) }} B
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Percent helpers -------------------- #}
+{# Convert to % (0..100). If unit='ratio' assume 0..1; 'auto' infers. #}
+{% macro to_pct(value, unit='pct') -%}
+  {%- set v = value|float -%}
+  {%- set u = (unit|string|lower) -%}
+  {{ (v * 100.0) if (u in ['ratio','frac','fraction'] or (u=='auto' and v>=0 and v<=1)) else v }}
+{%- endmacro %}
+
+{# Compute % used from total and any of: available, used, or free. Prefers 'available'. #}
+{% macro used_pct(total, used=None, free=None, available=None, unit='GB') -%}
+  {%- set T = to_bytes(total, unit)|float -%}
+  {%- set Av = (to_bytes(available, unit)|float) if available is not none else none -%}
+  {%- set U = (to_bytes(used, unit)|float) if used is not none else none -%}
+  {%- set F = (to_bytes(free, unit)|float) if free is not none else none -%}
+  {%- if Av is not none -%}
+    {%- set p = (1.0 - (Av / (T if T>0 else 1e-9))) * 100.0 -%}
+  {%- elif U is not none -%}
+    {%- set p = (U / (T if T>0 else 1e-9)) * 100.0 -%}
+  {%- elif F is not none -%}
+    {%- set p = (1.0 - (F / (T if T>0 else 1e-9))) * 100.0 -%}
+  {%- else -%}
+    {%- set p = 0.0 -%}
+  {%- endif -%}
+  {{ 0 if p < 0 else (100 if p > 100 else p) }}
+{%- endmacro %}
+
+{# Effective % used subtracting reclaimable cache/buffers if available. #}
+{% macro effective_used_pct(total, used=None, free=None, available=None, cached=None, buffers=None, unit='GB') -%}
+  {%- if available is not none -%}
+    {{ used_pct(total, used, free, available, unit) }}
+  {%- else -%}
+    {%- set T = to_bytes(total, unit)|float -%}
+    {%- set U = (to_bytes(used, unit)|float) if used is not none else none -%}
+    {%- set F = (to_bytes(free, unit)|float) if free is not none else none -%}
+    {%- set C = (to_bytes(cached, unit)|float) if cached is not none else 0.0 -%}
+    {%- set B = (to_bytes(buffers, unit)|float) if buffers is not none else 0.0 -%}
+    {%- if U is not none -%}
+      {%- set eff = U - (C + B) -%}
+    {%- elif F is not none -%}
+      {%- set eff = (T - F) - (C + B) -%}
+    {%- else -%}
+      {%- set eff = 0.0 -%}
+    {%- endif -%}
+    {%- set p = (eff / (T if T>0 else 1e-9)) * 100.0 -%}
+    {{ 0 if p < 0 else (100 if p > 100 else p) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Level & lookups -------------------- #}
+{% macro level(pct_used, unit='pct') -%}
+  {{ level_find(to_pct(pct_used, unit)|float, bps_pct) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(pct_used, unit='pct') %}{{ names[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro short(pct_used, unit='pct') %}{{ shorts[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro long(pct_used, unit='pct') %}{{ longs[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro icon(pct_used, unit='pct') %}{{ icons[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro color(pct_used, unit='pct') %}{{ colors[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro desc(pct_used, unit='pct') %}{{ descriptions[level(pct_used, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# Bars (0..4) from percent used #}
+{% macro bars(pct_used, unit='pct') -%}
+  {%- set p = to_pct(pct_used, unit)|float -%}
+  {%- if p < 10 -%}0
+  {%- elif p < 35 -%}1
+  {%- elif p < 60 -%}2
+  {%- elif p < 85 -%}3
+  {%- else -%}4
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Labels -------------------- #}
+{# Label using precomputed % #}
+{% macro label_pct(pct_used, total=None, used=None, unit='GB') -%}
+  {%- set p = to_pct(pct_used, 'pct')|float -%}
+  {%- if total is not none and used is not none -%}
+    {%- set T = to_bytes(total, unit) -%}
+    {%- set U = to_bytes(used, unit) -%}
+    {{ name(p, 'pct') }} • {{ p|round(0) }}% used ({{ format_bytes(U) }} / {{ format_bytes(T) }})
+  {%- else -%}
+    {{ name(p, 'pct') }} • {{ p|round(0) }}% used
+  {%- endif -%}
+{%- endmacro %}
+
+{# Label from raw values with smart semantics (prefers available). #}
+{% macro label_from_values(total, used=None, free=None, available=None, cached=None, buffers=None, unit='GB') -%}
+  {%- set p = effective_used_pct(total, used, free, available, cached, buffers, unit)|float -%}
+  {%- set T = to_bytes(total, unit) -%}
+  {%- if available is not none -%}
+    {%- set Av = to_bytes(available, unit) -%}
+    {%- set U = T - Av -%}
+  {%- elif used is not none -%}
+    {%- set U = to_bytes(used, unit) -%}
+  {%- elif free is not none -%}
+    {%- set U = T - to_bytes(free, unit) -%}
+  {%- else -%}
+    {%- set U = 0 -%}
+  {%- endif -%}
+  {{ name(p, 'pct') }} • {{ p|round(0) }}% used ({{ format_bytes(U) }} / {{ format_bytes(T) }})
+{%- endmacro %}
+
+{# Compact chip: "Mem: 73% (12.0/16.0 GiB)" #}
+{% macro chip_from_values(total, used=None, free=None, available=None, unit='GB') -%}
+  {%- set p = used_pct(total, used, free, available, unit)|float -%}
+  {%- set T = to_bytes(total, unit) -%}
+  {%- if available is not none -%}
+    {%- set Av = to_bytes(available, unit) -%}
+    {%- set U = T - Av -%}
+  {%- elif used is not none -%}
+    {%- set U = to_bytes(used, unit) -%}
+  {%- else -%}
+    {%- set U = T - to_bytes(free, unit) -%}
+  {%- endif -%}
+  Mem: {{ p|round(0) }}% ({{ format_bytes(U) }}/{{ format_bytes(T) }})
+{%- endmacro %}
+
+{# -------------------- Guidance & booleans -------------------- #}
+{% macro is_high(pct_used, unit='pct') -%}{{ level(pct_used, unit)|int >= 4 }}{%- endmacro %}
+{% macro is_near_max(pct_used, unit='pct') -%}{{ level(pct_used, unit)|int >= 6 }}{%- endmacro %}
+{% macro is_exhausted(pct_used, unit='pct') -%}{{ level(pct_used, unit)|int >= 7 }}{%- endmacro %}
+
+{% macro advice(pct_used, unit='pct', swap_pct=None) -%}
+  {%- set L = level(pct_used, unit)|int -%}
+  {%- if L <= 3 -%}
+    Memory headroom is fine.
+  {%- elif L == 4 -%}
+    Elevated usage—close unused apps if performance dips.
+  {%- elif L == 5 -%}
+    Very high usage—consider freeing cache or heavy apps.
+  {%- elif L == 6 -%}
+    Near limit—expect swapping; add RAM or reduce workload.
+  {%- else -%}
+    Exhausted—apps may be killed; free memory immediately.
+  {%- endif -%}
+  {%- if swap_pct is not none and (swap_pct|float) >= 50.0 -%}
+    Also, swap usage is high ({{ swap_pct|round(0) }}%) which can severely impact performance.
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Swap usage (separate meter) -------------------- #}
+{% set bps_swap = [0, 1, 10, 25, 50, 75, 90] %}
+{% set swap_names = ["Unused","Trace","Low","Moderate","High","Very High","Near Full"] %}
+{% set swap_icons = ["mdi:swap-horizontal","mdi:swap-horizontal","mdi:swap-horizontal","mdi:swap-horizontal","mdi:alert","mdi:alert","mdi:alert-decagram"] %}
+{% set swap_colors = ["#22c55e","#84cc16","#a3e635","#eab308","#f59e0b","#ef4444","#7c3aed","disabled"] %}
+{% set swap_desc = [
+  "Swap not in use.",
+  "Tiny amount swapped.",
+  "Low swap usage.",
+  "Moderate swap usage.",
+  "High swap usage; memory pressure likely.",
+  "Very high swap usage; performance degraded.",
+  "Swap nearly full; risk of thrash or OOM."
+] %}
+
+{% macro swap_used_pct(total_swap, used_swap=None, free_swap=None, unit='GB') -%}
+  {%- set T = to_bytes(total_swap, unit)|float -%}
+  {%- if used_swap is not none -%}
+    {%- set U = to_bytes(used_swap, unit)|float -%}
+  {%- elif free_swap is not none -%}
+    {%- set U = T - to_bytes(free_swap, unit)|float -%}
+  {%- else -%}
+    {%- set U = 0.0 -%}
+  {%- endif -%}
+  {%- set p = (U / (T if T>0 else 1e-9)) * 100.0 -%}
+  {{ 0 if p < 0 else (100 if p > 100 else p) }}
+{%- endmacro %}
+
+{% macro swap_level(pct_used, unit='pct') -%}
+  {{ level_find(to_pct(pct_used, unit)|float, bps_swap) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro swap_name(pct_used, unit='pct') %}{{ swap_names[swap_level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro swap_icon(pct_used, unit='pct') %}{{ swap_icons[swap_level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro swap_color(pct_used, unit='pct') %}{{ swap_colors[swap_level(pct_used, unit)|int - 1] }}{% endmacro %}
+{% macro swap_desc_text(pct_used, unit='pct') %}{{ swap_desc[swap_level(pct_used, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{% macro swap_label_from_values(total_swap, used_swap=None, free_swap=None, unit='GB') -%}
+  {%- set p = swap_used_pct(total_swap, used_swap, free_swap, unit)|float -%}
+  {%- set T = to_bytes(total_swap, unit) -%}
+  {%- if used_swap is not none -%}
+    {%- set U = to_bytes(used_swap, unit) -%}
+  {%- elif free_swap is not none -%}
+    {%- set U = T - to_bytes(free_swap, unit) -%}
+  {%- else -%}
+    {%- set U = 0 -%}
+  {%- endif -%}
+  Swap • {{ swap_name(p, 'pct') }} • {{ p|round(0) }}% ({{ format_bytes(U) }}/{{ format_bytes(T) }})
+{%- endmacro %}
+
+{# -------------------- Trends -------------------- #}
+{% macro delta_pct(curr_pct, prev_pct, unit='pct') -%}
+  {{ to_pct(curr_pct, unit)|float - to_pct(prev_pct, unit)|float }}
+{%- endmacro %}
+
+{% macro trend_label(curr_pct, prev_pct, unit='pct') -%}
+  {%- set d = delta_pct(curr_pct, prev_pct, unit)|float -%}
+  {%- if d > 2 -%}
+    Rising (+{{ d|round(0) }}%)
+  {%- elif d < -2 -%}
+    Falling ({{ d|round(0) }}%)
+  {%- else -%}
+    Stable
+  {%- endif -%}
+{%- endmacro %}

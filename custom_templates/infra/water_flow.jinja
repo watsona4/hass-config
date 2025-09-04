@@ -1,0 +1,167 @@
+{# # File: config/custom_templates/water_flow.jinja ## #}
+{# Macros for Water Flow Rate categories, icons, colors, labels, and helpers.
+   Default input unit: gallons per minute ('gpm').
+   Supported units: 'gpm', 'gph', 'lpm', 'lps', 'm3/h'.
+#}
+
+{% from 'helpers.jinja' import level_find %}
+
+{# ------------------------------------------------------------------
+   Breakpoints for water flow (lower bounds) in gpm
+   0       : None
+   0.05    : Trickle (possible leak)
+   0.2     : Very Low (ice maker / small fixture)
+   0.8     : Low (one low-flow fixture)
+   2.0     : Moderate (shower / dishwasher)
+   5.0     : High (multi-fixture / hose)
+   10.0    : Very High (irrigation zone / tub fill)
+   20.0+   : Excessive (main draw / burst)
+   ------------------------------------------------------------------ #}
+{% set bps_gpm = [0, 0.05, 0.2, 0.8, 2.0, 5.0, 10.0, 20.0] %}
+
+{% set names = [
+  "None",
+  "Trickle",
+  "Very Low",
+  "Low",
+  "Moderate",
+  "High",
+  "Very High",
+  "Excessive"
+] %}
+
+{% set shorts = [
+  "None",
+  "Trickle",
+  "V Low",
+  "Low",
+  "Moder",
+  "High",
+  "V High",
+  "Excess"
+] %}
+
+{% set longs = [
+  "Water Flow: None",
+  "Water Flow: Trickle",
+  "Water Flow: Very Low",
+  "Water Flow: Low",
+  "Water Flow: Moderate",
+  "Water Flow: High",
+  "Water Flow: Very High",
+  "Water Flow: Excessive"
+] %}
+
+{% set icons = [
+  "mdi:water-off",       # None
+  "mdi:water-outline",   # Trickle
+  "mdi:water",           # Very Low
+  "mdi:water",           # Low
+  "mdi:water-check",     # Moderate
+  "mdi:water-plus",      # High
+  "mdi:water-alert",     # Very High
+  "mdi:pipe-leak"        # Excessive
+] %}
+
+{% set colors = [
+  "#9ca3af",  # None
+  "#60a5fa",  # Trickle
+  "#3b82f6",  # Very Low
+  "#2563eb",  # Low
+  "#0ea5e9",  # Moderate
+  "#0284c7",  # High
+  "#f59e0b",  # Very High
+  "#ef4444",  # Excessive
+  "disabled"
+] %}
+
+{% set descriptions = [
+  "No water flow detected.",
+  "Very small flow; could be residual or a minor leak.",
+  "Small appliance/fixture draw (ice maker, RO system).",
+  "One low-flow fixture or appliance running.",
+  "Typical single shower or dishwasher cycle.",
+  "Multiple fixtures or hose running.",
+  "Heavy draw (irrigation zone, tub fill).",
+  "Unusually high draw; possible burst or main usage."
+] %}
+
+{# -------------------- Unit conversion helper -------------------- #}
+{% macro convert_water_flow_value(value, from_unit='gpm', to_unit='gpm') -%}
+  {%- set v = value|float -%}
+  {%- set fu = (from_unit|string|lower) -%}
+  {%- set tu = (to_unit|string|lower) -%}
+
+  {# normalize #}
+  {%- if fu in ['gph','gal/h','gallon_per_hour'] -%}{% set fu = 'gph' %}{% endif -%}
+  {%- if fu in ['gpm','gal/min','gallon_per_minute'] -%}{% set fu = 'gpm' %}{% endif -%}
+  {%- if fu in ['lpm','l/min'] -%}{% set fu = 'lpm' %}{% endif -%}
+  {%- if fu in ['lps','l/s'] -%}{% set fu = 'lps' %}{% endif -%}
+  {%- if fu in ['m3/h','m3ph','m^3/h','m³/h'] -%}{% set fu = 'm3/h' %}{% endif -%}
+
+  {%- if tu in ['gph','gal/h','gallon_per_hour'] -%}{% set tu = 'gph' %}{% endif -%}
+  {%- if tu in ['gpm','gal/min','gallon_per_minute'] -%}{% set tu = 'gpm' %}{% endif -%}
+  {%- if tu in ['lpm','l/min'] -%}{% set tu = 'lpm' %}{% endif -%}
+  {%- if tu in ['lps','l/s'] -%}{% set tu = 'lps' %}{% endif -%}
+  {%- if tu in ['m3/h','m3ph','m^3/h','m³/h'] -%}{% set tu = 'm3/h' %}{% endif -%}
+
+  {# to gpm #}
+  {%- if fu == 'gph' -%}
+    {%- set gpm = v / 60.0 -%}
+  {%- elif fu == 'lpm' -%}
+    {%- set gpm = v / 3.785411784 -%}
+  {%- elif fu == 'lps' -%}
+    {%- set gpm = (v * 60.0) / 3.785411784 -%}
+  {%- elif fu == 'm3/h' -%}
+    {%- set gpm = v / 0.227124707 -%}
+  {%- else -%}
+    {%- set gpm = v -%}
+  {%- endif -%}
+
+  {# from gpm #}
+  {%- if tu == 'gph' -%}
+    {{ gpm * 60.0 }}
+  {%- elif tu == 'lpm' -%}
+    {{ gpm * 3.785411784 }}
+  {%- elif tu == 'lps' -%}
+    {{ (gpm * 3.785411784) / 60.0 }}
+  {%- elif tu == 'm3/h' -%}
+    {{ gpm * 0.227124707 }}
+  {%- else -%}
+    {{ gpm }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# -------------------- Categorization helpers -------------------- #}
+{% macro level(rate, unit='gpm') -%}
+  {%- set gpm = convert_water_flow_value(rate, unit, 'gpm')|float -%}
+  {%- set val = 0 if gpm < 0 else (500 if gpm > 500 else gpm) -%}
+  {{ level_find(val, bps_gpm) }}
+{%- endmacro %}
+
+{# djlint:off #}
+{% macro name(rate, unit='gpm') %}{{ names[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro short(rate, unit='gpm') %}{{ shorts[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro long(rate, unit='gpm') %}{{ longs[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro icon(rate, unit='gpm') %}{{ icons[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro color(rate, unit='gpm') %}{{ colors[level(rate, unit)|int - 1] }}{% endmacro %}
+{% macro desc(rate, unit='gpm') %}{{ descriptions[level(rate, unit)|int - 1] }}{% endmacro %}
+{# djlint:on #}
+
+{# -------------------- Labels & helpers -------------------- #}
+{% macro label(rate, unit='gpm') -%}
+  {%- set gpm = convert_water_flow_value(rate, unit, 'gpm')|float -%}
+  {%- set lpm = convert_water_flow_value(gpm, 'gpm', 'lpm')|float -%}
+  {{ names[level(gpm, 'gpm')|int - 1] }} • {{ gpm|round(2) }} gpm ({{ lpm|round(1) }} L/min)
+{%- endmacro %}
+
+{# Heuristics #}
+{% macro leak_suspected(rate, unit='gpm') -%}
+  {%- set gpm = convert_water_flow_value(rate, unit, 'gpm')|float -%}
+  {{ gpm >= 0.05 and gpm < 0.8 }}
+{%- endmacro %}
+
+{% macro irrigation_suspected(rate, unit='gpm') -%}
+  {%- set gpm = convert_water_flow_value(rate, unit, 'gpm')|float -%}
+  {{ gpm >= 5.0 }}
+{%- endmacro %}
