@@ -131,6 +131,17 @@
     {%- endif -%}
 {% endmacro %}
 
+{# Find matching level in a list of level definitions based on min_value #}
+{% macro find_matching_level(value, levels) %}
+    {%- set ns = namespace(found=none) -%}
+    {%- for level in levels -%}
+        {%- if value >= level.min_value -%}
+            {%- set ns.found = level -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.found or levels[-1] -}}
+{%- endmacro %}
+
 {# Humanize a number with unit, using SI/IEC prefixes as appropriate #}
 {% macro humanize_unit(n, unit='', system='') %}
 

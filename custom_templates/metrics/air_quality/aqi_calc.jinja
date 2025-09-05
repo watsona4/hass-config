@@ -1,0 +1,29 @@
+
+{# Helper function to calculate AQI subindex #}
+{% macro _calculate_subindex(concentration, pollutant_breakpoints, aqi_breakpoints) %}
+    {%- set idx = namespace(value=0) -%}
+    {%- for i in range(pollutant_breakpoints|length - 1) -%}
+        {%- if concentration >= pollutant_breakpoints[i] and concentration <= pollutant_breakpoints[i + 1] -%}
+            {%- set idx.value = ((aqi_breakpoints[i + 1] - aqi_breakpoints[i]) / (pollutant_breakpoints[i + 1] - pollutant_breakpoints[i]) * (concentration - pollutant_breakpoints[i]) + aqi_breakpoints[i]) | round(0, 'ceil') | int -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{ idx.value }}
+{% endmacro %}
+
+{# Helper macro to compute AQI from PM2.5 and PM10 values #}
+{% macro compute_aqi(pm25=none, pm10=none) %}
+    {%- set pm25_breakpoints = [0.0, 12.0, 35.4, 55.4, 150.4, 250.4] -%}
+    {%- set pm10_breakpoints = [0.0, 54.0, 154.0, 254.0, 354.0, 424.0] -%}
+    {%- set aqi_breakpoints = [0, 50, 100, 150, 200, 300] -%}
+    
+    {%- set ns = namespace(pm_25aqi=0, pm10_aqi=0) -%}
+    {%- if pm25 is not none -%}
+        {%- set ns.pm25_aqi = _calculate_subindex(pm25, pm25_breakpoints, aqi_breakpoints) -%}
+    {%- endif -%}
+    
+    {%- if pm10 is not none -%}
+        {%- set ns.pm10_aqi = _calculate_subindex(pm10, pm10_breakpoints, aqi_breakpoints) -%}
+    {%- endif -%}
+    
+    {{ [ns.pm25_aqi, ns.pm10_aqi] | max }}
+{% endmacro %}

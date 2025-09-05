@@ -1,0 +1,114 @@
+{# Severity definitions for Air Quality Index measurements (HA device_class: aqi) #}
+
+{% from 'helpers.jinja' import find_matching_level %}
+
+{# AQI levels based on EPA standards #}
+{% set levels = [
+    {
+        'min_value': 300,
+        'name': 'hazardous',
+        'short_name': 'hazard',
+        'long_name': 'Hazardous Air Quality',
+        'icon': 'mdi:skull-crossbones',
+        'color': '#7e0023',
+        'description': 'Air quality at hazardous levels',
+        'health_impact': 'Severe health risk for entire population',
+        'action_needed': 'Stay indoors, use air purifiers, seek medical attention if symptoms occur'
+    },
+    {
+        'min_value': 200,
+        'name': 'very_unhealthy',
+        'short_name': 'v-unhlt',
+        'long_name': 'Very Unhealthy Air Quality',
+        'icon': 'mdi:biohazard',
+        'color': '#660099',
+        'description': 'Health alert: everyone may experience effects',
+        'health_effects': 'Serious health effects for entire population',
+        'caution': 'Avoid prolonged outdoor exposure',
+        'action_needed': 'Stay indoors if possible, use air purifiers'
+    },
+    {
+        'min_value': 150,
+        'name': 'unhealthy',
+        'short_name': 'unhlthy',
+        'long_name': 'Unhealthy Air Quality',
+        'icon': 'mdi:alert-circle',
+        'color': '#cc0033',
+        'description': 'Everyone may experience health effects',
+        'health_effects': 'Increased aggravation of heart/lung disease',
+        'caution': 'Reduce prolonged outdoor exposure',
+        'action_needed': 'Consider indoor activities'
+    },
+    {
+        'min_value': 100,
+        'name': 'unhealthy_sensitive',
+        'short_name': 'u-sens',
+        'long_name': 'Unhealthy for Sensitive Groups',
+        'icon': 'mdi:emoticon-sad',
+        'color': '#ff9933',
+        'description': 'Sensitive groups may experience effects',
+        'health_effects': 'Increasing likelihood of respiratory symptoms',
+        'caution': 'Sensitive groups should reduce exposure',
+        'action_needed': 'Consider reducing outdoor activities'
+    },
+    {
+        'min_value': 50,
+        'name': 'moderate',
+        'short_name': 'mod',
+        'long_name': 'Moderate Air Quality',
+        'icon': 'mdi:emoticon-neutral',
+        'color': '#ffde33',
+        'description': 'Air quality is acceptable',
+        'health_effects': 'Possible respiratory symptoms for sensitive individuals',
+        'caution': 'Unusually sensitive people should consider reducing exposure',
+        'action_needed': 'Monitor conditions if sensitive'
+    },
+    {
+        'min_value': 0,
+        'name': 'good',
+        'short_name': 'good',
+        'long_name': 'Good Air Quality',
+        'icon': 'mdi:emoticon-happy',
+        'color': '#009966',
+        'description': 'Air quality is satisfactory',
+        'health_effects': 'Little to no risk',
+        'caution': 'None needed',
+        'action_needed': 'No action needed'
+    }
+] %}
+
+{% macro get_color(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).color }}
+{% endmacro %}
+
+{% macro get_icon(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).icon }}
+{% endmacro %}
+
+{% macro get_name(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).name }}
+{% endmacro %}
+
+{% macro get_short_name(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).short_name }}
+{% endmacro %}
+
+{% macro get_long_name(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).long_name }}
+{% endmacro %}
+
+{% macro get_description(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).description }}
+{% endmacro %}
+
+{% macro get_health_effects(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).health_effects }}
+{% endmacro %}
+
+{% macro get_caution(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).caution }}
+{% endmacro %}
+
+{% macro get_action_needed(value, app='', options={}) %}
+    {{ find_matching_level(value, levels).action_needed }}
+{% endmacro %}
