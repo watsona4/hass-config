@@ -1038,3 +1038,119 @@
         age_minutes: "{{ (best.age_m | float(0) | round(1)) if (best.age_m|float(none)) is not none else none }}"
         pixel_score: "{{ pixel.score }}"
         iphone_score: "{{ iphone.score }}"
+
+- trigger:
+    - platform: state
+      entity_id: sensor.netprobe_status
+  sensor:
+    - name: Netprobe Download
+      unique_id: netprobe_download_mbps
+      unit_of_measurement: Mbps
+      device_class: data_rate
+      state_class: measurement
+      icon: mdi:download-network
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','download_mbps') }}"
+    - name: Netprobe Upload
+      unique_id: netprobe_upload_mbps
+      unit_of_measurement: Mbps
+      device_class: data_rate
+      state_class: measurement
+      icon: mdi:upload-network
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','upload_mbps') }}"
+    - name: Netprobe Latency TCP
+      unique_id: netprobe_latency_tcp_ms
+      unit_of_measurement: ms
+      device_class: duration
+      state_class: measurement
+      icon: mdi:lan-pending
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','latency_tcp_ms') }}"
+    - name: Netprobe Latency ICMP
+      unique_id: netprobe_latency_icmp_ms
+      unit_of_measurement: ms
+      device_class: duration
+      state_class: measurement
+      icon: mdi:lan-pending
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','latency_icmp_ms') }}"
+    - name: Netprobe Jitter Down
+      unique_id: netprobe_jitter_dl_ms
+      unit_of_measurement: ms
+      state_class: measurement
+      icon: mdi:chart-timeline-variant
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','jitter_dl_ms') }}"
+    - name: Netprobe Jitter Up
+      unique_id: netprobe_jitter_ul_ms
+      unit_of_measurement: ms
+      state_class: measurement
+      icon: mdi:chart-timeline-variant
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','jitter_ul_ms') }}"
+    - name: Netprobe Loss Down %
+      unique_id: netprobe_loss_dl_percent
+      unit_of_measurement: '%'
+      state_class: measurement
+      icon: mdi:packet-down
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','loss_dl_percent') }}"
+    - name: Netprobe Loss Up %
+      unique_id: netprobe_loss_ul_percent
+      unit_of_measurement: '%'
+      state_class: measurement
+      icon: mdi:packet-up
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','loss_ul_percent') }}"
+    - name: Netprobe Lost Packets Down
+      unique_id: netprobe_loss_dl_packets
+      state_class: measurement
+      icon: mdi:package-variant-minus
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','loss_dl_packets') }}"
+    - name: Netprobe Lost Packets Up
+      unique_id: netprobe_loss_ul_packets
+      state_class: measurement
+      icon: mdi:package-variant-minus
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','loss_ul_packets') }}"
+    - name: Netprobe Packets Down
+      unique_id: netprobe_packets_dl
+      state_class: measurement
+      icon: mdi:package-variant-closed
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','packets_dl') }}"
+    - name: Netprobe Packets Up
+      unique_id: netprobe_packets_ul
+      state_class: measurement
+      icon: mdi:package-variant-closed
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: "{{ state_attr('sensor.netprobe_status','packets_ul') }}"
+    - name: Netprobe Quality
+      unique_id: netprobe_quality_text
+      icon: mdi:check-network-outline
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: >-
+        {% set jdl = state_attr('sensor.netprobe_status','jitter_dl_ms') %}
+        {% set jul = state_attr('sensor.netprobe_status','jitter_ul_ms') %}
+        {% set ldl = state_attr('sensor.netprobe_status','loss_dl_percent') %}
+        {% set lul = state_attr('sensor.netprobe_status','loss_ul_percent') %}
+        {% set bad = (
+          (jdl is number and jdl > 30) or
+          (jul is number and jul > 30) or
+          (ldl is number and ldl > 1.0) or
+          (lul is number and lul > 1.0)
+        ) %}
+        {{ 'degraded' if bad else 'ok' }}
+  binary_sensor:
+    - name: Netprobe Hiccup
+      unique_id: netprobe_hiccup_flag
+      device_class: problem
+      icon: mdi:alert-circle
+      availability: "{{ has_value('sensor.netprobe_status') }}"
+      state: >-
+        {% set v = state_attr('sensor.netprobe_status','hiccup') %}
+        {{ 'on' if v in [true, 'true', 'True'] else 'off' }}
+      attributes:
+        reason: "{{ state_attr('sensor.netprobe_status','hiccup_reason') }}"

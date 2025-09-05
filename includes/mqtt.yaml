@@ -222,69 +222,29 @@
 
 # --- Netprobe sensors ---
 - sensor:
-    - name: "Netprobe Download"
-      unique_id: netprobe_down
-      state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "Mbit/s"
-      device_class: data_rate
-      state_class: measurement
-      value_template: >-
-        {% set v = value_json.download_mbps | float(nan) %}
-        {{ value_json.download_mbps }}
+    name: Netprobe Status Home
+    unique_id: netprobe_status_home
+    state_topic: site/home/devices/netprobe
+    value_template: "{{ value_json.timestamp }}"
+    json_attributes_topic: site/home/devices/netprobe
+    expire_after: 900
+    device:
+      identifiers: ["netprobe_home_device"]
+      name: Netprobe Home WAN
+      manufacturer: Netprobe
+      model: iperf3 bash client
+      sw_version: "1.0"
 
-    - name: "Netprobe Upload"
-      unique_id: netprobe_up
-      state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "Mbit/s"
-      device_class: data_rate
-      state_class: measurement
-      value_template: >-
-        {% set v = value_json.upload_mbps | float(nan) %}
-        {{ v if v == v else states('sensor.netprobe_upload') }}
-
-    - name: "Netprobe Latency (TCP)"
-      unique_id: netprobe_lat_tcp
-      state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "ms"
-      device_class: duration
-      state_class: measurement
-      value_template: "{{ value_json.latency_tcp_ms | float }}"
-      icon: mdi:lan-connect
-
-    - name: "Netprobe Latency (ICMP)"
-      unique_id: netprobe_lat_icmp
-      state_topic: "site/home/devices/netprobe"
-      unit_of_measurement: "ms"
-      device_class: duration
-      state_class: measurement
-      value_template: >-
-        {% if value_json.latency_icmp_ms is not none %}
-          {{ value_json.latency_icmp_ms | float }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:lan-pending
-
-    - name: "Netprobe Error Flag"
-      unique_id: netprobe_error
-      state_topic: "site/home/devices/netprobe"
-      value_template: "{{ value_json.error }}"
-      icon: mdi:alert-circle-outline
-
-    - name: "Netprobe Last Run"
-      unique_id: netprobe_last_run
-      state_topic: "site/home/devices/netprobe"
-      value_template: "{{ value_json.timestamp }}"
-      device_class: timestamp
-
-    - name: "Netprobe Hiccup"
-      unique_id: netprobe_hiccup
-      state_topic: "site/home/devices/netprobe"
-      value_template: "{{ value_json.hiccup }}"
-      icon: mdi:pulse
-
-    - name: "Netprobe Hiccup Reason"
-      unique_id: netprobe_hiccup_reason
-      state_topic: "site/home/devices/netprobe"
-      value_template: "{{ value_json.hiccup_reason | default('') }}"
-      icon: mdi:alert-circle-outline
+- sensor:
+    name: Netprobe Status
+    unique_id: netprobe_status_rv
+    state_topic: site/rv/devices/netprobe
+    value_template: "{{ value_json.timestamp }}"
+    json_attributes_topic: site/rv/devices/netprobe
+    expire_after: 900
+    device:
+      identifiers: ["netprobe_rv_device"]
+      name: Netprobe RV Uplink
+      manufacturer: Netprobe
+      model: iperf3 bash client
+      sw_version: "1.0"
