@@ -1039,6 +1039,25 @@
         pixel_score: "{{ pixel.score }}"
         iphone_score: "{{ iphone.score }}"
 
+- sensor:
+    - name: Gas Meter
+      unique_id: gas_meter
+      device_class: gas
+      unit_of_measurement: "ft³"
+      state_class: total_increasing
+      availability: >-
+        {{ has_value('sensor.furnace_gas_meter')
+           or has_value('sensor.dryer_gas_meter')
+           or has_value('sensor.water_heater_gas_meter')
+           or has_value('sensor.gas_stove_gas_meter')
+           or has_value('sensor.shop_furnace_gas_meter') }}
+      state: >-
+        {{ ((states('sensor.furnace_gas_meter') | float(0))
+           + (states('sensor.dryer_gas_meter') | float(0))
+           + (states('sensor.water_heater_gas_meter') | float(0))
+           + (states('sensor.gas_stove_gas_meter') | float(0))
+           + (states('sensor.shop_furnace_gas_meter') | float(0))) | round(3) }}
+
 - trigger:
     - platform: state
       entity_id: sensor.netprobe_status

@@ -210,14 +210,3 @@
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min
   max_age: "999999:00:00"
-
-- platform: min_max
-  name: Gas Meter
-  unique_id: gas_meter
-  type: sum
-  entity_ids:
-    - sensor.furnace_gas_meter
-    - sensor.dryer_gas_meter
-    - sensor.water_heater_gas_meter
-    - sensor.gas_stove_gas_meter
-    - sensor.shop_furnace_gas_meter
