@@ -227,7 +227,7 @@
     state_topic: site/home/devices/netprobe
     value_template: "{{ value_json.timestamp }}"
     json_attributes_topic: site/home/devices/netprobe
-    expire_after: 900
+    expire_after: 2400
     device:
       identifiers: ["netprobe_home_device"]
       name: Netprobe Home WAN
@@ -241,7 +241,7 @@
     state_topic: site/rv/devices/netprobe
     value_template: "{{ value_json.timestamp }}"
     json_attributes_topic: site/rv/devices/netprobe
-    expire_after: 900
+    expire_after: 4200
     device:
       identifiers: ["netprobe_rv_device"]
       name: Netprobe RV Uplink
