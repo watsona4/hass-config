@@ -1,0 +1,79 @@
+{# Temperature conversion utilities #}
+
+{% macro normalize_unit(unit) -%}
+    {# Normalize unit string to standard format #}
+    {%- set u = unit | string | trim | replace('°', '') | upper -%}
+    {%- if u in ['C', 'CELSIUS', 'DEG C', 'DEGC'] -%}
+        {{ '°C' }}
+    {%- elif u in ['F', 'FAHRENHEIT', 'DEG F', 'DEGF'] -%}
+        {{ '°F' }}
+    {%- elif u in ['K', 'KELVIN', 'DEG K', 'DEGK'] -%}
+        {{ 'K' }}
+    {%- else -%}
+        {{ unit }}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro normalize(value, unit) %}
+    {# Always normalize to Celsius #}
+    {%- set v = value | float(0) -%}
+    {%- set u = normalize_unit(unit) -%}
+    {% if u == '°C' %}
+        {{ {'value': v, 'unit': '°C'} | tojson }}
+    {% elif u == '°F' %}
+        {{ {'value': (v - 32) * 5/9, 'unit': '°C'} | tojson }}
+    {% elif u == 'K' %}
+        {{ {'value': v - 273.15, 'unit': '°C'} | tojson }}
+    {% else %}
+        {{ {'error': 'Invalid temperature unit: ' ~ unit} | tojson }}
+    {% endif %}
+{% endmacro %}
+
+{% macro from_standard(value, to_unit) %}
+    {# Convert from Celsius to the desired unit #}
+    {%- set v = value | float(0) -%}
+    {%- set u = normalize_unit(to_unit) -%}
+    {% if u == '°C' %}
+        {{ {'value': v, 'unit': '°C'} | tojson }}
+    {% elif u == '°F' %}
+        {{ {'value': (v * 9/5) + 32, 'unit': '°F'} | tojson }}
+    {% elif u == 'K' %}
+        {{ {'value': v + 273.15, 'unit': 'K'} | tojson }}
+    {% else %}
+        {{ {'error': 'Invalid temperature unit: ' ~ to_unit} | tojson }}
+    {% endif %}
+{% endmacro %}
+
+{% macro convert_temp(value, from_unit, to_unit) %}
+    {# Convert temperature between any supported units using normalize and from_standard #}
+    {%- set from_u = normalize_unit(from_unit) -%}
+    {%- set to_u = normalize_unit(to_unit) -%}
+
+    {# First normalize to Celsius #}
+    {%- set normalized = normalize(value, from_u) | from_json -%}
+
+    {# Check for errors in normalization #}
+    {%- if normalized.error is defined -%}
+        {{ normalized | tojson }}
+    {%- else -%}
+        {# Convert to target unit #}
+        {%- set converted = from_standard(normalized.value, to_u) | from_json -%}
+        {# Add source/target unit info to result #}
+        {%- if converted.error is defined -%}
+            {{ converted | tojson }}
+        {%- else -%}
+            {{ {'value': converted.value, 'unit': converted.unit, 'from': from_u, 'to': to_u} | tojson }}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro convert_entity_temp(entity_id, to_unit) %}
+    {# Convert an entity's temperature to the specified unit #}
+    {%- set value = states(entity_id) | float(0) -%}
+    {%- set from_unit = state_attr(entity_id, 'unit_of_measurement') -%}
+    {%- if not from_unit -%}
+        {{ {'error': 'Entity has no unit_of_measurement attribute: ' ~ entity_id} | tojson }}
+    {%- else -%}
+        {{ convert_temp(value, from_unit, to_unit) }}
+    {%- endif -%}
+{% endmacro %}

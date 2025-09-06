@@ -134,27 +134,29 @@
 {# Find matching level in a list of level definitions based on min_value #}
 {% macro find_matching_level(value, levels) %}
     {%- set ns = namespace(found=none) -%}
+    {%- set val = value | float(0) -%}
     {%- for level in levels -%}
-        {%- if value >= level.min_value -%}
+        {%- if val >= (level.min_value | float(0)) -%}
             {%- set ns.found = level -%}
+            {%- break -%}
         {%- endif -%}
     {%- endfor -%}
-    {{- ns.found or levels[-1] -}}
+    {{- (ns.found or levels[-1]) | tojson -}}
 {%- endmacro %}
 
 {# Humanize a number with unit, using SI/IEC prefixes as appropriate #}
 {% macro humanize_unit(n, unit='', system='') %}
 
-    {# If no unit passed, just smart format the number #}
+    {#- If no unit passed, just smart format the number -#}
     {%- if not unit or unit|trim == '' -%}
         {{ smartfmt(n) }}
     {%- else -%}
         {%- set sgn = -1 if (n|float(0)) < 0 else 1 -%}
-        {%- set unit = unit|string|trim %}
+        {%- set unit = unit|string|trim -%}
         {%- set ns = namespace(v=n|float(0)|abs, system=(system or '')|lower, pref_out=none) -%}
 
-        {# SI and IEC prefix tables #}
-        {# djlint:off #}
+        {#- SI and IEC prefix tables -#}
+        {#- djlint:off -#}
         {%- set si_list = [
             ('Y', 1e+24), ('Z', 1e+21), ('E', 1e+18), ('P', 1e+15), ('T', 1e+12), ('G', 1e+9),
             ('M', 1e+6), ('k', 1e+3), ('h', 100.0), ('da', 10.0), ('d', 0.1), ('c', 0.01), ('m', 0.001),
@@ -165,9 +167,9 @@
             ('Yi', 2**80), ('Zi', 2**70), ('Ei', 2**60), ('Pi', 2**50), ('Ti', 2**40),
             ('Gi', 2**30), ('Mi', 2**20), ('Ki', 2**10)
         ] -%}
-        {# djlint:oon #}
+        {#- djlint:oon -#}
 
-        {# detect prefix in unit #}
+        {#- detect prefix in unit -#}
         {%- set det = namespace(kind='', pref='', factor=1.0) -%}
         {%- for p, mult in iec_list -%}
             {%- if unit.startswith(p) and (unit|length) > (p|length) -%}
@@ -188,11 +190,11 @@
             {%- endfor -%}
         {%- endif -%}
 
-        {# peel prefix and normalize value #}
+        {#- peel prefix and normalize value -#}
         {%- set base_unit = unit[det.pref|length:] if det.pref else unit -%}
         {%- set ns.v = ns.v * det.factor -%}
 
-        {# system resolution (explicit > preserved > defaults) #}
+        {#- system resolution (explicit > preserved > defaults) -#}
         {%- if ns.system not in ['si','iec'] -%}
             {%- set base_token = base_unit.split('/', 1)[0] -%}
             {%- set base_token_l = base_token|lower -%}
@@ -204,7 +206,7 @@
             {%- endif -%}
         {%- endif -%}
 
-        {# scale #}
+        {#- scale -#}
         {%- if ns.system == 'iec' -%}
             {%- set base = 1024.0 -%}
             {%- set prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"] -%}
@@ -238,9 +240,9 @@
             {%- set ns.pref_out = prefixes[idx.i] -%}
         {%- endif -%}
 
-        {# format #}
+        {#- format -#}
         {%- set out = (ns.v if ns.v < 100 else ns.v|round(0))|round(1) -%}
-        {{ (out * sgn) }} {{ ns.pref_out }}{{ base_unit }}
+        {{- (out * sgn) ~ ' ' ~ ns.pref_out ~ base_unit -}}
     {%- endif -%}
 {% endmacro %}
 

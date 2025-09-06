@@ -1,0 +1,416 @@
+{# Severity definitions for temperature measurements (HA device_class: temperature) #}
+
+{% from 'helpers.jinja' import find_matching_level, humanize_unit %}
+{% from 'units/temperature.jinja' import normalize, from_standard, convert_temp %}
+
+{# Standard temperature levels for various applications #}
+{% set levels = {
+    "dew_point": [
+        {
+            "min_value": 24,
+            "name": "severe",
+            "short_name": "sev",
+            "long_name": "Severe",
+            "icon": "mdi:water-percent-alert",
+            "color": "purple",
+            "description": "Dew point at severe discomfort level. Critical risk of heat stress for all individuals. Stay in climate-controlled environment, use dehumidification, and monitor for heat stress symptoms."
+        },
+        {
+            "min_value": 21,
+            "name": "very_uncomfortable",
+            "short_name": "v-uncomf",
+            "long_name": "Very Uncomfortable",
+            "icon": "mdi:water-percent",
+            "color": "red",
+            "description": "Very uncomfortable dew point. High discomfort with possible heat stress. Limit outdoor exposure and use AC/dehumidifier."
+        },
+        {
+            "min_value": 18,
+            "name": "uncomfortable",
+            "short_name": "uncomf",
+            "long_name": "Uncomfortable",
+            "icon": "mdi:water-percent",
+            "color": "deep-orange",
+            "description": "Uncomfortable dew point causing notable discomfort. Monitor activity and consider dehumidification."
+        },
+        {
+            "min_value": 16,
+            "name": "moderate",
+            "short_name": "mod",
+            "long_name": "Moderate",
+            "icon": "mdi:water-percent",
+            "color": "orange",
+            "description": "Moderate dew point with slight discomfort possible. Monitor indoor humidity."
+        },
+        {
+            "min_value": 10,
+            "name": "comfortable",
+            "short_name": "comf",
+            "long_name": "Comfortable",
+            "icon": "mdi:water-percent",
+            "color": "green",
+            "description": "Comfortable dew point at optimal comfort level."
+        },
+        {
+            "min_value": 0,
+            "name": "dry",
+            "short_name": "dry",
+            "long_name": "Dry",
+            "icon": "mdi:water-percent",
+            "color": "blue",
+            "description": "Low dew point that may feel dry for some people. Consider humidification if persistent."
+        }
+    ],
+    "ambient": [
+        {
+            "min_value": 40,
+            "name": "extreme_hot",
+            "short_name": "xhot",
+            "long_name": "Extremely Hot",
+            "icon": "mdi:thermometer-high",
+            "color": "deep-purple",
+            "description": "Extremely hot conditions with dangerous heat. Risk of heat exhaustion and heat stroke. Avoid outdoor activities, seek air conditioning, and stay hydrated."
+        },
+        {
+            "min_value": 32,
+            "name": "very_hot",
+            "short_name": "vhot",
+            "long_name": "Very Hot",
+            "icon": "mdi:thermometer-high",
+            "color": "red",
+            "description": "Very hot conditions with high risk of heat-related illness. Limit outdoor exposure and drink plenty of water."
+        },
+        {
+            "min_value": 27,
+            "name": "hot",
+            "short_name": "hot",
+            "long_name": "Hot",
+            "icon": "mdi:thermometer",
+            "color": "deep-orange",
+            "description": "Hot conditions, uncomfortable for some. Monitor outdoor activity, consider cooling measures, and stay hydrated."
+        },
+        {
+            "min_value": 21,
+            "name": "comfortable",
+            "short_name": "comf",
+            "long_name": "Comfortable",
+            "icon": "mdi:thermometer",
+            "color": "green",
+            "description": "Comfortable temperature range providing optimal comfort for most people."
+        },
+        {
+            "min_value": 18,
+            "name": "cool",
+            "short_name": "cool",
+            "long_name": "Cool",
+            "icon": "mdi:thermometer-low",
+            "color": "light-blue",
+            "description": "Cool conditions that may feel chilly for some. Consider light heating or extra clothing."
+        },
+        {
+            "min_value": 10,
+            "name": "cold",
+            "short_name": "cold",
+            "long_name": "Cold",
+            "icon": "mdi:thermometer-low",
+            "color": "blue",
+            "description": "Cold conditions with increasing risk of cold stress. Heat home and wear warm clothing."
+        },
+        {
+            "min_value": 0,
+            "name": "freezing",
+            "short_name": "frz",
+            "long_name": "Freezing",
+            "icon": "mdi:thermometer-low",
+            "color": "indigo",
+            "description": "Freezing conditions with risk of hypothermia if exposed. Protect against freezing and monitor pipes."
+        },
+        {
+            "min_value": -20,
+            "name": "extreme_cold",
+            "short_name": "xcold",
+            "long_name": "Extremely Cold",
+            "icon": "mdi:snowflake-alert",
+            "color": "purple",
+            "description": "Extremely cold conditions with dangerous cold. High risk of hypothermia and frostbite. Avoid outdoor exposure and ensure emergency heating."
+        }
+    ],
+    "water": [
+        {
+            "min_value": 80,
+            "name": "scalding",
+            "short_name": "scald",
+            "long_name": "Scalding",
+            "icon": "mdi:thermometer-alert",
+            "color": "red",
+            "description": "Dangerously hot water that can cause instant severe burns. Reduce water heater temperature immediately."
+        },
+        {
+            "min_value": 60,
+            "name": "very_hot",
+            "short_name": "vhot",
+            "long_name": "Very Hot",
+            "icon": "mdi:thermometer-high",
+            "color": "deep-orange",
+            "description": "Very hot water that can cause burns in seconds. Use extreme caution and consider temperature reduction."
+        },
+        {
+            "min_value": 49,
+            "name": "hot",
+            "short_name": "hot",
+            "long_name": "Hot",
+            "icon": "mdi:thermometer",
+            "color": "orange",
+            "description": "Hot water that is safe but requires normal caution during use. Risk of scalding is reduced."
+        },
+        {
+            "min_value": 38,
+            "name": "warm",
+            "short_name": "warm",
+            "long_name": "Warm",
+            "icon": "mdi:thermometer",
+            "color": "green",
+            "description": "Warm water at comfortable temperature for bathing. Safe for all uses."
+        },
+        {
+            "min_value": 21,
+            "name": "cool",
+            "short_name": "cool",
+            "long_name": "Cool",
+            "icon": "mdi:thermometer-low",
+            "color": "cyan",
+            "description": "Cool water that may feel cold for bathing. Check water heater if temperature is unexpected."
+        },
+        {
+            "min_value": 10,
+            "name": "cold",
+            "short_name": "cold",
+            "long_name": "Cold",
+            "icon": "mdi:snowflake",
+            "color": "light-blue",
+            "description": "Cold water that is too cold for comfortable use. Check water heater if hot water expected."
+        },
+        {
+            "min_value": 0,
+            "name": "freezing",
+            "short_name": "frz",
+            "long_name": "Freezing",
+            "icon": "mdi:snowflake-alert",
+            "color": "blue",
+            "description": "Freezing water with risk of pipe damage. Immediate action needed to prevent pipe burst."
+        }
+    ],
+    "heat_index": [
+        {
+            "min_value": 54,
+            "name": "extreme_danger",
+            "short_name": "xdgr",
+            "long_name": "Extreme Danger",
+            "icon": "mdi:thermometer-alert",
+            "color": "purple",
+            "description": "Life-threatening extreme danger conditions. Heat stroke highly likely. Medical emergency likely. Avoid outdoor activities and seek air conditioning immediately."
+        },
+        {
+            "min_value": 41,
+            "name": "danger",
+            "short_name": "dgr",
+            "long_name": "Danger",
+            "icon": "mdi:thermometer-alert",
+            "color": "red",
+            "description": "Dangerous heat conditions presenting high risk for all people. Heat cramps or heat exhaustion likely with possible heat stroke. Avoid outdoor exertion and seek cool environment."
+        },
+        {
+            "min_value": 32,
+            "name": "extreme_caution",
+            "short_name": "xctn",
+            "long_name": "Extreme Caution",
+            "icon": "mdi:thermometer-high",
+            "color": "deep-orange",
+            "description": "Very hot and humid conditions with heat cramps and heat exhaustion possible. Moderate risk for healthy people, high risk for sensitive groups. Reduce outdoor activity and stay hydrated."
+        },
+        {
+            "min_value": 27,
+            "name": "caution",
+            "short_name": "ctn",
+            "long_name": "Caution",
+            "icon": "mdi:thermometer",
+            "color": "yellow",
+            "description": "Hot and humid conditions with possible fatigue during prolonged exposure. Low risk for healthy people, moderate risk for sensitive groups. Take breaks during outdoor activities."
+        },
+        {
+            "min_value": 0,
+            "name": "normal",
+            "short_name": "norm",
+            "long_name": "Normal",
+            "icon": "mdi:thermometer",
+            "color": "green",
+            "description": "Heat index not significant. No special risk from heat and humidity. Safe for outdoor activities with normal precautions."
+        }
+    ],
+    "wind_chill": [
+        {
+            "min_value": 0,
+            "name": "comfortable",
+            "short_name": "comf",
+            "long_name": "Comfortable",
+            "icon": "mdi:thermometer",
+            "color": "green",
+            "description": "No significant wind chill. Safe for outdoor activities with normal winter clothing. No risk of cold-related illness."
+        },
+        {
+            "min_value": -10,
+            "name": "cold",
+            "short_name": "cold",
+            "long_name": "Cold",
+            "icon": "mdi:thermometer-low",
+            "color": "light-blue",
+            "description": "Chilly conditions with low risk when properly clothed. Uncomfortable with risk of hypothermia during prolonged exposure. Wear warm winter clothing and cover exposed skin."
+        },
+        {
+            "min_value": -20,
+            "name": "very_cold",
+            "short_name": "vcold",
+            "long_name": "Very Cold",
+            "icon": "mdi:thermometer-low",
+            "color": "blue",
+            "description": "Very cold wind chill that is dangerous for prolonged exposure. Risk of frostbite to exposed skin within 30 minutes. Minimize outdoor activity and wear multiple layers."
+        },
+        {
+            "min_value": -30,
+            "name": "severe",
+            "short_name": "sev",
+            "long_name": "Severe",
+            "icon": "mdi:snowflake-alert",
+            "color": "deep-purple",
+            "description": "Severely cold wind chill with high risk for any exposed skin. Frostbite possible within 10 minutes. Avoid outdoor activity and cover all exposed skin."
+        },
+        {
+            "min_value": -40,
+            "name": "extreme",
+            "short_name": "ext",
+            "long_name": "Extreme",
+            "icon": "mdi:snowflake-alert",
+            "color": "purple",
+            "description": "Extremely dangerous wind chill with life-threatening conditions. Frostbite possible within 5 minutes. Stay indoors as outdoor exposure is dangerous."
+        },
+        {
+            "min_value": -60,
+            "name": "extreme_danger",
+            "short_name": "xdgr",
+            "long_name": "Extreme Danger",
+            "icon": "mdi:snowflake-alert",
+            "color": "red",
+            "description": "Immediately life-threatening conditions with frostbite possible within 2 minutes. Outside exposure fatal without protection."
+        }
+    ],
+    "cpu": [
+        {
+            "min_value": 90,
+            "name": "critical",
+            "short_name": "crit",
+            "long_name": "Critical Temperature",
+            "icon": "mdi:cpu-64-bit",
+            "color": "red",
+            "description": "Critical CPU temperature causing immediate thermal throttling with risk of damage. Shut down immediately and check cooling system."
+        },
+        {
+            "min_value": 80,
+            "name": "very_hot",
+            "short_name": "vhot",
+            "long_name": "Very Hot",
+            "icon": "mdi:cpu-64-bit",
+            "color": "deep-orange",
+            "description": "Very high CPU temperature above recommended maximum. Performance throttling likely. Reduce load and check cooling immediately."
+        },
+        {
+            "min_value": 70,
+            "name": "hot",
+            "short_name": "hot",
+            "long_name": "Hot",
+            "icon": "mdi:cpu-64-bit",
+            "color": "orange",
+            "description": "High CPU temperature approaching thermal limits. Performance may be affected. Monitor closely and consider workload reduction."
+        },
+        {
+            "min_value": 60,
+            "name": "warm",
+            "short_name": "warm",
+            "long_name": "Warm",
+            "icon": "mdi:cpu-64-bit",
+            "color": "yellow",
+            "description": "Warm CPU temperature within normal limits under load. Monitor if sustained."
+        },
+        {
+            "min_value": 45,
+            "name": "normal",
+            "short_name": "norm",
+            "long_name": "Normal",
+            "icon": "mdi:cpu-64-bit",
+            "color": "green",
+            "description": "Normal operating temperature in optimal operating range."
+        },
+        {
+            "min_value": 30,
+            "name": "cool",
+            "short_name": "cool",
+            "long_name": "Cool",
+            "icon": "mdi:cpu-64-bit",
+            "color": "light-blue",
+            "description": "Cool CPU temperature in good operating range."
+        },
+        {
+            "min_value": 0,
+            "name": "cold",
+            "short_name": "cold",
+            "long_name": "Cold",
+            "icon": "mdi:cpu-64-bit",
+            "color": "blue",
+            "description": "Cold CPU temperature below normal operating range. Check if reading is accurate."
+        }
+    ]
+} -%}
+
+{# Helper macro for common temperature level retrieval pattern #}
+{% macro _get_level_attrs(value, app, attr, error_value, options={}) -%}
+    {%- set standard = normalize(value, options.from_unit) | from_json -%}
+    {%- if standard.error is defined -%}
+        {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'description' else error_value) -}}
+    {%- else -%}
+        {%- set match = find_matching_level(standard.value, levels[app]) | from_json -%}
+        {{- match[attr] -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Standard wrapper functions #}
+{% macro get_value(value, options={}) -%}
+    {%- set temp = convert_temp(value, options.from_unit, options.to_unit) | from_json -%}
+    {{- humanize_unit(temp.value, temp.unit) -}}
+{%- endmacro %}
+
+{% macro get_name(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'name', 'error', options) -}}
+{%- endmacro %}
+
+{% macro get_short_name(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'short_name', 'error', options) -}}
+{%- endmacro %}
+
+{% macro get_long_name(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'long_name', 'Error', options) -}}
+{%- endmacro %}
+
+{% macro get_long_name(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'long_name', 'Error', options) -}}
+{%- endmacro %}
+
+{% macro get_icon(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'icon', 'mdi:alert', options) -}}
+{%- endmacro %}
+
+{% macro get_description(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'description', 'Error normalizing temperature: ', options) -}}
+{%- endmacro %}
+
+{% macro get_color(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'color', 'red', options) -}}
+{%- endmacro %}

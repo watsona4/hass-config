@@ -1,0 +1,143 @@
+{# Device class wrapper template for automatic template selection based on entity device class #}
+
+{% macro get_device_state_info(entity_id, options={}) %}
+
+    {# Get the entity's device class if it exists, otherwise use 'none' #}
+    {%- set ns = namespace(device_class=none) -%}
+    {%- set ns.device_class = state_attr(entity_id, 'device_class') or 'none' -%}
+
+    {# Get the current state value and units #}
+    {%- set value = states(entity_id) | float(0) -%}
+    {%- set from_unit = state_attr(entity_id, 'unit_of_measurement') -%}
+    {%- set to_unit = options.unit|default(from_unit) -%}
+    
+    {# Create options dict with unit info for the getters #}
+    {%- set enhanced_options = dict(
+        options,
+        from_unit=from_unit,
+        to_unit=to_unit
+    ) -%}
+
+    {# Import the appropriate template based on device class #}
+    {%- set valid_classes = [
+        "acceleration",
+        "angle",
+        "aqi",
+        "apparent_power",
+        "atmospheric_pressure",
+        "battery",
+        "carbon_dioxide",
+        "carbon_monoxide",
+        "cloud_coverage",
+        "conductivity",
+        "current",
+        "data_rate",
+        "data_size",
+        "distance",
+        "duration",
+        "energy",
+        "frequency",
+        "gas",
+        "heat_index",
+        "humidity",
+        "illuminance",
+        "irradiance",
+        "latency",
+        "lightning",
+        "moisture",
+        "monetary",
+        "nitrogen_dioxide",
+        "none",
+        "ozone",
+        "packet_loss",
+        "percentage",
+        "ph",
+        "pm10",
+        "pm25",
+        "power",
+        "precipitation",
+        "precipitation_intensity",
+        "pressure",
+        "radiation",
+        "salinity",
+        "signal_strength",
+        "snow_depth",
+        "soil_nutrient",
+        "solar_radiation",
+        "sound_level",
+        "speed",
+        "sulphur_dioxide",
+        "temperature",
+        "timestamp",
+        "uptime",
+        "uv",
+        "vibration",
+        "volatile_organic_compounds",
+        "voltage",
+        "volume",
+        "volume_flow_rate",
+        "water",
+        "weight",
+        "wind_speed"
+    ] -%}
+
+    {# Ensure we have a valid device class, fallback to 'none' if not #}
+    {%- if ns.device_class not in valid_classes -%}
+        {%- set ns.device_class = "none" -%}
+    {%- endif -%}
+
+    {# Import the device class template #}
+    {%- from 'device_class/' ~ ns.device_class ~ '.jinja' import get_color, get_icon, get_name, get_short_name,
+    get_long_name, get_description, get_value -%}
+
+    {# Return a dictionary with all the relevant information #}
+    {{ {
+    'value': get_value(value, options=enhanced_options),
+    'name': get_name(value, options=enhanced_options),
+    'short_name': get_short_name(value, options=enhanced_options),
+    'long_name': get_long_name(value, options=enhanced_options),
+    'description': get_description(value, options=enhanced_options),
+    'icon': get_icon(value, options=enhanced_options),
+    'color': get_color(value, options=enhanced_options),
+    } | tojson }}
+
+{% endmacro %}
+
+{# Helper macro to get specific attribute #}
+{% macro get_attribute(entity_id, attribute, options={}) %}
+    {%- set info = get_device_state_info(entity_id, options) | from_json -%}
+    {{ info[attribute] }}
+{% endmacro %}
+
+{# Convenience macros for common attributes #}
+{% macro get_value(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'value', options) }}
+{% endmacro %}
+
+{% macro get_name(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'name', options) }}
+{% endmacro %}
+
+{% macro get_short_name(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'short_name', options) }}
+{% endmacro %}
+
+{% macro get_long_name(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'long_name', options) }}
+{% endmacro %}
+
+{% macro get_description(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'description', options) }}
+{% endmacro %}
+
+{% macro get_icon(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'icon', options) }}
+{% endmacro %}
+
+{% macro get_color(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'color', options) }}
+{% endmacro %}
+
+{% macro get_level(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'level', options) }}
+{% endmacro %}
