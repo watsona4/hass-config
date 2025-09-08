@@ -1064,7 +1064,7 @@
   sensor:
     - name: Netprobe Download
       unique_id: netprobe_download_mbps
-      unit_of_measurement: Mbps
+      unit_of_measurement: Mbit/s
       device_class: data_rate
       state_class: measurement
       icon: mdi:download-network
@@ -1072,7 +1072,7 @@
       state: "{{ state_attr('sensor.netprobe_status','download_mbps') }}"
     - name: Netprobe Upload
       unique_id: netprobe_upload_mbps
-      unit_of_measurement: Mbps
+      unit_of_measurement: Mbit/s
       device_class: data_rate
       state_class: measurement
       icon: mdi:upload-network
@@ -1173,3 +1173,119 @@
         {{ 'on' if v in [true, 'true', 'True'] else 'off' }}
       attributes:
         reason: "{{ state_attr('sensor.netprobe_status','hiccup_reason') }}"
+
+- trigger:
+    - platform: state
+      entity_id: sensor.netprobe_status_rv
+  sensor:
+    - name: Netprobe Download RV
+      unique_id: netprobe_download_rv_mbps
+      unit_of_measurement: Mbit/s
+      device_class: data_rate
+      state_class: measurement
+      icon: mdi:download-network
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','download_mbps') }}"
+    - name: Netprobe Upload RV
+      unique_id: netprobe_upload_rv_mbps
+      unit_of_measurement: Mbit/s
+      device_class: data_rate
+      state_class: measurement
+      icon: mdi:upload-network
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','upload_mbps') }}"
+    - name: Netprobe Latency TCP RV
+      unique_id: netprobe_latency_tcp_rv_ms
+      unit_of_measurement: ms
+      device_class: duration
+      state_class: measurement
+      icon: mdi:lan-pending
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','latency_tcp_ms') }}"
+    - name: Netprobe Latency ICMP RV
+      unique_id: netprobe_latency_icmp_rv_ms
+      unit_of_measurement: ms
+      device_class: duration
+      state_class: measurement
+      icon: mdi:lan-pending
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','latency_icmp_ms') }}"
+    - name: Netprobe Jitter Down RV
+      unique_id: netprobe_jitter_dl_rv_ms
+      unit_of_measurement: ms
+      state_class: measurement
+      icon: mdi:chart-timeline-variant
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','jitter_dl_ms') }}"
+    - name: Netprobe Jitter Up RV
+      unique_id: netprobe_jitter_ul_rv_ms
+      unit_of_measurement: ms
+      state_class: measurement
+      icon: mdi:chart-timeline-variant
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','jitter_ul_ms') }}"
+    - name: Netprobe Loss Down % RV
+      unique_id: netprobe_loss_dl_rv_percent
+      unit_of_measurement: '%'
+      state_class: measurement
+      icon: mdi:packet-down
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','loss_dl_percent') }}"
+    - name: Netprobe Loss Up % RV
+      unique_id: netprobe_loss_ul_rv_percent
+      unit_of_measurement: '%'
+      state_class: measurement
+      icon: mdi:packet-up
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','loss_ul_percent') }}"
+    - name: Netprobe Lost Packets Down RV
+      unique_id: netprobe_loss_dl_packets_rv
+      state_class: measurement
+      icon: mdi:package-variant-minus
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','loss_dl_packets') }}"
+    - name: Netprobe Lost Packets Up RV
+      unique_id: netprobe_loss_ul_packets_rv
+      state_class: measurement
+      icon: mdi:package-variant-minus
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','loss_ul_packets') }}"
+    - name: Netprobe Packets Down RV
+      unique_id: netprobe_packets_dl_rv
+      state_class: measurement
+      icon: mdi:package-variant-closed
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','packets_dl') }}"
+    - name: Netprobe Packets Up RV
+      unique_id: netprobe_packets_ul_rv
+      state_class: measurement
+      icon: mdi:package-variant-closed
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: "{{ state_attr('sensor.netprobe_status_rv','packets_ul') }}"
+    - name: Netprobe Quality RV
+      unique_id: netprobe_quality_text_rv
+      icon: mdi:check-network-outline
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: >-
+        {% set jdl = state_attr('sensor.netprobe_status_rv','jitter_dl_ms') %}
+        {% set jul = state_attr('sensor.netprobe_status_rv','jitter_ul_ms') %}
+        {% set ldl = state_attr('sensor.netprobe_status_rv','loss_dl_percent') %}
+        {% set lul = state_attr('sensor.netprobe_status_rv','loss_ul_percent') %}
+        {% set bad = (
+          (jdl is number and jdl > 30) or
+          (jul is number and jul > 30) or
+          (ldl is number and ldl > 1.0) or
+          (lul is number and lul > 1.0)
+        ) %}
+        {{ 'degraded' if bad else 'ok' }}
+  binary_sensor:
+    - name: Netprobe Hiccup RV
+      unique_id: netprobe_hiccup_flag_rv
+      device_class: problem
+      icon: mdi:alert-circle
+      availability: "{{ has_value('sensor.netprobe_status_rv') }}"
+      state: >-
+        {% set v = state_attr('sensor.netprobe_status_rv','hiccup') %}
+        {{ 'on' if v in [true, 'true', 'True'] else 'off' }}
+      attributes:
+        reason: "{{ state_attr('sensor.netprobe_status_rv','hiccup_reason') }}"

@@ -236,7 +236,7 @@
       sw_version: "1.0"
 
 - sensor:
-    name: Netprobe Status
+    name: Netprobe Status RV
     unique_id: netprobe_status_rv
     state_topic: site/rv/devices/netprobe
     value_template: "{{ value_json.timestamp }}"

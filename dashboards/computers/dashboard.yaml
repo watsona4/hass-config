@@ -749,6 +749,70 @@ views:
               - entity: sensor.netprobe_latency_tcp
                 name: TCP Latency
                 show_state: true
+          - type: custom:mini-graph-card
+            name: Download Speed RV
+            icon: mdi:download-network
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#d32f2f'
+              - value: 5
+                color: '#ef6c00'
+              - value: 25
+                color: '#fbc02d'
+              - value: 100
+                color: '#7cb342'
+              - value: 300
+                color: '#388e3c'
+              - value: 700
+                color: '#2962ff'
+            entities:
+              - entity: sensor.netprobe_download_rv
+                show_state: true
+          - type: custom:mini-graph-card
+            name: Upload Speed RV
+            icon: mdi:upload-network
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#d32f2f'
+              - value: 0.25
+                color: '#ef6c00'
+              - value: 1.25
+                color: '#fbc02d'
+              - value: 5
+                color: '#7cb342'
+              - value: 15
+                color: '#388e3c'
+              - value: 35
+                color: '#2962ff'
+            entities:
+              - entity: sensor.netprobe_upload_rv
+                show_state: true
+          - type: custom:mini-graph-card
+            name: Latency RV
+            points_per_hour: 2
+            color_thresholds_transition: hard
+            color_thresholds:
+              - value: 0
+                color: '#43A047'
+              - value: 20
+                color: '#FDD835'
+              - value: 40
+                color: '#FB8C00'
+              - value: 70
+                color: '#E53935'
+              - value: 120
+                color: '#9E9E9E'
+            entities:
+              - entity: sensor.netprobe_latency_icmp_rv
+                name: ICMP Latency
+                show_state: true
+              - entity: sensor.netprobe_latency_tcp_rv
+                name: TCP Latency
+                show_state: true
         column_span: 2
     max_columns: 2
     cards: []
