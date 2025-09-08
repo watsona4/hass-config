@@ -1,0 +1,140 @@
+{#- Prefix scaling utilities -#}
+
+{#- Define our prefix systems -#}
+{% set SI_PREFIXES = {
+  'y':  {'exp': -24, 'name': 'yocto'},
+  'z':  {'exp': -21, 'name': 'zepto'},
+  'a':  {'exp': -18, 'name': 'atto'},
+  'f':  {'exp': -15, 'name': 'femto'},
+  'p':  {'exp': -12, 'name': 'pico'},
+  'n':  {'exp': -9,  'name': 'nano'},
+  'µ':  {'exp': -6,  'name': 'micro'},
+  'm':  {'exp': -3,  'name': 'milli'},
+  'c':  {'exp': -2,  'name': 'centi'},
+  'd':  {'exp': -1,  'name': 'deci'},
+  '':   {'exp': 0,   'name': ''},
+  'da': {'exp': 1,   'name': 'deca'},
+  'h':  {'exp': 2,   'name': 'hecto'},
+  'k':  {'exp': 3,   'name': 'kilo'},
+  'M':  {'exp': 6,   'name': 'mega'},
+  'G':  {'exp': 9,   'name': 'giga'},
+  'T':  {'exp': 12,  'name': 'tera'},
+  'P':  {'exp': 15,  'name': 'peta'},
+  'E':  {'exp': 18,  'name': 'exa'},
+  'Z':  {'exp': 21,  'name': 'zetta'},
+  'Y':  {'exp': 24,  'name': 'yotta'}
+} %}
+
+{% set IEC_PREFIXES = {
+  '':   {'exp': 0,   'name': ''},
+  'Ki': {'exp': 10,  'name': 'kibi'},
+  'Mi': {'exp': 20,  'name': 'mebi'},
+  'Gi': {'exp': 30,  'name': 'gibi'},
+  'Ti': {'exp': 40,  'name': 'tebi'},
+  'Pi': {'exp': 50,  'name': 'pebi'},
+  'Ei': {'exp': 60,  'name': 'exbi'},
+  'Zi': {'exp': 70,  'name': 'zebi'},
+  'Yi': {'exp': 80,  'name': 'yobi'}
+} %}
+
+{% macro split_prefix_unit(unit_str) %}
+  {#- First handle special cases that might conflict with prefixes -#}
+  {%- set special_cases = {
+    'min': {'prefix': '', 'base': 'min'},
+    'ms': {'prefix': 'm', 'base': 's'},
+    'mil': {'prefix': '', 'base': 'mil'}
+  } -%}
+  
+  {%- if unit_str in special_cases -%}
+    {{- special_cases[unit_str] | tojson -}}
+  {%- else -%}
+    {#- Try SI prefixes first, then IEC -#}
+    {%- for prefix, data in SI_PREFIXES.items() -%}
+      {%- if unit_str.startswith(prefix) and prefix != '' -%}
+        {{- {'prefix': prefix, 'base': unit_str[prefix|length:]} | tojson -}}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    
+    {%- for prefix, data in IEC_PREFIXES.items() -%}
+      {%- if unit_str.startswith(prefix) and prefix != '' -%}
+        {{- {'prefix': prefix, 'base': unit_str[prefix|length:]} | tojson -}}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    
+    {#- If no prefix found -#}
+    {{- {'prefix': '', 'base': unit_str} | tojson -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro scale_value(value, from_prefix, to_prefix, system='SI') %}
+  {%- set prefixes = system == 'IEC' and IEC_PREFIXES or SI_PREFIXES -%}
+  {%- set from_exp = prefixes[from_prefix].exp -%}
+  {%- set to_exp = prefixes[to_prefix].exp -%}
+  {%- set exp_diff = from_exp - to_exp -%}
+  
+  {%- if system == 'IEC' -%}
+    {{- value * (2 ** exp_diff) -}}
+  {%- else -%}
+    {{- value * (10 ** exp_diff) -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro auto_scale(value, base_unit, system='SI') %}
+  {% set ns = namespace(
+    best_prefix='',
+    best_value=value
+  ) %}
+  
+  {%- set prefixes = system == 'IEC' and IEC_PREFIXES or SI_PREFIXES -%}
+  {%- set base = 2 if system == 'IEC' else 10 -%}
+  {%- set abs_val = value | abs -%}
+  
+  {#- Find the appropriate prefix -#}
+  {%- for prefix, data in prefixes.items() -%}
+    {%- set scaled = value / (base ** data.exp) -%}
+    {%- if scaled | abs >= 1 and scaled | abs < base -%}
+      {%- set ns.best_prefix = prefix -%}
+      {%- set ns.best_value = scaled -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+  
+  {{- {
+    'value': ns.best_value,
+    'unit': ns.best_prefix + base_unit,
+    'prefix': ns.best_prefix,
+    'base_unit': base_unit
+  } | tojson -}}
+{% endmacro %}
+
+{% macro format_scaled(value, unit, system='SI', sig_figs=3) %}
+  {#- Split the unit into prefix and base -#}
+  {%- set parts = split_prefix_unit(unit) | from_json -%}
+  
+  {#- Auto-scale the value -#}
+  {%- set scaled = auto_scale(value, parts.base, system) | from_json -%}
+  
+  {#- Use namespace for decimals that needs to persist outside conditional -#}
+  {%- set ns = namespace(decimals=2) -%}
+  
+  {#- Format the number with appropriate precision -#}
+  {%- set abs_val = scaled.value | abs -%}
+  {%- if abs_val >= 100 -%}
+    {%- set ns.decimals = 0 -%}
+  {%- elif abs_val >= 10 -%}
+    {%- set ns.decimals = 1 -%}
+  {%- else -%}
+    {%- set ns.decimals = 2 -%}
+  {%- endif -%}
+  
+  {#- Format with appropriate thousand separators and decimals -#}
+  {%- set formatted_value = "{:,.{}f}".format(scaled.value, ns.decimals) -%}
+  
+  {{- {
+    'formatted': formatted_value + ' ' + scaled.unit,
+    'value': scaled.value,
+    'unit': scaled.unit
+  } | tojson -}}
+{% endmacro %}

@@ -1,0 +1,108 @@
+{#- Unit conversion utilities -#}
+{% from 'custom_templates/units/normalize_units.jinja' import normalize_unit, split_compound_unit %}
+
+{% macro normalize_value(value, unit, device_class) %}
+  {%- if device_class == 'temperature' -%}
+    {% import 'units/temperature.jinja' as temp %}
+    {{- temp.normalize(value, unit) -}}
+  {%- elif device_class == 'power' -%}
+    {% import 'units/power.jinja' as power %}
+    {{- power.normalize(value, unit) -}}
+  {%- elif device_class == 'speed' -%}
+    {% import 'custom_templates/units/velocity.jinja' as velocity %}
+    {{- velocity.normalize(value, normalize_unit(unit)) -}}
+  {#- Add other device classes as needed -#}
+  {%- else -%}
+    {{- {'value': value, 'unit': normalize_unit(unit)} -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro convert_unit(value, from_unit, to_unit) %}
+  {#- First normalize both units -#}
+  {%- set norm_from = normalize_unit(from_unit) -%}
+  {%- set norm_to = normalize_unit(to_unit) -%}
+  
+  {#- Check if either unit is a compound unit -#}
+  {%- set from_parts = split_compound_unit(norm_from) -%}
+  {%- set to_parts = split_compound_unit(norm_to) -%}
+  
+  {%- if from_parts.den is not none or to_parts.den is not none -%}
+    {#- Handle rate conversion -#}
+    {%- set num_conv = convert_simple_unit(value, from_parts.num, to_parts.num) -%}
+    {%- if from_parts.den is not none and to_parts.den is not none -%}
+      {%- set den_conv = convert_simple_unit(1, from_parts.den, to_parts.den) -%}
+      {%- set final_value = num_conv.value / den_conv.value -%}
+    {%- else -%}
+      {%- set final_value = num_conv.value -%}
+    {%- endif -%}
+    {%- set final_unit = to_unit -%}
+  {%- else -%}
+    {%- set conv = convert_simple_unit(value, norm_from, norm_to) -%}
+    {%- set final_value = conv.value -%}
+    {%- set final_unit = conv.unit -%}
+  {%- endif -%}
+  
+  {{- {'value': final_value, 'unit': final_unit} -}}
+{% endmacro %}
+
+{% macro split_rate_unit(unit) %}
+  {%- set parts = unit.split('/') -%}
+  {{- {
+    'numerator': parts[0],
+    'denominator': parts[1]
+  } -}}
+{% endmacro %}
+
+{% macro convert_simple_unit(value, from_unit, to_unit) %}
+  {#- Determine unit system -#}
+  {%- set from_system = get_unit_system(from_unit) -%}
+  {%- set to_system = get_unit_system(to_unit) -%}
+  
+  {%- if from_system == to_system -%}
+    {%- if from_system == 'SI' or from_system == 'IEC' -%}
+      {{- scale_with_prefix(value, from_unit, to_unit) -}}
+    {%- else -%}
+      {{- convert_imperial(value, from_unit, to_unit) -}}
+    {%- endif -%}
+  {%- else -%}
+    {#- Handle cross-system conversion -#}
+    {{- cross_system_convert(value, from_unit, to_unit) -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro get_unit_system(unit) %}
+  {%- if unit in ['B', 'KB', 'MB', 'GB', 'TB'] -%}
+    {{- 'IEC' -}}
+  {%- elif unit in ['m', 'kg', 'W', 'J', 'K'] -%}
+    {{- 'SI' -}}
+  {%- else -%}
+    {{- 'IMPERIAL' -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro format_value(value, unit) %}
+  {%- set system = get_unit_system(unit) -%}
+  
+  {%- if system in ['SI', 'IEC'] -%}
+    {{- format_metric(value, unit) -}}
+  {%- else -%}
+    {{- format_imperial(value, unit) -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro format_metric(value, unit) %}
+  {#- Scale to appropriate prefix -#}
+  {%- set scaled = autoscale_metric(value, unit) -%}
+  {{- "%.2f %s"|format(scaled.value, scaled.unit) -}}
+{% endmacro %}
+
+{% macro format_imperial(value, unit) %}
+  {#- Format with appropriate significant figures and commas -#}
+  {%- if value >= 1000 -%}
+    {{- "{:,.0f} {}".format(value, unit) -}}
+  {%- elif value >= 100 -%}
+    {{- "{:.1f} {}".format(value, unit) -}}
+  {%- else -%}
+    {{- "{:.2f} {}".format(value, unit) -}}
+  {%- endif -%}
+{% endmacro %}

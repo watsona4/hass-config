@@ -1,0 +1,107 @@
+{#- Unit normalization utilities -#}
+
+{% macro normalize_unit(unit) %}
+  {#- First clean up the unit string -#}
+  {%- set cleaned = unit | lower | replace(' ', '') -%}
+  
+  {#- Handle special rate cases first -#}
+  {%- if cleaned in ['mph', 'mi/h', 'milesph', 'mileperhour', 'milesperhour'] -%}
+    {{- 'mi/h' -}}
+  {%- elif cleaned in ['kmh', 'kmph', 'kilometersperhour', 'kph'] -%}
+    {{- 'km/h' -}}
+  {%- elif cleaned in ['rpm', 'revolutionsperminute', 'revsperminute'] -%}
+    {{- 'rev/min' -}}
+  {%- elif cleaned in ['rps', 'revolutionspersecond', 'revspersecond'] -%}
+    {{- 'rev/s' -}}
+  {%- elif cleaned in ['kts', 'knots', 'kt'] -%}
+    {{- 'kn' -}}
+  
+  {#- Temperature -#}
+  {%- elif cleaned in ['f', '°f', 'fahrenheit', 'degf', 'deg_f'] -%}
+    {{- '°F' -}}
+  {%- elif cleaned in ['c', '°c', 'celsius', 'degc', 'deg_c'] -%}
+    {{- '°C' -}}
+  {%- elif cleaned in ['k', 'kelvin', 'deg_k'] -%}
+    {{- 'K' -}}
+  
+  {#- Length -#}
+  {%- elif cleaned in ['m', 'meter', 'meters', 'metre', 'metres'] -%}
+    {{- 'm' -}}
+  {%- elif cleaned in ['km', 'kilometer', 'kilometers', 'kilometre'] -%}
+    {{- 'km' -}}
+  {%- elif cleaned in ['cm', 'centimeter', 'centimeters', 'centimetre'] -%}
+    {{- 'cm' -}}
+  {%- elif cleaned in ['mm', 'millimeter', 'millimeters', 'millimetre'] -%}
+    {{- 'mm' -}}
+  {%- elif cleaned in ['in', 'inch', 'inches'] -%}
+    {{- 'in' -}}
+  {%- elif cleaned in ['ft', 'foot', 'feet'] -%}
+    {{- 'ft' -}}
+  {%- elif cleaned in ['yd', 'yard', 'yards'] -%}
+    {{- 'yd' -}}
+  {%- elif cleaned in ['mi', 'mile', 'miles'] -%}
+    {{- 'mi' -}}
+  
+  {#- Power -#}
+  {%- elif cleaned in ['w', 'watt', 'watts'] -%}
+    {{- 'W' -}}
+  {%- elif cleaned in ['kw', 'kilowatt', 'kilowatts'] -%}
+    {{- 'kW' -}}
+  {%- elif cleaned in ['mw', 'megawatt', 'megawatts'] -%}
+    {{- 'MW' -}}
+  
+  {#- Pressure -#}
+  {%- elif cleaned in ['pa', 'pascal', 'pascals'] -%}
+    {{- 'Pa' -}}
+  {%- elif cleaned in ['hpa', 'hectopascal', 'hectopascals'] -%}
+    {{- 'hPa' -}}
+  {%- elif cleaned in ['kpa', 'kilopascal', 'kilopascals'] -%}
+    {{- 'kPa' -}}
+  {%- elif cleaned in ['psi', 'poundspersquareinch'] -%}
+    {{- 'psi' -}}
+  {%- elif cleaned in ['bar'] -%}
+    {{- 'bar' -}}
+  {%- elif cleaned in ['mbar', 'millibar', 'millibars'] -%}
+    {{- 'mbar' -}}
+  
+  {#- Data rate -#}
+  {%- elif cleaned in ['bps', 'bitspersecond'] -%}
+    {{- 'bit/s' -}}
+  {%- elif cleaned in ['kbps', 'kilobitspersecond'] -%}
+    {{- 'kbit/s' -}}
+  {%- elif cleaned in ['mbps', 'megabitspersecond'] -%}
+    {{- 'Mbit/s' -}}
+  {%- elif cleaned in ['gbps', 'gigabitspersecond'] -%}
+    {{- 'Gbit/s' -}}
+  
+  {#- Return as-is if no match -#}
+  {%- else -%}
+    {{- unit -}}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro split_compound_unit(unit) %}
+  {#- Handle special cases first -#}
+  {%- set special_cases = {
+    'mph': {'num': 'mi', 'den': 'h'},
+    'kmh': {'num': 'km', 'den': 'h'},
+    'rpm': {'num': 'rev', 'den': 'min'},
+    'rps': {'num': 'rev', 'den': 's'},
+    'kts': {'num': 'nmi', 'den': 'h'}
+  } -%}
+  
+  {%- set normalized = normalize_unit(unit) -%}
+  
+  {%- if normalized in special_cases -%}
+    {{- special_cases[normalized] | tojson -}}
+  {%- else -%}
+    {#- Handle standard rate units with slash -#}
+    {%- set parts = normalized.split('/') -%}
+    {%- if parts | length > 1 -%}
+      {{- {'num': parts[0], 'den': parts[1]} | tojson -}}
+    {%- else -%}
+      {#- Not a compound unit -#}
+      {{- {'num': normalized, 'den': None} | tojson -}}
+    {%- endif -%}
+  {%- endif -%}
+{% endmacro %}
