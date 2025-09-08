@@ -1,6 +1,6 @@
 {# Severity definitions for temperature measurements (HA device_class: temperature) #}
 
-{% from 'helpers.jinja' import find_matching_level, humanize_unit %}
+{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
 {% from 'units/temperature.jinja' import normalize, from_standard, convert_temp %}
 
 {# Standard temperature levels for various applications #}
@@ -8,391 +8,391 @@
     "dew_point": [
         {
             "min_value": -50,
-            "name": "Arid",
-            "short_name": "Arid",
-            "long_name": "Arid Dew Point",
+            "default_desc": "Arid",
+            "short_desc": "Arid",
+            "long_desc": "Arid Dew Point",
             "icon": "mdi:water-off",
             "color": "amber",
-            "description": "Exceptionally dry air; static and skin dryness common. Humidify indoors."
+            "full_desc": "Exceptionally dry air; static and skin dryness common. Humidify indoors."
         },
         {
             "min_value": 0,
-            "name": "Very Dry",
-            "short_name": "V Dry",
-            "long_name": "Very Dry Dew Point",
+            "default_desc": "Very Dry",
+            "short_desc": "V Dry",
+            "long_desc": "Very Dry Dew Point",
             "icon": "mdi:water-outline",
             "color": "amber",
-            "description": "Very dry; add moisture for comfort and to protect wood and plants."
+            "full_desc": "Very dry; add moisture for comfort and to protect wood and plants."
         },
         {
             "min_value": 5,
-            "name": "Dry",
-            "short_name": "Dry",
-            "long_name": "Dry Dew Point",
+            "default_desc": "Dry",
+            "short_desc": "Dry",
+            "long_desc": "Dry Dew Point",
             "icon": "mdi:water-percent",
             "color": "orange",
-            "description": "Dry; lips and skin may feel tight. Many find this crisp and pleasant."
+            "full_desc": "Dry; lips and skin may feel tight. Many find this crisp and pleasant."
         },
         {
             "min_value": 10,
-            "name": "Comfort",
-            "short_name": "Comfort",
-            "long_name": "Comfort Dew Point",
+            "default_desc": "Comfort",
+            "short_desc": "Comfort",
+            "long_desc": "Comfort Dew Point",
             "icon": "mdi:water-check",
             "color": "green",
-            "description": "Comfortable humidity for most people and activities."
+            "full_desc": "Comfortable humidity for most people and activities."
         },
         {
             "min_value": 13,
-            "name": "Slight Humid",
-            "short_name": "SltHumid",
-            "long_name": "Slightly Humid DewPt",
+            "default_desc": "Slight Humid",
+            "short_desc": "SltHumid",
+            "long_desc": "Slightly Humid DewPt",
             "icon": "mdi:water",
             "color": "teal",
-            "description": "Slightly muggy; some will notice humidity."
+            "full_desc": "Slightly muggy; some will notice humidity."
         },
         {
             "min_value": 16,
-            "name": "Humid",
-            "short_name": "Humid",
-            "long_name": "Humid Dew Point",
+            "default_desc": "Humid",
+            "short_desc": "Humid",
+            "long_desc": "Humid Dew Point",
             "icon": "mdi:water-plus",
             "color": "light-blue",
-            "description": "Humid; heat feels heavier. Improve ventilation or dehumidify."
+            "full_desc": "Humid; heat feels heavier. Improve ventilation or dehumidify."
         },
         {
             "min_value": 18,
-            "name": "Very Humid",
-            "short_name": "VHumid",
-            "long_name": "Very Humid DewPt",
+            "default_desc": "Very Humid",
+            "short_desc": "VHumid",
+            "long_desc": "Very Humid DewPt",
             "icon": "mdi:water-alert",
             "color": "blue",
-            "description": "Very humid; strenuous activity is taxing. Dehumidify if possible."
+            "full_desc": "Very humid; strenuous activity is taxing. Dehumidify if possible."
         },
         {
             "min_value": 21,
-            "name": "Oppressive",
-            "short_name": "Oppress",
-            "long_name": "Oppressive DewPt",
+            "default_desc": "Oppressive",
+            "short_desc": "Oppress",
+            "long_desc": "Oppressive DewPt",
             "icon": "mdi:weather-pouring",
             "color": "indigo",
-            "description": "Oppressive humidity; strong cooling and dehumidification needed."
+            "full_desc": "Oppressive humidity; strong cooling and dehumidification needed."
         },
         {
             "min_value": 24,
-            "name": "Miserable",
-            "short_name": "Miserbl",
-            "long_name": "Miserable DewPt",
+            "default_desc": "Miserable",
+            "short_desc": "Miserbl",
+            "long_desc": "Miserable DewPt",
             "icon": "mdi:waves",
             "color": "purple",
-            "description": "Miserable humidity; avoid hard work, hydrate, and cool spaces aggressively."
+            "full_desc": "Miserable humidity; avoid hard work, hydrate, and cool spaces aggressively."
         }
     ],
     "ambient": [
         {
             "min_value": -30,
-            "name": "Extreme Cold",
-            "short_name": "X Cold",
-            "long_name": "Extreme Cold Air",
+            "default_desc": "Extreme Cold",
+            "short_desc": "X Cold",
+            "long_desc": "Extreme Cold Air",
             "icon": "mdi:snowflake-alert",
             "color": "deep-purple",
-            "description": "Extreme cold; frostbite risk within minutes. Limit exposure, cover all skin."
+            "full_desc": "Extreme cold; frostbite risk within minutes. Limit exposure, cover all skin."
         },
         {
             "min_value": -20,
-            "name": "Frigid",
-            "short_name": "Frigid",
-            "long_name": "Frigid Air",
+            "default_desc": "Frigid",
+            "short_desc": "Frigid",
+            "long_desc": "Frigid Air",
             "icon": "mdi:snowflake",
             "color": "blue",
-            "description": "Frigid; heavy layers required, risk with prolonged exposure."
+            "full_desc": "Frigid; heavy layers required, risk with prolonged exposure."
         },
         {
             "min_value": -10,
-            "name": "Very Cold",
-            "short_name": "V Cold",
-            "long_name": "Very Cold Air",
+            "default_desc": "Very Cold",
+            "short_desc": "V Cold",
+            "long_desc": "Very Cold Air",
             "icon": "mdi:snowflake-variant",
             "color": "light-blue",
-            "description": "Very cold; dress warmly with hat and gloves."
+            "full_desc": "Very cold; dress warmly with hat and gloves."
         },
         {
             "min_value": 0,
-            "name": "Cold",
-            "short_name": "Cold",
-            "long_name": "Cold Air",
+            "default_desc": "Cold",
+            "short_desc": "Cold",
+            "long_desc": "Cold Air",
             "icon": "mdi:thermometer-low",
             "color": "cyan",
-            "description": "Cold; a jacket or sweater is comfortable."
+            "full_desc": "Cold; a jacket or sweater is comfortable."
         },
         {
             "min_value": 10,
-            "name": "Cool",
-            "short_name": "Cool",
-            "long_name": "Cool Air",
+            "default_desc": "Cool",
+            "short_desc": "Cool",
+            "long_desc": "Cool Air",
             "icon": "mdi:thermometer-minus",
             "color": "teal",
-            "description": "Cool; a light layer may be needed."
+            "full_desc": "Cool; a light layer may be needed."
         },
         {
             "min_value": 20,
-            "name": "Mild",
-            "short_name": "Mild",
-            "long_name": "Mild Air",
+            "default_desc": "Mild",
+            "short_desc": "Mild",
+            "long_desc": "Mild Air",
             "icon": "mdi:thermometer",
             "color": "green",
-            "description": "Mild and comfortable for most activities."
+            "full_desc": "Mild and comfortable for most activities."
         },
         {
             "min_value": 30,
-            "name": "Warm",
-            "short_name": "Warm",
-            "long_name": "Warm Air",
+            "default_desc": "Warm",
+            "short_desc": "Warm",
+            "long_desc": "Warm Air",
             "icon": "mdi:thermometer-plus",
             "color": "amber",
-            "description": "Warm; hydrate and rest in shade as needed."
+            "full_desc": "Warm; hydrate and rest in shade as needed."
         },
         {
             "min_value": 40,
-            "name": "Hot",
-            "short_name": "Hot",
-            "long_name": "Hot Air",
+            "default_desc": "Hot",
+            "short_desc": "Hot",
+            "long_desc": "Hot Air",
             "icon": "mdi:thermometer-high",
             "color": "red",
-            "description": "Hot; reduce strenuous activity, seek shade, and hydrate often."
+            "full_desc": "Hot; reduce strenuous activity, seek shade, and hydrate often."
         }
     ],
     "chicken_water": [
         {
             "min_value": -2,
-            "name": "Freeze Risk",
-            "short_name": "Freeze",
-            "long_name": "Freeze Risk Water",
+            "default_desc": "Freeze Risk",
+            "short_desc": "Freeze",
+            "long_desc": "Freeze Risk Water",
             "icon": "mdi:snowflake",
             "color": "blue",
-            "description": "Water may freeze; insulate or add a safe heater."
+            "full_desc": "Water may freeze; insulate or add a safe heater."
         },
         {
             "min_value": 1,
-            "name": "Cold",
-            "short_name": "Cold",
-            "long_name": "Cold Water",
+            "default_desc": "Cold",
+            "short_desc": "Cold",
+            "long_desc": "Cold Water",
             "icon": "mdi:thermometer-low",
             "color": "light-blue",
-            "description": "Cold water; chickens may drink less."
+            "full_desc": "Cold water; chickens may drink less."
         },
         {
             "min_value": 10,
-            "name": "Comfort",
-            "short_name": "Comfort",
-            "long_name": "Comfort Water",
+            "default_desc": "Comfort",
+            "short_desc": "Comfort",
+            "long_desc": "Comfort Water",
             "icon": "mdi:thermometer-check",
             "color": "green",
-            "description": "Comfortable temperature for most chickens."
+            "full_desc": "Comfortable temperature for most chickens."
         },
         {
             "min_value": 21,
-            "name": "Warm",
-            "short_name": "Warm",
-            "long_name": "Warm Water",
+            "default_desc": "Warm",
+            "short_desc": "Warm",
+            "long_desc": "Warm Water",
             "icon": "mdi:thermometer",
             "color": "yellow",
-            "description": "Warm water; refresh more often and provide shade."
+            "full_desc": "Warm water; refresh more often and provide shade."
         },
         {
             "min_value": 27,
-            "name": "Hot",
-            "short_name": "Hot",
-            "long_name": "Hot Water",
+            "default_desc": "Hot",
+            "short_desc": "Hot",
+            "long_desc": "Hot Water",
             "icon": "mdi:thermometer-high",
             "color": "orange",
-            "description": "Hot water; intake may drop, keep it cool."
+            "full_desc": "Hot water; intake may drop, keep it cool."
         },
         {
             "min_value": 32,
-            "name": "Too Hot",
-            "short_name": "TooHot",
-            "long_name": "Too Hot Water",
+            "default_desc": "Too Hot",
+            "short_desc": "TooHot",
+            "long_desc": "Too Hot Water",
             "icon": "mdi:fire",
             "color": "red",
-            "description": "Too hot; risk of heat stress. Provide chilled water."
+            "full_desc": "Too hot; risk of heat stress. Provide chilled water."
         }
     ],
     "heat_index": [
         {
             "min_value": -50,
-            "name": "Comfort",
-            "short_name": "Comfort",
-            "long_name": "Comfort Heat Index",
+            "default_desc": "Comfort",
+            "short_desc": "Comfort",
+            "long_desc": "Comfort Heat Index",
             "icon": "mdi:thermometer",
             "color": "green",
-            "description": "Little risk for most people."
+            "full_desc": "Little risk for most people."
         },
         {
             "min_value": 26.7,
-            "name": "Caution",
-            "short_name": "Caution",
-            "long_name": "Caution Heat Index",
+            "default_desc": "Caution",
+            "short_desc": "Caution",
+            "long_desc": "Caution Heat Index",
             "icon": "mdi:white-balance-sunny",
             "color": "yellow",
-            "description": "Fatigue possible with long exposure or activity."
+            "full_desc": "Fatigue possible with long exposure or activity."
         },
         {
             "min_value": 32.2,
-            "name": "X Caution",
-            "short_name": "XCaution",
-            "long_name": "Extreme Caution HeatIdx",
+            "default_desc": "X Caution",
+            "short_desc": "XCaution",
+            "long_desc": "Extreme Caution HeatIdx",
             "icon": "mdi:weather-sunny-alert",
             "color": "amber",
-            "description": "Heat cramps and exhaustion possible; hydrate and take breaks."
+            "full_desc": "Heat cramps and exhaustion possible; hydrate and take breaks."
         },
         {
             "min_value": 39.4,
-            "name": "Danger",
-            "short_name": "Danger",
-            "long_name": "Danger Heat Index",
+            "default_desc": "Danger",
+            "short_desc": "Danger",
+            "long_desc": "Danger Heat Index",
             "icon": "mdi:fire",
             "color": "red",
-            "description": "Cramps and exhaustion likely; heat stroke possible."
+            "full_desc": "Cramps and exhaustion likely; heat stroke possible."
         },
         {
             "min_value": 51.7,
-            "name": "X Danger",
-            "short_name": "XDanger",
-            "long_name": "Extreme Danger HeatIdx",
+            "default_desc": "X Danger",
+            "short_desc": "XDanger",
+            "long_desc": "Extreme Danger HeatIdx",
             "icon": "mdi:alert-decagram",
             "color": "purple",
-            "description": "Heat stroke very likely with continued exposure; avoid strenuous activity."
+            "full_desc": "Heat stroke very likely with continued exposure; avoid strenuous activity."
         }
     ],
     "wind_chill": [
         {
             "min_value": -80,
-            "name": "Extreme Dngr",
-            "short_name": "X Dngr",
-            "long_name": "Wind Chill X Danger",
+            "default_desc": "Extreme Dngr",
+            "short_desc": "X Dngr",
+            "long_desc": "Wind Chill X Danger",
             "icon": "mdi:snowflake-alert",
             "color": "deep-purple",
-            "description": "Life-threatening cold; frostbite in under 5–10 minutes. Avoid exposure."
+            "full_desc": "Life-threatening cold; frostbite in under 5–10 minutes. Avoid exposure."
         },
         {
             "min_value": -45,
-            "name": "Danger",
-            "short_name": "Danger",
-            "long_name": "Wind Chill Danger",
+            "default_desc": "Danger",
+            "short_desc": "Danger",
+            "long_desc": "Wind Chill Danger",
             "icon": "mdi:weather-snowy-heavy",
             "color": "red",
-            "description": "Severe risk; frostbite in 10–30 minutes. Limit time outside, cover all skin."
+            "full_desc": "Severe risk; frostbite in 10–30 minutes. Limit time outside, cover all skin."
         },
         {
             "min_value": -35,
-            "name": "X Caution",
-            "short_name": "XCaution",
-            "long_name": "Wind Chill X Caution",
+            "default_desc": "X Caution",
+            "short_desc": "XCaution",
+            "long_desc": "Wind Chill X Caution",
             "icon": "mdi:alert-octagon",
             "color": "amber",
-            "description": "High risk; exposed skin may freeze within 30–60 minutes. Wear windproof layers."
+            "full_desc": "High risk; exposed skin may freeze within 30–60 minutes. Wear windproof layers."
         },
         {
             "min_value": -28,
-            "name": "Caution",
-            "short_name": "Caution",
-            "long_name": "Wind Chill Caution",
+            "default_desc": "Caution",
+            "short_desc": "Caution",
+            "long_desc": "Wind Chill Caution",
             "icon": "mdi:snowflake",
             "color": "yellow",
-            "description": "Elevated risk; bundle up and reduce exposure."
+            "full_desc": "Elevated risk; bundle up and reduce exposure."
         },
         {
             "min_value": -20,
-            "name": "Very Cold",
-            "short_name": "V Cold",
-            "long_name": "Very Cold Wind Chill",
+            "default_desc": "Very Cold",
+            "short_desc": "V Cold",
+            "long_desc": "Very Cold Wind Chill",
             "icon": "mdi:thermometer-low",
             "color": "blue",
-            "description": "Very cold; heavy winter gear recommended."
+            "full_desc": "Very cold; heavy winter gear recommended."
         },
         {
             "min_value": -10,
-            "name": "Cold",
-            "short_name": "Cold",
-            "long_name": "Cold Wind Chill",
+            "default_desc": "Cold",
+            "short_desc": "Cold",
+            "long_desc": "Cold Wind Chill",
             "icon": "mdi:thermometer-minus",
             "color": "light-blue",
-            "description": "Cold; hat and gloves advised."
+            "full_desc": "Cold; hat and gloves advised."
         },
         {
             "min_value": 0,
-            "name": "Chilly",
-            "short_name": "Chilly",
-            "long_name": "Chilly Wind",
+            "default_desc": "Chilly",
+            "short_desc": "Chilly",
+            "long_desc": "Chilly Wind",
             "icon": "mdi:thermometer",
             "color": "green",
-            "description": "Chilly; a light jacket may be comfortable."
+            "full_desc": "Chilly; a light jacket may be comfortable."
         }
     ],
     "cpu": [
         {
             "min_value": 0,
-            "name": "Cool",
-            "short_name": "Cool",
-            "long_name": "CPU: Cool / Idle",
+            "default_desc": "Cool",
+            "short_desc": "Cool",
+            "long_desc": "CPU: Cool / Idle",
             "icon": "mdi:thermometer-low",
             "color": "light-blue",
-            "description": "Well below operating stress; plenty of thermal headroom."
+            "full_desc": "Well below operating stress; plenty of thermal headroom."
         },
         {
             "min_value": 40,
-            "name": "Normal",
-            "short_name": "Normal",
-            "long_name": "CPU: Normal Temp",
+            "default_desc": "Normal",
+            "short_desc": "Normal",
+            "long_desc": "CPU: Normal Temp",
             "icon": "mdi:thermometer",
             "color": "green",
-            "description": "Within normal operating range."
+            "full_desc": "Within normal operating range."
         },
         {
             "min_value": 60,
-            "name": "Warm",
-            "short_name": "Warm",
-            "long_name": "CPU: Warm",
+            "default_desc": "Warm",
+            "short_desc": "Warm",
+            "long_desc": "CPU: Warm",
             "icon": "mdi:thermometer",
             "color": "light-green",
-            "description": "Getting warm; sustained load is fine if cooling is adequate."
+            "full_desc": "Getting warm; sustained load is fine if cooling is adequate."
         },
         {
             "min_value": 70,
-            "name": "Hot",
-            "short_name": "Hot",
-            "long_name": "CPU: Hot",
+            "default_desc": "Hot",
+            "short_desc": "Hot",
+            "long_desc": "CPU: Hot",
             "icon": "mdi:thermometer-high",
             "color": "amber",
-            "description": "Hot; ensure fans and heatsinks are clear and working."
+            "full_desc": "Hot; ensure fans and heatsinks are clear and working."
         },
         {
             "min_value": 80,
-            "name": "Very Hot",
-            "short_name": "V Hot",
-            "long_name": "CPU: Very Hot",
+            "default_desc": "Very Hot",
+            "short_desc": "V Hot",
+            "long_desc": "CPU: Very Hot",
             "icon": "mdi:fire",
             "color": "orange",
-            "description": "Very hot; boost may drop. Check cooling and airflow."
+            "full_desc": "Very hot; boost may drop. Check cooling and airflow."
         },
         {
             "min_value": 90,
-            "name": "Critical",
-            "short_name": "Critical",
-            "long_name": "CPU: Critical",
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "CPU: Critical",
             "icon": "mdi:alert",
             "color": "red",
-            "description": "Critical; throttling likely. Reduce load and improve cooling."
+            "full_desc": "Critical; throttling likely. Reduce load and improve cooling."
         },
         {
             "min_value": 100,
-            "name": "Therm Limit",
-            "short_name": "TjMax",
-            "long_name": "CPU: At Therm Limit",
+            "default_desc": "Therm Limit",
+            "short_desc": "TjMax",
+            "long_desc": "CPU: At Therm Limit",
             "icon": "mdi:alert-decagram",
             "color": "purple",
-            "description": "At or above TjMax; immediate throttling or shutdown risk."
+            "full_desc": "At or above TjMax; immediate throttling or shutdown risk."
         }
     ]
 } -%}
@@ -401,7 +401,7 @@
 {% macro _get_level_attrs(value, app, attr, error_value, options={}) -%}
     {%- set standard = normalize(value, options.from_unit) | from_json -%}
     {%- if standard.error is defined -%}
-        {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'description' else error_value) -}}
+        {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'full_desc' else error_value) -}}
     {%- else -%}
         {%- set match = find_matching_level(standard.value, levels[app]) | from_json -%}
         {{- match[attr] -}}
@@ -415,27 +415,36 @@
 {%- endmacro %}
 
 {% macro get_name(value, app='ambient', options={}) -%}
-    {{- _get_level_attrs(value, app, 'name', 'error', options) -}}
+    {%- set friendly_name = options.get('friendly_name') -%}
+    {%- set ns = namespace(name=none) -%}
+    {%- if friendly_name is not none -%}
+        {%- if app == 'ambient' -%}
+            {%- set ns.name = friendly_name.replace('Temperature','Temp') -%}
+        {%- else -%}
+            {%- set ns.name = 'No name defined' -%}
+        {%- endif -%}
+    {%- endif -%}
+    {{ format_name(ns.name) }}
 {%- endmacro %}
 
-{% macro get_short_name(value, app='ambient', options={}) -%}
-    {{- _get_level_attrs(value, app, 'short_name', 'error', options) -}}
+{% macro get_default_desc(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'default_desc', 'error', options) -}}
 {%- endmacro %}
 
-{% macro get_long_name(value, app='ambient', options={}) -%}
-    {{- _get_level_attrs(value, app, 'long_name', 'Error', options) -}}
+{% macro get_short_desc(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'short_desc', 'error', options) -}}
 {%- endmacro %}
 
-{% macro get_long_name(value, app='ambient', options={}) -%}
-    {{- _get_level_attrs(value, app, 'long_name', 'Error', options) -}}
+{% macro get_long_desc(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'long_desc', 'Error', options) -}}
 {%- endmacro %}
 
 {% macro get_icon(value, app='ambient', options={}) -%}
     {{- _get_level_attrs(value, app, 'icon', 'mdi:alert', options) -}}
 {%- endmacro %}
 
-{% macro get_description(value, app='ambient', options={}) -%}
-    {{- _get_level_attrs(value, app, 'description', 'Error normalizing temperature: ', options) -}}
+{% macro get_full_desc(value, app='ambient', options={}) -%}
+    {{- _get_level_attrs(value, app, 'full_desc', 'Error normalizing temperature: ', options) -}}
 {%- endmacro %}
 
 {% macro get_color(value, app='ambient', options={}) -%}

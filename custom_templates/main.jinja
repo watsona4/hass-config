@@ -8,15 +8,17 @@
 
     {# Get the current state value and units #}
     {%- set value = states(entity_id) | float(0) -%}
+    {%- set friendly_name = state_attr(entity_id, 'friendly_name') -%}
     {%- set from_unit = state_attr(entity_id, 'unit_of_measurement') -%}
     {%- set to_unit = options.unit|default(from_unit) -%}
-    
+
     {# Create options dict with unit info for the getters #}
     {%- set enhanced_options = dict(
         options,
+        friendly_name=friendly_name,
         from_unit=from_unit,
         to_unit=to_unit
-    ) -%}
+        ) -%}
 
     {# Import the appropriate template based on device class #}
     {%- set valid_classes = [
@@ -87,16 +89,18 @@
     {%- endif -%}
 
     {# Import the device class template #}
-    {%- from 'device_class/' ~ ns.device_class ~ '.jinja' import get_color, get_icon, get_name, get_short_name,
-    get_long_name, get_description, get_value -%}
+    {%- from 'device_class/' ~ ns.device_class ~ '.jinja' import get_color, get_icon,
+        get_name, get_default_desc, get_short_desc, get_long_desc, get_full_desc,
+        get_value -%}
 
     {# Return a dictionary with all the relevant information #}
     {{ {
-    'value': get_value(value, options=enhanced_options),
+    'value': get_value(value, options=enhanced_options) ,
     'name': get_name(value, options=enhanced_options),
-    'short_name': get_short_name(value, options=enhanced_options),
-    'long_name': get_long_name(value, options=enhanced_options),
-    'description': get_description(value, options=enhanced_options),
+    'default_desc': get_default_desc(value, options=enhanced_options),
+    'short_desc': get_short_desc(value, options=enhanced_options),
+    'long_desc': get_long_desc(value, options=enhanced_options),
+    'full_desc': get_full_desc(value, options=enhanced_options),
     'icon': get_icon(value, options=enhanced_options),
     'color': get_color(value, options=enhanced_options),
     } | tojson }}
@@ -118,16 +122,20 @@
     {{ get_attribute(entity_id, 'name', options) }}
 {% endmacro %}
 
-{% macro get_short_name(entity_id, options={}) %}
-    {{ get_attribute(entity_id, 'short_name', options) }}
+{% macro get_default_desc(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'default_desc', options) }}
 {% endmacro %}
 
-{% macro get_long_name(entity_id, options={}) %}
-    {{ get_attribute(entity_id, 'long_name', options) }}
+{% macro get_short_desc(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'short_desc', options) }}
 {% endmacro %}
 
-{% macro get_description(entity_id, options={}) %}
-    {{ get_attribute(entity_id, 'description', options) }}
+{% macro get_long_desc(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'long_desc', options) }}
+{% endmacro %}
+
+{% macro get_full_desc(entity_id, options={}) %}
+    {{ get_attribute(entity_id, 'full_desc', options) }}
 {% endmacro %}
 
 {% macro get_icon(entity_id, options={}) %}
@@ -140,4 +148,16 @@
 
 {% macro get_level(entity_id, options={}) %}
     {{ get_attribute(entity_id, 'level', options) }}
+{% endmacro %}
+
+{% macro get_label(entity_id, options={}) %}
+    {{ get_value(entity_id, options) ~ ' • ' ~ get_default_desc(entity_id, options) }}
+{% endmacro %}
+
+{% macro get_short_label(entity_id, options={}) %}
+    {{ get_value(entity_id, options) ~ ' • ' ~ get_short_desc(entity_id, options) }}
+{% endmacro %}
+
+{% macro get_long_label(entity_id, options={}) %}
+    {{ get_value(entity_id, options) ~ ' • ' ~ get_long_desc(entity_id, options) }}
 {% endmacro %}

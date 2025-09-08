@@ -132,16 +132,28 @@
 {% endmacro %}
 
 {# Find matching level in a list of level definitions based on min_value #}
-{% macro find_matching_level(value, levels) %}
-    {%- set ns = namespace(found=none) -%}
-    {%- set val = value | float(0) -%}
-    {%- for level in levels -%}
-        {%- if val >= (level.min_value | float(0)) -%}
-            {%- set ns.found = level -%}
-            {%- break -%}
-        {%- endif -%}
-    {%- endfor -%}
-    {{- (ns.found or levels[-1]) | tojson -}}
+{% macro find_matching_level(value, levels) -%}
+  {%- set ns = namespace(
+        val = value | float(0),
+        best = none, best_min = none,
+        lowest = none, lowest_min = none
+     ) -%}
+  {%- for level in levels -%}
+    {%- set m = level.min_value | float(0) -%}
+
+    {# track the lowest threshold for fallback #}
+    {%- if ns.lowest is none or m < ns.lowest_min -%}
+      {%- set ns.lowest = level -%}
+      {%- set ns.lowest_min = m -%}
+    {%- endif -%}
+
+    {# choose the greatest min_value <= val #}
+    {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
+      {%- set ns.best = level -%}
+      {%- set ns.best_min = m -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{ (ns.best or ns.lowest) | tojson }}
 {%- endmacro %}
 
 {# Humanize a number with unit, using SI/IEC prefixes as appropriate #}
@@ -257,4 +269,8 @@
     {%- else -%}
         {{ humanize_unit(val, unit) }}
     {%- endif -%}
+{% endmacro %}
+
+{% macro format_name(name) %}
+    {{ name | replace(' State','') | title }}
 {% endmacro %}
