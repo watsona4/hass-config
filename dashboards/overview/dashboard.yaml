@@ -101,6 +101,7 @@ decluttering_templates:
 views:
   - title: Overview
     path: overview
+    default: true
     type: sections
     subview: false
     badges: []
