@@ -147,8 +147,8 @@
     {{- get_attribute(entity_id, app, 'color', options) -}}
 {% endmacro %}
 
-{% macro get_level(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'level', options) -}}
+{% macro get_badge(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'badge', options) -}}
 {% endmacro %}
 
 {% macro get_label(entity_id, app, options={}) %}
