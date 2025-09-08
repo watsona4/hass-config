@@ -1,8 +1,8 @@
-{# Severity definitions for humidity measurements (HA device_class: humidity) #}
+{#- Severity definitions for humidity measurements (HA device_class: humidity) -#}
 
 {% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
 
-{# Humidity levels for various applications #}
+{#- Humidity levels for various applications -#}
 {% set levels = {
     "indoor": [
         {
@@ -215,41 +215,41 @@
     ]
 } %}
 
-{# Helper macro for common level retrieval pattern #}
-{% macro _get_level_attrs(value, app, attr) -%}
+{#- Helper macro for common level retrieval pattern -#}
+{% macro _get_level_attrs(value, app, attr) %}
     {%- set match = find_matching_level(value, levels[app]) | from_json -%}
     {{- match[attr] -}}
-{%- endmacro %}
+{% endmacro %}
 
-{# Standard wrapper functions #}
-{% macro get_value(value, options={}) -%}
+{#- Standard wrapper functions -#}
+{% macro get_value(value, options={}) %}
     {{- humanize_unit(value, options.get('from_unit')) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_name(value, application='indoor', options={}) -%}
-    {{ format_name(options.get('friendly_name')) }}
-{%- endmacro %}
+{% macro get_name(value, application='indoor', options={}) %}
+    {{- format_name(options.get('friendly_name')) -}}
+{% endmacro %}
 
-{% macro get_default_desc(value, app='indoor', options={}) -%}
+{% macro get_default_desc(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'default_desc') -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_short_desc(value, app='indoor', options={}) -%}
+{% macro get_short_desc(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'short_desc') -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_long_desc(value, app='indoor', options={}) -%}
+{% macro get_long_desc(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'long_desc') -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_icon(value, app='indoor', options={}) -%}
+{% macro get_icon(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'icon') -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_full_desc(value, app='indoor', options={}) -%}
+{% macro get_full_desc(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'full_desc') -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_color(value, app='indoor', options={}) -%}
+{% macro get_color(value, app='indoor', options={}) %}
     {{- _get_level_attrs(value, app, 'color') -}}
-{%- endmacro %}
+{% endmacro %}

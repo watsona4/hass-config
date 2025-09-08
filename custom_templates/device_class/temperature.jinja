@@ -1,9 +1,9 @@
-{# Severity definitions for temperature measurements (HA device_class: temperature) #}
+{#- Severity definitions for temperature measurements (HA device_class: temperature) -#}
 
 {% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
 {% from 'units/temperature.jinja' import normalize, from_standard, convert_temp %}
 
-{# Standard temperature levels for various applications #}
+{#- Standard temperature levels for various applications -#}
 {% set levels = {
     "dew_point": [
         {
@@ -397,8 +397,8 @@
     ]
 } -%}
 
-{# Helper macro for common temperature level retrieval pattern #}
-{% macro _get_level_attrs(value, app, attr, error_value, options={}) -%}
+{#- Helper macro for common temperature level retrieval pattern -#}
+{% macro _get_level_attrs(value, app, attr, error_value, options={}) %}
     {%- set standard = normalize(value, options.from_unit) | from_json -%}
     {%- if standard.error is defined -%}
         {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'full_desc' else error_value) -}}
@@ -406,15 +406,15 @@
         {%- set match = find_matching_level(standard.value, levels[app]) | from_json -%}
         {{- match[attr] -}}
     {%- endif -%}
-{%- endmacro %}
+{% endmacro %}
 
-{# Standard wrapper functions #}
-{% macro get_value(value, options={}) -%}
+{#- Standard wrapper functions -#}
+{% macro get_value(value, options={}) %}
     {%- set temp = convert_temp(value, options.from_unit, options.to_unit) | from_json -%}
     {{- humanize_unit(temp.value, temp.unit) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_name(value, app='ambient', options={}) -%}
+{% macro get_name(value, app='ambient', options={}) %}
     {%- set friendly_name = options.get('friendly_name') -%}
     {%- set ns = namespace(name=none) -%}
     {%- if friendly_name is not none -%}
@@ -424,29 +424,29 @@
             {%- set ns.name = 'No name defined' -%}
         {%- endif -%}
     {%- endif -%}
-    {{ format_name(ns.name) }}
-{%- endmacro %}
+    {{- format_name(ns.name) -}}
+{% endmacro %}
 
-{% macro get_default_desc(value, app='ambient', options={}) -%}
+{% macro get_default_desc(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'default_desc', 'error', options) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_short_desc(value, app='ambient', options={}) -%}
+{% macro get_short_desc(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'short_desc', 'error', options) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_long_desc(value, app='ambient', options={}) -%}
+{% macro get_long_desc(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'long_desc', 'Error', options) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_icon(value, app='ambient', options={}) -%}
+{% macro get_icon(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'icon', 'mdi:alert', options) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_full_desc(value, app='ambient', options={}) -%}
+{% macro get_full_desc(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'full_desc', 'Error normalizing temperature: ', options) -}}
-{%- endmacro %}
+{% endmacro %}
 
-{% macro get_color(value, app='ambient', options={}) -%}
+{% macro get_color(value, app='ambient', options={}) %}
     {{- _get_level_attrs(value, app, 'color', 'red', options) -}}
-{%- endmacro %}
+{% endmacro %}

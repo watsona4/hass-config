@@ -1,7 +1,7 @@
-{# ## config/custom_templates/helpers.jinja ## #}
-{# Reusable macros for various calculations and formatting #}
+{#- ## config/custom_templates/helpers.jinja ## -#}
+{#- Reusable macros for various calculations and formatting -#}
 
-{# Convert temperature value between units: 'c', 'f', 'k' #}
+{#- Convert temperature value between units: 'c', 'f', 'k' -#}
 {% macro convert_temp_value(value, from_unit, to_unit) %}
     {%- set v = value | float(0) %}
     {%- set from_unit = from_unit | lower %}
@@ -30,7 +30,7 @@
     {%- endif %}
 {% endmacro %}
 
-{# Convert temperature of an entity to specified unit (default 'c') #}
+{#- Convert temperature of an entity to specified unit (default 'c') -#}
 {% macro convert_temp_entity(eid, to_unit='c') %}
     {%- set val = states(eid) -%}
     {%- set uom = state_attr(eid,'unit_of_measurement') -%}
@@ -38,13 +38,13 @@
     {{ t | round(1) }}
 {% endmacro %}
 
-{# Absolute value #}
+{#- Absolute value -#}
 {% macro abs(x) %}
     {%- set x = x | float(0) -%}
     {{ iif(x < 0, -x, x) }}
 {% endmacro %}
 
-{# Smart formatter with integer-only rule, sig figs, and commas #}
+{#- Smart formatter with integer-only rule, sig figs, and commas -#}
 {% macro smartfmt(x) %}
     {%- set v = x | float(none) -%}
     {%- if v is not number -%}
@@ -59,19 +59,19 @@
         {%- set int_nz = int.lstrip('0') -%}
         {%- set D = int_nz | length -%}
 
-        {# Keep integer only if: starts with 1 and D>3, or starts not 1 and D>2 #}
+        {#- Keep integer only if: starts with 1 and D>3, or starts not 1 and D>2 -#}
         {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0] != '1')) -%}
 
         {%- if keep_int_only -%}
             {{ sign ~ '{:,}'.format(int|int) }}
         {%- else -%}
-            {# Determine decimal places from sig-fig rule #}
+            {#- Determine decimal places from sig-fig rule -#}
             {%- if D >= 1 -%}
                 {%- set first_sig = int_nz[0] -%}
                 {%- set L = 4 if first_sig == '1' else 3 -%}
                 {%- set decimals = -508 -%}
             {%- else -%}
-                {# first sig digit in fraction #}
+                {#- first sig digit in fraction -#}
                 {%- set k = -1 -%}
                 {%- for i in range(frac|length) -%}
                     {%- if k == -1 and frac[i] != '0' -%}
@@ -104,7 +104,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{# Find level index for value v given breakpoints bps #}
+{#- Find level index for value v given breakpoints bps -#}
 {% macro level_find(v, bps) %}
     {%- set v = v | float(default=none) -%}
     {%- if v is none -%}
@@ -131,7 +131,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{# Find matching level in a list of level definitions based on min_value #}
+{#- Find matching level in a list of level definitions based on min_value -#}
 {% macro find_matching_level(value, levels) -%}
   {%- set ns = namespace(
         val = value | float(0),
@@ -141,13 +141,13 @@
   {%- for level in levels -%}
     {%- set m = level.min_value | float(0) -%}
 
-    {# track the lowest threshold for fallback #}
+    {#- track the lowest threshold for fallback -#}
     {%- if ns.lowest is none or m < ns.lowest_min -%}
       {%- set ns.lowest = level -%}
       {%- set ns.lowest_min = m -%}
     {%- endif -%}
 
-    {# choose the greatest min_value <= val #}
+    {#- choose the greatest min_value <= val -#}
     {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
       {%- set ns.best = level -%}
       {%- set ns.best_min = m -%}
@@ -156,7 +156,7 @@
   {{ (ns.best or ns.lowest) | tojson }}
 {%- endmacro %}
 
-{# Humanize a number with unit, using SI/IEC prefixes as appropriate #}
+{#- Humanize a number with unit, using SI/IEC prefixes as appropriate -#}
 {% macro humanize_unit(n, unit='', system='') %}
 
     {#- If no unit passed, just smart format the number -#}
@@ -258,7 +258,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{# Format the state of an entity, converting temperature if needed #}
+{#- Format the state of an entity, converting temperature if needed -#}
 {% macro format_entity(eid, temp='c') %}
     {%- set val = states(eid) -%}
     {%- set unit = state_attr(eid,'unit_of_measurement') -%}
@@ -272,5 +272,5 @@
 {% endmacro %}
 
 {% macro format_name(name) %}
-    {{ name | replace(' State','') | title }}
+    {{- name | replace(' State','') | title -}}
 {% endmacro %}
