@@ -1,0 +1,231 @@
+# packages/rv_presence.yaml
+# RV presence, gated when the RV is near home; no power signals.
+
+# ========= Tunables =========
+input_number:
+  rv_family_proximity_m:
+    name: RV proximity radius for family
+    min: 10
+    max: 300
+    step: 5
+    unit_of_measurement: m
+    icon: mdi:crosshairs-gps
+
+# ========= Helper sensors =========
+template:
+  - binary_sensor:
+      # Gate: combine with your existing binary_sensor.rv_near_home in the final sensor
+      # (You already create binary_sensor.rv_near_home in your nearness block.)
+
+      # Aaron phone on RV SSID
+      - name: Aaron phone on RV WiFi
+        unique_id: bs_aaron_phone_on_rv_wifi
+        device_class: connectivity
+        state: >
+          {% set rv_ssid = 'Watson RV' %}   {# <-- set to your actual RV SSID #}
+          {% set a = states('sensor.pixel_9_pro_xl_wifi_connection') | default('', true) %}
+          {% set b = state_attr('device_tracker.pixel_9_xl_pro','ssid') | default('', true) %}
+          {{ rv_ssid in [a, b] }}
+
+      # Ashley phone on RV SSID
+      - name: Ashley phone on RV WiFi
+        unique_id: bs_ashley_phone_on_rv_wifi
+        device_class: connectivity
+        state: >
+          {% set rv_ssid = 'Watson RV' %}   {# <-- set to your actual RV SSID #}
+          {% set a = states('sensor.ashleys_iphone_ssid') | default('', true) %}
+          {% set b = state_attr('device_tracker.ashleys_iphone','ssid') | default('', true) %}
+          {{ rv_ssid in [a, b] }}
+
+      - name: Any family near RV
+        unique_id: bs_any_family_near_rv
+        icon: mdi:account-group
+        state: >-
+          {% set rv = 'device_tracker.rv_device_tracker' %}
+          {% set r_km = (states('input_number.rv_family_proximity_m') | float(75)) / 1000.0 %}
+          {% set rv_lat = state_attr(rv, 'latitude') %}
+          {% set rv_lon = state_attr(rv, 'longitude') %}
+          {% if rv_lat is number and rv_lon is number %}
+            {% set family = [
+              'person.aaron_watson',
+              'person.ashley_watson',
+              'person.eleanor_watson',
+              'person.michael_watson'
+            ] %}
+            {% set ns = namespace(hit=false) %}
+            {% for p in family %}
+              {% set plat = state_attr(p,'latitude') %}
+              {% set plon = state_attr(p,'longitude') %}
+              {% if plat is number and plon is number %}
+                {% set d = distance(p, rv) %}
+                {% if d is number and d <= r_km %}
+                  {% set ns.hit = true %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.hit }}
+          {% else %}
+            false
+          {% endif %}
+
+      - name: Two+ family near RV
+        unique_id: bs_two_family_near_rv
+        icon: mdi:account-multiple-check
+        state: >-
+          {% set rv = 'device_tracker.rv_device_tracker' %}
+          {% set r_km = (states('input_number.rv_family_proximity_m') | float(75)) / 1000.0 %}
+          {% set rv_lat = state_attr(rv, 'latitude') %}
+          {% set rv_lon = state_attr(rv, 'longitude') %}
+          {% if rv_lat is number and rv_lon is number %}
+            {% set family = [
+              'person.aaron_watson',
+              'person.ashley_watson',
+              'person.eleanor_watson',
+              'person.michael_watson'
+            ] %}
+            {% set ns = namespace(count=0) %}
+            {% for p in family %}
+              {% set plat = state_attr(p,'latitude') %}
+              {% set plon = state_attr(p,'longitude') %}
+              {% if plat is number and plon is number %}
+                {% set d = distance(p, rv) %}
+                {% if d is number and d <= r_km %}
+                  {% set ns.count = ns.count + 1 %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.count >= 2 }}
+          {% else %}
+            false
+          {% endif %}
+
+  # Final gated presence: only true when RV is NOT near home and Bayesian says occupied.
+  - binary_sensor:
+      - name: RV Occupied (Gated)
+        unique_id: bs_rv_occupied_gated
+        device_class: occupancy
+        icon: mdi:caravan
+        state: >
+          {{ is_state('binary_sensor.rv_near_home','off')
+             and is_state('binary_sensor.rv_occupied_bayesian','on') }}
+
+# ========= Bayesian presence =========
+binary_sensor:
+  - platform: bayesian
+    name: RV Occupied (Bayesian)
+    unique_id: rv_occupied_bayes
+    device_class: occupancy
+
+    prior: 0.15
+    probability_threshold: 0.85
+
+    observations:
+      # A) Any family member near the RV
+      - platform: state
+        entity_id: binary_sensor.any_family_near_rv
+        to_state: "on"
+        prob_given_true: 0.90
+        prob_given_false: 0.12
+
+      # B) Two or more family near the RV
+      - platform: state
+        entity_id: binary_sensor.two_family_near_rv
+        to_state: "on"
+        prob_given_true: 0.95
+        prob_given_false: 0.25
+
+      # C) Your existing helper: user_near_rv (60 mi threshold)
+      - platform: state
+        entity_id: binary_sensor.user_near_rv
+        to_state: "on"
+        prob_given_true: 0.80
+        prob_given_false: 0.25
+
+      # D) Aaron phone on RV SSID
+      - platform: state
+        entity_id: binary_sensor.aaron_phone_on_rv_wifi
+        to_state: "on"
+        prob_given_true: 0.88
+        prob_given_false: 0.20
+
+      # E) Ashley phone on RV SSID
+      - platform: state
+        entity_id: binary_sensor.ashley_phone_on_rv_wifi
+        to_state: "on"
+        prob_given_true: 0.88
+        prob_given_false: 0.20
+
+# ========= Climate automations (publish to MQTT) =========
+automation:
+
+  - id: rv_presence_publish_evidence
+    alias: "RV presence: publish evidence to RV"
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.rv_near_home               # from your nearness helpers
+          - binary_sensor.any_family_near_rv         # fixed templates from earlier
+          - binary_sensor.two_family_near_rv
+          - binary_sensor.user_near_rv
+          - binary_sensor.aaron_phone_on_rv_wifi
+          - binary_sensor.ashley_phone_on_rv_wifi
+      - platform: time_pattern
+        minutes: "/2"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "site/rv/cmd/presence"
+          qos: 1
+          retain: true
+          payload: >
+            {% set payload = {
+              'ts': now().isoformat(),
+              'ttl_s': 600,
+              'rv_near_home': is_state('binary_sensor.rv_near_home','on'),
+              'evidence': {
+                'any_family_near_rv': is_state('binary_sensor.any_family_near_rv','on'),
+                'two_family_near_rv': is_state('binary_sensor.two_family_near_rv','on'),
+                'user_near_rv': is_state('binary_sensor.user_near_rv','on'),
+                'aaron_ssid': is_state('binary_sensor.aaron_phone_on_rv_wifi','on'),
+                'ashley_ssid': is_state('binary_sensor.ashley_phone_on_rv_wifi','on')
+              }
+            } %}
+            {{ payload | tojson }}
+
+  - id: rv_climate_home_on_presence
+    alias: "RV climate: set Home when occupied (away from house)"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.rv_occupied_gated
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.rv_near_home
+        state: "off"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "site/rv/cmd/climate"
+          payload: '{"mode":"home"}'
+          qos: 1
+          retain: false
+
+  - id: rv_climate_away_on_clear
+    alias: "RV climate: set Away when unoccupied 30 min (away from house)"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.rv_occupied_gated
+        to: "off"
+        for: "00:30:00"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.rv_near_home
+        state: "off"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "site/rv/cmd/climate"
+          payload: '{"mode":"away"}'
+          qos: 1
+          retain: false
