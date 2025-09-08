@@ -1,6 +1,6 @@
 {#- Device class wrapper template for automatic template selection based on entity device class -#}
 
-{% macro get_device_state_info(entity_id, options={}) %}
+{% macro get_device_state_info(entity_id, app, options={}) %}
 
     {#- Get the entity's device class if it exists, otherwise use 'none' -#}
     {%- set ns = namespace(device_class=none) -%}
@@ -90,74 +90,75 @@
 
     {#- Import the device class template -#}
     {%- from 'device_class/' ~ ns.device_class ~ '.jinja' import get_color, get_icon,
-        get_name, get_default_desc, get_short_desc, get_long_desc, get_full_desc,
-        get_value -%}
+    get_name, get_default_desc, get_short_desc, get_long_desc, get_full_desc,
+    get_value, get_badge -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
     'value': get_value(value, options=enhanced_options) ,
-    'name': get_name(value, options=enhanced_options),
-    'default_desc': get_default_desc(value, options=enhanced_options),
-    'short_desc': get_short_desc(value, options=enhanced_options),
-    'long_desc': get_long_desc(value, options=enhanced_options),
-    'full_desc': get_full_desc(value, options=enhanced_options),
-    'icon': get_icon(value, options=enhanced_options),
-    'color': get_color(value, options=enhanced_options),
+    'name': get_name(value, app, options=enhanced_options),
+    'default_desc': get_default_desc(value, app, options=enhanced_options),
+    'short_desc': get_short_desc(value, app, options=enhanced_options),
+    'long_desc': get_long_desc(value, app, options=enhanced_options),
+    'full_desc': get_full_desc(value, app, options=enhanced_options),
+    'icon': get_icon(value, app, options=enhanced_options),
+    'color': get_color(value, app, options=enhanced_options),
+    'badge': get_badge(value, app, options=enhanced_options),
     } | tojson -}}
 
 {% endmacro %}
 
 {#- Helper macro to get specific attribute -#}
-{% macro get_attribute(entity_id, attribute, options={}) %}
-    {%- set info = get_device_state_info(entity_id, options) | from_json -%}
+{% macro get_attribute(entity_id, app, attribute, options={}) %}
+    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
     {{- info[attribute] -}}
 {% endmacro %}
 
 {#- Convenience macros for common attributes -#}
-{% macro get_value(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'value', options) -}}
+{% macro get_value(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'value', options) -}}
 {% endmacro %}
 
-{% macro get_name(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'name', options) -}}
+{% macro get_name(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'name', options) -}}
 {% endmacro %}
 
-{% macro get_default_desc(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'default_desc', options) -}}
+{% macro get_default_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'default_desc', options) -}}
 {% endmacro %}
 
-{% macro get_short_desc(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'short_desc', options) -}}
+{% macro get_short_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'short_desc', options) -}}
 {% endmacro %}
 
-{% macro get_long_desc(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'long_desc', options) -}}
+{% macro get_long_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'long_desc', options) -}}
 {% endmacro %}
 
-{% macro get_full_desc(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'full_desc', options) -}}
+{% macro get_full_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'full_desc', options) -}}
 {% endmacro %}
 
-{% macro get_icon(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'icon', options) -}}
+{% macro get_icon(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'icon', options) -}}
 {% endmacro %}
 
-{% macro get_color(entity_id, options={}) %}
-    {{- get_attribute(entity_id, 'color', options) -}}
+{% macro get_color(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'color', options) -}}
 {% endmacro %}
 
 {% macro get_level(entity_id, options={}) %}
     {{- get_attribute(entity_id, 'level', options) -}}
 {% endmacro %}
 
-{% macro get_label(entity_id, options={}) %}
-    {{- get_value(entity_id, options) ~ ' • ' ~ get_default_desc(entity_id, options) -}}
+{% macro get_label(entity_id, app, options={}) %}
+    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_default_desc(entity_id, app, options) -}}
 {% endmacro %}
 
-{% macro get_short_label(entity_id, options={}) %}
-    {{- get_value(entity_id, options) ~ ' • ' ~ get_short_desc(entity_id, options) -}}
+{% macro get_short_label(entity_id, app, options={}) %}
+    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_short_desc(entity_id, app, options) -}}
 {% endmacro %}
 
-{% macro get_long_label(entity_id, options={}) %}
-    {{- get_value(entity_id, options) ~ ' • ' ~ get_long_desc(entity_id, options) -}}
+{% macro get_long_label(entity_id, app, options={}) %}
+    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_long_desc(entity_id, app, options) -}}
 {% endmacro %}

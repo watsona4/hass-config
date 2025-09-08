@@ -399,12 +399,16 @@
 
 {#- Helper macro for common temperature level retrieval pattern -#}
 {% macro _get_level_attrs(value, app, attr, error_value, options={}) %}
-    {%- set standard = normalize(value, options.from_unit) | from_json -%}
-    {%- if standard.error is defined -%}
-        {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'full_desc' else error_value) -}}
+    {%- if app not in levels -%}
+        {{- 'Error: Unknown application: ' ~ app -}}
     {%- else -%}
-        {%- set match = find_matching_level(standard.value, levels[app]) | from_json -%}
-        {{- match[attr] -}}
+        {%- set standard = normalize(value, options.from_unit) | from_json -%}
+        {%- if standard.error is defined -%}
+            {{- error_value if error_value is string else (error_value ~ standard.error if attr == 'full_desc' else error_value) -}}
+        {%- else -%}
+            {%- set match = find_matching_level(standard.value, levels[app]) | from_json -%}
+            {{- match[attr] -}}
+        {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
@@ -414,7 +418,7 @@
     {{- humanize_unit(temp.value, temp.unit) -}}
 {% endmacro %}
 
-{% macro get_name(value, app='ambient', options={}) %}
+{% macro get_name(value, app, options={}) %}
     {%- set friendly_name = options.get('friendly_name') -%}
     {%- set ns = namespace(name=none) -%}
     {%- if friendly_name is not none -%}
@@ -427,26 +431,26 @@
     {{- format_name(ns.name) -}}
 {% endmacro %}
 
-{% macro get_default_desc(value, app='ambient', options={}) %}
+{% macro get_default_desc(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'default_desc', 'error', options) -}}
 {% endmacro %}
 
-{% macro get_short_desc(value, app='ambient', options={}) %}
+{% macro get_short_desc(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'short_desc', 'error', options) -}}
 {% endmacro %}
 
-{% macro get_long_desc(value, app='ambient', options={}) %}
+{% macro get_long_desc(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'long_desc', 'Error', options) -}}
 {% endmacro %}
 
-{% macro get_icon(value, app='ambient', options={}) %}
+{% macro get_icon(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'icon', 'mdi:alert', options) -}}
 {% endmacro %}
 
-{% macro get_full_desc(value, app='ambient', options={}) %}
+{% macro get_full_desc(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'full_desc', 'Error normalizing temperature: ', options) -}}
 {% endmacro %}
 
-{% macro get_color(value, app='ambient', options={}) %}
+{% macro get_color(value, app, options={}) %}
     {{- _get_level_attrs(value, app, 'color', 'red', options) -}}
 {% endmacro %}
