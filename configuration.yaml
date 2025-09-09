@@ -72,6 +72,8 @@ lovelace:
       type: module
     - url: /local/community/lovelace-hourly-weather/hourly-weather.js
       type: module
+    - url: /local/community/apexcharts-card/apexcharts-card.js
+      type: module
   dashboards:
     lovelace-overview:
       mode: yaml
