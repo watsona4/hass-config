@@ -1,7 +1,0 @@
-{% from 'custom_templates/metrics/air_quality/aqi_calc.jinja' import compute_aqi as aqi_from_pm %}
-
-{% macro aqi_from_entities(pm25_eid=None, pm10_eid=None) -%}
-  {%- set pm25 = (states(pm25_eid)|float(0)) if pm25_eid else None -%}
-  {%- set pm10 = (states(pm10_eid)|float(0)) if pm10_eid else None -%}
-  {{ aqi_from_pm(pm25, pm10) }}
-{%- endmacro %}

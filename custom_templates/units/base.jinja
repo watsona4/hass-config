@@ -1,6 +1,5 @@
 {#- Unit conversion core - one entrypoint: u_convert_value(value, from_unit, to_unit) -#}
 {% from 'units/normalize_units.jinja' import normalize_unit, split_compound_unit %}
-{% import 'units/temperature.jinja' as temp %}
 {% from 'units/prefix_scaling.jinja' import split_prefix_unit, scale_value %}
 
 {#-  -------------------- dimension maps (to SI base) -------------------- -#}
@@ -34,12 +33,7 @@
 {#- Data size base is byte (B). SI: KB=1000 B, IEC: KiB=1024 B. -#}
 {% set BYTES_TO_B = { 'B': 1, 'KB': 1000, 'MB': 1000000, 'GB': 1000000000, 'TB': 1000000000000,
                       'KiB': 1024, 'MiB': 1048576, 'GiB': 1073741824, 'TiB': 1099511627776 } %}
-
-{#- Bits family -#}
-{%- set BITS_TO_BIT = { 'bit': 1, 'kbit': 1000, 'Mbit': 1000000, 'Gbit': 1000000000 } -%}
-
-{#- Generic counts, e.g., revolutions -#}
-{%- set COUNT_TO_COUNT = { 'rev': 1, 'count': 1 } -%}
+{% set BITS_TO_BIT = { 'bit': 1, 'kbit': 1000, 'Mbit': 1000000, 'Gbit': 1000000000 } %}
 
 {# illuminance to lux #}
 {% set ILLUMINANCE_TO_LX = {
@@ -48,7 +42,29 @@
   'mlx': 0.001,
   'fc': 10.763910416709722
 } %}
+
+{#- Generic counts, e.g., revolutions -#}
+{%- set COUNT_TO_COUNT = { 'rev': 1, 'count': 1 } -%}
 {# djlint:on #}
+
+{# -------------------- temperature helpers (inline, no external file) -------------------- #}
+{% macro temp_to_c(v, u) -%}
+  {%- set val = v|float -%}
+  {%- if u == '°C' -%}{{ val }}
+  {%- elif u == '°F' -%}{{ (val - 32) * 5/9 }}
+  {%- elif u == 'K' -%}{{ val - 273.15 }}
+  {%- else -%}{{ none }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro temp_from_c(v_c, u) -%}
+  {%- set val = v_c|float -%}
+  {%- if u == '°C' -%}{{ val }}
+  {%- elif u == '°F' -%}{{ val * 9/5 + 32 }}
+  {%- elif u == 'K' -%}{{ val + 273.15 }}
+  {%- else -%}{{ none }}
+  {%- endif -%}
+{%- endmacro %}
 
 {#-  -------------------- dimension detection -------------------- -#}
 {% macro get_dimension(u) -%}
@@ -59,8 +75,7 @@
   {%- elif unit in ENERGY_TO_J %}energy
   {%- elif unit in PRESSURE_TO_PA %}pressure
   {%- elif unit in VOLUME_TO_M3 %}volume
-  {%- elif unit in BYTES_TO_B %}bytes
-  {%- elif unit in BITS_TO_BIT %}bits
+  {%- elif unit in BYTES_TO_B or unit in BITS_TO_BIT %}data
   {%- elif unit in ILLUMINANCE_TO_LX %}illuminance
   {%- elif unit in ['°C','°F','K'] %}temperature
   {%- elif unit in COUNT_TO_COUNT %}count
@@ -85,10 +100,17 @@
     {{- {'value': value * PRESSURE_TO_PA[u], 'unit': 'Pa'} | tojson -}}
   {%- elif dim == 'volume' -%}
     {{- {'value': value * VOLUME_TO_M3[u], 'unit': 'm³'} | tojson -}}
-  {%- elif dim == 'bytes' -%}
-    {{- {'value': value * BYTES_TO_B[u], 'unit': 'B'} | tojson -}}
-  {%- elif dim == 'bits' -%}
-    {{- {'value': value * BITS_TO_BIT[u], 'unit': 'bit'} | tojson -}}
+  {%- elif dim == 'data' -%}
+    {%- if u in BYTES_TO_B -%}
+      {{ {'value': value * BYTES_TO_B[u], 'unit': 'B'} | tojson }}
+    {%- else -%}
+      {{ {'value': (value * BITS_TO_BIT[u]) / 8.0, 'unit': 'B'} | tojson }}
+    {%- endif -%}
+  {%- elif dim == 'temperature' -%}
+    {%- set c = temp_to_c(value, u) -%}
+    {%- if c is none -%}{{ {'error': 'unknown temperature unit ' ~ u} | tojson }}{%- else -%}
+      {{ {'value': c, 'unit': '°C'} | tojson }}
+    {%- endif -%}
   {%- elif dim == 'illuminance' -%}
     {{- {'value': value * ILLUMINANCE_TO_LX[u], 'unit': 'lx'} | tojson -}}
   {%- elif dim == 'count' -%}
@@ -120,8 +142,19 @@
     {{- {'value': value / BITS_TO_BIT[u], 'unit': u} | tojson -}}
   {%- elif dim == 'illuminance' -%}
     {{- {'value': value / ILLUMINANCE_TO_LX[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'data' -%}
+    {%- if u in BYTES_TO_B -%}
+      {{ {'value': value / BYTES_TO_B[u], 'unit': u} | tojson }}
+    {%- else -%}
+      {{ {'value': (value * 8.0) / BITS_TO_BIT[u], 'unit': u} | tojson }}
+    {%- endif -%}
   {%- elif dim == 'count' -%}
     {{- {'value': value / COUNT_TO_COUNT[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'temperature' -%}
+    {%- set out = temp_from_c(value, u) -%}
+    {%- if out is none -%}{{ {'error': 'unknown temperature unit ' ~ u} | tojson }}{%- else -%}
+      {{ {'value': out, 'unit': u} | tojson }}
+    {%- endif -%}
   {%- else -%}
     {{- {'error': 'unknown unit ' ~ u} | tojson -}}
   {%- endif -%}
@@ -135,13 +168,6 @@
   {%- set dt = get_dimension(tu) -%}
   {%- if df == 'unknown' or dt == 'unknown' or df != dt -%}
     {{- {'error': 'incompatible: ' ~ fu ~ ' -> ' ~ tu} | tojson -}}
-  {%- elif df == 'temperature' -%}
-    {%- set r = temp.convert_temp(value, fu, tu) | from_json -%}
-    {%- if r.error is defined -%}
-      {{- {'error': r.error} | tojson -}}
-    {%- else -%}
-      {{- {'value': r.value, 'unit': r.unit} | tojson -}}
-    {%- endif -%}
   {%- else -%}
     {%- set base = to_base_value(value, fu) | from_json -%}
     {%- if base.error is defined -%}

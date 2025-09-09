@@ -41,7 +41,7 @@
 {#- Absolute value -#}
 {% macro abs(x) %}
     {%- set x = x | float(0) -%}
-    {{ iif(x < 0, -x, x) }}
+    {{- -x if x < 0 else x -}}
 {% endmacro %}
 
 {#- Smart formatter with integer-only rule, sig figs, and commas -#}

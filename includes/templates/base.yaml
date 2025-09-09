@@ -15,7 +15,7 @@
     - name: Soil Moisture
       unique_id: soil_moisture
       unit_of_measurement: "%"
-      device_class: humidity
+      device_class: moisture
       state_class: measurement
       availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','moisture') is not none }}"
       state: >-

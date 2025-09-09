@@ -1,0 +1,127 @@
+{# Severity definitions for precipitation measurements (HA device_class: precipitation) #}
+
+{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
+{% from 'units/base.jinja' import u_convert_value %}
+
+{# Precipitation levels based on accumulation in mm #}
+{% set lookup_unit = 'mm' %}
+{% set levels = {
+    "default": [
+        {
+            "min_value": 0,
+            "default_desc": "Dry",
+            "short_desc": "Dry",
+            "long_desc": "No measurable precipitation expected",
+            "icon": "mdi:weather-sunny",
+            "color": "#facc15",
+            "full_desc": "Dry conditions expected through the day."
+        },
+        {
+            "min_value": 1,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Spotty or brief precipitation",
+            "icon": "mdi:weather-partly-rainy",
+            "color": "#22c55e",
+            "full_desc": "Intermittent or gentle precipitation likely."
+        },
+        {
+            "min_value": 5,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Widespread steady precipitation",
+            "icon": "mdi:weather-rainy",
+            "color": "#3b82f6",
+            "full_desc": "A sustained period of precipitation is likely."
+        },
+        {
+            "min_value": 15,
+            "default_desc": "Heavy",
+            "short_desc": "Heavy",
+            "long_desc": "Prolonged or intense precipitation",
+            "icon": "mdi:weather-pouring",
+            "color": "#2563eb",
+            "full_desc": "Strong, long-lasting precipitation likely."
+        },
+        {
+            "min_value": 30,
+            "default_desc": "Very Heavy",
+            "short_desc": "V Heavy",
+            "long_desc": "Very wet day with significant impacts",
+            "icon": "mdi:weather-lightning-rainy",
+            "color": "#1e3a8a",
+            "full_desc": "High impact day with saturated surfaces likely."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Extreme",
+            "short_desc": "Extreme",
+            "long_desc": "Exceptional precipitation event",
+            "icon": "mdi:weather-hurricane",
+            "color": "#581c87",
+            "full_desc": "Dangerous conditions possible; monitor warnings."
+        }
+    ]
+} %}
+
+{#- Helper macro for common level retrieval pattern -#}
+{% macro _get_level_attrs(value, app, attr, options) %}
+    {%- if app not in levels -%}
+        {{- 'Error: Unknown application: ' ~ app -}}
+    {%- else -%}
+        {%- set lookup = u_convert_value(value, options.uom, lookup_unit) -%}
+        {%- set match = find_matching_level(lookup, levels[app]) | from_json -%}
+        {{- match[attr] -}}
+    {%- endif -%}
+{% endmacro %}
+
+{#- Standard wrapper functions -#}
+{% macro get_value(value, options) %}
+    {%- set inches = u_convert_value(value, options.get('from_unit'), 'in') | float(0) -%}
+    {{- humanize_unit(inches, 'in') -}}
+{% endmacro %}
+
+{% macro get_name(value, app, options) %}
+    {{- 'Precipitation • ' ~ get_default_desc(value, app, options) -}}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'default_desc', options) -}}
+{% endmacro %}
+
+{% macro get_short_desc(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'short_desc', options) -}}
+{% endmacro %}
+
+{% macro get_long_desc(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'long_desc', options) -}}
+{% endmacro %}
+
+{% macro get_icon(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'icon', options) -}}
+{% endmacro %}
+
+{% macro get_full_desc(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'full_desc', options) -}}
+{% endmacro %}
+
+{% macro get_color(value, app, options) %}
+    {{- _get_level_attrs(value, app, 'color', options) -}}
+{% endmacro %}
+
+{% macro get_badge(value, app, options) %}{% endmacro %}
+
+{% macro get_label(value, app, options) %}
+    {%- if has_value(options.prob) -%}
+        {%- set prob = states(options.prob) -%}
+        {{- prob ~ '% chance: ' ~ get_value(value, options) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_short_label(value, app, options) %}
+    {{- get_label(value, app, options) -}}
+{% endmacro %}
+
+{% macro get_long_label(value, app, options) %}
+    {{- get_label(value, app, options) -}}
+{% endmacro %}
