@@ -95,15 +95,15 @@
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
-    'value': get_value(value, options=enhanced_options) ,
-    'name': get_name(value, app, options=enhanced_options),
-    'default_desc': get_default_desc(value, app, options=enhanced_options),
-    'short_desc': get_short_desc(value, app, options=enhanced_options),
-    'long_desc': get_long_desc(value, app, options=enhanced_options),
-    'full_desc': get_full_desc(value, app, options=enhanced_options),
-    'icon': get_icon(value, app, options=enhanced_options),
-    'color': get_color(value, app, options=enhanced_options),
-    'badge': get_badge(value, app, options=enhanced_options),
+        'value': get_value(value, options=enhanced_options) ,
+        'name': get_name(value, app, options=enhanced_options),
+        'default_desc': get_default_desc(value, app, options=enhanced_options),
+        'short_desc': get_short_desc(value, app, options=enhanced_options),
+        'long_desc': get_long_desc(value, app, options=enhanced_options),
+        'full_desc': get_full_desc(value, app, options=enhanced_options),
+        'icon': get_icon(value, app, options=enhanced_options),
+        'color': get_color(value, app, options=enhanced_options),
+        'badge': get_badge(value, app, options=enhanced_options),
     } | tojson -}}
 
 {% endmacro %}

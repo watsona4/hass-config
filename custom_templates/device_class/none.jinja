@@ -1,0 +1,148 @@
+{# Severity definitions for generic status measurements (HA device_class: none) #}
+
+{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
+
+{% set levels = {
+    "generic": [
+        {
+            "min_value": 0,
+            "default_desc": "Very Low",
+            "short_desc": "Low",
+            "long_desc": "Very Low Value",
+            "icon": "mdi:arrow-collapse-down",
+            "color": "#7e0023",
+            "full_desc": "Reading is at the very low end of the scale; may indicate insufficient levels or inactive state."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low Value",
+            "icon": "mdi:chevron-down",
+            "color": "#ff9933",
+            "full_desc": "Reading is lower than normal; monitor for changes or possible issues."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Medium",
+            "short_desc": "Med",
+            "long_desc": "Medium Value",
+            "icon": "mdi:menu",
+            "color": "#ffde33",
+            "full_desc": "Reading is within a typical mid-range; no immediate action required."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High Value",
+            "icon": "mdi:chevron-up",
+            "color": "#00e400",
+            "full_desc": "Reading is above average; system or process operating strongly."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very High Value",
+            "icon": "mdi:arrow-collapse-up",
+            "color": "#009966",
+            "full_desc": "Reading is at the top end of the scale; may indicate maximum capacity or potential overload."
+        }
+    ],
+    "uv_index": [
+        {
+            "min_value": 0,
+            "badge": "mdi:numeric-1-circle",
+            "default_desc": "Low UV",
+            "short_desc": "Low UV",
+            "long_desc": "Low UV Exposure",
+            "icon": "mdi:white-balance-sunny",
+            "color": "#146814",
+            "full_desc": "No protection needed. You can safely stay outside using minimal sun protection."
+        },
+        {
+            "min_value": 2,
+            "badge": "mdi:numeric-2-circle",
+            "default_desc": "Moderate UV",
+            "short_desc": "Mod UV",
+            "long_desc": "Moderate UV Exposure",
+            "icon": "mdi:sunglasses",
+            "color": "#e0e005",
+            "full_desc": "Protection needed. Seek shade during late morning through mid-afternoon. When outside, generously apply broad-spectrum SPF-15 or higher sunscreen on exposed skin, and wear protective clothing, a wide-brimmed hat, and sunglasses."
+        },
+        {
+            "min_value": 5,
+            "badge": "mdi:numeric-5-circle",
+            "default_desc": "High UV",
+            "short_desc": "High UV",
+            "long_desc": "High UV Exposure",
+            "icon": "mdi:weather-sunny-alert",
+            "color": "#e19509",
+            "full_desc": "Protection needed. Seek shade during late morning through mid-afternoon. When outside, generously apply broad-spectrum SPF-15 or higher sunscreen on exposed skin, and wear protective clothing, a wide-brimmed hat, and sunglasses."
+        },
+        {
+            "min_value": 7,
+            "badge": "mdi:numeric-7-circle",
+            "default_desc": "Very High UV",
+            "short_desc": "VHigh UV",
+            "long_desc": "Very High UV Exposure",
+            "icon": "mdi:umbrella-beach",
+            "color": "#a20000",
+            "full_desc": "Extra protection needed. Be careful outside, especially during late morning through mid-afternoon. If your shadow is shorter than you, seek shade and wear protective clothing, a wide-brimmed hat, and sunglasses, and generously apply a minimum of  SPF-15, broad-spectrum sunscreen on exposed skin."
+        },
+        {
+            "min_value": 10,
+            "badge": "mdi:numeric-9-plus-circle",
+            "default_desc": "Extreme UV",
+            "short_desc": "Extrm UV",
+            "long_desc": "Extreme UV Exposure",
+            "icon": "mdi:alert-decagram",
+            "color": "#593f62",
+            "full_desc": "Extra protection needed. Be careful outside, especially during late morning through mid-afternoon. If your shadow is shorter than you, seek shade and wear protective clothing, a wide-brimmed hat, and sunglasses, and generously apply a minimum of  SPF-15, broad-spectrum sunscreen on exposed skin."
+        }
+    ]
+} %}
+
+{#- Helper macro for common level retrieval pattern -#}
+{% macro _get_level_attrs(value, app, attr) %}
+    {%- set match = find_matching_level(value, levels[app]) | from_json -%}
+    {{- match[attr] -}}
+{% endmacro %}
+
+{#- Standard wrapper functions -#}
+{% macro get_value(value, options={}) %}
+    {{- humanize_unit(value, options.get('from_unit')) -}}
+{% endmacro %}
+
+{% macro get_name(value, app, options={}) %}
+    {{- format_name(options.get('friendly_name')) -}}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'default_desc') -}}
+{% endmacro %}
+
+{% macro get_short_desc(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'short_desc') -}}
+{% endmacro %}
+
+{% macro get_long_desc(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'long_desc') -}}
+{% endmacro %}
+
+{% macro get_icon(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'icon') -}}
+{% endmacro %}
+
+{% macro get_full_desc(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'full_desc') -}}
+{% endmacro %}
+
+{% macro get_color(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'color') -}}
+{% endmacro %}
+
+{% macro get_badge(value, app, options={}) %}
+    {{- _get_level_attrs(value, app, 'badge') -}}
+{% endmacro %}
