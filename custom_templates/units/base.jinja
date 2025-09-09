@@ -1,108 +1,202 @@
-{#- Unit conversion utilities -#}
-{% from 'custom_templates/units/normalize_units.jinja' import normalize_unit, split_compound_unit %}
+{#- Unit conversion core - one entrypoint: u_convert_value(value, from_unit, to_unit) -#}
+{% from 'units/normalize_units.jinja' import normalize_unit, split_compound_unit %}
+{% import 'units/temperature.jinja' as temp %}
+{% from 'units/prefix_scaling.jinja' import split_prefix_unit, scale_value %}
 
-{% macro normalize_value(value, unit, device_class) %}
-  {%- if device_class == 'temperature' -%}
-    {% import 'units/temperature.jinja' as temp %}
-    {{- temp.normalize(value, unit) -}}
-  {%- elif device_class == 'power' -%}
-    {% import 'units/power.jinja' as power %}
-    {{- power.normalize(value, unit) -}}
-  {%- elif device_class == 'speed' -%}
-    {% import 'custom_templates/units/velocity.jinja' as velocity %}
-    {{- velocity.normalize(value, normalize_unit(unit)) -}}
-  {#- Add other device classes as needed -#}
-  {%- else -%}
-    {{- {'value': value, 'unit': normalize_unit(unit)} -}}
+{#-  -------------------- dimension maps (to SI base) -------------------- -#}
+{# djlint:off #}
+{% set LENGTH_TO_M = {
+  'mm': 0.001, 'cm': 0.01, 'm': 1, 'km': 1000,
+  'in': 0.0254, 'ft': 0.3048, 'yd': 0.9144, 'mi': 1609.344, 'nmi': 1852
+} %}
+
+{%- set TIME_TO_S = { 'ms': 0.001, 's': 1, 'min': 60, 'h': 3600, 'd': 86400 } -%}
+
+{%- set POWER_TO_W = { 'W': 1, 'kW': 1000, 'MW': 1000000, 'hp': 745.6998715822702 } -%}
+
+{% set ENERGY_TO_J = {
+  'J': 1, 'kJ': 1000,
+  'Wh': 3600, 'kWh': 3600000
+} %}
+
+{% set PRESSURE_TO_PA = {
+  'Pa': 1, 'hPa': 100, 'kPa': 1000,
+  'bar': 100000, 'mbar': 100, 'psi': 6894.757293168
+} %}
+
+{#- m³ is base. Liter is 1e-3 m³. US customary included. -#}
+{% set VOLUME_TO_M3 = {
+  'm³': 1, 'L': 0.001, 'mL': 0.000001,
+  'ft³': 0.028316846592, 'in³': 1.6387064e-5,
+  'gal': 0.003785411784, 'qt': 0.000946352946, 'pt': 0.000473176473, 'cup': 0.000236588236, 'fl oz': 2.95735295625e-5
+} %}
+
+{#- Data size base is byte (B). SI: KB=1000 B, IEC: KiB=1024 B. -#}
+{% set BYTES_TO_B = { 'B': 1, 'KB': 1000, 'MB': 1000000, 'GB': 1000000000, 'TB': 1000000000000,
+                      'KiB': 1024, 'MiB': 1048576, 'GiB': 1073741824, 'TiB': 1099511627776 } %}
+
+{#- Bits family -#}
+{%- set BITS_TO_BIT = { 'bit': 1, 'kbit': 1000, 'Mbit': 1000000, 'Gbit': 1000000000 } -%}
+
+{#- Generic counts, e.g., revolutions -#}
+{%- set COUNT_TO_COUNT = { 'rev': 1, 'count': 1 } -%}
+
+{# illuminance to lux #}
+{% set ILLUMINANCE_TO_LX = {
+  'lx': 1,
+  'klx': 1000,
+  'mlx': 0.001,
+  'fc': 10.763910416709722
+} %}
+{# djlint:on #}
+
+{#-  -------------------- dimension detection -------------------- -#}
+{% macro get_dimension(u) -%}
+  {%- set unit = u|string -%}
+  {%- if unit in LENGTH_TO_M %}length
+  {%- elif unit in TIME_TO_S %}time
+  {%- elif unit in POWER_TO_W %}power
+  {%- elif unit in ENERGY_TO_J %}energy
+  {%- elif unit in PRESSURE_TO_PA %}pressure
+  {%- elif unit in VOLUME_TO_M3 %}volume
+  {%- elif unit in BYTES_TO_B %}bytes
+  {%- elif unit in BITS_TO_BIT %}bits
+  {%- elif unit in ILLUMINANCE_TO_LX %}illuminance
+  {%- elif unit in ['°C','°F','K'] %}temperature
+  {%- elif unit in COUNT_TO_COUNT %}count
+  {%- else %}unknown
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
 
-{% macro convert_unit(value, from_unit, to_unit) %}
-  {#- First normalize both units -#}
-  {%- set norm_from = normalize_unit(from_unit) -%}
-  {%- set norm_to = normalize_unit(to_unit) -%}
-  
-  {#- Check if either unit is a compound unit -#}
-  {%- set from_parts = split_compound_unit(norm_from) -%}
-  {%- set to_parts = split_compound_unit(norm_to) -%}
-  
-  {%- if from_parts.den is not none or to_parts.den is not none -%}
-    {#- Handle rate conversion -#}
-    {%- set num_conv = convert_simple_unit(value, from_parts.num, to_parts.num) -%}
-    {%- if from_parts.den is not none and to_parts.den is not none -%}
-      {%- set den_conv = convert_simple_unit(1, from_parts.den, to_parts.den) -%}
-      {%- set final_value = num_conv.value / den_conv.value -%}
+{#-  -------------------- helpers: to/from base -------------------- -#}
+{% macro to_base_value(v, unit) -%}
+  {%- set value = v|float -%}
+  {%- set u = unit|string -%}
+  {%- set dim = get_dimension(u) -%}
+  {%- if dim == 'length' -%}
+    {{- {'value': value * LENGTH_TO_M[u], 'unit': 'm'} | tojson -}}
+  {%- elif dim == 'time' -%}
+    {{- {'value': value * TIME_TO_S[u], 'unit': 's'} | tojson -}}
+  {%- elif dim == 'power' -%}
+    {{- {'value': value * POWER_TO_W[u], 'unit': 'W'} | tojson -}}
+  {%- elif dim == 'energy' -%}
+    {{- {'value': value * ENERGY_TO_J[u], 'unit': 'J'} | tojson -}}
+  {%- elif dim == 'pressure' -%}
+    {{- {'value': value * PRESSURE_TO_PA[u], 'unit': 'Pa'} | tojson -}}
+  {%- elif dim == 'volume' -%}
+    {{- {'value': value * VOLUME_TO_M3[u], 'unit': 'm³'} | tojson -}}
+  {%- elif dim == 'bytes' -%}
+    {{- {'value': value * BYTES_TO_B[u], 'unit': 'B'} | tojson -}}
+  {%- elif dim == 'bits' -%}
+    {{- {'value': value * BITS_TO_BIT[u], 'unit': 'bit'} | tojson -}}
+  {%- elif dim == 'illuminance' -%}
+    {{- {'value': value * ILLUMINANCE_TO_LX[u], 'unit': 'lx'} | tojson -}}
+  {%- elif dim == 'count' -%}
+    {{- {'value': value * COUNT_TO_COUNT[u], 'unit': 'count'} | tojson -}}
+  {%- else -%}
+    {{- {'error': 'unknown unit ' ~ u} | tojson -}}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro from_base_value(v, to_unit) -%}
+  {%- set value = v|float -%}
+  {%- set u = to_unit|string -%}
+  {%- set dim = get_dimension(u) -%}
+  {%- if dim == 'length' -%}
+    {{- {'value': value / LENGTH_TO_M[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'time' -%}
+    {{- {'value': value / TIME_TO_S[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'power' -%}
+    {{- {'value': value / POWER_TO_W[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'energy' -%}
+    {{- {'value': value / ENERGY_TO_J[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'pressure' -%}
+    {{- {'value': value / PRESSURE_TO_PA[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'volume' -%}
+    {{- {'value': value / VOLUME_TO_M3[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'bytes' -%}
+    {{- {'value': value / BYTES_TO_B[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'bits' -%}
+    {{- {'value': value / BITS_TO_BIT[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'illuminance' -%}
+    {{- {'value': value / ILLUMINANCE_TO_LX[u], 'unit': u} | tojson -}}
+  {%- elif dim == 'count' -%}
+    {{- {'value': value / COUNT_TO_COUNT[u], 'unit': u} | tojson -}}
+  {%- else -%}
+    {{- {'error': 'unknown unit ' ~ u} | tojson -}}
+  {%- endif -%}
+{%- endmacro %}
+
+{#-  -------------------- scalar, rate, and top-level -------------------- -#}
+{% macro convert_scalar(value, from_u, to_u) -%}
+  {%- set fu = from_u|string -%}
+  {%- set tu = to_u|string -%}
+  {%- set df = get_dimension(fu) -%}
+  {%- set dt = get_dimension(tu) -%}
+  {%- if df == 'unknown' or dt == 'unknown' or df != dt -%}
+    {{- {'error': 'incompatible: ' ~ fu ~ ' -> ' ~ tu} | tojson -}}
+  {%- elif df == 'temperature' -%}
+    {%- set r = temp.convert_temp(value, fu, tu) | from_json -%}
+    {%- if r.error is defined -%}
+      {{- {'error': r.error} | tojson -}}
     {%- else -%}
-      {%- set final_value = num_conv.value -%}
+      {{- {'value': r.value, 'unit': r.unit} | tojson -}}
     {%- endif -%}
-    {%- set final_unit = to_unit -%}
   {%- else -%}
-    {%- set conv = convert_simple_unit(value, norm_from, norm_to) -%}
-    {%- set final_value = conv.value -%}
-    {%- set final_unit = conv.unit -%}
-  {%- endif -%}
-  
-  {{- {'value': final_value, 'unit': final_unit} -}}
-{% endmacro %}
-
-{% macro split_rate_unit(unit) %}
-  {%- set parts = unit.split('/') -%}
-  {{- {
-    'numerator': parts[0],
-    'denominator': parts[1]
-  } -}}
-{% endmacro %}
-
-{% macro convert_simple_unit(value, from_unit, to_unit) %}
-  {#- Determine unit system -#}
-  {%- set from_system = get_unit_system(from_unit) -%}
-  {%- set to_system = get_unit_system(to_unit) -%}
-  
-  {%- if from_system == to_system -%}
-    {%- if from_system == 'SI' or from_system == 'IEC' -%}
-      {{- scale_with_prefix(value, from_unit, to_unit) -}}
+    {%- set base = to_base_value(value, fu) | from_json -%}
+    {%- if base.error is defined -%}
+      {{- base | tojson -}}
     {%- else -%}
-      {{- convert_imperial(value, from_unit, to_unit) -}}
+      {{- from_base_value(base.value, tu) -}}
     {%- endif -%}
-  {%- else -%}
-    {#- Handle cross-system conversion -#}
-    {{- cross_system_convert(value, from_unit, to_unit) -}}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
 
-{% macro get_unit_system(unit) %}
-  {%- if unit in ['B', 'KB', 'MB', 'GB', 'TB'] -%}
-    {{- 'IEC' -}}
-  {%- elif unit in ['m', 'kg', 'W', 'J', 'K'] -%}
-    {{- 'SI' -}}
+{% macro convert_rate(value, from_parts, to_parts) -%}
+  {%- set num = convert_scalar(value, from_parts.num, to_parts.num) | from_json -%}
+  {%- if num.error is defined -%}
+    {{- num | tojson -}}
   {%- else -%}
-    {{- 'IMPERIAL' -}}
+    {%- if from_parts.den and to_parts.den -%}
+      {%- set den = convert_scalar(1, from_parts.den, to_parts.den) | from_json -%}
+      {%- if den.error is defined -%}{{- den | tojson -}}
+      {%- else -%}
+        {{- {'value': num.value / den.value, 'unit': to_parts.num ~ '/' ~ to_parts.den} | tojson -}}
+      {%- endif -%}
+    {%- else -%}
+      {{- {'value': num.value, 'unit': to_parts.num} | tojson -}}
+    {%- endif -%}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
 
-{% macro format_value(value, unit) %}
-  {%- set system = get_unit_system(unit) -%}
-  
-  {%- if system in ['SI', 'IEC'] -%}
-    {{- format_metric(value, unit) -}}
+{#- Returns dict: {"value": float, "unit": str} -#}
+{% macro u_convert(value, from_unit, to_unit) -%}
+  {%- set fu = normalize_unit(from_unit|string) -%}
+  {%- set tu = normalize_unit(to_unit|string) -%}
+  {%- if fu == tu -%}
+    {{- {'value': value|float, 'unit': tu} | tojson -}}
   {%- else -%}
-    {{- format_imperial(value, unit) -}}
+    {%- set fp = split_compound_unit(fu) | from_json -%}
+    {%- set tp = split_compound_unit(tu) | from_json -%}
+    {%- if fp.den or tp.den -%}
+      {{- convert_rate(value, fp, tp) -}}
+    {%- else -%}
+      {{- convert_scalar(value, fu, tu) -}}
+    {%- endif -%}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
 
-{% macro format_metric(value, unit) %}
-  {#- Scale to appropriate prefix -#}
-  {%- set scaled = autoscale_metric(value, unit) -%}
-  {{- "%.2f %s"|format(scaled.value, scaled.unit) -}}
-{% endmacro %}
-
-{% macro format_imperial(value, unit) %}
-  {#- Format with appropriate significant figures and commas -#}
-  {%- if value >= 1000 -%}
-    {{- "{:,.0f} {}".format(value, unit) -}}
-  {%- elif value >= 100 -%}
-    {{- "{:.1f} {}".format(value, unit) -}}
+{#- Returns number only -#}
+{% macro u_convert_value(value, from_unit, to_unit) -%}
+  {%- set r = u_convert(value, from_unit, to_unit) | from_json -%}
+  {%- if r.error is defined -%}
+    {{- none -}}
   {%- else -%}
-    {{- "{:.2f} {}".format(value, unit) -}}
+    {{- r.value -}}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
+
+{#- Returns number only given an entity ID -#}
+{% macro u_convert_entity(eid, to_unit) -%}
+  {{- u_convert_value(states(eid), state_attr(eid,'unit_of_measurement'), to_unit) -}}
+{%- endmacro %}

@@ -9,15 +9,15 @@
     {#- Get the current state value and units -#}
     {%- set value = states(entity_id) | float(0) -%}
     {%- set friendly_name = state_attr(entity_id, 'friendly_name') -%}
-    {%- set from_unit = state_attr(entity_id, 'unit_of_measurement') -%}
-    {%- set to_unit = options.unit|default(from_unit) -%}
+    {%- set uom = options.get('uom', state_attr(entity_id, 'unit_of_measurement')) -%}
+    {%- set display_unit = options.get('unit', uom) -%}
 
     {#- Create options dict with unit info for the getters -#}
     {%- set enhanced_options = dict(
         options,
         friendly_name=friendly_name,
-        from_unit=from_unit,
-        to_unit=to_unit
+        uom=uom,
+        display_unit=display_unit
         ) -%}
 
     {#- Import the appropriate template based on device class -#}
@@ -80,6 +80,7 @@
         "volume_flow_rate",
         "water",
         "weight",
+        "wind_direction",
         "wind_speed"
     ] -%}
 
@@ -91,7 +92,7 @@
     {#- Import the device class template -#}
     {%- from 'device_class/' ~ ns.device_class ~ '.jinja' import get_color, get_icon,
     get_name, get_default_desc, get_short_desc, get_long_desc, get_full_desc,
-    get_value, get_badge -%}
+    get_value, get_badge, get_label, get_short_label, get_long_label -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
@@ -104,6 +105,9 @@
         'icon': get_icon(value, app, options=enhanced_options),
         'color': get_color(value, app, options=enhanced_options),
         'badge': get_badge(value, app, options=enhanced_options),
+        'label': get_label(value, app, options=enhanced_options),
+        'short_label': get_short_label(value, app, options=enhanced_options),
+        'long_label': get_long_label(value, app, options=enhanced_options)
     } | tojson -}}
 
 {% endmacro %}
@@ -152,13 +156,28 @@
 {% endmacro %}
 
 {% macro get_label(entity_id, app, options={}) %}
-    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_default_desc(entity_id, app, options) -}}
+    {%- set label = get_attribute(entity_id, app, 'label', options) -%}
+    {%- if label != '' -%}
+        {{- label -}}
+    {%- else -%}
+        {{- get_value(entity_id, app, options) ~ ' • ' ~ get_default_desc(entity_id, app, options) -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro get_short_label(entity_id, app, options={}) %}
-    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_short_desc(entity_id, app, options) -}}
-{% endmacro %}
+    {%- set short_label = get_attribute(entity_id, app, 'short_label', options) -%}
+    {%- if short_label != '' -%}
+        {{- short_label -}}
+    {%- else -%}
+        {{- get_value(entity_id, app, options) ~ ' • ' ~ get_short_desc(entity_id, app, options) -}}
+    {%- endif -%}
+{% endmacro %}  
 
 {% macro get_long_label(entity_id, app, options={}) %}
-    {{- get_value(entity_id, app, options) ~ ' • ' ~ get_long_desc(entity_id, app, options) -}}
+    {%- set long_label = get_attribute(entity_id, app, 'long_label', options) -%}
+    {%- if long_label != '' -%}
+        {{- long_label -}}
+    {%- else -%}
+        {{- get_value(entity_id, app, options) ~ ' • ' ~ get_long_desc(entity_id, app, options) -}}
+    {%- endif -%}
 {% endmacro %}

@@ -51,7 +51,7 @@
         {{ x }}
     {%- else -%}
         {%- set sign = '-' if v < 0 else '' -%}
-        {%- set a = v | abs -%}
+        {%- set a = abs(v) | float(v) -%}
         {%- set s = ("%0.15f") | format(a) -%}
         {%- set parts = s.split('.') -%}
         {%- set int = parts[0] -%}
@@ -63,7 +63,7 @@
         {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0] != '1')) -%}
 
         {%- if keep_int_only -%}
-            {{ sign ~ '{:,}'.format(int|int) }}
+            {{ sign ~ '{:,}'.format(int_nz|int) }}
         {%- else -%}
             {#- Determine decimal places from sig-fig rule -#}
             {%- if D >= 1 -%}
@@ -133,27 +133,27 @@
 
 {#- Find matching level in a list of level definitions based on min_value -#}
 {% macro find_matching_level(value, levels) -%}
-  {%- set ns = namespace(
+    {%- set ns = namespace(
         val = value | float(0),
         best = none, best_min = none,
         lowest = none, lowest_min = none
-     ) -%}
-  {%- for level in levels -%}
-    {%- set m = level.min_value | float(0) -%}
+        ) -%}
+    {%- for level in levels -%}
+        {%- set m = level.min_value | float(0) -%}
 
-    {#- track the lowest threshold for fallback -#}
-    {%- if ns.lowest is none or m < ns.lowest_min -%}
-      {%- set ns.lowest = level -%}
-      {%- set ns.lowest_min = m -%}
-    {%- endif -%}
+        {#- track the lowest threshold for fallback -#}
+        {%- if ns.lowest is none or m < ns.lowest_min -%}
+            {%- set ns.lowest = level -%}
+            {%- set ns.lowest_min = m -%}
+        {%- endif -%}
 
-    {#- choose the greatest min_value <= val -#}
-    {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
-      {%- set ns.best = level -%}
-      {%- set ns.best_min = m -%}
-    {%- endif -%}
-  {%- endfor -%}
-  {{ (ns.best or ns.lowest) | tojson }}
+        {#- choose the greatest min_value <= val -#}
+        {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
+            {%- set ns.best = level -%}
+            {%- set ns.best_min = m -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{ (ns.best or ns.lowest) | tojson }}
 {%- endmacro %}
 
 {#- Humanize a number with unit, using SI/IEC prefixes as appropriate -#}
@@ -265,12 +265,79 @@
     {%- if state_attr(eid,'device_class') == 'temperature' -%}
         {%- set t = convert_temp_value(val, unit or 'c', temp) | float(0) -%}
         {%- set temp_units = {"k": "K", "f": "°F", "c": "°C"} %}
-        {{ t | round(1) }} {{ temp_units[temp] }}
+        {{- t | round(1) ~ ' ' ~ temp_units[temp] -}}
     {%- else -%}
-        {{ humanize_unit(val, unit) }}
+        {{- humanize_unit(val, unit) -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro format_name(name) %}
-    {{- name | replace(' State','') | title -}}
+{% macro format_name(name, exceptions=[]) %}
+    {#- {{- '[DEBUG] format_name(): name = ' ~ name -}} -#}
+    {%- set ns = namespace(result=[], match=none) -%}
+    {%- for word in name.split() -%}
+        {%- set ns.match = none -%}
+        {%- for ex in exceptions -%}
+            {%- if (word | lower) == (ex | lower) -%}
+                {%- set ns.match = ex -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.match -%}
+            {#- Preserve exception exactly as given -#}
+            {%- set ns.result = ns.result + [ns.match] -%}
+        {%- else -%}
+            {#- Use Jinja's title filter -#}
+            {%- set ns.result = ns.result + [word | title] -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.result | join(" ") -}}
 {% endmacro %}
+
+{# Parse "k=v; k2=(a,b); flag=true; none=null" into a dict #}
+{% macro parse_options_kv(s) %}
+    {%- set raw = (s | string) | trim -%}
+    {%- if not raw -%}
+        {{- {} | tojson -}}
+    {%- else -%}
+        {%- set ns = namespace(d={}, val=none) -%}
+        {%- for pair in raw.split(';') if pair | trim -%}
+            {%- set pair = pair | trim -%}
+            {%- if '=' not in pair -%}
+                {%- continue -%}
+            {%- endif -%}
+            {%- set k, v = pair.split('=', 1) -%}
+            {%- set k = k | trim -%}
+            {%- set v = v | trim -%}
+
+            {# list: (a,b,c) #}
+            {%- if v.startswith('(') and v.endswith(')') -%}
+                {%- set ns2 = namespace(items=[]) -%}
+                {%- for item in v[1:-1].split(',') -%}
+                    {%- set iv = item | trim -%}
+                    {%- set iv = iv.strip('"').strip("'") -%}
+                    {%- set ns2.items = ns2.items + [iv] -%}
+                {%- endfor -%}
+                {%- set ns.val = ns2.items -%}
+
+            {# booleans and null #}
+            {%- elif v | lower in ['true','false'] -%}
+                {%- set ns.val = (v | lower == 'true') -%}
+            {%- elif v | lower in ['null','none','~'] -%}
+                {%- set ns.val = none -%}
+
+            {# numbers (int or float), else string #}
+            {%- else -%}
+                {%- set vv = v.strip('"').strip("'") -%}
+                {%- if vv | replace('_','') | regex_match('^-?[0-9]+$') -%}
+                    {%- set ns.val = vv | int -%}
+                {%- elif vv | regex_match('^-?[0-9]*\\.[0-9]+$') -%}
+                    {%- set ns.val = vv | float -%}
+                {%- else -%}
+                    {%- set ns.val = vv -%}
+                {%- endif -%}
+            {%- endif -%}
+
+            {%- set ns.d = ns.d | combine({k: ns.val}) -%}
+        {%- endfor -%}
+        {{- ns.d | tojson -}}
+    {%- endif -%}
+{%- endmacro %}

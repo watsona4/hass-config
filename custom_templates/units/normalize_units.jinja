@@ -1,107 +1,109 @@
 {#- Unit normalization utilities -#}
 
 {% macro normalize_unit(unit) %}
-  {#- First clean up the unit string -#}
-  {%- set cleaned = unit | lower | replace(' ', '') -%}
-  
-  {#- Handle special rate cases first -#}
-  {%- if cleaned in ['mph', 'mi/h', 'milesph', 'mileperhour', 'milesperhour'] -%}
-    {{- 'mi/h' -}}
-  {%- elif cleaned in ['kmh', 'kmph', 'kilometersperhour', 'kph'] -%}
-    {{- 'km/h' -}}
-  {%- elif cleaned in ['rpm', 'revolutionsperminute', 'revsperminute'] -%}
-    {{- 'rev/min' -}}
-  {%- elif cleaned in ['rps', 'revolutionspersecond', 'revspersecond'] -%}
-    {{- 'rev/s' -}}
-  {%- elif cleaned in ['kts', 'knots', 'kt'] -%}
-    {{- 'kn' -}}
-  
-  {#- Temperature -#}
-  {%- elif cleaned in ['f', '°f', 'fahrenheit', 'degf', 'deg_f'] -%}
-    {{- '°F' -}}
-  {%- elif cleaned in ['c', '°c', 'celsius', 'degc', 'deg_c'] -%}
-    {{- '°C' -}}
-  {%- elif cleaned in ['k', 'kelvin', 'deg_k'] -%}
-    {{- 'K' -}}
-  
-  {#- Length -#}
-  {%- elif cleaned in ['m', 'meter', 'meters', 'metre', 'metres'] -%}
-    {{- 'm' -}}
-  {%- elif cleaned in ['km', 'kilometer', 'kilometers', 'kilometre'] -%}
-    {{- 'km' -}}
-  {%- elif cleaned in ['cm', 'centimeter', 'centimeters', 'centimetre'] -%}
-    {{- 'cm' -}}
-  {%- elif cleaned in ['mm', 'millimeter', 'millimeters', 'millimetre'] -%}
-    {{- 'mm' -}}
-  {%- elif cleaned in ['in', 'inch', 'inches'] -%}
-    {{- 'in' -}}
-  {%- elif cleaned in ['ft', 'foot', 'feet'] -%}
-    {{- 'ft' -}}
-  {%- elif cleaned in ['yd', 'yard', 'yards'] -%}
-    {{- 'yd' -}}
-  {%- elif cleaned in ['mi', 'mile', 'miles'] -%}
-    {{- 'mi' -}}
-  
-  {#- Power -#}
-  {%- elif cleaned in ['w', 'watt', 'watts'] -%}
-    {{- 'W' -}}
-  {%- elif cleaned in ['kw', 'kilowatt', 'kilowatts'] -%}
-    {{- 'kW' -}}
-  {%- elif cleaned in ['mw', 'megawatt', 'megawatts'] -%}
-    {{- 'MW' -}}
-  
-  {#- Pressure -#}
-  {%- elif cleaned in ['pa', 'pascal', 'pascals'] -%}
-    {{- 'Pa' -}}
-  {%- elif cleaned in ['hpa', 'hectopascal', 'hectopascals'] -%}
-    {{- 'hPa' -}}
-  {%- elif cleaned in ['kpa', 'kilopascal', 'kilopascals'] -%}
-    {{- 'kPa' -}}
-  {%- elif cleaned in ['psi', 'poundspersquareinch'] -%}
-    {{- 'psi' -}}
-  {%- elif cleaned in ['bar'] -%}
-    {{- 'bar' -}}
-  {%- elif cleaned in ['mbar', 'millibar', 'millibars'] -%}
-    {{- 'mbar' -}}
-  
-  {#- Data rate -#}
-  {%- elif cleaned in ['bps', 'bitspersecond'] -%}
-    {{- 'bit/s' -}}
-  {%- elif cleaned in ['kbps', 'kilobitspersecond'] -%}
-    {{- 'kbit/s' -}}
-  {%- elif cleaned in ['mbps', 'megabitspersecond'] -%}
-    {{- 'Mbit/s' -}}
-  {%- elif cleaned in ['gbps', 'gigabitspersecond'] -%}
-    {{- 'Gbit/s' -}}
-  
-  {#- Return as-is if no match -#}
+  {%- set raw = (unit | string) | trim -%}
+  {%- set cleaned = raw | replace(' ', '') -%}
+
+  {#- rate shortcuts -#}
+  {%- if cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}mi/h
+  {%- elif cleaned | lower in ['kmh','km/h','kph','kilometersperhour'] -%}km/h
+  {%- elif cleaned | lower in ['rps','rev/s','revspersecond'] -%}rev/s
+  {%- elif cleaned | lower in ['rpm','rev/min','revolutionsperminute'] -%}rev/min
+  {%- elif cleaned | lower in ['kts','kt','knots'] -%}kn
+
+    {#- temperature -#}
+  {%- elif cleaned | lower in ['f','°f','fahrenheit','degf','deg_f'] -%}°F
+  {%- elif cleaned | lower in ['c','°c','celsius','degc','deg_c'] -%}°C
+  {%- elif cleaned | lower in ['k','kelvin','degk','deg_k'] -%}K
+
+    {#- time -#}
+  {%- elif cleaned | lower in ['ms'] -%}ms
+  {%- elif cleaned | lower in ['s','sec','secs','second','seconds'] -%}s
+  {%- elif cleaned | lower in ['m','min','mins','minute','minutes'] and raw | lower not in ['meter','metre','meters','metres'] -%}min
+  {%- elif cleaned | lower in ['h','hr','hrs','hour','hours'] -%}h
+  {%- elif cleaned | lower in ['d','day','days'] -%}d
+
+    {#- length -#}
+  {%- elif cleaned | lower in ['mm','millimeter','millimeters','millimetre'] -%}mm
+  {%- elif cleaned | lower in ['cm','centimeter','centimeters','centimetre'] -%}cm
+  {%- elif cleaned | lower in ['m','meter','meters','metre','metres'] -%}m
+  {%- elif cleaned | lower in ['km','kilometer','kilometers','kilometre'] -%}km
+  {%- elif cleaned | lower in ['in','inch','inches'] -%}in
+  {%- elif cleaned | lower in ['ft','foot','feet'] -%}ft
+  {%- elif cleaned | lower in ['yd','yard','yards'] -%}yd
+  {%- elif cleaned | lower in ['mi','mile','miles'] -%}mi
+  {%- elif cleaned | lower in ['nmi','nauticalmile','nauticalmiles'] -%}nmi
+
+    {#- power -#}
+  {%- elif cleaned | lower in ['w','watt','watts'] -%}W
+  {%- elif cleaned | lower in ['kw','kilowatt','kilowatts'] -%}kW
+  {%- elif cleaned | lower in ['mw','megawatt','megawatts'] -%}MW
+  {%- elif cleaned | lower in ['hp','horsepower'] -%}hp
+
+    {#- energy -#}
+  {%- elif cleaned | lower in ['j','joule','joules'] -%}J
+  {%- elif cleaned | lower in ['kj','kilojoule','kilojoules'] -%}kJ
+  {%- elif cleaned | lower in ['wh'] -%}Wh
+  {%- elif cleaned | lower in ['kwh'] -%}kWh
+
+    {#- pressure -#}
+  {%- elif cleaned | lower == 'pa' -%}Pa
+  {%- elif cleaned | lower == 'hpa' -%}hPa
+  {%- elif cleaned | lower == 'kpa' -%}kPa
+  {%- elif cleaned | lower == 'psi' -%}psi
+  {%- elif cleaned | lower == 'bar' -%}bar
+  {%- elif cleaned | lower in ['mbar','millibar','millibars'] -%}mbar
+
+    {#- volume -#}
+  {%- elif cleaned | lower in ['m3','m^3','m³'] -%}m³
+  {%- elif cleaned | lower in ['l','liter','litre','liters','litres'] -%}L
+  {%- elif cleaned | lower in ['ml','milliliter','millilitre','milliliters'] -%}mL
+  {%- elif cleaned | lower in ['ft3','ft^3','ft³'] -%}ft³
+  {%- elif cleaned | lower in ['in3','in^3','in³'] -%}in³
+  {%- elif cleaned | lower in ['gal','gallon','gallons'] -%}gal
+  {%- elif cleaned | lower in ['qt','quart','quarts'] -%}qt
+  {%- elif cleaned | lower in ['pt','pint','pints'] -%}pt
+  {%- elif cleaned | lower in ['cup','cups'] -%}cup
+  {%- elif cleaned | lower in ['floz','fl.oz','fluidounce','fluidounces'] -%}fl oz
+
+    {#- data size -#}
+  {%- elif cleaned in ['B','b'] -%}B
+  {%- elif cleaned in ['KB','Mb'] -%}KB
+  {%- elif cleaned in ['MB'] -%}MB
+  {%- elif cleaned in ['GB'] -%}GB
+  {%- elif cleaned in ['TB'] -%}TB
+  {%- elif cleaned in ['KiB'] -%}KiB
+  {%- elif cleaned in ['MiB'] -%}MiB
+  {%- elif cleaned in ['GiB'] -%}GiB
+  {%- elif cleaned in ['TiB'] -%}TiB
+
+    {#- data rate -#}
+  {%- elif cleaned | lower in ['bps','bit/s','bitspersecond'] -%}bit/s
+  {%- elif cleaned | lower in ['kbps','kbit/s'] -%}kbit/s
+  {%- elif cleaned | lower in ['mbps','mbit/s'] -%}Mbit/s
+  {%- elif cleaned | lower in ['gbps','gbit/s'] -%}Gbit/s
+
+    {# illuminance #}
+  {%- elif cleaned|lower in ['lx','lux'] -%}lx
+  {%- elif cleaned|lower in ['klx','kilolux','kilo_lux','k_lux'] -%}klx
+  {%- elif cleaned|lower in ['mlx','millilux','milli_lux','m_lux'] -%}mlx
+  {%- elif cleaned|lower in ['fc','footcandle','footcandles','foot-candle','foot-candles','footcandle(s)'] -%}fc
+
+    {#- counts -#}
+  {%- elif cleaned | lower in ['rev','revolution','revolutions'] -%}rev
+
+    {#- default -#}
   {%- else -%}
     {{- unit -}}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}
 
-{% macro split_compound_unit(unit) %}
-  {#- Handle special cases first -#}
-  {%- set special_cases = {
-    'mph': {'num': 'mi', 'den': 'h'},
-    'kmh': {'num': 'km', 'den': 'h'},
-    'rpm': {'num': 'rev', 'den': 'min'},
-    'rps': {'num': 'rev', 'den': 's'},
-    'kts': {'num': 'nmi', 'den': 'h'}
-  } -%}
-  
-  {%- set normalized = normalize_unit(unit) -%}
-  
-  {%- if normalized in special_cases -%}
-    {{- special_cases[normalized] | tojson -}}
+{% macro split_compound_unit(unit) -%}
+  {%- set s = normalize_unit(unit) -%}
+  {%- set idx = s.find('/') -%}
+  {%- if idx != -1 -%}
+    {{- {'num': s[:idx], 'den': s[idx+1:]} | tojson -}}
   {%- else -%}
-    {#- Handle standard rate units with slash -#}
-    {%- set parts = normalized.split('/') -%}
-    {%- if parts | length > 1 -%}
-      {{- {'num': parts[0], 'den': parts[1]} | tojson -}}
-    {%- else -%}
-      {#- Not a compound unit -#}
-      {{- {'num': normalized, 'den': None} | tojson -}}
-    {%- endif -%}
+    {{- {'num': s, 'den': None} | tojson -}}
   {%- endif -%}
-{% endmacro %}
+{%- endmacro %}

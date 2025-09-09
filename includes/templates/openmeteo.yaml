@@ -39,6 +39,35 @@
         coverage_start: "{{ coverage_start_ts }}"
         coverage_end: "{{ coverage_end_ts }}"
         pairs: "{{ pairs_list | tojson }}"
+    - name: OpenMeteo Nearby Wind Speed
+      unique_id: openmeteo_nearby_wind_speed
+      device_class: wind_speed
+      unit_of_measurement: "mph"
+      availability: "{{ has_value(src) }}"
+      state: "{{ state_attr(src,'current')['wind_speed_10m'] }}"
+    - name: OpenMeteo Nearby Wind Gust
+      unique_id: openmeteo_nearby_wind_gust
+      device_class: wind_speed
+      unit_of_measurement: "mph"
+      availability: "{{ has_value(src) }}"
+      state: "{{ state_attr(src,'current')['wind_gusts_10m'] }}"
+    - name: OpenMeteo Nearby Wind Direction
+      unique_id: openmeteo_nearby_wind_direction
+      device_class: wind_direction
+      unit_of_measurement: "°"
+      availability: "{{ has_value(src) }}"
+      state: "{{ state_attr(src,'current')['wind_direction_10m'] }}"
+    - name: OpenMeteo Nearby Precipitation
+      unique_id: openmeteo_nearby_precipitation
+      device_class: precipitation
+      unit_of_measurement: "in"
+      availability: "{{ has_value(src) }}"
+      state: "{{ state_attr(src,'daily')['precipitation_sum'][0] }}"
+    - name: OpenMeteo Nearby Precip Probability
+      unique_id: openmeteo_nearby_precip_probability
+      unit_of_measurement: "%"
+      availability: "{{ has_value(src) }}"
+      state: "{{ state_attr(src,'daily')['precipitation_probability_max'][0] }}"
 
 # ================= OpenMeteo Cloud LUT - Home =================
 - trigger:
