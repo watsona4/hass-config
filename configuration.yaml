@@ -22,7 +22,7 @@ http:
 logger:
   default: warning
   logs:
-    pyatv: error
+    pyatv: critical
     homeassistant.components.apple_tv: critical
     homeassistant.components.switchbot.cover: critical
     homeassistant.components.switchbot.coordinator: critical
