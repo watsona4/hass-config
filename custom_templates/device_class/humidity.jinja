@@ -1,8 +1,5 @@
 {#- Severity definitions for humidity measurements (HA device_class: humidity) -#}
 
-{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
-{% from 'units/base.jinja' import u_convert_value %}
-
 {#- Humidity levels for various applications -#}
 {% set lookup_unit = '%' %}
 {% set levels = {
@@ -217,54 +214,4 @@
     ]
 } %}
 
-{#- Helper macro for common level retrieval pattern -#}
-{% macro _get_level_attrs(value, app, attr) %}
-    {%- if app not in levels -%}
-        {{- 'Error: Unknown application: ' ~ app -}}
-    {%- else -%}
-        {%- set match = find_matching_level(value, levels[app]) | from_json -%}
-        {{- match[attr] -}}
-    {%- endif -%}
-{% endmacro %}
-
-{#- Standard wrapper functions -#}
-{% macro get_value(value, options) %}
-    {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
-    {{- humanize_unit(val, options.display_unit) -}}
-{% endmacro %}
-
-{% macro get_name(value, app, options) %}
-    {{- format_name(options.friendly_name) -}}
-{% endmacro %}
-
-{% macro get_default_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'default_desc') -}}
-{% endmacro %}
-
-{% macro get_short_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'short_desc') -}}
-{% endmacro %}
-
-{% macro get_long_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'long_desc') -}}
-{% endmacro %}
-
-{% macro get_icon(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'icon') -}}
-{% endmacro %}
-
-{% macro get_full_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'full_desc') -}}
-{% endmacro %}
-
-{% macro get_color(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'color') -}}
-{% endmacro %}
-
-{% macro get_badge(value, app, options) %}{% endmacro %}
-
-{% macro get_label(value, app, options) %}{% endmacro %}
-
-{% macro get_short_label(value, app, options) %}{% endmacro %}
-
-{% macro get_long_label(value, app, options) %}{% endmacro %}
+{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}

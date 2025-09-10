@@ -1,42 +1,7 @@
 {#- ## config/custom_templates/helpers.jinja ## -#}
 {#- Reusable macros for various calculations and formatting -#}
 
-{#- Convert temperature value between units: 'c', 'f', 'k' -#}
-{% macro convert_temp_value(value, from_unit, to_unit) %}
-    {%- set v = value | float(0) %}
-    {%- set from_unit = from_unit | lower %}
-    {%- set to_unit = to_unit | lower %}
-
-    {#--- Normalize everything to Kelvin ---#}
-    {%- if from_unit in ['k', 'kelvin'] %}
-        {%- set k = v %}
-    {%- elif from_unit in ['c', '°c', 'celsius'] %}
-        {%- set k = v + 273.15 %}
-    {%- elif from_unit in ['f', '°f', 'fahrenheit'] %}
-        {%- set k = (v - 32) * 5/9 + 273.15 %}
-    {%- else %}
-        {{ 'Error: unknown from_unit' }}
-    {%- endif %}
-
-    {#--- Convert Kelvin to target ---#}
-    {%- if to_unit in ['k', 'kelvin'] %}
-        {{ k }}
-    {%- elif to_unit in ['c', '°c', 'celsius'] %}
-        {{ (k - 273.15) | round(2) }}
-    {%- elif to_unit in ['f', '°f', 'fahrenheit'] %}
-        {{ ((k - 273.15) * 9/5 + 32) | round(2) }}
-    {%- else %}
-        {{ 'Error: unknown to_unit' }}
-    {%- endif %}
-{% endmacro %}
-
-{#- Convert temperature of an entity to specified unit (default 'c') -#}
-{% macro convert_temp_entity(eid, to_unit='c') %}
-    {%- set val = states(eid) -%}
-    {%- set uom = state_attr(eid,'unit_of_measurement') -%}
-    {%- set t = convert_temp_value(val, uom or 'c', to_unit) | float(0) -%}
-    {{ t | round(1) }}
-{% endmacro %}
+{% from 'units/base.jinja' import u_convert_value %}
 
 {#- Absolute value -#}
 {% macro abs(x) %}
@@ -99,33 +64,6 @@
                     {%- set i2 = ('{:,}'.format(i|int) if (i|int) >= 1000 else i) -%}
                     {{ sign ~ i2 ~ ('.' ~ f if f else '') }}
                 {%- endif -%}
-            {%- endif -%}
-        {%- endif -%}
-    {%- endif -%}
-{% endmacro %}
-
-{#- Find level index for value v given breakpoints bps -#}
-{% macro level_find(v, bps) %}
-    {%- set v = v | float(default=none) -%}
-    {%- if v is none -%}
-        0
-    {%- else -%}
-        {%- set n = bps | length -%}
-        {%- if n < 2 -%}
-            {{ 0 }}
-        {%- else -%}
-            {%- set ns = namespace(idx=1, found=false) -%}
-            {%- for ub in bps[1:] -%}
-                {%- if not ns.found and v <= (ub | float) -%}
-                    {%- set ns.found = true -%}
-                {%- elif not ns.found -%}
-                    {%- set ns.idx = ns.idx + 1 -%}
-                {%- endif -%}
-            {%- endfor -%}
-            {%- if ns.found -%}
-                {{ ns.idx }}
-            {%- else -%}
-                {{ (n - 1) }}
             {%- endif -%}
         {%- endif -%}
     {%- endif -%}
@@ -341,3 +279,103 @@
         {{- ns.d | tojson -}}
     {%- endif -%}
 {%- endmacro %}
+
+{% macro format_label(value_text, desc_text) -%}
+  {%- if value_text is string and value_text|trim != '' -%}
+    {{ value_text ~ ' • ' ~ desc_text }}
+  {%- else -%}
+    {{ desc_text }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro format_short_label(value_text, short_desc_text) -%}
+  {{ format_label(value_text, short_desc_text) }}
+{%- endmacro %}
+
+{% macro format_long_label(value_text, long_desc_text) -%}
+  {{ format_label(value_text, long_desc_text) }}
+{%- endmacro %}
+
+{#- Common macros to be included in device class templates -#}
+{#- These macros rely on 'levels' and 'lookup_unit' being defined in the including template -#}
+{# Resolve levels / lookup_unit from options first, else globals #}
+{% macro _resolve_ctx(options) -%}
+  {%- set _levels = (options.get('levels') if options is mapping and options.get('levels') is defined else (levels if levels is defined else none)) -%}
+  {%- set _lookup_unit = (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined else (lookup_unit if lookup_unit is defined else none)) -%}
+  {{ {'levels': _levels, 'lookup_unit': _lookup_unit} | tojson }}
+{%- endmacro %}
+
+{# Safe unit conversion using resolved lookup unit; pass-through if none #}
+{% macro _safe_convert(value, options) -%}
+  {%- set ctx = _resolve_ctx(options) | from_json -%}
+  {%- set target_unit = ctx.lookup_unit or options.display_unit or options.uom -%}
+  {%- if target_unit -%}
+    {{ u_convert_value(value, options.uom, target_unit) }}
+  {%- else -%}
+    {{ value }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro get_level_attr(value, app, attr, options) -%}
+  {%- set ctx = _resolve_ctx(options) | from_json -%}
+  {%- set _levels = ctx.levels -%}
+  {%- if _levels is none -%}
+    {{ 'Error: levels undefined in device-class template' }}
+  {%- elif app not in _levels -%}
+    {{ 'Error: Unknown application: ' ~ app }}
+  {%- else -%}
+    {%- set raw = options.get('raw_state', value) -%}
+
+    {# explicit unavailable entry (min_value == none) if present #}
+    {%- set unavailable_entry = none -%}
+    {%- for lv in _levels[app] -%}
+      {%- if lv.min_value is none -%}{%- set unavailable_entry = lv -%}{%- break -%}{%- endif -%}
+    {%- endfor -%}
+    {%- set unavailable_fallback = unavailable_entry or _levels[app][0] -%}
+
+    {%- set is_unavail = (value is none) or (raw in ['unavailable','unknown','none','', None]) -%}
+
+    {%- if is_unavail -%}
+      {{ unavailable_fallback.get(attr, '') }}
+    {%- else -%}
+      {%- set lookup = _safe_convert(value, options) -%}
+      {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
+      {{ match.get(attr, '') }}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro get_value(value, options) -%}
+  {%- if value is none -%}
+    Unavailable
+  {%- else -%}
+    {%- set val = _safe_convert(value, options) -%}
+    {{ humanize_unit(val, options.display_unit) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro get_name(value, app, options) %}
+    {{- format_name(options.friendly_name or app, exceptions=[
+        'UV', 'AQI', 'PM', 'CO', 'CO2', 'NO2', 'SO2', 'O3', 'VOC', 'dB', 'dBA', 'dBC'
+    ]) -}}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) -%}{{ get_level_attr(value, app, 'default_desc', options) }}{% endmacro %}
+{% macro get_short_desc(value, app, options) -%}{{ get_level_attr(value, app, 'short_desc', options) }}{% endmacro %}
+{% macro get_long_desc(value, app, options) -%}{{ get_level_attr(value, app, 'long_desc', options) }}{% endmacro %}
+{% macro get_full_desc(value, app, options) -%}{{ get_level_attr(value, app, 'full_desc', options) }}{% endmacro %}
+{% macro get_icon(value, app, options) -%}{{ get_level_attr(value, app, 'icon', options) }}{% endmacro %}
+{% macro get_color(value, app, options) -%}{{ get_level_attr(value, app, 'color', options) }}{% endmacro %}
+{% macro get_badge(value, app, options) -%}{{ get_level_attr(value, app, 'badge', options) }}{% endmacro %}
+
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='') -%}
+  {%- if is_unavail and long_desc_text -%}
+    {{ long_desc_text }}
+  {%- elif value_text is string and value_text|trim != '' -%}
+    {{ value_text ~ ' • ' ~ desc_text }}
+  {%- else -%}
+    {{ desc_text }}
+  {%- endif -%}
+{%- endmacro %}
+{% macro format_short_label(value_text, short_desc_text) -%}{{ format_label(value_text, short_desc_text) }}{% endmacro %}
+{% macro format_long_label(value_text, long_desc_text) -%}{{ format_label(value_text, long_desc_text) }}{% endmacro %}

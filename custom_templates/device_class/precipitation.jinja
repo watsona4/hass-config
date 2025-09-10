@@ -1,7 +1,7 @@
 {# Severity definitions for precipitation measurements (HA device_class: precipitation) #}
 
-{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
-{% from 'units/base.jinja' import u_convert_value %}
+{% import 'helpers.jinja' as H with context %}
+{% from 'units/base.jinja' import u_convert_entity %}
 
 {# Precipitation levels based on accumulation in mm #}
 {% set lookup_unit = 'mm' %}
@@ -64,57 +64,16 @@
     ]
 } %}
 
-{#- Helper macro for common level retrieval pattern -#}
-{% macro _get_level_attrs(value, app, attr, options) %}
-    {%- if app not in levels -%}
-        {{- 'Error: Unknown application: ' ~ app -}}
-    {%- else -%}
-        {%- set lookup = u_convert_value(value, options.uom, lookup_unit) -%}
-        {%- set match = find_matching_level(lookup, levels[app]) | from_json -%}
-        {{- match[attr] -}}
-    {%- endif -%}
-{% endmacro %}
+{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
 
-{#- Standard wrapper functions -#}
-{% macro get_value(value, options) %}
-    {%- set inches = u_convert_value(value, options.get('from_unit'), 'in') | float(0) -%}
-    {{- humanize_unit(inches, 'in') -}}
-{% endmacro %}
-
-{% macro get_name(value, app, options) %}
-    {{- 'Precipitation • ' ~ get_default_desc(value, app, options) -}}
-{% endmacro %}
-
-{% macro get_default_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'default_desc', options) -}}
-{% endmacro %}
-
-{% macro get_short_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'short_desc', options) -}}
-{% endmacro %}
-
-{% macro get_long_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'long_desc', options) -}}
-{% endmacro %}
-
-{% macro get_icon(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'icon', options) -}}
-{% endmacro %}
-
-{% macro get_full_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'full_desc', options) -}}
-{% endmacro %}
-
-{% macro get_color(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'color', options) -}}
-{% endmacro %}
-
-{% macro get_badge(value, app, options) %}{% endmacro %}
+{% macro get_name(value, app, options) -%}
+    {{- 'Precipitation • ' ~ H.get_default_desc(value, app, options) -}}
+{%- endmacro %}
 
 {% macro get_label(value, app, options) %}
     {%- if has_value(options.prob) -%}
         {%- set prob = states(options.prob) -%}
-        {{- prob ~ '% chance: ' ~ get_value(value, options) -}}
+        {{- prob ~ '% chance: ' ~ H.get_value(value, options) -}}
     {%- endif -%}
 {% endmacro %}
 

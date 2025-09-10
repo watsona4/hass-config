@@ -1,8 +1,5 @@
 {#- Severity definitions for temperature measurements (HA device_class: temperature) -#}
 
-{% from 'helpers.jinja' import find_matching_level, humanize_unit, format_name %}
-{% from 'units/base.jinja' import u_convert_value %}
-
 {#- Standard temperature levels for various applications -#}
 {% set lookup_unit = '°C' %}
 {% set levels = {
@@ -398,60 +395,4 @@
     ]
 } -%}
 
-{#- Helper macro for common temperature level retrieval pattern -#}
-{% macro _get_level_attrs(value, app, attr, options) %}
-    {%- if app not in levels -%}
-        {{- 'Error: Unknown application: ' ~ app -}}
-    {%- else -%}
-        {%- set lookup = u_convert_value(value, options.uom, lookup_unit) -%}
-        {%- set match = find_matching_level(lookup, levels[app]) | from_json -%}
-        {{- match[attr] -}}
-    {%- endif -%}
-{% endmacro %}
-
-{#- Standard wrapper functions -#}
-{% macro get_value(value, options) %}
-    {%- set temp = u_convert_value(value, options.uom, options.display_unit) -%}
-    {{- humanize_unit(temp, options.display_unit) -}}
-{% endmacro %}
-
-{% macro get_name(value, app, options) %}
-    {%- set friendly_name = options.friendly_name -%}
-    {%- set ns = namespace(name=none) -%}
-    {%- if friendly_name is not none -%}
-        {%- set ns.name = friendly_name.replace('Temperature','Temp') -%}
-    {%- endif -%}
-    {{- format_name(ns.name) -}}
-{% endmacro %}
-
-{% macro get_default_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'default_desc', options) -}}
-{% endmacro %}
-
-{% macro get_short_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'short_desc', options) -}}
-{% endmacro %}
-
-{% macro get_long_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'long_desc', options) -}}
-{% endmacro %}
-
-{% macro get_icon(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'icon', options) -}}
-{% endmacro %}
-
-{% macro get_full_desc(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'full_desc', options) -}}
-{% endmacro %}
-
-{% macro get_color(value, app, options) %}
-    {{- _get_level_attrs(value, app, 'color', options) -}}
-{% endmacro %}
-
-{% macro get_badge(value, app, options) %}{% endmacro %}
-
-{% macro get_label(value, app, options) %}{% endmacro %}
-
-{% macro get_short_label(value, app, options) %}{% endmacro %}
-
-{% macro get_long_label(value, app, options) %}{% endmacro %}
+{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
