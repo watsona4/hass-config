@@ -1,24 +1,21 @@
-{# ======================================================================
-  Severity definitions for total AQI
-  Home Assistant device_class: aqi
-  Based on U.S. EPA AQI categories (0–500)
-====================================================================== #}
+{# Severity definitions for PM2.5 measurements (HA device_class: pm25) #}
 
-{% set lookup_unit = '' %}  {# AQI is unitless; leave blank so we don't force a unit #}
+{# PM2.5 levels based on EPA and WHO standards #}
+{% set lookup_unit = 'µg/m³' %}
 {% set levels = {
   "default": [
     {
       "min_value": none,
       "default_desc": "Unavailable",
-      "short_desc": "N/A",
-      "long_desc": "AQI data unavailable",
-      "icon": "mdi:close-circle",
-      "color": "Disabled",
+      "short_desc": "Disabled",
+      "long_desc": "Sensor unavailable",
+      "icon": "mdi:eye-off",
+      "color": "disabled",
       "badge": "mdi:circle",
-      "full_desc": "AQI is disabled or the sensor is not reporting."
+      "full_desc": "Sensor not currently available."
     },
     {
-      "min_value": 0,
+      "min_value": 0.0,
       "default_desc": "Good",
       "short_desc": "Good",
       "long_desc": "Air quality is good",
@@ -28,37 +25,37 @@
       "full_desc": "Air quality poses little or no risk."
     },
     {
-      "min_value": 51,
+      "min_value": 12.1,
       "default_desc": "Moderate",
       "short_desc": "Moderate",
       "long_desc": "Air quality is acceptable",
       "icon": "mdi:emoticon-happy-outline",
       "color": "#ffff00",
       "badge": "mdi:numeric-2-circle",
-      "full_desc": "Generally acceptable; some sensitive individuals may notice effects."
+      "full_desc": "Generally acceptable; a concern for some sensitive individuals."
     },
     {
-      "min_value": 101,
+      "min_value": 35.5,
       "default_desc": "Unhealthy for Sensitive Groups",
       "short_desc": "USG",
       "long_desc": "Sensitive groups may be affected",
       "icon": "mdi:emoticon-neutral-outline",
       "color": "#ff7e00",
       "badge": "mdi:numeric-4-circle",
-      "full_desc": "People with heart/lung disease, older adults, and children are at greater risk."
+      "full_desc": "Sensitive groups may experience health effects; the general public is less likely to be affected."
     },
     {
-      "min_value": 151,
+      "min_value": 55.5,
       "default_desc": "Unhealthy",
       "short_desc": "Unhealthy",
       "long_desc": "Air quality is unhealthy",
       "icon": "mdi:emoticon-sad-outline",
       "color": "#ff0000",
       "badge": "mdi:numeric-6-circle",
-      "full_desc": "Everyone may begin to experience health effects; sensitive groups more serious effects."
+      "full_desc": "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
     },
     {
-      "min_value": 201,
+      "min_value": 150.5,
       "default_desc": "Very Unhealthy",
       "short_desc": "V Unhealthy",
       "long_desc": "Air quality is very unhealthy",
@@ -68,23 +65,23 @@
       "full_desc": "Health alert: everyone may experience more serious health effects."
     },
     {
-      "min_value": 301,
+      "min_value": 250.5,
       "default_desc": "Hazardous",
       "short_desc": "Hazard",
       "long_desc": "Air quality is hazardous",
       "icon": "mdi:skull",
       "color": "#7e0023",
       "badge": "mdi:numeric-9-circle",
-      "full_desc": "Serious health warnings of emergency conditions; entire population is likely to be affected."
+      "full_desc": "Serious health warnings of emergency conditions; the entire population is at risk."
     },
     {
-      "min_value": 401,
+      "min_value": 350.5,
       "default_desc": "Hazardous+",
       "short_desc": "Haz+",
       "long_desc": "Extremely hazardous air quality",
       "icon": "mdi:skull-crossbones",
       "color": "#5b0217",
-      "badge": "mdi:numeric-9-plus-circle",
+      "badge": "mdi:numeric-10-circle",
       "full_desc": "Extreme emergency conditions; avoid all outdoor activity."
     }
   ]

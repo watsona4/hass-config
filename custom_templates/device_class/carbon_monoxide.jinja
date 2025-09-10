@@ -1,0 +1,177 @@
+{# ======================================================================
+  Severity definitions for carbon monoxide (CO)
+  Home Assistant device_class: carbon_monoxide
+  Based on U.S. EPA AQI breakpoints
+  - Default: 8-hour averages
+  - Short Term: 1-hour averages
+====================================================================== #}
+
+{% set lookup_unit = 'ppm' %}
+{% set levels = {
+  "default": [
+    {
+      "min_value": none,
+      "default_desc": "Unavailable",
+      "short_desc": "N/A",
+      "long_desc": "Carbon monoxide data unavailable",
+      "icon": "mdi:close-circle",
+      "color": "Disabled",
+      "badge": "mdi:circle",
+      "full_desc": "CO sensor is disabled or not reporting."
+    },
+    {
+      "min_value": 0.0,
+      "default_desc": "Good",
+      "short_desc": "Good",
+      "long_desc": "Air quality is good",
+      "icon": "mdi:emoticon-excited-outline",
+      "color": "#00e400",
+      "badge": "mdi:numeric-0-circle",
+      "full_desc": "Air quality poses little or no risk."
+    },
+    {
+      "min_value": 4.5,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Air quality is acceptable",
+      "icon": "mdi:emoticon-happy-outline",
+      "color": "#ffff00",
+      "badge": "mdi:numeric-2-circle",
+      "full_desc": "Generally acceptable; people unusually sensitive to CO may be affected."
+    },
+    {
+      "min_value": 9.5,
+      "default_desc": "Unhealthy for Sensitive Groups",
+      "short_desc": "USG",
+      "long_desc": "Sensitive groups may be affected",
+      "icon": "mdi:emoticon-neutral-outline",
+      "color": "#ff7e00",
+      "badge": "mdi:numeric-4-circle",
+      "full_desc": "People with heart disease or other conditions may experience health effects."
+    },
+    {
+      "min_value": 12.5,
+      "default_desc": "Unhealthy",
+      "short_desc": "Unhealthy",
+      "long_desc": "Air quality is unhealthy",
+      "icon": "mdi:emoticon-sad-outline",
+      "color": "#ff0000",
+      "badge": "mdi:numeric-6-circle",
+      "full_desc": "Everyone may begin to feel health effects; sensitive groups more serious effects."
+    },
+    {
+      "min_value": 15.5,
+      "default_desc": "Very Unhealthy",
+      "short_desc": "V Unhealthy",
+      "long_desc": "Air quality is very unhealthy",
+      "icon": "mdi:emoticon-dead-outline",
+      "color": "#8f3f97",
+      "badge": "mdi:numeric-8-circle",
+      "full_desc": "Health alert: everyone may experience more serious health effects."
+    },
+    {
+      "min_value": 30.5,
+      "default_desc": "Hazardous",
+      "short_desc": "Hazard",
+      "long_desc": "Air quality is hazardous",
+      "icon": "mdi:skull",
+      "color": "#7e0023",
+      "badge": "mdi:numeric-9-circle",
+      "full_desc": "Serious health warnings of emergency conditions; entire population is at risk."
+    },
+    {
+      "min_value": 40.5,
+      "default_desc": "Hazardous+",
+      "short_desc": "Haz+",
+      "long_desc": "Extremely hazardous air quality",
+      "icon": "mdi:skull-crossbones",
+      "color": "#5b0217",
+      "badge": "mdi:numeric-9-plus-circle",
+      "full_desc": "Extreme emergency conditions; avoid all exposure and evacuate if indoors."
+    }
+  ],
+  "short_term": [
+    {
+      "min_value": none,
+      "default_desc": "Unavailable",
+      "short_desc": "N/A",
+      "long_desc": "Carbon monoxide data unavailable",
+      "icon": "mdi:close-circle",
+      "color": "Disabled",
+      "badge": "mdi:circle",
+      "full_desc": "CO sensor is disabled or not reporting."
+    },
+    {
+      "min_value": 0.0,
+      "default_desc": "Good",
+      "short_desc": "Good",
+      "long_desc": "Air quality is good",
+      "icon": "mdi:emoticon-excited-outline",
+      "color": "#00e400",
+      "badge": "mdi:numeric-0-circle",
+      "full_desc": "Air quality poses little or no risk."
+    },
+    {
+      "min_value": 5.0,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Air quality is acceptable",
+      "icon": "mdi:emoticon-happy-outline",
+      "color": "#ffff00",
+      "badge": "mdi:numeric-2-circle",
+      "full_desc": "Generally acceptable; people unusually sensitive to CO may be affected."
+    },
+    {
+      "min_value": 10.0,
+      "default_desc": "Unhealthy for Sensitive Groups",
+      "short_desc": "USG",
+      "long_desc": "Sensitive groups may be affected",
+      "icon": "mdi:emoticon-neutral-outline",
+      "color": "#ff7e00",
+      "badge": "mdi:numeric-4-circle",
+      "full_desc": "People with heart disease or other conditions may experience health effects."
+    },
+    {
+      "min_value": 15.0,
+      "default_desc": "Unhealthy",
+      "short_desc": "Unhealthy",
+      "long_desc": "Air quality is unhealthy",
+      "icon": "mdi:emoticon-sad-outline",
+      "color": "#ff0000",
+      "badge": "mdi:numeric-6-circle",
+      "full_desc": "Everyone may begin to feel health effects; sensitive groups more serious effects."
+    },
+    {
+      "min_value": 30.0,
+      "default_desc": "Very Unhealthy",
+      "short_desc": "V Unhealthy",
+      "long_desc": "Air quality is very unhealthy",
+      "icon": "mdi:emoticon-dead-outline",
+      "color": "#8f3f97",
+      "badge": "mdi:numeric-8-circle",
+      "full_desc": "Health alert: everyone may experience more serious health effects."
+    },
+    {
+      "min_value": 40.0,
+      "default_desc": "Hazardous",
+      "short_desc": "Hazard",
+      "long_desc": "Air quality is hazardous",
+      "icon": "mdi:skull",
+      "color": "#7e0023",
+      "badge": "mdi:numeric-9-circle",
+      "full_desc": "Serious health warnings of emergency conditions; entire population is at risk."
+    },
+    {
+      "min_value": 50.0,
+      "default_desc": "Hazardous+",
+      "short_desc": "Haz+",
+      "long_desc": "Extremely hazardous air quality",
+      "icon": "mdi:skull-crossbones",
+      "color": "#5b0217",
+      "badge": "mdi:numeric-9-plus-circle",
+      "full_desc": "Extreme emergency conditions; avoid all exposure and evacuate if indoors."
+    }
+  ]
+} %}
+
+{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}

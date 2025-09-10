@@ -1,0 +1,159 @@
+{# ======================================================================
+  Severity definitions for carbon dioxide (CO₂)
+  Home Assistant device_class: carbon_dioxide
+
+  Indoor reference (ppm):
+    - < 800 ppm: good ventilation
+    - 800–1000 ppm: moderate
+    - 1000–1400 ppm: elevated / stuffy
+    - 1400–2000 ppm: poor
+    - >2000 ppm: very poor
+    - 5000 ppm: OSHA 8-hr PEL
+    - >10000 ppm: dangerous in enclosed spaces
+
+  Outdoor reference (ppm):
+    - ~420 ppm: global background
+    - 400–500 ppm: normal
+    - 500–800 ppm: elevated
+    - >800 ppm: unusual / pollution-influenced
+====================================================================== #}
+
+{% set lookup_unit = 'ppm' %}
+{% set levels = {
+  "default": [
+    {
+      "min_value": none,
+      "default_desc": "Unavailable",
+      "short_desc": "N/A",
+      "long_desc": "CO₂ data unavailable",
+      "icon": "mdi:close-circle",
+      "color": "Disabled",
+      "badge": "mdi:circle",
+      "full_desc": "Carbon dioxide sensor is disabled or not reporting."
+    },
+    {
+      "min_value": 0,
+      "default_desc": "Good",
+      "short_desc": "Good",
+      "long_desc": "Comfortable indoor CO₂",
+      "icon": "mdi:emoticon-excited-outline",
+      "color": "#00e400",
+      "badge": "mdi:numeric-0-circle",
+      "full_desc": "Air quality poses little or no risk; ventilation is adequate."
+    },
+    {
+      "min_value": 800,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Slightly elevated CO₂",
+      "icon": "mdi:emoticon-happy-outline",
+      "color": "#ffff00",
+      "badge": "mdi:numeric-2-circle",
+      "full_desc": "Generally acceptable; consider increasing fresh air for better comfort."
+    },
+    {
+      "min_value": 1000,
+      "default_desc": "Stuffy",
+      "short_desc": "Stuffy",
+      "long_desc": "Elevated CO₂",
+      "icon": "mdi:emoticon-neutral-outline",
+      "color": "#ff7e00",
+      "badge": "mdi:numeric-4-circle",
+      "full_desc": "Air may feel stale; concentration and comfort can be affected. Improve ventilation."
+    },
+    {
+      "min_value": 1400,
+      "default_desc": "Poor",
+      "short_desc": "Poor",
+      "long_desc": "Poor indoor air",
+      "icon": "mdi:emoticon-sad-outline",
+      "color": "#ff0000",
+      "badge": "mdi:numeric-6-circle",
+      "full_desc": "Increasing risk of headaches and drowsiness; boost ventilation and reduce occupancy if possible."
+    },
+    {
+      "min_value": 2000,
+      "default_desc": "Very Poor",
+      "short_desc": "V Poor",
+      "long_desc": "Very poor indoor air",
+      "icon": "mdi:emoticon-dead-outline",
+      "color": "#8f3f97",
+      "badge": "mdi:numeric-8-circle",
+      "full_desc": "Symptoms more likely (headache, fatigue); ventilation/airing-out strongly recommended."
+    },
+    {
+      "min_value": 5000,
+      "default_desc": "Hazardous",
+      "short_desc": "Hazard",
+      "long_desc": "Hazardous CO₂ level",
+      "icon": "mdi:skull",
+      "color": "#7e0023",
+      "badge": "mdi:numeric-9-circle",
+      "full_desc": "Exceeds typical occupational exposure limits; avoid occupancy until levels are reduced."
+    },
+    {
+      "min_value": 10000,
+      "default_desc": "Hazardous+",
+      "short_desc": "Haz+",
+      "long_desc": "Extremely hazardous CO₂",
+      "icon": "mdi:skull-crossbones",
+      "color": "#5b0217",
+      "badge": "mdi:numeric-9-plus-circle",
+      "full_desc": "Dangerous in enclosed spaces; ventilate immediately and investigate sources."
+    }
+  ],
+  "outdoor": [
+    {
+      "min_value": none,
+      "default_desc": "Unavailable",
+      "short_desc": "N/A",
+      "long_desc": "CO₂ data unavailable",
+      "icon": "mdi:close-circle",
+      "color": "Disabled",
+      "badge": "mdi:circle",
+      "full_desc": "Outdoor carbon dioxide sensor is disabled or not reporting."
+    },
+    {
+      "min_value": 0,
+      "default_desc": "Baseline",
+      "short_desc": "Base",
+      "long_desc": "Normal background CO₂",
+      "icon": "mdi:leaf",
+      "color": "#00e400",
+      "badge": "mdi:numeric-0-circle",
+      "full_desc": "Typical outdoor CO₂ levels near global background (~420 ppm)."
+    },
+    {
+      "min_value": 500,
+      "default_desc": "Elevated",
+      "short_desc": "Elev",
+      "long_desc": "Elevated CO₂ outdoors",
+      "icon": "mdi:factory",
+      "color": "#ffff00",
+      "badge": "mdi:numeric-3-circle",
+      "full_desc": "Above background, may indicate local traffic, combustion, or stagnant air."
+    },
+    {
+      "min_value": 800,
+      "default_desc": "High",
+      "short_desc": "High",
+      "long_desc": "High CO₂ outdoors",
+      "icon": "mdi:emoticon-neutral-outline",
+      "color": "#ff7e00",
+      "badge": "mdi:numeric-6-circle",
+      "full_desc": "Unusual for outdoor air; indicates significant local sources or trapped air."
+    },
+    {
+      "min_value": 1200,
+      "default_desc": "Very High",
+      "short_desc": "V High",
+      "long_desc": "Very high CO₂ outdoors",
+      "icon": "mdi:emoticon-sad-outline",
+      "color": "#ff0000",
+      "badge": "mdi:numeric-8-circle",
+      "full_desc": "Air quality concern; may correlate with high pollution events or enclosed monitoring site."
+    }
+  ]
+} %}
+
+{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
