@@ -3,6 +3,16 @@
 {% set levels = {
     "generic": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Very Low",
             "short_desc": "Low",
@@ -53,11 +63,11 @@
             "min_value": none,
             "default_desc": "Unavailable",
             "short_desc": "Disabled",
-            "long_desc": "Sensor not currently available",
+            "long_desc": "Sensor unavailable",
             "icon": "mdi:eye-off",
-            "color": "Disabled",
+            "color": "disabled",
             "badge": "mdi:circle",
-            "full_desc": "UV index is not available."
+            "full_desc": "Sensor not currently available."
         },
         {
             "min_value": 0,

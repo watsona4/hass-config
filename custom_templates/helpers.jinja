@@ -9,7 +9,6 @@
 {# -- Imports ---------------------------------------------------------- #}
 {% from 'units/base.jinja' import u_convert_value %}
 
-
 {# ======================================================================
   1) Numeric Utilities
 ====================================================================== #}
@@ -79,7 +78,6 @@
     {%- endif -%}
 {% endmacro %}
 
-
 {# ======================================================================
   2) Name & Label Formatting
 ====================================================================== #}
@@ -99,7 +97,7 @@
             {%- set ns.result = ns.result + [word | title] -%}
         {%- endif -%}
     {%- endfor -%}
-    {{- ns.result | join(' ') -}}
+    {{- ns.result | join(" ") -}}
 {% endmacro %}
 
 {#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
@@ -121,22 +119,18 @@
     {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text) -}}
 {% endmacro %}
 
-
 {# ======================================================================
   3) Device-Class Context Resolution
      (Prefer options.{levels, lookup_unit}; fallback to globals)
 ====================================================================== #}
 
 {% macro _resolve_ctx(options) %}
-    {%- set _levels =
-        (options.get('levels') if options is mapping and options.get('levels') is defined
-    else (levels if levels is defined else none)) -%}
-    {%- set _lookup_unit =
-        (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined
+    {%- set _levels = (options.get('levels') if options is mapping and options.get('levels') is defined
+        else (levels if levels is defined else none)) -%}
+    {%- set _lookup_unit = (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined
         else (lookup_unit if lookup_unit is defined else none)) -%}
     {{- {'levels': _levels, 'lookup_unit': _lookup_unit} | tojson -}}
 {% endmacro %}
-
 
 {# ======================================================================
   4) Units & Conversion
@@ -152,6 +146,7 @@
         {%- set ns = namespace(v=n | float(0) | abs, system=(system or '') | lower, pref_out=none) -%}
 
         {#- Prefix tables -#}
+        {#- djlint:off -#}
         {%- set si_list = [
             ('Y',1e24),('Z',1e21),('E',1e18),('P',1e15),('T',1e12),('G',1e9),
             ('M',1e6),('k',1e3),('h',100.0),('da',10.0),('d',0.1),('c',0.01),('m',0.001),
@@ -160,23 +155,24 @@
         {%- set iec_list = [
             ('Yi',2**80),('Zi',2**70),('Ei',2**60),('Pi',2**50),('Ti',2**40),('Gi',2**30),('Mi',2**20),('Ki',2**10)
         ] -%}
+        {#- djlint:on -#}
 
         {#- Detect existing prefix in 'unit' -#}
         {%- set det = namespace(kind='', pref='', factor=1.0) -%}
         {%- for p, m in iec_list -%}
             {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
-                {%- set det.kind='iec' -%}
-                {%- set det.pref=p -%}
-                {%- set det.factor=m -%}
+                {%- set det.kind = "iec" -%}
+                {%- set det.pref = p -%}
+                {%- set det.factor = m -%}
                 {%- break -%}
             {%- endif -%}
         {%- endfor -%}
         {%- if not det.kind -%}
             {%- for p,m in si_list -%}
                 {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
-                    {%- set det.kind='si' -%}
-                    {%- set det.pref=p -%}
-                    {%- set det.factor=m -%}
+                    {%- set det.kind = "si" -%}
+                    {%- set det.pref = p -%}
+                    {%- set det.factor = m -%}
                     {%- break -%}
                 {%- endif -%}
             {%- endfor -%}
@@ -197,7 +193,7 @@
         {#- Scale value to readable prefix -#}
         {%- if ns.system == 'iec' -%}
             {%- set base = 1024.0 -%}
-            {%- set prefixes = ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi','Yi'] -%}
+            {%- set prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"] -%}
             {%- set ns2 = namespace(i=0) -%}
             {%- for _ in range(prefixes | length - 1) -%}
                 {%- if ns.v < base -%}
@@ -209,7 +205,7 @@
             {%- set ns.pref_out = prefixes[i] -%}
         {%- else -%}
             {%- set base = 1000.0 -%}
-            {%- set prefixes = ['y','z','a','f','p','n','µ','m','','k','M','G','T','P','E','Z','Y'] -%}
+            {%- set prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"] -%}
             {%- set ns2 = namespace(i=8) -%}
             {%- for _ in range(prefixes | length - 1) -%}
                 {%- if ns.v < base or ns2.i >= prefixes | length - 1 -%}
@@ -233,18 +229,6 @@
     {%- endif -%}
 {% endmacro %}
 
-{#- Safe unit conversion toward lookup_unit (or display_unit/uom); pass-through if none -#}
-{% macro _safe_convert(value, options) %}
-    {%- set ctx = _resolve_ctx(options) | from_json -%}
-    {%- set target_unit = ctx.lookup_unit or options.display_unit or options.uom -%}
-    {%- if target_unit -%}
-        {{- u_convert_value(value, options.uom, target_unit) -}}
-    {%- else -%}
-        {{- value -}}
-    {%- endif -%}
-{% endmacro %}
-
-
 {# ======================================================================
   5) Level Utilities (selection & attribute retrieval)
 ====================================================================== #}
@@ -252,7 +236,7 @@
 {#- Pick the entry with the greatest min_value <= value (handles mixed order) -#}
 {% macro find_matching_level(value, levels) %}
     {%- set ns = namespace(val=value | float(0), best=none, best_min=none, lowest=none, lowest_min=none) -%}
-    {%- for level in levels -%}
+    {%- for level in levels if level.min_value is not none -%}
         {%- set m = level.min_value | float(0) -%}
         {%- if ns.lowest is none or m < ns.lowest_min -%}
             {%- set ns.lowest = level -%}
@@ -275,7 +259,6 @@
     {%- elif app not in _levels -%}
         {{- 'Error: Unknown application: ' ~ app -}}
     {%- else -%}
-        {%- set raw = options.get('raw_state', value) -%}
 
         {#- Prefer explicit 'unavailable' level (min_value == none) -#}
         {%- set ns = namespace(unavailable_entry=none) -%}
@@ -287,45 +270,55 @@
         {%- endfor -%}
         {%- set unavailable_fallback = ns.unavailable_entry or _levels[app][0] -%}
 
-        {%- set is_unavail = (value is none) or (raw in ['unavailable','unknown','none','', None]) -%}
-
-        {%- if is_unavail -%}
+        {%- if options.get('is_unavail', false) -%}
             {{- unavailable_fallback.get(attr, '') -}}
         {%- else -%}
-            {%- set lookup = _safe_convert(value, options) -%}
+            {%- set lookup = u_convert_value(value, options.uom, ctx.lookup_unit) -%}
             {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
             {{- match.get(attr, '') -}}
         {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
-
 {# ======================================================================
   6) Public Getters (used by main.jinja)
 ====================================================================== #}
 
 {% macro get_value(value, options) %}
-    {%- if value is none -%}
+    {%- if options.get('is_unavail', false) -%}
         Unavailable
     {%- else -%}
-        {%- set val = _safe_convert(value, options) -%}
-        {{- humanize_unit(val, (options.display_unit)) -}}
+        {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
+        {{- humanize_unit(val, options.display_unit) -}}
     {%- endif -%}
 {% endmacro %}
 
 {% macro get_name(value, app, options) %}
-    {{ format_name(options.friendly_name or app,
-        exceptions=['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC']) }}
+    {{- format_name(options.friendly_name or app,
+        exceptions=['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC']) -}}
 {% endmacro %}
 
-{% macro get_default_desc(value, app, options) %}{{- get_level_attr(value, app, 'default_desc', options) -}}{% endmacro %}
-{% macro get_short_desc(value, app, options)   %}{{- get_level_attr(value, app, 'short_desc', options) -}}{% endmacro %}
-{% macro get_long_desc(value, app, options)    %}{{- get_level_attr(value, app, 'long_desc', options) -}}{% endmacro %}
-{% macro get_full_desc(value, app, options)    %}{{- get_level_attr(value, app, 'full_desc', options) -}}{% endmacro %}
-{% macro get_icon(value, app, options)         %}{{- get_level_attr(value, app, 'icon', options) -}}{% endmacro %}
-{% macro get_color(value, app, options)        %}{{- get_level_attr(value, app, 'color', options) -}}{% endmacro %}
-{% macro get_badge(value, app, options)        %}{{- get_level_attr(value, app, 'badge', options) -}}{% endmacro %}
-
+{% macro get_default_desc(value, app, options) %}
+    {{- get_level_attr(value, app, 'default_desc', options) -}}
+{% endmacro %}
+{% macro get_short_desc(value, app, options) %}
+    {{- get_level_attr(value, app, 'short_desc', options) -}}
+{% endmacro %}
+{% macro get_long_desc(value, app, options) %}
+    {{- get_level_attr(value, app, 'long_desc', options) -}}
+{% endmacro %}
+{% macro get_full_desc(value, app, options) %}
+    {{- get_level_attr(value, app, 'full_desc', options) -}}
+{% endmacro %}
+{% macro get_icon(value, app, options) %}
+    {{- get_level_attr(value, app, 'icon', options) -}}
+{% endmacro %}
+{% macro get_color(value, app, options) %}
+    {{- get_level_attr(value, app, 'color', options) -}}
+{% endmacro %}
+{% macro get_badge(value, app, options) %}
+    {{- get_level_attr(value, app, 'badge', options) -}}
+{% endmacro %}
 
 {# ======================================================================
   7) Parsing Helpers (optional; used in some templates)
@@ -357,13 +350,13 @@
                 {%- endfor -%}
                 {%- set ns.val = ns2.items -%}
 
-            {#- booleans and null -#}
+                {#- booleans and null -#}
             {%- elif v | lower in ['true','false'] -%}
                 {%- set ns.val = (v | lower == 'true') -%}
             {%- elif v | lower in ['null','none','~'] -%}
                 {%- set ns.val = none -%}
 
-            {#- numbers (int or float), else string -#}
+                {#- numbers (int or float), else string -#}
             {%- else -%}
                 {%- set vv = v.strip('"').strip("'") -%}
                 {%- if vv | replace('_','') | regex_match('^-?[0-9]+$') -%}

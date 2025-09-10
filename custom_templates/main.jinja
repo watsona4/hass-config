@@ -18,6 +18,7 @@
     {%- set display_unit = options.get('unit', uom) -%}
 
     {#- Import the appropriate template based on device class -#}
+    {#- djlint:off -#}
     {%- set valid_classes = [
         "acceleration",
         "angle",
@@ -80,6 +81,7 @@
         "wind_direction",
         "wind_speed"
     ] -%}
+    {#- djlint:on -#}
 
     {#- Ensure we have a valid device class, fallback to 'none' if not -#}
     {%- if ns.device_class not in valid_classes -%}
@@ -101,46 +103,52 @@
         raw_state=raw_state,
         levels=levels,
         lookup_unit=lookup_unit,
-    ) -%}
+        ) -%}
 
-    {%- set is_unavail = (value is none) or (raw_state in ['unavailable','unknown','none','', None]) -%}
+    {%- set is_unavail = (
+        raw_state is string
+        and (raw_state | trim | lower) in ['unavailable','unknown','none','null','nan']
+        ) or (raw_state is not string and raw_state is none) -%}
+
+    {%- set enhanced_options = dict(
+        enhanced_options,
+        is_unavail=is_unavail,
+        ) -%}
+
     {%- set value_text = H.get_value(value, enhanced_options) -%}
-    {%- set def_desc  = H.get_default_desc(value, app, enhanced_options) -%}
+    {%- set def_desc = H.get_default_desc(value, app, enhanced_options) -%}
     {%- set short_desc = H.get_short_desc(value, app, enhanced_options) -%}
-    {%- set long_desc  = H.get_long_desc(value, app, enhanced_options) -%}
+    {%- set long_desc = H.get_long_desc(value, app, enhanced_options) -%}
 
-    {%- set name =
-        (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
+    {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
-    {%- set label =
-        (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
+    {%- set label = (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
         else H.format_label(value_text, def_desc, is_unavail, long_desc)) -%}
-    {%- set short_label =
-        (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
+    {%- set short_label = (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
         else H.format_label(value_text, short_desc, is_unavail, long_desc)) -%}
-    {%- set long_label =
-        (DC.get_long_label(value, app, enhanced_options) if DC.get_long_label is defined
+    {%- set long_label = (DC.get_long_label(value, app, enhanced_options) if DC.get_long_label is defined
         else H.format_label(value_text, long_desc, is_unavail, long_desc)) -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
-        'value': value_text,
-        'name': name,
-        'default_desc': def_desc,
-        'short_desc': short_desc,
-        'long_desc': long_desc,
-        'full_desc': H.get_full_desc(value, app, enhanced_options),
-        'icon': H.get_icon(value, app, enhanced_options),
-        'color': H.get_color(value, app, enhanced_options),
-        'badge': H.get_badge(value, app, enhanced_options),
-        'label': label,
-        'short_label': short_label,
-        'long_label': long_label,
-        'options': options,
-        'friendly_name': friendly_name,
-        'uom': uom,
-        'display_unit': display_unit,
-        'raw_state': raw_state,
+    'value': value_text,
+    'name': name,
+    'default_desc': def_desc,
+    'short_desc': short_desc,
+    'long_desc': long_desc,
+    'full_desc': H.get_full_desc(value, app, enhanced_options) ,
+    'icon': H.get_icon(value, app, enhanced_options),
+    'color': H.get_color(value, app, enhanced_options),
+    'badge': H.get_badge(value, app, enhanced_options),
+    'label': label,
+    'short_label': short_label,
+    'long_label': long_label,
+    'options': options,
+    'friendly_name': friendly_name,
+    'uom': uom,
+    'display_unit': display_unit,
+    'raw_state': raw_state,
+    'is_unavail': is_unavail,
     } | tojson -}}
 
 {% endmacro %}
@@ -152,40 +160,58 @@
 {% endmacro %}
 
 {# ---- convenience wrappers ---- #}
-{% macro get_value(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'value', options) }}{% endmacro %}
-{% macro get_name(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'name', options) }}{% endmacro %}
-{% macro get_default_desc(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'default_desc', options) }}{% endmacro %}
-{% macro get_short_desc(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'short_desc', options) }}{% endmacro %}
-{% macro get_long_desc(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'long_desc', options) }}{% endmacro %}
-{% macro get_full_desc(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'full_desc', options) }}{% endmacro %}
-{% macro get_icon(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'icon', options) }}{% endmacro %}
-{% macro get_color(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'color', options) }}{% endmacro %}
-{% macro get_badge(entity_id, app, options={}) %}{{ get_attribute(entity_id, app, 'badge', options) }}{% endmacro %}
+{% macro get_value(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'value', options) -}}
+{% endmacro %}
+{% macro get_name(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'name', options) -}}
+{% endmacro %}
+{% macro get_default_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'default_desc', options) -}}
+{% endmacro %}
+{% macro get_short_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'short_desc', options) -}}
+{% endmacro %}
+{% macro get_long_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'long_desc', options) -}}
+{% endmacro %}
+{% macro get_full_desc(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'full_desc', options) -}}
+{% endmacro %}
+{% macro get_icon(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'icon', options) -}}
+{% endmacro %}
+{% macro get_color(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'color', options) -}}
+{% endmacro %}
+{% macro get_badge(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'badge', options) -}}
+{% endmacro %}
 
 {# ---- labels now use helpers for fallback formatting ---- #}
 {% macro get_label(entity_id, app, options={}) %}
-  {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-  {%- if info.label and info.label|trim != '' -%}
-    {{ info.label }}
-  {%- else -%}
-    {{ H.format_label(info.value, info.default_desc, not has_value(entity_id), info.long_desc) }}
-  {%- endif -%}
+    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
+    {%- if info.label and info.label|trim != '' -%}
+        {{- info.label -}}
+    {%- else -%}
+        {{- H.format_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro get_short_label(entity_id, app, options={}) %}
-  {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-  {%- if info.short_label and info.short_label|trim != '' -%}
-    {{ info.short_label }}
-  {%- else -%}
-    {{ H.format_short_label(info.value, info.default_desc, not has_value(entity_id), info.long_desc) }}
-  {%- endif -%}
+    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
+    {%- if info.short_label and info.short_label|trim != '' -%}
+        {{- info.short_label -}}
+    {%- else -%}
+        {{- H.format_short_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro get_long_label(entity_id, app, options={}) %}
-  {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-  {%- if info.long_label and info.long_label|trim != '' -%}
-    {{ info.long_label }}
-  {%- else -%}
-    {{ H.format_long_label(info.value, info.default_desc, not has_value(entity_id), info.long_desc) }}
-  {%- endif -%}
+    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
+    {%- if info.long_label and info.long_label|trim != '' -%}
+        {{- info.long_label -}}
+    {%- else -%}
+        {{- H.format_long_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
+    {%- endif -%}
 {% endmacro %}
