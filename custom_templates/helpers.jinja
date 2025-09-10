@@ -1,19 +1,29 @@
-{#- ## config/custom_templates/helpers.jinja ## -#}
-{#- Reusable macros for various calculations and formatting -#}
+{# ======================================================================
+  helpers.jinja  —  Reusable helpers for values, levels, labels & units
+  - Safe context resolution for {levels, lookup_unit}
+  - Optional fields (e.g., 'badge') default to ""
+  - Unavailable handling centralized
+  - Clean, sectioned layout
+====================================================================== #}
 
+{# -- Imports ---------------------------------------------------------- #}
 {% from 'units/base.jinja' import u_convert_value %}
 
-{#- Absolute value -#}
+
+{# ======================================================================
+  1) Numeric Utilities
+====================================================================== #}
+
 {% macro abs(x) %}
     {%- set x = x | float(0) -%}
     {{- -x if x < 0 else x -}}
 {% endmacro %}
 
-{#- Smart formatter with integer-only rule, sig figs, and commas -#}
+{# Smart number formatter (sig-fig-ish) with thousands separators #}
 {% macro smartfmt(x) %}
     {%- set v = x | float(none) -%}
     {%- if v is not number -%}
-        {{ x }}
+        {{- x -}}
     {%- else -%}
         {%- set sign = '-' if v < 0 else '' -%}
         {%- set a = abs(v) | float(v) -%}
@@ -24,193 +34,57 @@
         {%- set int_nz = int.lstrip('0') -%}
         {%- set D = int_nz | length -%}
 
-        {#- Keep integer only if: starts with 1 and D>3, or starts not 1 and D>2 -#}
-        {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0] != '1')) -%}
-
+        {#- Keep integer only for very large magnitudes -#}
+        {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0]!='1')) -%}
         {%- if keep_int_only -%}
-            {{ sign ~ '{:,}'.format(int_nz|int) }}
+            {{- sign ~ '{:,}'.format(int_nz | int) -}}
         {%- else -%}
-            {#- Determine decimal places from sig-fig rule -#}
+            {%- set ns = namespace(first_sig=None, L=None, decimals=none, k=none) -%}
             {%- if D >= 1 -%}
-                {%- set first_sig = int_nz[0] -%}
-                {%- set L = 4 if first_sig == '1' else 3 -%}
-                {%- set decimals = -508 -%}
+                {%- set ns.first_sig = int_nz[0] if D>0 else '0' -%}
+                {%- set ns.L = 4 if ns.first_sig == '1' else 3 -%}
+                {%- set ns.decimals = -508 -%}
             {%- else -%}
                 {#- first sig digit in fraction -#}
-                {%- set k = -1 -%}
-                {%- for i in range(frac|length) -%}
-                    {%- if k == -1 and frac[i] != '0' -%}
-                        {%- set k = i -%}
+                {%- set ns.k = -1 -%}
+                {%- for i in range(frac | length) -%}
+                    {%- if ns.k == -1 and frac[i] != '0' -%}
+                        {%- set ns.k = i -%}
                     {%- endif -%}
                 {%- endfor -%}
-                {%- if k == -1 -%}
-                    {{ '0' }}{%- set decimals = none -%}
+                {%- if ns.k == -1 -%}
+                    {{- '0' -}}
+                    {%- set ns.decimals = none -%}
                 {%- else -%}
-                    {%- set first_sig = frac[k] -%}
-                    {%- set L = 4 if first_sig == '1' else 3 -%}
-                    {%- set decimals = k + L -%}
+                    {%- set ns.first_sig = frac[ns.k] -%}
+                    {%- set ns.L = 4 if ns.first_sig == '1' else 3 -%}
+                    {%- set ns.decimals = ns.k + ns.L -%}
                 {%- endif -%}
             {%- endif -%}
 
-            {%- if decimals is not none -%}
-                {%- set out = ("%." ~ (decimals if decimals > 0 else 0) ~ "f") | format(a) -%}
+            {%- if ns.decimals is not none -%}
+                {%- set out = ("%." ~ (ns.decimals if ns.decimals > 0 else 0) ~ "f") | format(a) -%}
                 {%- set op = out.split('.') -%}
-                {%- if op|length == 1 -%}
+                {%- if op | length == 1 -%}
                     {%- set i = op[0] -%}
-                    {{ sign ~ ('{:,}'.format(i|int) if (i|int) >= 1000 else i) }}
+                    {{- sign ~ ('{:,}'.format(i | int) if (i | int) >= 1000 else i) -}}
                 {%- else -%}
                     {%- set i = op[0] -%}
                     {%- set f = op[1].rstrip('0') -%}
-                    {%- set i2 = ('{:,}'.format(i|int) if (i|int) >= 1000 else i) -%}
-                    {{ sign ~ i2 ~ ('.' ~ f if f else '') }}
+                    {%- set i2 = ('{:,}'.format(i | int) if (i | int) >= 1000 else i) -%}
+                    {{- sign ~ i2 ~ ('.' ~ f if f else '') -}}
                 {%- endif -%}
             {%- endif -%}
         {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
-{#- Find matching level in a list of level definitions based on min_value -#}
-{% macro find_matching_level(value, levels) -%}
-    {%- set ns = namespace(
-        val = value | float(0),
-        best = none, best_min = none,
-        lowest = none, lowest_min = none
-        ) -%}
-    {%- for level in levels -%}
-        {%- set m = level.min_value | float(0) -%}
 
-        {#- track the lowest threshold for fallback -#}
-        {%- if ns.lowest is none or m < ns.lowest_min -%}
-            {%- set ns.lowest = level -%}
-            {%- set ns.lowest_min = m -%}
-        {%- endif -%}
-
-        {#- choose the greatest min_value <= val -#}
-        {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
-            {%- set ns.best = level -%}
-            {%- set ns.best_min = m -%}
-        {%- endif -%}
-    {%- endfor -%}
-    {{ (ns.best or ns.lowest) | tojson }}
-{%- endmacro %}
-
-{#- Humanize a number with unit, using SI/IEC prefixes as appropriate -#}
-{% macro humanize_unit(n, unit='', system='') %}
-
-    {#- If no unit passed, just smart format the number -#}
-    {%- if not unit or unit|trim == '' -%}
-        {{ smartfmt(n) }}
-    {%- else -%}
-        {%- set sgn = -1 if (n|float(0)) < 0 else 1 -%}
-        {%- set unit = unit|string|trim -%}
-        {%- set ns = namespace(v=n|float(0)|abs, system=(system or '')|lower, pref_out=none) -%}
-
-        {#- SI and IEC prefix tables -#}
-        {#- djlint:off -#}
-        {%- set si_list = [
-            ('Y', 1e+24), ('Z', 1e+21), ('E', 1e+18), ('P', 1e+15), ('T', 1e+12), ('G', 1e+9),
-            ('M', 1e+6), ('k', 1e+3), ('h', 100.0), ('da', 10.0), ('d', 0.1), ('c', 0.01), ('m', 0.001),
-            ('µ', 1e-06), ('u', 1e-06), ('n', 1e-09), ('p', 1e-12), ('f', 1e-15), ('a', 1e-18),
-            ('z', 1e-21), ('y', 1e-24)
-        ] -%}
-        {%- set iec_list = [
-            ('Yi', 2**80), ('Zi', 2**70), ('Ei', 2**60), ('Pi', 2**50), ('Ti', 2**40),
-            ('Gi', 2**30), ('Mi', 2**20), ('Ki', 2**10)
-        ] -%}
-        {#- djlint:oon -#}
-
-        {#- detect prefix in unit -#}
-        {%- set det = namespace(kind='', pref='', factor=1.0) -%}
-        {%- for p, mult in iec_list -%}
-            {%- if unit.startswith(p) and (unit|length) > (p|length) -%}
-                {%- set det.kind = "iec" -%}
-                {%- set det.pref = p -%}
-                {%- set det.factor = mult -%}
-                {%- break -%}
-            {%- endif -%}
-        {%- endfor -%}
-        {%- if not det.kind -%}
-            {%- for p, mult in si_list -%}
-                {%- if unit.startswith(p) and (unit|length) > (p|length) -%}
-                    {%- set det.kind = "si" -%}
-                    {%- set det.pref = p -%}
-                    {%- set det.factor = mult -%}
-                    {%- break -%}
-                {%- endif -%}
-            {%- endfor -%}
-        {%- endif -%}
-
-        {#- peel prefix and normalize value -#}
-        {%- set base_unit = unit[det.pref|length:] if det.pref else unit -%}
-        {%- set ns.v = ns.v * det.factor -%}
-
-        {#- system resolution (explicit > preserved > defaults) -#}
-        {%- if ns.system not in ['si','iec'] -%}
-            {%- set base_token = base_unit.split('/', 1)[0] -%}
-            {%- set base_token_l = base_token|lower -%}
-            {%- set is_bytes = base_token_l in ['b','byte','bytes'] and base_token[:1] == 'B' -%}
-            {%- if det.kind == 'iec' or is_bytes -%}
-                {%- set ns.system = "iec" -%}
-            {%- else -%}
-                {%- set ns.system = "si" -%}
-            {%- endif -%}
-        {%- endif -%}
-
-        {#- scale -#}
-        {%- if ns.system == 'iec' -%}
-            {%- set base = 1024.0 -%}
-            {%- set prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"] -%}
-            {%- set idx = namespace(i=0) -%}
-            {%- for _ in range(prefixes|length - 1) -%}
-                {%- if ns.v < base -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v / base -%}
-                {%- set idx.i = idx.i + 1 -%}
-            {%- endfor -%}
-            {%- set ns.pref_out = prefixes[idx.i] -%}
-        {%- else -%}
-            {%- set base = 1000.0 -%}
-            {%- set prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"] -%}
-            {%- set idx = namespace(i=8) -%}
-            {%- for _ in range(prefixes|length - 1) -%}
-                {%- if ns.v < base or idx.i >= prefixes|length - 1 -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v / base -%}
-                {%- set idx.i = idx.i + 1 -%}
-            {%- endfor -%}
-            {%- for _ in range(prefixes|length - 1) -%}
-                {%- if ns.v >= 1 or idx.i <= 0 or ns.v == 0 -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v * base -%}
-                {%- set idx.i = idx.i - 1 -%}
-            {%- endfor -%}
-            {%- set ns.pref_out = prefixes[idx.i] -%}
-        {%- endif -%}
-
-        {#- format -#}
-        {%- set out = (ns.v if ns.v < 100 else ns.v|round(0))|round(1) -%}
-        {{- (out * sgn) ~ ' ' ~ ns.pref_out ~ base_unit -}}
-    {%- endif -%}
-{% endmacro %}
-
-{#- Format the state of an entity, converting temperature if needed -#}
-{% macro format_entity(eid, temp='c') %}
-    {%- set val = states(eid) -%}
-    {%- set unit = state_attr(eid,'unit_of_measurement') -%}
-    {%- if state_attr(eid,'device_class') == 'temperature' -%}
-        {%- set t = convert_temp_value(val, unit or 'c', temp) | float(0) -%}
-        {%- set temp_units = {"k": "K", "f": "°F", "c": "°C"} %}
-        {{- t | round(1) ~ ' ' ~ temp_units[temp] -}}
-    {%- else -%}
-        {{- humanize_unit(val, unit) -}}
-    {%- endif -%}
-{% endmacro %}
+{# ======================================================================
+  2) Name & Label Formatting
+====================================================================== #}
 
 {% macro format_name(name, exceptions=[]) %}
-    {#- {{- '[DEBUG] format_name(): name = ' ~ name -}} -#}
     {%- set ns = namespace(result=[], match=none) -%}
     {%- for word in name.split() -%}
         {%- set ns.match = none -%}
@@ -220,17 +94,244 @@
             {%- endif -%}
         {%- endfor -%}
         {%- if ns.match -%}
-            {#- Preserve exception exactly as given -#}
             {%- set ns.result = ns.result + [ns.match] -%}
         {%- else -%}
-            {#- Use Jinja's title filter -#}
             {%- set ns.result = ns.result + [word | title] -%}
         {%- endif -%}
     {%- endfor -%}
-    {{- ns.result | join(" ") -}}
+    {{- ns.result | join(' ') -}}
 {% endmacro %}
 
-{# Parse "k=v; k2=(a,b); flag=true; none=null" into a dict #}
+{#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='') %}
+    {%- if is_unavail and long_desc_text -%}
+        {{- long_desc_text -}}
+    {%- elif value_text is string and value_text | trim != '' -%}
+        {{- value_text ~ ' • ' ~ desc_text -}}
+    {%- else -%}
+        {{- desc_text -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='') %}
+    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text) -}}
+{% endmacro %}
+
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false) %}
+    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text) -}}
+{% endmacro %}
+
+
+{# ======================================================================
+  3) Device-Class Context Resolution
+     (Prefer options.{levels, lookup_unit}; fallback to globals)
+====================================================================== #}
+
+{% macro _resolve_ctx(options) %}
+    {%- set _levels =
+        (options.get('levels') if options is mapping and options.get('levels') is defined
+    else (levels if levels is defined else none)) -%}
+    {%- set _lookup_unit =
+        (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined
+        else (lookup_unit if lookup_unit is defined else none)) -%}
+    {{- {'levels': _levels, 'lookup_unit': _lookup_unit} | tojson -}}
+{% endmacro %}
+
+
+{# ======================================================================
+  4) Units & Conversion
+====================================================================== #}
+
+{#- Humanize a number with unit; auto SI/IEC prefixes -#}
+{% macro humanize_unit(n, unit='', system='') %}
+    {%- if not unit or unit | trim == '' -%}
+        {{- smartfmt(n) -}}
+    {%- else -%}
+        {%- set sgn = -1 if (n | float(0)) < 0 else 1 -%}
+        {%- set unit = unit | string | trim -%}
+        {%- set ns = namespace(v=n | float(0) | abs, system=(system or '') | lower, pref_out=none) -%}
+
+        {#- Prefix tables -#}
+        {%- set si_list = [
+            ('Y',1e24),('Z',1e21),('E',1e18),('P',1e15),('T',1e12),('G',1e9),
+            ('M',1e6),('k',1e3),('h',100.0),('da',10.0),('d',0.1),('c',0.01),('m',0.001),
+            ('µ',1e-6),('u',1e-6),('n',1e-9),('p',1e-12),('f',1e-15),('a',1e-18),('z',1e-21),('y',1e-24)
+        ] -%}
+        {%- set iec_list = [
+            ('Yi',2**80),('Zi',2**70),('Ei',2**60),('Pi',2**50),('Ti',2**40),('Gi',2**30),('Mi',2**20),('Ki',2**10)
+        ] -%}
+
+        {#- Detect existing prefix in 'unit' -#}
+        {%- set det = namespace(kind='', pref='', factor=1.0) -%}
+        {%- for p, m in iec_list -%}
+            {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
+                {%- set det.kind='iec' -%}
+                {%- set det.pref=p -%}
+                {%- set det.factor=m -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if not det.kind -%}
+            {%- for p,m in si_list -%}
+                {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
+                    {%- set det.kind='si' -%}
+                    {%- set det.pref=p -%}
+                    {%- set det.factor=m -%}
+                    {%- break -%}
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+
+        {#- Peel prefix and normalize value -#}
+        {%- set base_unit = unit[det.pref | length:] if det.pref else unit -%}
+        {%- set ns.v = ns.v * det.factor -%}
+
+        {#- Choose system if not provided -#}
+        {%- if ns.system not in ['si','iec'] -%}
+            {%- set base_token = base_unit.split('/', 1)[0] -%}
+            {%- set base_token_l = base_token | lower -%}
+            {%- set is_bytes = base_token_l in ['b','byte','bytes'] and base_token[:1] == 'B' -%}
+            {%- set ns.system = 'iec' if det.kind == 'iec' or is_bytes else 'si' -%}
+        {%- endif -%}
+
+        {#- Scale value to readable prefix -#}
+        {%- if ns.system == 'iec' -%}
+            {%- set base = 1024.0 -%}
+            {%- set prefixes = ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi','Yi'] -%}
+            {%- set ns2 = namespace(i=0) -%}
+            {%- for _ in range(prefixes | length - 1) -%}
+                {%- if ns.v < base -%}
+                    {%- break -%}
+                {%- endif -%}
+                {%- set ns.v = ns.v / base -%}
+                {%- set ns2.i = ns2.i + 1 -%}
+            {%- endfor -%}
+            {%- set ns.pref_out = prefixes[i] -%}
+        {%- else -%}
+            {%- set base = 1000.0 -%}
+            {%- set prefixes = ['y','z','a','f','p','n','µ','m','','k','M','G','T','P','E','Z','Y'] -%}
+            {%- set ns2 = namespace(i=8) -%}
+            {%- for _ in range(prefixes | length - 1) -%}
+                {%- if ns.v < base or ns2.i >= prefixes | length - 1 -%}
+                    {%- break -%}
+                {%- endif -%}
+                {%- set ns.v = ns.v / base -%}
+                {%- set ns2.i = ns2.i + 1 -%}
+            {%- endfor -%}
+            {%- for _ in range(prefixes | length - 1) -%}
+                {%- if ns.v >= 1 or ns2.i <= 0 or ns.v == 0 -%}
+                    {%- break -%}
+                {%- endif -%}
+                {%- set ns.v = ns.v * base -%}
+                {%- set ns2.i = ns2.i - 1 -%}
+            {%- endfor -%}
+            {%- set ns.pref_out = prefixes[ns2.i] -%}
+        {%- endif -%}
+
+        {%- set out = (ns.v if ns.v < 100 else ns.v | round(0)) | round(1) -%}
+        {{- (out * sgn) ~ ' ' ~ ns.pref_out ~ base_unit -}}
+    {%- endif -%}
+{% endmacro %}
+
+{#- Safe unit conversion toward lookup_unit (or display_unit/uom); pass-through if none -#}
+{% macro _safe_convert(value, options) %}
+    {%- set ctx = _resolve_ctx(options) | from_json -%}
+    {%- set target_unit = ctx.lookup_unit or options.display_unit or options.uom -%}
+    {%- if target_unit -%}
+        {{- u_convert_value(value, options.uom, target_unit) -}}
+    {%- else -%}
+        {{- value -}}
+    {%- endif -%}
+{% endmacro %}
+
+
+{# ======================================================================
+  5) Level Utilities (selection & attribute retrieval)
+====================================================================== #}
+
+{#- Pick the entry with the greatest min_value <= value (handles mixed order) -#}
+{% macro find_matching_level(value, levels) %}
+    {%- set ns = namespace(val=value | float(0), best=none, best_min=none, lowest=none, lowest_min=none) -%}
+    {%- for level in levels -%}
+        {%- set m = level.min_value | float(0) -%}
+        {%- if ns.lowest is none or m < ns.lowest_min -%}
+            {%- set ns.lowest = level -%}
+            {%- set ns.lowest_min = m -%}
+        {%- endif -%}
+        {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
+            {%- set ns.best = level -%}
+            {%- set ns.best_min = m -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- (ns.best or ns.lowest) | tojson -}}
+{% endmacro %}
+
+{#- Universal accessor used by the device-class getters -#}
+{% macro get_level_attr(value, app, attr, options) %}
+    {%- set ctx = _resolve_ctx(options) | from_json -%}
+    {%- set _levels = ctx.levels -%}
+    {%- if _levels is none -%}
+        {{- 'Error: levels undefined in device-class template' -}}
+    {%- elif app not in _levels -%}
+        {{- 'Error: Unknown application: ' ~ app -}}
+    {%- else -%}
+        {%- set raw = options.get('raw_state', value) -%}
+
+        {#- Prefer explicit 'unavailable' level (min_value == none) -#}
+        {%- set ns = namespace(unavailable_entry=none) -%}
+        {%- for lv in _levels[app] -%}
+            {%- if lv.min_value is none -%}
+                {%- set ns.unavailable_entry = lv -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- set unavailable_fallback = ns.unavailable_entry or _levels[app][0] -%}
+
+        {%- set is_unavail = (value is none) or (raw in ['unavailable','unknown','none','', None]) -%}
+
+        {%- if is_unavail -%}
+            {{- unavailable_fallback.get(attr, '') -}}
+        {%- else -%}
+            {%- set lookup = _safe_convert(value, options) -%}
+            {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
+            {{- match.get(attr, '') -}}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+
+{# ======================================================================
+  6) Public Getters (used by main.jinja)
+====================================================================== #}
+
+{% macro get_value(value, options) %}
+    {%- if value is none -%}
+        Unavailable
+    {%- else -%}
+        {%- set val = _safe_convert(value, options) -%}
+        {{- humanize_unit(val, (options.display_unit)) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_name(value, app, options) %}
+    {{ format_name(options.friendly_name or app,
+        exceptions=['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC']) }}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) %}{{- get_level_attr(value, app, 'default_desc', options) -}}{% endmacro %}
+{% macro get_short_desc(value, app, options)   %}{{- get_level_attr(value, app, 'short_desc', options) -}}{% endmacro %}
+{% macro get_long_desc(value, app, options)    %}{{- get_level_attr(value, app, 'long_desc', options) -}}{% endmacro %}
+{% macro get_full_desc(value, app, options)    %}{{- get_level_attr(value, app, 'full_desc', options) -}}{% endmacro %}
+{% macro get_icon(value, app, options)         %}{{- get_level_attr(value, app, 'icon', options) -}}{% endmacro %}
+{% macro get_color(value, app, options)        %}{{- get_level_attr(value, app, 'color', options) -}}{% endmacro %}
+{% macro get_badge(value, app, options)        %}{{- get_level_attr(value, app, 'badge', options) -}}{% endmacro %}
+
+
+{# ======================================================================
+  7) Parsing Helpers (optional; used in some templates)
+====================================================================== #}
+
+{#- Parse "k=v; k2=(a,b); flag=true; none=null" into a dict -#}
 {% macro parse_options_kv(s) %}
     {%- set raw = (s | string) | trim -%}
     {%- if not raw -%}
@@ -246,7 +347,7 @@
             {%- set k = k | trim -%}
             {%- set v = v | trim -%}
 
-            {# list: (a,b,c) #}
+            {#- list syntax: (a,b,c) -#}
             {%- if v.startswith('(') and v.endswith(')') -%}
                 {%- set ns2 = namespace(items=[]) -%}
                 {%- for item in v[1:-1].split(',') -%}
@@ -256,13 +357,13 @@
                 {%- endfor -%}
                 {%- set ns.val = ns2.items -%}
 
-            {# booleans and null #}
+            {#- booleans and null -#}
             {%- elif v | lower in ['true','false'] -%}
                 {%- set ns.val = (v | lower == 'true') -%}
             {%- elif v | lower in ['null','none','~'] -%}
                 {%- set ns.val = none -%}
 
-            {# numbers (int or float), else string #}
+            {#- numbers (int or float), else string -#}
             {%- else -%}
                 {%- set vv = v.strip('"').strip("'") -%}
                 {%- if vv | replace('_','') | regex_match('^-?[0-9]+$') -%}
@@ -278,104 +379,4 @@
         {%- endfor -%}
         {{- ns.d | tojson -}}
     {%- endif -%}
-{%- endmacro %}
-
-{% macro format_label(value_text, desc_text) -%}
-  {%- if value_text is string and value_text|trim != '' -%}
-    {{ value_text ~ ' • ' ~ desc_text }}
-  {%- else -%}
-    {{ desc_text }}
-  {%- endif -%}
-{%- endmacro %}
-
-{% macro format_short_label(value_text, short_desc_text) -%}
-  {{ format_label(value_text, short_desc_text) }}
-{%- endmacro %}
-
-{% macro format_long_label(value_text, long_desc_text) -%}
-  {{ format_label(value_text, long_desc_text) }}
-{%- endmacro %}
-
-{#- Common macros to be included in device class templates -#}
-{#- These macros rely on 'levels' and 'lookup_unit' being defined in the including template -#}
-{# Resolve levels / lookup_unit from options first, else globals #}
-{% macro _resolve_ctx(options) -%}
-  {%- set _levels = (options.get('levels') if options is mapping and options.get('levels') is defined else (levels if levels is defined else none)) -%}
-  {%- set _lookup_unit = (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined else (lookup_unit if lookup_unit is defined else none)) -%}
-  {{ {'levels': _levels, 'lookup_unit': _lookup_unit} | tojson }}
-{%- endmacro %}
-
-{# Safe unit conversion using resolved lookup unit; pass-through if none #}
-{% macro _safe_convert(value, options) -%}
-  {%- set ctx = _resolve_ctx(options) | from_json -%}
-  {%- set target_unit = ctx.lookup_unit or options.display_unit or options.uom -%}
-  {%- if target_unit -%}
-    {{ u_convert_value(value, options.uom, target_unit) }}
-  {%- else -%}
-    {{ value }}
-  {%- endif -%}
-{%- endmacro %}
-
-{% macro get_level_attr(value, app, attr, options) -%}
-  {%- set ctx = _resolve_ctx(options) | from_json -%}
-  {%- set _levels = ctx.levels -%}
-  {%- if _levels is none -%}
-    {{ 'Error: levels undefined in device-class template' }}
-  {%- elif app not in _levels -%}
-    {{ 'Error: Unknown application: ' ~ app }}
-  {%- else -%}
-    {%- set raw = options.get('raw_state', value) -%}
-
-    {# explicit unavailable entry (min_value == none) if present #}
-    {%- set unavailable_entry = none -%}
-    {%- for lv in _levels[app] -%}
-      {%- if lv.min_value is none -%}{%- set unavailable_entry = lv -%}{%- break -%}{%- endif -%}
-    {%- endfor -%}
-    {%- set unavailable_fallback = unavailable_entry or _levels[app][0] -%}
-
-    {%- set is_unavail = (value is none) or (raw in ['unavailable','unknown','none','', None]) -%}
-
-    {%- if is_unavail -%}
-      {{ unavailable_fallback.get(attr, '') }}
-    {%- else -%}
-      {%- set lookup = _safe_convert(value, options) -%}
-      {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
-      {{ match.get(attr, '') }}
-    {%- endif -%}
-  {%- endif -%}
-{%- endmacro %}
-
-{% macro get_value(value, options) -%}
-  {%- if value is none -%}
-    Unavailable
-  {%- else -%}
-    {%- set val = _safe_convert(value, options) -%}
-    {{ humanize_unit(val, options.display_unit) }}
-  {%- endif -%}
-{%- endmacro %}
-
-{% macro get_name(value, app, options) %}
-    {{- format_name(options.friendly_name or app, exceptions=[
-        'UV', 'AQI', 'PM', 'CO', 'CO2', 'NO2', 'SO2', 'O3', 'VOC', 'dB', 'dBA', 'dBC'
-    ]) -}}
 {% endmacro %}
-
-{% macro get_default_desc(value, app, options) -%}{{ get_level_attr(value, app, 'default_desc', options) }}{% endmacro %}
-{% macro get_short_desc(value, app, options) -%}{{ get_level_attr(value, app, 'short_desc', options) }}{% endmacro %}
-{% macro get_long_desc(value, app, options) -%}{{ get_level_attr(value, app, 'long_desc', options) }}{% endmacro %}
-{% macro get_full_desc(value, app, options) -%}{{ get_level_attr(value, app, 'full_desc', options) }}{% endmacro %}
-{% macro get_icon(value, app, options) -%}{{ get_level_attr(value, app, 'icon', options) }}{% endmacro %}
-{% macro get_color(value, app, options) -%}{{ get_level_attr(value, app, 'color', options) }}{% endmacro %}
-{% macro get_badge(value, app, options) -%}{{ get_level_attr(value, app, 'badge', options) }}{% endmacro %}
-
-{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='') -%}
-  {%- if is_unavail and long_desc_text -%}
-    {{ long_desc_text }}
-  {%- elif value_text is string and value_text|trim != '' -%}
-    {{ value_text ~ ' • ' ~ desc_text }}
-  {%- else -%}
-    {{ desc_text }}
-  {%- endif -%}
-{%- endmacro %}
-{% macro format_short_label(value_text, short_desc_text) -%}{{ format_label(value_text, short_desc_text) }}{% endmacro %}
-{% macro format_long_label(value_text, long_desc_text) -%}{{ format_label(value_text, long_desc_text) }}{% endmacro %}
