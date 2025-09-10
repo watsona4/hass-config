@@ -1,0 +1,1270 @@
+# =====================================================================================
+# OpenMeteo: consolidated package with per-location and selector
+# Exposes:
+#   - Weather entities for Nearby, Home, RV
+#   - "Cloud LUT" timestamp + pairs attribute for each location
+#   - Individual current metrics as sensors per-location
+#   - Individual daily (index 0 = today) metrics as sensors per-location
+#   - "Selected" sensors driven by input_select.openmeteo_location
+# Dependencies:
+#   - sensors: sensor.openmeteo_nearby, sensor.openmeteo_home, sensor.openmeteo_rv
+#   - jinja: env/weather_codes.jinja (for condition mapping)
+# Notes:
+#   - All templates use has_value and safe indexing to avoid errors.
+#   - Units: uses native units coming from your REST/OpenMeteo setup.
+# =====================================================================================
+
+input_select:
+  openmeteo_location:
+    name: Weather Location
+    options:
+      - Nearby
+      - Home
+      - RV
+    initial: Nearby
+
+weather:
+  - platform: template
+    name: OpenMeteo Weather Nearby
+    unique_id: openmeteo_weather_nearby
+    condition_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set c = state_attr('sensor.openmeteo_nearby','current') or {} %}
+      {% set code = c.get('weather_code') %}
+      {% set is_day = (c.get('is_day')|int(1))|bool %}
+      {% if code is not none %}{{ condition(code, is_day) }}{% else %}unknown{% endif %}
+    apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('apparent_temperature') }}"
+    cloud_coverage_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('cloud_cover') }}"
+    dew_point_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('dew_point_2m') }}"
+    humidity_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('relative_humidity_2m') }}"
+    pressure_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('surface_pressure') }}"
+    temperature_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('temperature_2m') }}"
+    visibility_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('visibility') }}"
+    wind_bearing_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_direction_10m') }}"
+    wind_gust_speed_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_gusts_10m') }}"
+    wind_speed_template: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_speed_10m') }}"
+    precipitation_unit: "in"
+    pressure_unit: "hPa"
+    temperature_unit: "°F"
+    visibility_unit: "m"
+    wind_speed_unit: "mph"
+    forecast_daily_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set d = state_attr('sensor.openmeteo_nearby','daily') or {} %}
+      {% set tt = d.get('time', []) %}
+      {% set out = namespace(items=[]) %}
+      {% set w = d.get('weathercode', []) %}
+      {% set ps = d.get('precipitation_sum', []) %}
+      {% set tmax = d.get('temperature_2m_max', []) %}
+      {% set tmin = d.get('temperature_2m_min', []) %}
+      {% set wdir = d.get('winddirection_10m_dominant', []) %}
+      {% set wspd = d.get('windspeed_10m_max', []) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% set entry = {
+            'datetime': dt|string,
+            'condition': condition(w[i]) if i < (w|length) else 'unknown',
+            'native_precipitation': ps[i] if i < (ps|length) else none,
+            'native_temperature':   tmax[i] if i < (tmax|length) else none,
+            'native_templow':       tmin[i] if i < (tmin|length) else none,
+            'wind_bearing':         wdir[i] if i < (wdir|length) else none,
+            'wind_speed':           wspd[i] if i < (wspd|length) else none
+          } %}
+        {% set out.items = out.items + [entry] %}
+      {% endfor %}
+      {{ out.items | tojson }}
+    forecast_hourly_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set h = state_attr('sensor.openmeteo_nearby','hourly') or {} %}
+      {% set cur = state_attr('sensor.openmeteo_nearby','current') or {} %}
+      {% set cur_dt = (cur.get('time') | as_datetime(default=none)) %}
+      {% set tt = h.get('time', []) %}
+      {% set wc  = h.get('weathercode', []) %}
+      {% set idy = h.get('is_day', []) %}
+      {% set pr  = h.get('precipitation', []) %}
+      {% set tmp = h.get('temperature_2m', []) %}
+      {% set out = namespace(items=[]) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% if cur_dt is none or dt >= (cur_dt | as_local) %}
+          {% set entry = {
+                'datetime': dt|string,
+                'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+                'native_precipitation': pr[i]  if i < (pr|length)  else none,
+                'native_temperature':   tmp[i] if i < (tmp|length) else none
+              } %}
+          {% set out.items = out.items + [entry] %}
+        {% endif %}
+      {% endfor %}
+      {{ out.items | tojson }}
+
+  - platform: template
+    name: OpenMeteo Weather Home
+    unique_id: openmeteo_weather_home
+    condition_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set c = state_attr('sensor.openmeteo_home','current') or {} %}
+      {% set code = c.get('weather_code') %}
+      {% set is_day = (c.get('is_day')|int(1))|bool %}
+      {% if code is not none %}{{ condition(code, is_day) }}{% else %}unknown{% endif %}
+    apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('apparent_temperature') }}"
+    cloud_coverage_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('cloud_cover') }}"
+    dew_point_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('dew_point_2m') }}"
+    humidity_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('relative_humidity_2m') }}"
+    pressure_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('surface_pressure') }}"
+    temperature_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('temperature_2m') }}"
+    visibility_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('visibility') }}"
+    wind_bearing_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_direction_10m') }}"
+    wind_gust_speed_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_gusts_10m') }}"
+    wind_speed_template: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_speed_10m') }}"
+    precipitation_unit: "in"
+    pressure_unit: "hPa"
+    temperature_unit: "°F"
+    visibility_unit: "m"
+    wind_speed_unit: "mph"
+    forecast_daily_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set d = state_attr('sensor.openmeteo_home','daily') or {} %}
+      {% set tt = d.get('time', []) %}
+      {% set out = namespace(items=[]) %}
+      {% set w = d.get('weathercode', []) %}
+      {% set ps = d.get('precipitation_sum', []) %}
+      {% set tmax = d.get('temperature_2m_max', []) %}
+      {% set tmin = d.get('temperature_2m_min', []) %}
+      {% set wdir = d.get('winddirection_10m_dominant', []) %}
+      {% set wspd = d.get('windspeed_10m_max', []) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% set entry = {
+            'datetime': dt|string,
+            'condition': condition(w[i]) if i < (w|length) else 'unknown',
+            'native_precipitation': ps[i] if i < (ps|length) else none,
+            'native_temperature':   tmax[i] if i < (tmax|length) else none,
+            'native_templow':       tmin[i] if i < (tmin|length) else none,
+            'wind_bearing':         wdir[i] if i < (wdir|length) else none,
+            'wind_speed':           wspd[i] if i < (wspd|length) else none
+          } %}
+        {% set out.items = out.items + [entry] %}
+      {% endfor %}
+      {{ out.items | tojson }}
+    forecast_hourly_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set h = state_attr('sensor.openmeteo_home','hourly') or {} %}
+      {% set cur = state_attr('sensor.openmeteo_home','current') or {} %}
+      {% set cur_dt = (cur.get('time') | as_datetime(default=none)) %}
+      {% set tt = h.get('time', []) %}
+      {% set wc  = h.get('weathercode', []) %}
+      {% set idy = h.get('is_day', []) %}
+      {% set pr  = h.get('precipitation', []) %}
+      {% set tmp = h.get('temperature_2m', []) %}
+      {% set out = namespace(items=[]) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% if cur_dt is none or dt >= (cur_dt | as_local) %}
+          {% set entry = {
+                'datetime': dt|string,
+                'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+                'native_precipitation': pr[i]  if i < (pr|length)  else none,
+                'native_temperature':   tmp[i] if i < (tmp|length) else none
+              } %}
+          {% set out.items = out.items + [entry] %}
+        {% endif %}
+      {% endfor %}
+      {{ out.items | tojson }}
+
+  - platform: template
+    name: OpenMeteo Weather RV
+    unique_id: openmeteo_weather_rv
+    condition_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set c = state_attr('sensor.openmeteo_rv','current') or {} %}
+      {% set code = c.get('weather_code') %}
+      {% set is_day = (c.get('is_day')|int(1))|bool %}
+      {% if code is not none %}{{ condition(code, is_day) }}{% else %}unknown{% endif %}
+    apparent_temperature_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') }}"
+    cloud_coverage_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') }}"
+    dew_point_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('dew_point_2m') }}"
+    humidity_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('relative_humidity_2m') }}"
+    pressure_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('surface_pressure') }}"
+    temperature_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('temperature_2m') }}"
+    visibility_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('visibility') }}"
+    wind_bearing_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_direction_10m') }}"
+    wind_gust_speed_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_gusts_10m') }}"
+    wind_speed_template: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_speed_10m') }}"
+    precipitation_unit: "in"
+    pressure_unit: "hPa"
+    temperature_unit: "°F"
+    visibility_unit: "m"
+    wind_speed_unit: "mph"
+    forecast_daily_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set d = state_attr('sensor.openmeteo_rv','daily') or {} %}
+      {% set tt = d.get('time', []) %}
+      {% set out = namespace(items=[]) %}
+      {% set w = d.get('weathercode', []) %}
+      {% set ps = d.get('precipitation_sum', []) %}
+      {% set tmax = d.get('temperature_2m_max', []) %}
+      {% set tmin = d.get('temperature_2m_min', []) %}
+      {% set wdir = d.get('winddirection_10m_dominant', []) %}
+      {% set wspd = d.get('windspeed_10m_max', []) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% set entry = {
+            'datetime': dt|string,
+            'condition': condition(w[i]) if i < (w|length) else 'unknown',
+            'native_precipitation': ps[i] if i < (ps|length) else none,
+            'native_temperature':   tmax[i] if i < (tmax|length) else none,
+            'native_templow':       tmin[i] if i < (tmin|length) else none,
+            'wind_bearing':         wdir[i] if i < (wdir|length) else none,
+            'wind_speed':           wspd[i] if i < (wspd|length) else none
+          } %}
+        {% set out.items = out.items + [entry] %}
+      {% endfor %}
+      {{ out.items | tojson }}
+    forecast_hourly_template: >
+      {% from 'env/weather_codes.jinja' import condition %}
+      {% set h = state_attr('sensor.openmeteo_rv','hourly') or {} %}
+      {% set cur = state_attr('sensor.openmeteo_rv','current') or {} %}
+      {% set cur_dt = (cur.get('time') | as_datetime(default=none)) %}
+      {% set tt = h.get('time', []) %}
+      {% set wc  = h.get('weathercode', []) %}
+      {% set idy = h.get('is_day', []) %}
+      {% set pr  = h.get('precipitation', []) %}
+      {% set tmp = h.get('temperature_2m', []) %}
+      {% set out = namespace(items=[]) %}
+      {% for i in range(tt|length) %}
+        {% set dt = (tt[i] | as_datetime | as_local) %}
+        {% if cur_dt is none or dt >= (cur_dt | as_local) %}
+          {% set entry = {
+                'datetime': dt|string,
+                'condition': condition(wc[i], (idy[i]|int(1))|bool) if i < (wc|length) and i < (idy|length) else 'unknown',
+                'native_precipitation': pr[i]  if i < (pr|length)  else none,
+                'native_temperature':   tmp[i] if i < (tmp|length) else none
+              } %}
+          {% set out.items = out.items + [entry] %}
+        {% endif %}
+      {% endfor %}
+      {{ out.items | tojson }}
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: sensor.openmeteo_nearby
+      - platform: time
+        at: "00:00:15"
+    variables:
+      src: sensor.openmeteo_nearby
+      h: "{{ state_attr(src, 'hourly') or {} }}"
+      tt: "{{ h.get('time') or [] }}"
+      cc: "{{ h.get('cloud_cover') or [] }}"
+      coverage_start_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[0] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      coverage_end_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      pairs_list: >-
+        {% set out = namespace(items=[]) %}
+        {% for i in range(tt | length) %}
+          {% set t = tt[i] | as_datetime(default=None) %}
+          {% if t is not none %}
+            {% set tl = as_local(t) %}
+            {% set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) %}
+            {% set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 %}
+            {% set out.items = out.items + [ { 'hk': hk, 'cc': val } ] %}
+          {% endif %}
+        {% endfor %}
+        {{ out.items | tojson }}
+    sensor:
+      - name: OpenMeteo Nearby Cloud LUT
+        unique_id: openmeteo_nearby_cloud_lut
+        device_class: timestamp
+        availability: "{{ has_value(src) and (tt | length) > 0 }}"
+        state: "{{ coverage_end_ts }}"
+        attributes:
+          coverage_start: "{{ coverage_start_ts }}"
+          coverage_end: "{{ coverage_end_ts }}"
+          pairs: "{{ pairs_list }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.openmeteo_home
+      - platform: time
+        at: "00:00:15"
+    variables:
+      src: sensor.openmeteo_home
+      h: "{{ state_attr(src, 'hourly') or {} }}"
+      tt: "{{ h.get('time') or [] }}"
+      cc: "{{ h.get('cloud_cover') or [] }}"
+      coverage_start_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[0] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      coverage_end_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      pairs_list: >-
+        {% set out = namespace(items=[]) %}
+        {% for i in range(tt | length) %}
+          {% set t = tt[i] | as_datetime(default=None) %}
+          {% if t is not none %}
+            {% set tl = as_local(t) %}
+            {% set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) %}
+            {% set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 %}
+            {% set out.items = out.items + [ { 'hk': hk, 'cc': val } ] %}
+          {% endif %}
+        {% endfor %}
+        {{ out.items | tojson }}
+    sensor:
+      - name: OpenMeteo Home Cloud LUT
+        unique_id: openmeteo_home_cloud_lut
+        device_class: timestamp
+        availability: "{{ has_value(src) and (tt | length) > 0 }}"
+        state: "{{ coverage_end_ts }}"
+        attributes:
+          coverage_start: "{{ coverage_start_ts }}"
+          coverage_end: "{{ coverage_end_ts }}"
+          pairs: "{{ pairs_list }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.openmeteo_rv
+      - platform: time
+        at: "00:00:15"
+    variables:
+      src: sensor.openmeteo_rv
+      h: "{{ state_attr(src, 'hourly') or {} }}"
+      tt: "{{ h.get('time') or [] }}"
+      cc: "{{ h.get('cloud_cover') or [] }}"
+      coverage_start_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[0] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      coverage_end_ts: >-
+        {% if tt | length > 0 %}
+          {{ (tt[-1] | as_datetime(default=None) | as_local) }}
+        {% endif %}
+      pairs_list: >-
+        {% set out = namespace(items=[]) %}
+        {% for i in range(tt | length) %}
+          {% set t = tt[i] | as_datetime(default=None) %}
+          {% if t is not none %}
+            {% set tl = as_local(t) %}
+            {% set hk = (tl.replace(minute=0, second=0, microsecond=0) | as_timestamp | int) %}
+            {% set val = (cc[i] | float(0)) if i < (cc | length) else 0.0 %}
+            {% set out.items = out.items + [ { 'hk': hk, 'cc': val } ] %}
+          {% endif %}
+        {% endfor %}
+        {{ out.items | tojson }}
+    sensor:
+      - name: OpenMeteo RV Cloud LUT
+        unique_id: openmeteo_rv_cloud_lut
+        device_class: timestamp
+        availability: "{{ has_value(src) and (tt | length) > 0 }}"
+        state: "{{ coverage_end_ts }}"
+        attributes:
+          coverage_start: "{{ coverage_start_ts }}"
+          coverage_end: "{{ coverage_end_ts }}"
+          pairs: "{{ pairs_list }}"
+
+  - sensor:
+      - name: OpenMeteo Nearby Temperature
+        unique_id: openmeteo_nearby_current_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('temperature_2m') }}"
+
+      - name: OpenMeteo Nearby UV Index
+        unique_id: openmeteo_nearby_current_uv_index
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('uv_index') }}"
+
+      - name: OpenMeteo Nearby Apparent Temperature
+        unique_id: openmeteo_nearby_current_apparent_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('apparent_temperature') }}"
+
+      - name: OpenMeteo Nearby Humidity
+        unique_id: openmeteo_nearby_current_humidity
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('relative_humidity_2m') }}"
+
+      - name: OpenMeteo Nearby Dew Point
+        unique_id: openmeteo_nearby_current_dew_point
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('dew_point_2m') }}"
+
+      - name: OpenMeteo Nearby Pressure
+        unique_id: openmeteo_nearby_current_pressure
+        unit_of_measurement: "hPa"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('surface_pressure') }}"
+
+      - name: OpenMeteo Nearby Wind Speed
+        unique_id: openmeteo_nearby_current_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_speed_10m') }}"
+
+      - name: OpenMeteo Nearby Wind Gust
+        unique_id: openmeteo_nearby_current_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_gusts_10m') }}"
+
+      - name: OpenMeteo Nearby Wind Direction
+        unique_id: openmeteo_nearby_current_wind_direction
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_direction_10m') }}"
+
+      - name: OpenMeteo Nearby Visibility
+        unique_id: openmeteo_nearby_current_visibility
+        unit_of_measurement: "m"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('visibility') }}"
+
+      - name: OpenMeteo Nearby Cloud Cover
+        unique_id: openmeteo_nearby_current_cloud_cover
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('cloud_cover') }}"
+
+      - name: OpenMeteo Nearby Is Day
+        unique_id: openmeteo_nearby_current_is_day
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('is_day') }}"
+
+      - name: OpenMeteo Nearby Weather Code
+        unique_id: openmeteo_nearby_current_weather_code
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('weather_code') }}"
+
+      - name: OpenMeteo Nearby Observation Time
+        unique_id: openmeteo_nearby_current_observation_time
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_nearby','current') or {}).get('time') }}"
+
+  - sensor:
+      - name: OpenMeteo Home Temperature
+        unique_id: openmeteo_home_current_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('temperature_2m') }}"
+
+      - name: OpenMeteo Home UV Index
+        unique_id: openmeteo_home_current_uv_index
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('uv_index') }}"
+
+      - name: OpenMeteo Home Apparent Temperature
+        unique_id: openmeteo_home_current_apparent_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('apparent_temperature') }}"
+
+      - name: OpenMeteo Home Humidity
+        unique_id: openmeteo_home_current_humidity
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('relative_humidity_2m') }}"
+
+      - name: OpenMeteo Home Dew Point
+        unique_id: openmeteo_home_current_dew_point
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('dew_point_2m') }}"
+
+      - name: OpenMeteo Home Pressure
+        unique_id: openmeteo_home_current_pressure
+        unit_of_measurement: "hPa"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('surface_pressure') }}"
+
+      - name: OpenMeteo Home Wind Speed
+        unique_id: openmeteo_home_current_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_speed_10m') }}"
+
+      - name: OpenMeteo Home Wind Gust
+        unique_id: openmeteo_home_current_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_gusts_10m') }}"
+
+      - name: OpenMeteo Home Wind Direction
+        unique_id: openmeteo_home_current_wind_direction
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('wind_direction_10m') }}"
+
+      - name: OpenMeteo Home Visibility
+        unique_id: openmeteo_home_current_visibility
+        unit_of_measurement: "m"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('visibility') }}"
+
+      - name: OpenMeteo Home Cloud Cover
+        unique_id: openmeteo_home_current_cloud_cover
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('cloud_cover') }}"
+
+      - name: OpenMeteo Home Is Day
+        unique_id: openmeteo_home_current_is_day
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('is_day') }}"
+
+      - name: OpenMeteo Home Weather Code
+        unique_id: openmeteo_home_current_weather_code
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('weather_code') }}"
+
+      - name: OpenMeteo Home Observation Time
+        unique_id: openmeteo_home_current_observation_time
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_home','current') or {}).get('time') }}"
+
+  - sensor:
+      - name: OpenMeteo RV Temperature
+        unique_id: openmeteo_rv_current_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('temperature_2m') }}"
+
+      - name: OpenMeteo RV UV Index
+        unique_id: openmeteo_rv_current_uv_index
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('uv_index') }}"
+
+      - name: OpenMeteo RV Apparent Temperature
+        unique_id: openmeteo_rv_current_apparent_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') }}"
+
+      - name: OpenMeteo RV Humidity
+        unique_id: openmeteo_rv_current_humidity
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('relative_humidity_2m') }}"
+
+      - name: OpenMeteo RV Dew Point
+        unique_id: openmeteo_rv_current_dew_point
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('dew_point_2m') }}"
+
+      - name: OpenMeteo RV Pressure
+        unique_id: openmeteo_rv_current_pressure
+        unit_of_measurement: "hPa"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('surface_pressure') }}"
+
+      - name: OpenMeteo RV Wind Speed
+        unique_id: openmeteo_rv_current_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_speed_10m') }}"
+
+      - name: OpenMeteo RV Wind Gust
+        unique_id: openmeteo_rv_current_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_gusts_10m') }}"
+
+      - name: OpenMeteo RV Wind Direction
+        unique_id: openmeteo_rv_current_wind_direction
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_direction_10m') }}"
+
+      - name: OpenMeteo RV Visibility
+        unique_id: openmeteo_rv_current_visibility
+        unit_of_measurement: "m"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('visibility') }}"
+
+      - name: OpenMeteo RV Cloud Cover
+        unique_id: openmeteo_rv_current_cloud_cover
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') }}"
+
+      - name: OpenMeteo RV Is Day
+        unique_id: openmeteo_rv_current_is_day
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('is_day') }}"
+
+      - name: OpenMeteo RV Weather Code
+        unique_id: openmeteo_rv_current_weather_code
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('weather_code') }}"
+
+      - name: OpenMeteo RV Observation Time
+        unique_id: openmeteo_rv_current_observation_time
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) }}"
+        state: "{{ (state_attr('sensor.openmeteo_rv','current') or {}).get('time') }}"
+
+  - sensor:
+      - name: OpenMeteo Nearby Today Temp Max
+        unique_id: openmeteo_nearby_daily0_temp_max
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('temperature_2m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Temp Min
+        unique_id: openmeteo_nearby_daily0_temp_min
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('temperature_2m_min') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Uv Index Max
+        unique_id: openmeteo_nearby_daily0_uv_index_max
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Precip Sum
+        unique_id: openmeteo_nearby_daily0_precip_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('precipitation_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Rain Sum
+        unique_id: openmeteo_nearby_daily0_rain_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('rain_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Snowfall Sum
+        unique_id: openmeteo_nearby_daily0_snowfall_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('snowfall_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Precip Prob Max
+        unique_id: openmeteo_nearby_daily0_precip_prob_max
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('precipitation_probability_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Wind Speed Max
+        unique_id: openmeteo_nearby_daily0_wind_speed_max
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('windspeed_10m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Wind Dir Dom
+        unique_id: openmeteo_nearby_daily0_wind_dir_dom
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('winddirection_10m_dominant') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Sunrise
+        unique_id: openmeteo_nearby_daily0_sunrise
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('sunrise') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Nearby Today Sunset
+        unique_id: openmeteo_nearby_daily0_sunset
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('sunset') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+  - sensor:
+      - name: OpenMeteo Home Today Temp Max
+        unique_id: openmeteo_home_daily0_temp_max
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('temperature_2m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Temp Min
+        unique_id: openmeteo_home_daily0_temp_min
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('temperature_2m_min') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Uv Index Max
+        unique_id: openmeteo_home_daily0_uv_index_max
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('uv_index_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Precip Sum
+        unique_id: openmeteo_home_daily0_precip_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('precipitation_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Rain Sum
+        unique_id: openmeteo_home_daily0_rain_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('rain_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Snowfall Sum
+        unique_id: openmeteo_home_daily0_snowfall_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('snowfall_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Precip Prob Max
+        unique_id: openmeteo_home_daily0_precip_prob_max
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('precipitation_probability_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Wind Speed Max
+        unique_id: openmeteo_home_daily0_wind_speed_max
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('windspeed_10m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Wind Dir Dom
+        unique_id: openmeteo_home_daily0_wind_dir_dom
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('winddirection_10m_dominant') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Sunrise
+        unique_id: openmeteo_home_daily0_sunrise
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('sunrise') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo Home Today Sunset
+        unique_id: openmeteo_home_daily0_sunset
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_home') and (state_attr('sensor.openmeteo_home','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_home','daily') or {}).get('sunset') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+  - sensor:
+      - name: OpenMeteo RV Today Temp Max
+        unique_id: openmeteo_rv_daily0_temp_max
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('temperature_2m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Temp Min
+        unique_id: openmeteo_rv_daily0_temp_min
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('temperature_2m_min') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Uv Index Max
+        unique_id: openmeteo_rv_daily0_uv_index_max
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('uv_index_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Precip Sum
+        unique_id: openmeteo_rv_daily0_precip_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('precipitation_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Rain Sum
+        unique_id: openmeteo_rv_daily0_rain_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('rain_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Snowfall Sum
+        unique_id: openmeteo_rv_daily0_snowfall_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('snowfall_sum') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Precip Prob Max
+        unique_id: openmeteo_rv_daily0_precip_prob_max
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('precipitation_probability_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Wind Speed Max
+        unique_id: openmeteo_rv_daily0_wind_speed_max
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('windspeed_10m_max') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Wind Dir Dom
+        unique_id: openmeteo_rv_daily0_wind_dir_dom
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('winddirection_10m_dominant') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Sunrise
+        unique_id: openmeteo_rv_daily0_sunrise
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('sunrise') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+      - name: OpenMeteo RV Today Sunset
+        unique_id: openmeteo_rv_daily0_sunset
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) }}"
+        state: >-
+          {% set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('sunset') or [] %}
+          {{ _l[0] if (_l | length) > 0 else none }}
+
+  - sensor:
+      - name: OpenMeteo Selected Temperature
+        unique_id: openmeteo_selected_current_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_temperature')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_temperature')
+          {% else %}
+            states('sensor.openmeteo_rv_current_temperature')
+          {% endif %}
+
+      - name: OpenMeteo Selected Apparent Temperature
+        unique_id: openmeteo_selected_current_apparent_temperature
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_apparent_temperature')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_apparent_temperature')
+          {% else %}
+            states('sensor.openmeteo_rv_current_apparent_temperature')
+          {% endif %}
+
+      - name: OpenMeteo Selected Humidity
+        unique_id: openmeteo_selected_current_humidity
+        device_class: humidity
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_humidity')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_humidity')
+          {% else %}
+            states('sensor.openmeteo_rv_current_humidity')
+          {% endif %}
+
+      - name: OpenMeteo Selected Dew Point
+        unique_id: openmeteo_selected_current_dew_point
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_dew_point')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_dew_point')
+          {% else %}
+            states('sensor.openmeteo_rv_current_dew_point')
+          {% endif %}
+
+      - name: OpenMeteo Selected Pressure
+        unique_id: openmeteo_selected_current_pressure
+        device_class: pressure
+        unit_of_measurement: "hPa"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_pressure')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_pressure')
+          {% else %}
+            states('sensor.openmeteo_rv_current_pressure')
+          {% endif %}
+
+      - name: OpenMeteo Selected Wind Speed
+        unique_id: openmeteo_selected_current_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_wind_speed')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_wind_speed')
+          {% else %}
+            states('sensor.openmeteo_rv_current_wind_speed')
+          {% endif %}
+
+      - name: OpenMeteo Selected Wind Gust
+        unique_id: openmeteo_selected_current_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_wind_gust')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_wind_gust')
+          {% else %}
+            states('sensor.openmeteo_rv_current_wind_gust')
+          {% endif %}
+
+      - name: OpenMeteo Selected Wind Direction
+        unique_id: openmeteo_selected_current_wind_direction
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_wind_direction')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_wind_direction')
+          {% else %}
+            states('sensor.openmeteo_rv_current_wind_direction')
+          {% endif %}
+
+      - name: OpenMeteo Selected Visibility
+        unique_id: openmeteo_selected_current_visibility
+        unit_of_measurement: "m"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_visibility')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_visibility')
+          {% else %}
+            states('sensor.openmeteo_rv_current_visibility')
+          {% endif %}
+
+      - name: OpenMeteo Selected Cloud Cover
+        unique_id: openmeteo_selected_current_cloud_cover
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_cloud_cover')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_cloud_cover')
+          {% else %}
+            states('sensor.openmeteo_rv_current_cloud_cover')
+          {% endif %}
+
+      - name: OpenMeteo Selected Is Day
+        unique_id: openmeteo_selected_current_is_day
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_is_day')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_is_day')
+          {% else %}
+            states('sensor.openmeteo_rv_current_is_day')
+          {% endif %}
+
+      - name: OpenMeteo Selected Weather Code
+        unique_id: openmeteo_selected_current_weather_code
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_weather_code')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_weather_code')
+          {% else %}
+            states('sensor.openmeteo_rv_current_weather_code')
+          {% endif %}
+
+      - name: OpenMeteo Selected Observation Time
+        unique_id: openmeteo_selected_current_observation_time
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_current_observation_time')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_current_observation_time')
+          {% else %}
+            states('sensor.openmeteo_rv_current_observation_time')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Temp Max
+        unique_id: openmeteo_selected_daily0_temp_max
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_temp_max')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_temp_max')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_temp_max')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Temp Min
+        unique_id: openmeteo_selected_daily0_temp_min
+        device_class: temperature
+        unit_of_measurement: "°F"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_temp_min')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_temp_min')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_temp_min')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Uv Index Max
+        unique_id: openmeteo_selected_daily0_uv_index_max
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_uv_index_max')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_uv_index_max')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_uv_index_max')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Precip Sum
+        unique_id: openmeteo_selected_daily0_precip_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_precip_sum')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_precip_sum')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_precip_sum')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Rain Sum
+        unique_id: openmeteo_selected_daily0_rain_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_rain_sum')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_rain_sum')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_rain_sum')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Snowfall Sum
+        unique_id: openmeteo_selected_daily0_snowfall_sum
+        device_class: precipitation
+        unit_of_measurement: "in"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_snowfall_sum')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_snowfall_sum')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_snowfall_sum')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Precip Prob Max
+        unique_id: openmeteo_selected_daily0_precip_prob_max
+        device_class: precipitation
+        unit_of_measurement: "%"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_precip_prob_max')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_precip_prob_max')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_precip_prob_max')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Wind Speed Max
+        unique_id: openmeteo_selected_daily0_wind_speed_max
+        device_class: wind_speed
+        unit_of_measurement: "mph"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_wind_speed_max')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_wind_speed_max')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_wind_speed_max')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Wind Dir Dom
+        unique_id: openmeteo_selected_daily0_wind_dir_dom
+        device_class: wind_direction
+        unit_of_measurement: "°"
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_wind_dir_dom')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_wind_dir_dom')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_wind_dir_dom')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Sunrise
+        unique_id: openmeteo_selected_daily0_sunrise
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_sunrise')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_sunrise')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_sunrise')
+          {% endif %}
+
+      - name: OpenMeteo Selected Today Sunset
+        unique_id: openmeteo_selected_daily0_sunset
+        device_class: timestamp
+        availability: "{{ has_value('sensor.openmeteo_nearby') or has_value('sensor.openmeteo_home') or has_value('sensor.openmeteo_rv') }}"
+        state: >-
+          {% set loc = states('input_select.openmeteo_location') %}
+          {% if loc == 'Nearby' %}
+            states('sensor.openmeteo_nearby_daily0_sunset')
+          {% elif loc == 'Home' %}
+            states('sensor.openmeteo_home_daily0_sunset')
+          {% else %}
+            states('sensor.openmeteo_rv_daily0_sunset')
+          {% endif %}
