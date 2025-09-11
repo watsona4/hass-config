@@ -75,12 +75,6 @@ lovelace:
     - url: /local/community/apexcharts-card/apexcharts-card.js
       type: module
   dashboards:
-    lovelace-overview:
-      mode: yaml
-      title: Overview
-      icon: mdi:view-dashboard
-      show_in_sidebar: true
-      filename: dashboards/overview/dashboard.yaml
     lovelace-overview-old:
       mode: yaml
       title: Overview Old

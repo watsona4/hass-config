@@ -2,6 +2,5 @@
 # Overview dashboard configuration
 
 title: Overview
-default: true
-decluttering_templates: !include ./decluttering.yaml
-views: !include_dir_list ./views
+decluttering_templates: !include dashboards/overview/decluttering.yaml
+views: !include_dir_list dashboards/overview/views
