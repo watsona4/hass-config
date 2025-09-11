@@ -116,12 +116,25 @@
         ) -%}
 
     {%- set value_text = H.get_value(value, enhanced_options) -%}
-    {%- set def_desc = H.get_default_desc(value, app, enhanced_options) -%}
-    {%- set short_desc = H.get_short_desc(value, app, enhanced_options) -%}
-    {%- set long_desc = H.get_long_desc(value, app, enhanced_options) -%}
 
     {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
+    {%- set def_desc = (DC.get_default_desc(value, app, enhanced_options) if DC.get_default_desc is defined
+        else H.get_default_desc(value, app, enhanced_options)) -%}
+    {%- set short_desc = (DC.get_short_desc(value, app, enhanced_options) if DC.get_short_desc is defined
+        else H.get_short_desc(value, app, enhanced_options)) -%}
+    {%- set long_desc = (DC.get_long_desc(value, app, enhanced_options) if DC.get_long_desc is defined
+        else H.get_long_desc(value, app, enhanced_options)) -%}
+    {%- set full_desc = (DC.get_full_desc(value, app, enhanced_options) if DC.get_full_desc is defined
+        else H.get_full_desc(value, app, enhanced_options)) -%}
+    {%- set icon = (DC.get_icon(value, app, enhanced_options) if DC.get_icon is defined
+        else H.get_icon(value, app, enhanced_options)) -%}
+    {%- set color = (DC.get_color(value, app, enhanced_options) if DC.get_color is defined
+        else H.get_color(value, app, enhanced_options)) -%}
+    {%- set badge = (DC.get_badge(value, app, enhanced_options) if DC.get_badge is defined
+        else H.get_badge(value, app, enhanced_options)) -%}
+    {%- set badge_color = (DC.get_badge_color(value, app, enhanced_options) if DC.get_badge_color is defined
+        else H.get_badge_color(value, app, enhanced_options)) -%}
     {%- set label = (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
         else H.format_label(value_text, def_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
     {%- set short_label = (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
@@ -136,10 +149,11 @@
     'default_desc': def_desc,
     'short_desc': short_desc,
     'long_desc': long_desc,
-    'full_desc': H.get_full_desc(value, app, enhanced_options) ,
-    'icon': H.get_icon(value, app, enhanced_options),
-    'color': H.get_color(value, app, enhanced_options),
-    'badge': H.get_badge(value, app, enhanced_options),
+    'full_desc': full_desc,
+    'icon': icon,
+    'color': color,
+    'badge': badge,
+    'badge_color': badge_color,
     'label': label,
     'short_label': short_label,
     'long_label': long_label,
@@ -186,6 +200,9 @@
 {% endmacro %}
 {% macro get_badge(entity_id, app, options={}) %}
     {{- get_attribute(entity_id, app, 'badge', options) -}}
+{% endmacro %}
+{% macro get_badge_color(entity_id, app, options={}) %}
+    {{- get_attribute(entity_id, app, 'badge_color', options) -}}
 {% endmacro %}
 
 {# ---- labels now use helpers for fallback formatting ---- #}

@@ -330,6 +330,9 @@
 {% macro get_badge(value, app, options) %}
     {{- get_level_attr(value, app, 'badge', options) -}}
 {% endmacro %}
+{% macro get_badge_color(value, app, options) %}
+    {{- get_level_attr(value, app, 'badge_color', options) or get_level_attr(value, app, 'color', options) -}}
+{% endmacro %}
 
 {# ======================================================================
   7) Parsing Helpers (optional; used in some templates)

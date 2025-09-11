@@ -55,8 +55,8 @@ template_card:
       {{- get_badge(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
     badge_color: >-
       {%- from 'helpers.jinja' import parse_options_kv -%}
-      {%- from 'main.jinja' import get_color -%}
-      {{- get_color(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
+      {%- from 'main.jinja' import get_badge_color -%}
+      {{- get_badge_color(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
     vertical: '[[vertical]]'
     multiline_secondary: '[[vertical]]'
     tap_action: '[[tap_action]]'
