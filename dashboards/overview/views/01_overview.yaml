@@ -36,23 +36,22 @@ sections:
             template: template_card
             variables:
               - entity: sensor.netprobe_download
-              - options: >-
-                  max_speed=1000
               - name: Download
+              - app: download
               - vertical: true
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: sensor.netprobe_upload
-              - options: >-
-                  max_speed=50
               - name: Upload
+              - app: upload
               - vertical: true
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: sensor.netprobe_latency_icmp
               - name: Latency
+              - app: latency
               - vertical: true
 
       # Utility Usage
