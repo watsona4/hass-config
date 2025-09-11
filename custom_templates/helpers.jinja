@@ -101,22 +101,22 @@
 {% endmacro %}
 
 {#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
-{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='') %}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', vertical=false) %}
     {%- if is_unavail and long_desc_text -%}
         {{- long_desc_text -}}
     {%- elif value_text is string and value_text | trim != '' -%}
-        {{- value_text ~ ' • ' ~ desc_text -}}
+        {{- value_text ~ ('\n' if vertical else ' • ') ~ desc_text -}}
     {%- else -%}
         {{- desc_text -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='') %}
-    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text) -}}
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', vertical=false) %}
+    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, vertical) -}}
 {% endmacro %}
 
-{% macro format_long_label(value_text, long_desc_text, is_unavail=false) %}
-    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text) -}}
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false, vertical=false) %}
+    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, vertical) -}}
 {% endmacro %}
 
 {# ======================================================================

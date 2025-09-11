@@ -12,6 +12,8 @@ title_card:
 template_card:
   default:
     - name: default
+    - width: default
+    - vertical: false
     - app: default
     - options: ''
     - multiline_secondary: false
@@ -38,8 +40,15 @@ template_card:
       {%- endif -%}
     secondary: >-
       {%- from 'helpers.jinja' import parse_options_kv -%}
-      {%- from 'main.jinja' import get_label -%}
-      {{- get_label(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
+      {%- import 'main.jinja' as main -%}
+      {%- set opts = ('[[options]]'.split(';') + ['vertical=[[vertical]]']) | join(';') -%}
+      {%- if '[[width]]' == 'narrow' -%}
+        {{- main.get_short_label(entity, '[[app]]', parse_options_kv(opts) | from_json) -}}
+      {%- elif '[[width]]' == 'wide' -%}
+        {{- main.get_long_label(entity, '[[app]]', parse_options_kv(opts) | from_json) -}}
+      {%- else -%}
+        {{- main.get_label(entity, '[[app]]', parse_options_kv(opts) | from_json) -}}
+      {%- endif -%}
     badge_icon: >-
       {%- from 'helpers.jinja' import parse_options_kv -%}
       {%- from 'main.jinja' import get_badge -%}
@@ -48,7 +57,8 @@ template_card:
       {%- from 'helpers.jinja' import parse_options_kv -%}
       {%- from 'main.jinja' import get_color -%}
       {{- get_color(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
-    multiline_secondary: '[[multiline_secondary]]'
+    vertical: '[[vertical]]'
+    multiline_secondary: '[[vertical]]'
     tap_action: '[[tap_action]]'
 
 # Climate Card

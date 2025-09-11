@@ -123,11 +123,11 @@
     {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
     {%- set label = (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
-        else H.format_label(value_text, def_desc, is_unavail, long_desc)) -%}
+        else H.format_label(value_text, def_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
     {%- set short_label = (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
-        else H.format_label(value_text, short_desc, is_unavail, long_desc)) -%}
-    {%- set long_label = (DC.get_long_label(value, app, enhanced_options) if DC.get_long_label is defined
-        else H.format_label(value_text, long_desc, is_unavail, long_desc)) -%}
+        else H.format_label(value_text, short_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
+    {%- set long_label = (DC.get_long_label(value, app, enhanced_options,) if DC.get_long_label is defined
+        else H.format_label(value_text, long_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {

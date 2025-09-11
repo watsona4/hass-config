@@ -39,6 +39,7 @@ sections:
               - options: >-
                   max_speed=1000
               - name: Download
+              - vertical: true
           - type: custom:decluttering-card
             template: template_card
             variables:
@@ -46,11 +47,13 @@ sections:
               - options: >-
                   max_speed=50
               - name: Upload
+              - vertical: true
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: sensor.netprobe_latency_icmp
               - name: Latency
+              - vertical: true
 
       # Utility Usage
       - type: horizontal-stack
@@ -59,6 +62,7 @@ sections:
             template: template_card
             variables:
               - entity: sensor.electric_daily
+              - vertical: true
               - tap_action:
                   action: navigate
                   navigation_path: /energy
@@ -66,6 +70,7 @@ sections:
             template: template_card
             variables:
               - entity: sensor.water_daily
+              - vertical: true
               - tap_action:
                   action: navigate
                   navigation_path: /energy
@@ -73,6 +78,7 @@ sections:
             template: template_card
             variables:
               - entity: sensor.gas_daily
+              - vertical: true
               - tap_action:
                   action: navigate
                   navigation_path: /energy
