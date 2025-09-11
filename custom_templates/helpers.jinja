@@ -205,7 +205,8 @@
             {%- set ns.pref_out = prefixes[i] -%}
         {%- else -%}
             {%- set base = 1000.0 -%}
-            {%- set prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"] -%}
+            {%- set prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M",
+                "G", "T", "P", "E", "Z", "Y"] -%}
             {%- set ns2 = namespace(i=8) -%}
             {%- for _ in range(prefixes | length - 1) -%}
                 {%- if ns.v < base or ns2.i >= prefixes | length - 1 -%}
@@ -289,13 +290,23 @@
         Unavailable
     {%- else -%}
         {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
-        {{- humanize_unit(val, options.display_unit) -}}
+        {%- set val = _apply_projection(val, options) -%}
+        {%- set text = humanize_unit(val, options.display_unit) -%}
+        {%- if options is mapping and options.get('project_daily', false) -%}
+            {{- "~" ~ text -}}
+        {%- else -%}
+            {{- text -}}
+        {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
 {% macro get_name(value, app, options) %}
-    {{- format_name(options.friendly_name or app,
-        exceptions=['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC']) -}}
+    {%- set exceptions = ['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC'] -%}
+    {%- if options is mapping and options.get('name') -%}
+        {{- format_name(options.name, exceptions=exceptions) -}}
+    {%- else -%}
+        {{- format_name(options.friendly_name or app, exceptions=exceptions) -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro get_default_desc(value, app, options) %}

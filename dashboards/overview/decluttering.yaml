@@ -11,6 +11,7 @@ title_card:
 # Template Card
 template_card:
   default:
+    - name: default
     - app: default
     - options: ''
     - multiline_secondary: false
@@ -28,9 +29,13 @@ template_card:
       {%- from 'main.jinja' import get_color -%}
       {{- get_color(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
     primary: >-
-      {%- from 'helpers.jinja' import parse_options_kv -%}
-      {%- from 'main.jinja' import get_name -%}
-      {{- get_name(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
+      {%- if '[[name]]' == 'default' -%}
+        {%- from 'helpers.jinja' import parse_options_kv -%}
+        {%- from 'main.jinja' import get_name -%}
+        {{- get_name(entity, '[[app]]', parse_options_kv('[[options]]') | from_json) -}}
+      {%- else -%}
+        {{- '[[name]]' -}}
+      {%- endif -%}
     secondary: >-
       {%- from 'helpers.jinja' import parse_options_kv -%}
       {%- from 'main.jinja' import get_label -%}
