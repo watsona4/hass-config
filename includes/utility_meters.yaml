@@ -3,12 +3,12 @@
 water:
   name: Water Meter Relay
   unique_id: water_meter_relay
-  source: sensor.water_meter
+  source: sensor.water_meter_persisted
   periodically_resetting: False
   always_available: True
 
 water_daily:
-  source: sensor.water_meter
+  source: sensor.water_meter_persisted
   name: Water Daily
   cycle: daily
 

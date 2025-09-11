@@ -251,7 +251,27 @@
     {{- (ns.best or ns.lowest) | tojson -}}
 {% endmacro %}
 
-{#- Universal accessor used by the device-class getters -#}
+{# Project a "today so far" cumulative reading to a full-day estimate
+   - Enable with options.project_daily = true
+   - Optional guard: options.project_guard (fraction of a day, default 0.05)
+   - No-op for unavailable/None. #}
+{% macro _apply_projection(val, options) %}
+  {%- if val is none -%}
+    {{- val -}}
+  {%- elif options is mapping and options.get('project_daily', false) -%}
+    {%- set h = now().hour -%}
+    {%- set m = now().minute -%}
+    {%- set share = (h + (m / 60.0)) / 24.0 -%}
+    {%- set guard = (options.get('project_guard', 0.05) | float(0.05)) -%}
+    {#- avoid divide-by-near-zero early in the morning -#}
+    {%- set denom = share if share > guard else guard -%}
+    {{- (val | float(none)) / denom if (val | float(none)) is not none else none -}}
+  {%- else -%}
+    {{- val -}}
+  {%- endif -%}
+{% endmacro %}
+
+{# Universal accessor used by the device-class getters #}
 {% macro get_level_attr(value, app, attr, options) %}
     {%- set ctx = _resolve_ctx(options) | from_json -%}
     {%- set _levels = ctx.levels -%}
@@ -275,6 +295,7 @@
             {{- unavailable_fallback.get(attr, '') -}}
         {%- else -%}
             {%- set lookup = u_convert_value(value, options.uom, ctx.lookup_unit) -%}
+            {%- set lookup = _apply_projection(lookup, options) -%}
             {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
             {{- match.get(attr, '') -}}
         {%- endif -%}

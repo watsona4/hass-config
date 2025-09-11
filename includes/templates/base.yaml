@@ -1289,3 +1289,26 @@
         {{ 'on' if v in [true, 'true', 'True'] else 'off' }}
       attributes:
         reason: "{{ state_attr('sensor.netprobe_status_rv','hiccup_reason') }}"
+
+- trigger:
+    - platform: state
+      entity_id: sensor.water_meter
+      not_to:
+        - unavailable
+        - unknown
+        - none
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Water Meter (persisted)"
+      unique_id: water_meter_persisted
+      device_class: water
+      unit_of_measurement: gal
+      state_class: total_increasing
+      state: >-
+        {% set src = 'sensor.water_meter' %}
+        {% if trigger.platform == 'state' %}
+          {{ trigger.to_state.state }}
+        {% else %}
+          {{ states(src) if has_value(src) else this.state }}
+        {% endif %}
