@@ -4,3 +4,10 @@
   heater: switch.chicken_coop_outlet_2
   target_sensor: sensor.chicken_coop_thermometer_temperature
   keep_alive: "0:03:00"
+
+- platform: generic_thermostat
+  name: Study Space Heater
+  unique_id: study_space_heater
+  heater: switch.study_space_heater_outlet
+  target_sensor: sensor.study_thermometer_temperature
+  keep_alive: "0:03:00"

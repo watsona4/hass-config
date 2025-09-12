@@ -148,11 +148,11 @@
       delay_on: "00:15:00"
       delay_off: "00:15:00"
       availability: >-
-        {{ has_value('sensor.chicken_coop_temperature_state')
+        {{ has_value('sensor.study_thermometer_temperature')
             and has_value('sensor.outside_temperature_state')
             and has_value('input_number.downstairs_temperature') }}
       state: >-
-        {% set temp         = states('sensor.chicken_coop_temperature_state') | float(0) %}
+        {% set temp         = states('sensor.study_thermometer_temperature') | float(0) %}
         {% set outside_temp = states('sensor.outside_temperature_state') | float(0) %}
         {% set target_temp  = states('input_number.downstairs_temperature') | float(0) %}
         {{ temp > target_temp + 1 or outside_temp > temp }}

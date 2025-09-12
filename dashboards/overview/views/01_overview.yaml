@@ -2,6 +2,7 @@
 # Overview dashboard configuration
 
 title: Home
+max_columns: 2
 sections:
 
   # Overall Overview
@@ -168,3 +169,177 @@ sections:
               - entity: sensor.openmeteo_nearby_dew_point
               - name: Dew Point
               - app: dew_point
+
+  # Status - Lights, Doors, Smoke/CO
+  - type: grid
+    cards:
+
+      # Status Title
+      - type: custom:mushroom-title-card
+        title: Status
+        subtitle: Lights On · Doors & Windows Open · Smoke/CO Alerts
+
+      # Smoke and CO Alerts
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - entity_id: binary_sensor.nest_protect_*_smoke_status
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                icon: mdi:fire-alert
+                icon_color: red
+                primary: "{{ area_name(entity) }}"
+                tap_action:
+                  action: more-info
+            - entity_id: binary_sensor.nest_protect_*_co_status
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                icon: mdi:molecule-co
+                icon_color: red
+                primary: "{{ area_name(entity) }}"
+                tap_action:
+                  action: more-info
+          exclude: []
+
+      # Lights On
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - domain: light
+              state: 'on'
+              options:
+                type: custom:mushroom-light-card
+                tap_action:
+                  action: more-info
+          exclude:
+            - entity_id: /^.*\.browser_mod_/
+            - entity_id: light.ratgdov25i_f6128e_light
+
+      # Doors and Windows Open
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: door
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                primary: "{{ area_name(entity) }}"
+                icon: mdi:door-open
+                icon_color: amber
+                tap_action:
+                  action: more-info
+            - domain: binary_sensor
+              attributes:
+                device_class: window
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                primary: "{{ area_name(entity) }}"
+                icon: mdi:window-open
+                icon_color: amber
+                tap_action:
+                  action: more-info
+          exclude: []
+
+  # Unavailable Devices
+  - type: grid
+    cards:
+
+      # Unavailable Title
+      - type: custom:mushroom-title-card
+        title: Unavailable Devices
+        subtitle: Impacted Devices · Count of Affected Entities
+
+      # Unavailable Devices Cards
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          template: "{% from 'macros/unavailable_devices.jinja' import generate %}{{ generate() }}"
+          exclude:
+            - device: Dishwasher
+            - device: Eleanor Presence
+            - device: Kids Bathroom Presence
+            - domain: person
+            - domain: weather
+            - entity_id: /^.*\..*_ap$/
+            - entity_id: /^.*\..*_co$/
+            - entity_id: /^.*\..*_no2$/
+            - entity_id: /^.*\..*_pm10$/
+            - entity_id: /^.*\..*_so2$/
+            - entity_id: /^.*\.browser_mod_/
+            - entity_id: /^sensor\.double_take_/
+            - entity_id: binary_sensor.remote_ui
+            - integration: dlna_dmr
+            - integration: ibeacon
+            - integration: mqtt
+              device: DESKTOP-BQ063IG
+            - integration: mqtt
+              device: /[Ff]rigate/
+            - integration: mqtt
+              device: LAPTOP-OO58T6KN
+            - integration: mqtt
+              device: /[Oo]pnsense/
+            - integration: smartthings
+            - integration: tuya
+        sort:
+          method: name
+
+  # Cameras
+  - type: grid
+    column_span: 2
+    square: false
+    cards:
+
+      # Cameras Title
+      - type: custom:mushroom-title-card
+        title: Cameras
+        subtitle: Stills Only · Tap for Live
+        grid_options:
+          columns: full
+
+      # Doorbell Camera
+      - type: picture-entity
+        entity: camera.doorbell_camera
+        name: Doorbell
+        camera_view: auto
+        tap_action:
+          action: more-info
+
+      # Driveway Camera
+      - type: picture-entity
+        entity: camera.driveway_camera
+        name: Driveway
+        camera_view: auto
+        tap_action:
+          action: more-info

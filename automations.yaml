@@ -240,20 +240,53 @@
   - entity_id: binary_sensor.front_hallway_closed_temperature
     id: Front Hallway
     trigger: state
+    from: 'on'
+    to: 'off'
+  - entity_id: binary_sensor.front_hallway_closed_temperature
+    id: Front Hallway
+    trigger: state
+    from: 'off'
+    to: 'on'
   - entity_id: binary_sensor.study_south_closed_temperature
     id: Study South
     trigger: state
+    from: 'on'
+    to: 'off'
+  - entity_id: binary_sensor.study_south_closed_temperature
+    id: Study South
+    trigger: state
+    from: 'off'
+    to: 'on'
   - entity_id: binary_sensor.study_west_closed_temperature
     id: Study West
     trigger: state
+    from: 'on'
+    to: 'off'
+  - entity_id: binary_sensor.study_west_closed_temperature
+    id: Study West
+    trigger: state
+    from: 'off'
+    to: 'on'
   - entity_id: binary_sensor.guest_south_closed_temperature
     id: Guest South
     trigger: state
+    from: 'on'
+    to: 'off'
+  - entity_id: binary_sensor.guest_south_closed_temperature
+    id: Guest South
+    trigger: state
+    from: 'off'
+    to: 'on'
   - entity_id: binary_sensor.west_windows_closed_temperature
     id: West
     trigger: state
-  - event: start
-    trigger: homeassistant
+    from: 'on'
+    to: 'off'
+  - entity_id: binary_sensor.west_windows_closed_temperature
+    id: West
+    trigger: state
+    from: 'off'
+    to: 'on'
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -1088,7 +1121,7 @@
     enabled: false
   - trigger: numeric_state
     entity_id:
-    - sensor.chicken_coop_thermometer_temperature
+    - sensor.parlor_thermometer_temperature
     for:
       hours: 0
       minutes: 5
@@ -1096,7 +1129,7 @@
     below: 70
   - trigger: numeric_state
     entity_id:
-    - sensor.chicken_coop_thermometer_temperature
+    - sensor.parlor_thermometer_temperature
     for:
       hours: 0
       minutes: 5
@@ -1130,7 +1163,7 @@
         {{ wood_stove or target_temp <= furnace }}'
       enabled: false
     - condition: numeric_state
-      entity_id: sensor.chicken_coop_thermometer_temperature
+      entity_id: sensor.parlor_thermometer_temperature
       below: 70
     then:
     - action: switch.turn_on
@@ -1279,7 +1312,6 @@
   - entity_id:
     - input_number.downstairs_temperature
     - input_number.furnace_temperature
-    - input_boolean.chicken_coop_in_study
     - automation.thermostats
     - input_boolean.coming_home
     id: Target
@@ -1337,18 +1369,15 @@
         action: climate.set_hvac_mode
     - if:
       - condition: state
-        entity_id: input_boolean.chicken_coop_in_study
-        state: 'on'
-      - condition: state
         state: 'off'
-        entity_id: climate.chicken_heat_lamp
+        entity_id: climate.study_space_heater
       then:
       - metadata: {}
         data:
           hvac_mode: heat
         action: climate.set_hvac_mode
         target:
-          entity_id: climate.chicken_heat_lamp
+          entity_id: climate.study_space_heater
   - choose:
     - conditions:
       - condition: state
@@ -1401,17 +1430,12 @@
           - climate.upstairs_thermostat
           - climate.gym_minisplit_setall_gym_minisplit
           - climate.playroom_minisplit_setall_playroom_minisplit
-      - if:
-        - condition: state
-          entity_id: input_boolean.chicken_coop_in_study
-          state: 'on'
-        then:
-        - action: climate.set_temperature
-          metadata: {}
-          data:
-            temperature: 50
-          target:
-            entity_id: climate.chicken_heat_lamp
+      - action: climate.set_temperature
+        metadata: {}
+        data:
+          temperature: 50
+        target:
+          entity_id: climate.study_space_heater
     - conditions:
       - condition: state
         entity_id: binary_sensor.kitchen_door_contact
@@ -1472,20 +1496,17 @@
           type: set_hvac_mode
           hvac_mode: cool
       - if:
-        - condition: state
-          entity_id: input_boolean.chicken_coop_in_study
-          state: 'on'
         - condition: numeric_state
-          entity_id: sensor.chicken_coop_thermometer_temperature
+          entity_id: sensor.study_thermometer_temperature
           above: 0
           value_template: '{{ state.state|float - furnace_temp|float }}'
         - condition: state
-          entity_id: climate.chicken_heat_lamp
+          entity_id: climate.study_space_heater
           state: 'off'
         then:
         - action: climate.set_hvac_mode
           target:
-            entity_id: climate.chicken_heat_lamp
+            entity_id: climate.study_space_heater
           data:
             hvac_mode: heat
       - if:
@@ -1511,7 +1532,7 @@
           metadata: {}
           data: {}
           target:
-            entity_id: climate.chicken_heat_lamp
+            entity_id: climate.study_space_heater
         - action: input_boolean.turn_off
           metadata: {}
           data: {}
@@ -1599,21 +1620,16 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
-          - if:
-            - condition: state
-              entity_id: input_boolean.chicken_coop_in_study
-              state: 'on'
-            then:
-            - action: climate.set_hvac_mode
-              target:
-                entity_id: climate.chicken_heat_lamp
-              data:
-                hvac_mode: heat
-            - action: climate.set_temperature
-              data:
-                temperature: '{{study_heater}}'
-              target:
-                entity_id: climate.chicken_heat_lamp
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.study_space_heater
+            data:
+              hvac_mode: heat
+          - action: climate.set_temperature
+            data:
+              temperature: '{{study_heater}}'
+            target:
+              entity_id: climate.study_space_heater
         - conditions:
           - condition: state
             entity_id: binary_sensor.daytime
@@ -1638,21 +1654,16 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
-          - if:
-            - condition: state
-              entity_id: input_boolean.chicken_coop_in_study
-              state: 'on'
-            then:
-            - action: climate.set_hvac_mode
-              target:
-                entity_id: climate.chicken_heat_lamp
-              data:
-                hvac_mode: heat
-            - action: climate.set_temperature
-              data:
-                temperature: 60
-              target:
-                entity_id: climate.chicken_heat_lamp
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.study_space_heater
+            data:
+              hvac_mode: heat
+          - action: climate.set_temperature
+            data:
+              temperature: 60
+            target:
+              entity_id: climate.study_space_heater
   mode: queued
   trace:
     stored_traces: 100
@@ -2422,26 +2433,66 @@
   alias: Close Windows Brightness
   description: ''
   triggers:
-  - entity_id: binary_sensor.breakfast_room_closed_brightness
+  - trigger: state
+    entity_id: binary_sensor.breakfast_room_closed_brightness
     id: Breakfast Room
-    trigger: state
-  - entity_id: binary_sensor.kitchen_closed_brightness
+    from: 'off'
+    to: 'on'
+  - trigger: state
+    entity_id: binary_sensor.breakfast_room_closed_brightness
+    id: Breakfast Room
+    from: 'on'
+    to: 'off'
+  - trigger: state
     id: Kitchen
-    trigger: state
-  - entity_id: binary_sensor.living_room_closed_brightness
+    entity_id: binary_sensor.kitchen_closed_brightness
+    from: 'off'
+    to: 'on'
+  - trigger: state
+    id: Kitchen
+    entity_id: binary_sensor.kitchen_closed_brightness
+    from: 'on'
+    to: 'off'
+  - trigger: state
     id: Living Room
-    trigger: state
+    entity_id: binary_sensor.living_room_closed_brightness
+    from: 'off'
+    to: 'on'
+  - trigger: state
+    id: Living Room
+    entity_id: binary_sensor.living_room_closed_brightness
+    from: 'on'
+    to: 'off'
   - entity_id: binary_sensor.study_south_closed_brightness
     id: Study South
     trigger: state
+    from: 'off'
+    to: 'on'
+  - entity_id: binary_sensor.study_south_closed_brightness
+    id: Study South
+    trigger: state
+    from: 'on'
+    to: 'off'
   - entity_id: binary_sensor.study_west_closed_brightness
     id: Study West
     trigger: state
+    from: 'off'
+    to: 'on'
+  - entity_id: binary_sensor.study_west_closed_brightness
+    id: Study West
+    trigger: state
+    from: 'on'
+    to: 'off'
   - entity_id: binary_sensor.laundry_room_closed_brightness
     id: Laundry Room
     trigger: state
-  - event: start
-    trigger: homeassistant
+    from: 'off'
+    to: 'on'
+  - entity_id: binary_sensor.laundry_room_closed_brightness
+    id: Laundry Room
+    trigger: state
+    from: 'on'
+    to: 'off'
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -5261,10 +5312,7 @@
     - sensor.none_4_1min
     below: 500
     id: Power Low
-  conditions:
-  - condition: state
-    entity_id: input_boolean.chicken_coop_in_study
-    state: 'on'
+  conditions: []
   actions:
   - choose:
     - conditions:
@@ -5614,97 +5662,6 @@
   mode: single
   trace:
     stored_traces: 100
-- id: '1748389571990'
-  alias: Humidifiers
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.chicken_coop_thermometer_humidity
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    above: 55
-  - trigger: numeric_state
-    entity_id:
-    - sensor.chicken_coop_thermometer_humidity
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    below: 55
-  - trigger: numeric_state
-    entity_id:
-    - sensor.chicken_coop_thermometer_humidity
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    above: 45
-  - trigger: numeric_state
-    entity_id:
-    - sensor.chicken_coop_thermometer_humidity
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    below: 45
-  - trigger: state
-    entity_id:
-    - input_boolean.humidifiers_enabled
-    to:
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.chicken_coop_thermometer_humidity
-        above: 55
-      - condition: state
-        entity_id: input_boolean.humidifiers_enabled
-        state: 'on'
-      sequence:
-      - action: switch.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: switch.living_room_dehumidifier
-      - action: humidifier.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: humidifier.humidifier
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.chicken_coop_thermometer_humidity
-        below: 45
-      - condition: state
-        entity_id: input_boolean.humidifiers_enabled
-        state: 'on'
-      sequence:
-      - action: switch.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: switch.living_room_dehumidifier
-      - action: humidifier.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: humidifier.humidifier
-    default:
-    - action: switch.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.living_room_dehumidifier
-    - action: humidifier.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: humidifier.humidifier
-  mode: single
 - id: '1748461182023'
   alias: Kitchen Door
   description: ''
