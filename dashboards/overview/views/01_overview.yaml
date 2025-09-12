@@ -315,7 +315,7 @@ sections:
         sort:
           method: name
 
-  # Cameras
+  # Cameras and Pop-ups
   - type: grid
     column_span: 2
     square: false
@@ -343,3 +343,406 @@ sections:
         camera_view: auto
         tap_action:
           action: more-info
+
+      # Pop-up cards
+      - type: vertical-stack
+        cards:
+
+          # Climate Pop-up
+          - type: custom:button-card
+            name: Climate
+            icon: mdi:thermostat
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Climate
+                  content:
+                    type: grid
+                    columns: 2
+                    square: false
+                    cards:
+
+                      # Climate and Humidity Cards
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.downstairs_thermostat
+                          - name: Downstairs
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.upstairs_thermostat
+                          - name: Upstairs
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.playroom_minisplit_setall_playroom_minisplit
+                          - name: Playroom
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.gym_minisplit_setall_gym_minisplit
+                          - name: Gym
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.chicken_heat_lamp
+                          - name: Chicken Coop
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.study_space_heater
+                          - name: Study Space Heater
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.living_room_dehumidifier
+                          - name: Living Room Dehumidifier
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.dehumidifier
+                          - name: Basement Dehumidifier
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.humidifier
+                          - name: Parlor Humidifier
+
+                      # Climate States
+                      - type: custom:decluttering-card
+                        template: template_card
+                        variables:
+                          - entity: binary_sensor.sunny
+                          - app: sunny
+                      - type: custom:decluttering-card
+                        template: template_card
+                        variables:
+                          - entity: binary_sensor.rainy
+                          - app: rainy
+                      - type: custom:decluttering-card
+                        template: template_card
+                        variables:
+                          - entity: binary_sensor.dark_outside
+                          - app: dark_outside
+                      - type: custom:decluttering-card
+                        template: template_card
+                        variables:
+                          - entity: binary_sensor.hot_inside
+                          - app: hot_inside
+
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 16px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+
+          # Exterior Lights Pop-up
+          - type: custom:button-card
+            name: Exterior
+            icon: mdi:lightbulb-on
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Exterior Lights
+                  content:
+                    - type: grid
+                      columns: 2
+                      square: false
+                      cards:
+                      
+                        # Exterior Lights
+                        - type: custom:mushroom-light-card
+                          entity: light.front_porch_light
+                          tap_action:
+                            action: more-info
+                        - type: custom:mushroom-light-card
+                          entity: light.kitchen_porch_light
+                          tap_action:
+                            action: more-info
+                        - type: custom:mushroom-light-card
+                          entity: light.garage_lights
+                          tap_action:
+                            action: more-info
+                        - type: custom:mushroom-light-card
+                          entity: light.back_porch_lights
+                          tap_action:
+                            action: more-info
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 80px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+
+          # Blinds Pop-up
+          - type: custom:button-card
+            name: Blinds
+            icon: mdi:blinds
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Blinds
+                  content:
+                    type: vertical-stack
+                    cards:
+
+                      # Closed for Brightness
+                      - type: heading
+                        icon: mdi:white-balance-sunny
+                        heading: Closed for Brightness
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: group.closed_brightness
+                            state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('brightness') }}
+
+                      # Closed for Temperature
+                      - type: heading
+                        icon: mdi:thermometer-high
+                        heading: Closed for Temperature
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: group.closed_temperature
+                            state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('temperature') }}
+
+                      # Closed for Presence
+                      - type: heading
+                        icon: mdi:motion-sensor
+                        heading: Closed for Presence
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: group.closed_presence
+                            state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('presence') }}
+
+                      # Closed for Devices
+                      - type: heading
+                        icon: mdi:television
+                        heading: Closed for Devices
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: group.closed_devices
+                            state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('device') }}
+
+                      # Closed by Button
+                      - type: heading
+                        icon: mdi:gesture-tap-button
+                        heading: Closed by Button
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: group.closed_button
+                            state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('button') }}
+
+                      # Closed by Nighttime
+                      - type: heading
+                        icon: mdi:gesture-tap-button
+                        heading: Closed by Nighttime
+                        heading_style: subtitle
+                        visibility:
+                          - condition: state
+                            entity: input_boolean.all_windows
+                            state: 'off'
+                      - type: custom:auto-entities
+                        card:
+                          type: grid
+                          columns: 2
+                          square: false
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
+                            {{ find_reason('nighttime') }}
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 144px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+
+          # Presence Pop-up
+          - type: custom:button-card
+            name: Presence
+            icon: mdi:account-group
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Presence
+                  content:
+                    type: vertical-stack
+                    cards:
+                      - type: grid
+                        columns: 2
+                        square: false
+                        cards:
+                          - type: custom:mushroom-person-card
+                            entity: person.aaron_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.ashley_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.eleanor_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.michael_watson
+                          - type: custom:decluttering-card
+                            template: template_card
+                            variables:
+                             - entity: input_boolean.someone_is_home
+                             - app: someone_home
+                          - type: custom:decluttering-card
+                            template: template_card
+                            variables:
+                              - entity: input_boolean.home_alone
+                              - app: home_alone
+                          - type: custom:decluttering-card
+                            template: template_card
+                            variables:
+                             - entity: input_boolean.coming_home
+                             - app: returning_home
+                          - type: custom:decluttering-card
+                            template: template_card
+                            variables:
+                             - entity: sensor.people_home_count
+                             - app: presence_count
+
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 208px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none

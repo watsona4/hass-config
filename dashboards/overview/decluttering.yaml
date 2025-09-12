@@ -72,3 +72,12 @@ climate_card:
     name: '[[name]]'
     tap_action:
       action: more-info
+
+# Humidifier Card
+humidifier_card:
+  card:
+    type: custom:mushroom-humidifier-card
+    entity: '[[entity]]'
+    name: '[[name]]'
+    tap_action:
+      action: more-info
