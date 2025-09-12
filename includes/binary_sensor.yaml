@@ -7,7 +7,7 @@
 
 - platform: bayesian
   name: Aaron Probably Home
-  unique_id: aaron_probably_home
+  unique_id: 7e2b8c8a-4e3c-4b7a-9e2a-8c2e4b7a9e2a
   device_class: presence
   prior: 0.5
   probability_threshold: 0.7

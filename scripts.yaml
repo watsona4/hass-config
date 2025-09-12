@@ -919,25 +919,13 @@ single_window:
       - condition: template
         value_template: '{{ not has_value(window) }}'
       sequence:
-      - action: system_log.write
-        data:
-          level: debug
-          message: Skipping {{ window }} — entity disabled/missing (no state)
       - stop: Window entity disabled/missing
     - conditions:
       - condition: template
         value_template: '{{ states(window) in [''unavailable'',''unknown'',''none'','''']
           }}'
       sequence:
-      - action: system_log.write
-        data:
-          level: debug
-          message: Skipping {{ window }} — state is {{ states(window) }}
       - stop: Window entity unavailable
-  - action: system_log.write
-    data:
-      level: debug
-      message: window={{window}}, action={{action}}
   - variables:
       curr_tilt: '{{ state_attr(window, ''current_tilt_position'') if state_attr(window,''current_tilt_position'')
         is number else None }}'
@@ -946,28 +934,23 @@ single_window:
         endif %}"
       tilt: '{{ 0 if action == ''Closed Down'' else 100 if action == ''Closed Up''
         else 50 }}'
-  - action: system_log.write
-    data:
-      level: debug
-      message: curr_tilt={{curr_tilt}}, position={{position}}, tilt={{tilt}}
+      final: '{{ action.split('' '')[0] | lower }}'
   - if:
     - condition: template
-      value_template: '{{ position != action and position != ''unknown'' }}'
+      value_template: '{{ final == ''closed'' }}'
     then:
-    - variables:
-        final: '{{ action.split('' '')[0] | lower }}'
-    - action: system_log.write
-      data:
-        level: debug
-        message: final={{final}}, states({{window}})={{states(window)}}
-    - wait_template: '{{ (states(window) | string) not in [''opening'',''closing'']
-        }}'
-      timeout: 00:01:00
     - action: input_text.set_value
       target:
         entity_id: input_text.blind_{{ window.split('.')[1] }}_closed_reason
       data:
-        value: '{{ reason if final == ''closed'' else '''' }}'
+        value: '{{ reason }}'
+  - if:
+    - condition: template
+      value_template: '{{ position != action and position != ''unknown'' }}'
+    then:
+    - wait_template: '{{ (states(window) | string) not in [''opening'',''closing'']
+        }}'
+      timeout: 00:01:00
     - action: cover.set_cover_tilt_position
       data:
         tilt_position: '{{ tilt }}'
