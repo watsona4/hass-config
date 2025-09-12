@@ -8,13 +8,21 @@
     {%- set ns = namespace(device_class=none) -%}
     {%- set ns.device_class = state_attr(entity_id, 'device_class') or 'none' -%}
 
+    {# domain convenience #}
+    {%- set domain = entity_id.split('.', 1)[0] -%}
+
+    {# if this is a binary_sensor with no device_class, use synthetic 'binary' #}
+    {%- if domain in ['binary_sensor', 'input_boolean'] -%}
+        {%- set ns.device_class = "binary" -%}
+    {%- endif -%}
+
     {#- Raw & numeric value (preserve 'unavailable' instead of coercing to 0) -#}
     {%- set raw_state = states(entity_id) -%}
     {%- set value = raw_state | float(none) -%}
 
     {#- Meta & units -#}
     {%- set friendly_name = state_attr(entity_id, 'friendly_name') -%}
-    {%- set uom = options.get('uom', state_attr(entity_id, 'unit_of_measurement')) -%}
+    {%- set uom = options.get('uom', state_attr(entity_id, 'unit_of_measurement') | default(none)) -%}
     {%- set display_unit = options.get('unit', uom) -%}
 
     {#- Import the appropriate template based on device class -#}
@@ -26,6 +34,7 @@
         "apparent_power",
         "atmospheric_pressure",
         "battery",
+        "binary",
         "carbon_dioxide",
         "carbon_monoxide",
         "cloud_coverage",
@@ -115,7 +124,7 @@
         is_unavail=is_unavail,
         ) -%}
 
-    {%- set value_text = H.get_value(value, enhanced_options) -%}
+    {%- set value_text = H.get_value(value, enhanced_options) if ns.device_class != 'binary' else state_translated(entity_id) -%}
 
     {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
