@@ -9,7 +9,6 @@
             "long_desc": "Sensor unavailable",
             "icon": "mdi:eye-off",
             "color": "disabled",
-            "badge": "mdi:circle",
             "full_desc": "Sensor not currently available."
         },
         {
@@ -66,7 +65,6 @@
             "long_desc": "Sensor unavailable",
             "icon": "mdi:eye-off",
             "color": "disabled",
-            "badge": "mdi:circle",
             "full_desc": "Sensor not currently available."
         },
         {
@@ -119,7 +117,55 @@
             "color": "#593f62",
             "full_desc": "Extra protection needed. Be careful outside, especially during late morning through mid-afternoon. If your shadow is shorter than you, seek shade and wear protective clothing, a wide-brimmed hat, and sunglasses, and generously apply a minimum of  SPF-15, broad-spectrum sunscreen on exposed skin."
         }
-    ]
-} %}
+    ],
+    "presence_count": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Presence count unavailable",
+            "icon":"mdi:close-circle",
+            "color":"Disabled",
+            "full_desc":"No count available."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Away",
+            "short_desc":"0",
+            "long_desc":"No one home",
+            "icon":"mdi:home-outline",
+            "color":"#9ca3af",
+            "full_desc":"House is empty."
+        },
+        {
+            "min_value": 1,
+            "default_desc":"One Home",
+            "short_desc":"1",
+            "long_desc":"One person home",
+            "icon":"mdi:home-account",
+            "color":"#22c55e",
+            "full_desc":"Single occupant present."
+        },
+        {
+            "min_value": 2,
+            "default_desc":"Two Home",
+            "short_desc":"2",
+            "long_desc":"Two people home",
+            "icon":"mdi:home-group",
+            "color":"#16a34a",
+            "full_desc":"Two occupants present."
+        },
+        {
+            "min_value": 3,
+            "default_desc":"Several Home",
+            "short_desc":"3+",
+            "long_desc":"Three or more home",
+            "icon":"mdi:account-group",
+            "color":"#15803d",
+            "full_desc":"Three or more occupants present." }
+        ]
+    } %}
 
-{% macro get_dc_context() %}{{- {'levels': levels} | tojson -}}{% endmacro %}
+    {% macro get_dc_context() %}
+        {{- {'levels': levels} | tojson -}}
+    {% endmacro %}
