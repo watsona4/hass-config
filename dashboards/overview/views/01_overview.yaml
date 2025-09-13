@@ -473,8 +473,6 @@ sections:
                       columns: 2
                       square: false
                       cards:
-                      
-                        # Exterior Lights
                         - type: custom:mushroom-light-card
                           entity: light.front_porch_light
                           tap_action:
@@ -547,8 +545,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('brightness') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('brightness') }}
 
                       # Closed for Temperature
                       - type: heading
@@ -568,8 +566,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('temperature') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('temperature') }}
 
                       # Closed for Presence
                       - type: heading
@@ -589,8 +587,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('presence') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('presence') }}
 
                       # Closed for Devices
                       - type: heading
@@ -610,8 +608,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('device') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('device') }}
 
                       # Closed by Button
                       - type: heading
@@ -631,8 +629,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('button') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('button') }}
 
                       # Closed by Nighttime
                       - type: heading
@@ -652,8 +650,8 @@ sections:
                         show_empty: false
                         filter:
                           template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import find_reason %}
-                            {{ find_reason('nighttime') }}
+                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+                            {{ build_blind_cards('nighttime') }}
             styles:
               card:
                 - position: fixed
