@@ -826,65 +826,6 @@ christmas_lights_off:
       target:
         entity_id: input_boolean.christmas_music
   description: ''
-announce:
-  alias: Announce
-  fields:
-    players:
-      selector:
-        entity:
-          multiple: true
-      required: true
-    message:
-      selector:
-        text:
-      required: true
-  sequence:
-  - if:
-    - condition: state
-      state: 'off'
-      entity_id: schedule.daytime
-    then:
-    - stop: Don't announce at night
-  - if:
-    - condition: state
-      entity_id: input_boolean.in_a_teams_meeting
-      state: 'on'
-    then:
-    - stop: In a meeting
-  - variables:
-      players: '{{ expand(players)|map(attribute=''entity_id'')|list }}'
-      old_volumes: '{{ expand(players)|map(attribute=''attributes.volume_level'')|list|replace(''Undefined'',
-        0.5) }}'
-  - repeat:
-      count: '{{ players|count }}'
-      sequence:
-      - target:
-          entity_id: '{{players[repeat.index-1]}}'
-        action: media_player.media_pause
-        continue_on_error: true
-  - data:
-      volume_level: 0.5
-    target:
-      entity_id: '{{players}}'
-    action: media_player.volume_set
-  - data:
-      media_player_entity_id: '{{players}}'
-      message: '{{message}}'
-    target:
-      entity_id: tts.home_assistant_cloud
-    action: tts.speak
-  - repeat:
-      count: '{{ players|count }}'
-      sequence:
-      - target:
-          entity_id: '{{players[repeat.index-1]}}'
-        data:
-          volume_level: '{{old_volumes[repeat.index-1]}}'
-        action: media_player.volume_set
-        enabled: true
-  description: ''
-  mode: queued
-  max: 10
 single_window:
   alias: Single Window
   fields:
@@ -1013,3 +954,62 @@ timer_add_time:
       entity_id: '{{ e }}'
     data:
       duration: '{{ new_total }}'
+announce:
+  alias: Announce
+  fields:
+    players:
+      selector:
+        entity:
+          multiple: true
+      required: true
+    message:
+      selector:
+        text:
+      required: true
+  sequence:
+  - if:
+    - condition: state
+      state: 'off'
+      entity_id: schedule.daytime
+    then:
+    - stop: Don't announce at night
+  - if:
+    - condition: state
+      entity_id: input_boolean.in_a_teams_meeting
+      state: 'on'
+    then:
+    - stop: In a meeting
+  - variables:
+      players: '{{ expand(players)|map(attribute=''entity_id'')|list }}'
+      old_volumes: '{{ expand(players)|map(attribute=''attributes.volume_level'')|list|replace(''Undefined'',
+        0.5) }}'
+  - repeat:
+      count: '{{ players|count }}'
+      sequence:
+      - target:
+          entity_id: '{{players[repeat.index-1]}}'
+        action: media_player.media_pause
+        continue_on_error: true
+  - data:
+      volume_level: 0.5
+    target:
+      entity_id: '{{players}}'
+    action: media_player.volume_set
+  - data:
+      media_player_entity_id: '{{players}}'
+      message: '{{message}}'
+    target:
+      entity_id: tts.home_assistant_cloud
+    action: tts.speak
+  - repeat:
+      count: '{{ players|count }}'
+      sequence:
+      - target:
+          entity_id: '{{players[repeat.index-1]}}'
+        data:
+          volume_level: '{{old_volumes[repeat.index-1]}}'
+        action: media_player.volume_set
+        enabled: true
+  description: ''
+  mode: queued
+  max: 10
