@@ -3397,6 +3397,7 @@
           - target:
               entity_id: '{{ item }}'
             action: update.install
+            continue_on_error: true
           - wait_template: '{{ is_state(item,''off'') }}'
             timeout: 00:10:00
             continue_on_timeout: true
