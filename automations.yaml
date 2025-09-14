@@ -5001,19 +5001,6 @@
               title: 'No'
           title: Daytime Override
           message: Daytime Override activated. Did you mean to do this?
-      - action: notify.mobile_app_l144jy6rmq_iphone
-        data:
-          title: Daytime Override
-          message: Daytime Override activated. Did you mean to do this? (Press and
-            hold to respond)
-          data:
-            actions:
-            - action: '{{ action_yes }}'
-              title: 'Yes'
-            - action: '{{ action_no }}'
-              title: 'No'
-            push:
-              interruption-level: critical
       - wait_for_trigger:
         - event_type: mobile_app_notification_action
           event_data:
