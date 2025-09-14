@@ -124,7 +124,7 @@
      (Prefer options.{levels, lookup_unit}; fallback to globals)
 ====================================================================== #}
 
-{% macro _resolve_ctx(options) %}
+{% macro resolve_ctx(options) %}
     {%- set _levels = (options.get('levels') if options is mapping and options.get('levels') is defined
         else (levels if levels is defined else none)) -%}
     {%- set _lookup_unit = (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined
@@ -175,7 +175,7 @@
 
 {# Universal accessor used by the device-class getters #}
 {% macro get_level_attr(value, app, attr, options) %}
-    {%- set ctx = _resolve_ctx(options) | from_json -%}
+    {%- set ctx = resolve_ctx(options) | from_json -%}
     {%- set _levels = ctx.levels -%}
     {%- if _levels is none -%}
         {{- 'Error: levels undefined in device-class template' -}}

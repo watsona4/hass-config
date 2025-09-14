@@ -9,6 +9,8 @@
 {% set IEC_PREFIXES = { 'Yi': 80, 'Zi':70, 'Ei':60, 'Pi':50, 'Ti':40, 'Gi':30, 'Mi':20, 'Ki':10, '':0 } %}
 
 {% set SPECIAL = {
+    "%": {"prefix": "", "base": "%"},
+    "None": {"prefix": "", "base": "%"},
     "ft³": {"prefix": "", "base": "ft³"},
     "mi": {"prefix": "", "base": "mi"},
     "mi/h": {"prefix": "", "base": "mi/h"},

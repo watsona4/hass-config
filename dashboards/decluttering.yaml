@@ -1,6 +1,7 @@
 # File: dashboards/_shared/decluttering.yaml
 # Description: Shared decluttering templates for dashboards
 
+# =====================================================================================
 # Title Card
 title_card:
   card:
@@ -8,6 +9,7 @@ title_card:
     title: '[[title]]'
     subtitle: '[[subtitle]]'
 
+# =====================================================================================
 # Climate Card
 climate_card:
   card:
@@ -17,6 +19,7 @@ climate_card:
     tap_action:
       action: more-info
 
+# =====================================================================================
 # Humidifier Card
 humidifier_card:
   card:
@@ -26,6 +29,7 @@ humidifier_card:
     tap_action:
       action: more-info
 
+# =====================================================================================
 # Template Card
 template_card:
   default:
@@ -75,6 +79,8 @@ template_card:
     tap_action: '[[tap_action]]'
     icon_tap_action: '[[icon_tap_action]]'
 
+# =====================================================================================
+# Template Badge
 template_badge:
   default:
     - name: default
@@ -107,15 +113,21 @@ template_badge:
     tap_action:
       action: more-info
 
+# =====================================================================================
+# Machine Summary Card
 machine_summary:
   card:
     type: vertical-stack
     cards:
+
+      # Header
       - type: custom:decluttering-card
         template: title_card
         variables:
           - title: '[[i_name]]'
           - subtitle: "{{ states('[[i_status]]') }}"
+
+      # Summary
       - type: horizontal-stack
         cards:
           - type: custom:decluttering-card
@@ -133,7 +145,6 @@ machine_summary:
               - entity: '[[i_updates]]'
               - name: Updates
               - app: count_pending
-              - options: 'uom=Updates'
               - layout: vertical
               - multiline_secondary: true
           - type: custom:decluttering-card
