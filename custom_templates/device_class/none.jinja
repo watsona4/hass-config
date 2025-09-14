@@ -364,6 +364,109 @@
             "full_desc": "Disk nearly full; immediate cleanup or expansion required."
         }
     ],
+    "cpu_load": [
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "CPU Idle",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#22c55e",
+            "full_desc": "Very low load; most cores are idle."
+        },
+        {
+            "min_value": 0.5,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#84cc16",
+            "full_desc": "Light utilization; system responsive, plenty of headroom."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#eab308",
+            "full_desc": "CPU moderately loaded; nearing saturation on a single-core equivalent."
+        },
+        {
+            "min_value": 2.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#f97316",
+            "full_desc": "CPU load exceeds number of cores; processes waiting for CPU time."
+        },
+        {
+            "min_value": 4.0,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical CPU Load",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Sustained overload; severe performance degradation expected."
+        }
+    ],
+    "core_factor": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Core factor unavailable",
+            "icon":"mdi:close-circle",
+            "color":"Disabled",
+            "full_desc":"No reading from core factor sensor."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"Idle",
+            "short_desc":"Idle",
+            "long_desc":"Factor ~0",
+            "icon":"mdi:gauge-empty",
+            "color":"#9ca3af",
+            "full_desc":"No effective workload or scaling factor."
+        },
+        {
+            "min_value": 0.5,
+            "default_desc":"Low",
+            "short_desc":"Low",
+            "long_desc":"Low factor",
+            "icon":"mdi:gauge-low",
+            "color":"#84cc16",
+            "full_desc":"Scaling factor ~0.5; partial load."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc":"Nominal",
+            "short_desc":"Nominal",
+            "long_desc":"Nominal factor",
+            "icon":"mdi:gauge",
+            "color":"#22c55e",
+            "full_desc":"Scaling factor ~1.0; expected baseline performance."
+        },
+        {
+            "min_value": 1.5,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High factor",
+            "icon":"mdi:gauge-full",
+            "color":"#eab308",
+            "full_desc":"Scaling factor >1.0; boosted beyond nominal."
+        },
+        {
+            "min_value": 2.0,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extreme factor",
+            "icon":"mdi:alert-octagon",
+            "color":"#dc2626",
+            "full_desc":"Scaling factor >2.0; may indicate reporting anomaly or unsafe conditions."
+        }
+    ]
 } %}
 
 {% macro get_dc_context() %}
@@ -377,18 +480,38 @@
 {% endmacro %}
 
 {% macro get_default_desc(value, app, options) %}
-    {%- set ns = namespace(pre_text='', post_text='') -%}
+    {%- set ns = namespace(pre_text='', post_text='', desc='default') -%}
+    {%- set desc = {
+        'default':  H.get_default_desc(value, app, options),
+        'short':  H.get_short_desc(value, app, options),
+        'long':  H.get_long_desc(value, app, options),
+        'full':  H.get_full_desc(value, app, options),
+        } %}
     {%- if app == 'cpu_utilization' and options.load is defined -%}
         {%- set load = states(options.load) -%}
         {%- set ns.pre_text = 'Load: ' ~ load ~ options.get('delim', '\n') -%}
+        {%- set ns.desc = "long" -%}
+    {%- elif app == 'cpu_load' and options.cores is defined -%}
+        {%- set ns.post_text = ' • ' ~ states(options.cores)|int ~ ' cores' -%}
     {%- elif app == 'memory_utilization' and options.used is defined -%}
         {%- set used = u_humanize_entity(options.used) -%}
         {%- set ns.pre_text = 'Used: ' ~ used ~ options.get('delim', '\n') -%}
+        {%- set ns.desc = "long" -%}
     {%- elif app == 'disk_utilization' and options.free is defined -%}
         {%- set free = u_humanize_entity(options.free) -%}
         {%- set ns.pre_text = 'Free: ' ~ free ~ options.get('delim', '\n') -%}
+        {%- set ns.desc = "long" -%}
     {%- elif app == 'count_pending' and value|int >= 5 -%}
         {%- set ns.post_text = ' (' ~ value|int ~ ')' -%}
+        {%- set ns.desc = "long" -%}
     {%- endif -%}
-    {{- ns.pre_text ~ H.get_long_desc(value, app, options) ~ ns.post_text -}}
+    {{- ns.pre_text ~ desc[ns.desc] ~ ns.post_text -}}
+{% endmacro %}
+
+{% macro get_short_desc(value, app, options) %}
+    {%- set ns = namespace(pre_text='', post_text='') -%}
+    {%- if app == 'cpu_load' and options.cores is defined -%}
+        {%- set ns.post_text = ' • ' ~ states(options.cores)|int ~ ' cores' -%}
+    {%- endif -%}
+    {{- ns.pre_text ~ H.get_short_desc(value, app, options) ~ ns.post_text -}}
 {% endmacro %}

@@ -378,7 +378,11 @@
 
 {# ---- Getters (defer naming to global helper, everything else from picked row) ---- #}
 {% macro get_default_desc(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).default_desc -}}
+    {%- if app == 'alarm' and options.summary is defined -%}
+        {{- states(options.summary) | default('Unknown', true) -}}
+    {%- else -%}
+        {{- (_pick_row(app, options) | from_json).default_desc -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro get_short_desc(value, app, options) %}

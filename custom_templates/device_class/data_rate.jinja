@@ -261,7 +261,101 @@
             "color":"#7c3aed",
             "full_desc":"Validated multi-gig upstream; backbone or LAN uplinks."
         }
-    ]
+    ],
+  "drive_data_rate": [
+    {
+      "min_value": 0,
+      "default_desc": "Idle",
+      "short_desc": "Idle",
+      "long_desc": "No Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#22c55e",
+      "full_desc": "No read/write activity; drive is idle."
+    },
+    {
+      "min_value": 10,
+      "default_desc": "Light",
+      "short_desc": "Light",
+      "long_desc": "Light Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#84cc16",
+      "full_desc": "Light background reads/writes (<10 Mb/s); negligible load."
+    },
+    {
+      "min_value": 100,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Moderate Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#eab308",
+      "full_desc": "Moderate sustained reads/writes (100+ Mb/s); noticeable load."
+    },
+    {
+      "min_value": 500,
+      "default_desc": "High",
+      "short_desc": "High",
+      "long_desc": "High Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#f97316",
+      "full_desc": "Heavy data transfer (500+ Mb/s); system responsiveness may be affected."
+    },
+    {
+      "min_value": 1000,
+      "default_desc": "Very High",
+      "short_desc": "V High",
+      "long_desc": "Very High Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#dc2626",
+      "full_desc": "Sustained gigabit-class read/write rates; drive nearing saturation."
+    }
+  ],
+  "nvme_data_rate": [
+    {
+      "min_value": 0,
+      "default_desc": "Idle",
+      "short_desc": "Idle",
+      "long_desc": "No NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#22c55e",
+      "full_desc": "No read/write activity; NVMe drive is idle."
+    },
+    {
+      "min_value": 100,
+      "default_desc": "Light",
+      "short_desc": "Light",
+      "long_desc": "Light NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#84cc16",
+      "full_desc": "Light background reads/writes (<100 Mb/s); negligible load for NVMe."
+    },
+    {
+      "min_value": 1000,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Moderate NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#eab308",
+      "full_desc": "Moderate transfers (~1 Gb/s); well within NVMe capabilities."
+    },
+    {
+      "min_value": 5000,
+      "default_desc": "High",
+      "short_desc": "High",
+      "long_desc": "High NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#f97316",
+      "full_desc": "High throughput (5+ Gb/s); typical of sustained workloads."
+    },
+    {
+      "min_value": 10000,
+      "default_desc": "Very High",
+      "short_desc": "V High",
+      "long_desc": "Very High NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#dc2626",
+      "full_desc": "Extreme NVMe bandwidth (>10 Gb/s); near saturation of PCIe lanes."
+    }
+  ]
 } %}
 
 {% macro get_dc_context() %}

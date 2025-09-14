@@ -182,39 +182,39 @@
 {% endmacro %}
 
 {#- ---- convenience wrappers ---- -#}
-{% macro get_value(entity_id, app, options={}) %}
+{% macro get_value(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'value', options) -}}
 {% endmacro %}
-{% macro get_name(entity_id, app, options={}) %}
+{% macro get_name(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'name', options) -}}
 {% endmacro %}
-{% macro get_default_desc(entity_id, app, options={}) %}
+{% macro get_default_desc(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'default_desc', options) -}}
 {% endmacro %}
-{% macro get_short_desc(entity_id, app, options={}) %}
+{% macro get_short_desc(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'short_desc', options) -}}
 {% endmacro %}
-{% macro get_long_desc(entity_id, app, options={}) %}
+{% macro get_long_desc(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'long_desc', options) -}}
 {% endmacro %}
-{% macro get_full_desc(entity_id, app, options={}) %}
+{% macro get_full_desc(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'full_desc', options) -}}
 {% endmacro %}
-{% macro get_icon(entity_id, app, options={}) %}
+{% macro get_icon(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'icon', options) -}}
 {% endmacro %}
-{% macro get_color(entity_id, app, options={}) %}
+{% macro get_color(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'color', options) -}}
 {% endmacro %}
-{% macro get_badge(entity_id, app, options={}) %}
+{% macro get_badge(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'badge', options) -}}
 {% endmacro %}
-{% macro get_badge_color(entity_id, app, options={}) %}
+{% macro get_badge_color(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'badge_color', options) -}}
 {% endmacro %}
 
 {#- ---- labels now use helpers for fallback formatting ---- -#}
-{% macro get_label(entity_id, app, options={}) %}
+{% macro get_label(entity_id, app='default', options={}) %}
     {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
     {%- if info.label and info.label|trim != '' -%}
         {{- info.label -}}
@@ -223,7 +223,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro get_short_label(entity_id, app, options={}) %}
+{% macro get_short_label(entity_id, app='default', options={}) %}
     {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
     {%- if info.short_label and info.short_label|trim != '' -%}
         {{- info.short_label -}}
@@ -232,7 +232,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro get_long_label(entity_id, app, options={}) %}
+{% macro get_long_label(entity_id, app='default', options={}) %}
     {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
     {%- if info.long_label and info.long_label|trim != '' -%}
         {{- info.long_label -}}

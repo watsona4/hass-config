@@ -45,3 +45,19 @@
       state: >
         {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.opnsense.*_service_.*$") %}
         {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+
+- sensor:
+    - name: Laptop PhysicalDrive0 Data Rate
+      availability: "{{ has_value('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate') or has_value('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate') }}"
+      state: "{{ states('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate')|float(0) + states('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+
+- sensor:
+    - name: Laptop Battery Charge
+      availability: "{{ has_value('sensor.laptop_oo58t6kn_battery_percent') }}"
+      state: "{{ states('sensor.laptop_oo58t6kn_battery_percent') }}"
+      unit_of_measurement: '%'
+      device_class: battery
+      state_class: measurement

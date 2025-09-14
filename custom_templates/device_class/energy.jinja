@@ -177,6 +177,80 @@
             "color":"#7c3aed",
             "full_desc":"Investigate immediately."
         }
+    ]    ,
+    "laptop_charge": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Charge level unavailable",
+            "icon":"mdi:close-circle",
+            "color":"Disabled",
+            "full_desc":"No reading from laptop battery sensor."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"Empty",
+            "short_desc":"Empty",
+            "long_desc":"Battery empty",
+            "icon":"mdi:battery-alert",
+            "color":"#9ca3af",
+            "full_desc":"Battery is at or near 0%."
+        },
+        {
+            "min_value": 0.005,
+            "default_desc":"Critical",
+            "short_desc":"Critical",
+            "long_desc":"Critically low charge",
+            "icon":"mdi:battery-10",
+            "color":"#ef4444",
+            "full_desc":"Plug in immediately to avoid shutdown."
+        },
+        {
+            "min_value": 0.010,
+            "default_desc":"Low",
+            "short_desc":"Low",
+            "long_desc":"Low charge",
+            "icon":"mdi:battery-20",
+            "color":"#f97316",
+            "full_desc":"Limited runtime remaining."
+        },
+        {
+            "min_value": 0.020,
+            "default_desc":"Moderate",
+            "short_desc":"Moderate",
+            "long_desc":"Moderate charge",
+            "icon":"mdi:battery-50",
+            "color":"#eab308",
+            "full_desc":"Usable but consider charging soon."
+        },
+        {
+            "min_value": 0.035,
+            "default_desc":"Good",
+            "short_desc":"Good",
+            "long_desc":"Good charge",
+            "icon":"mdi:battery-70",
+            "color":"#84cc16",
+            "full_desc":"Comfortable runtime for typical use."
+        },
+        {
+            "min_value": 0.050,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High charge",
+            "icon":"mdi:battery-90",
+            "color":"#22c55e",
+            "full_desc":"Plenty of runtime available."
+        },
+        {
+            "min_value": 0.070,
+            "default_desc":"Full",
+            "short_desc":"Full",
+            "long_desc":"Battery full",
+            "icon":"mdi:battery",
+            "color":"#10b981",
+            "full_desc":"Battery is fully charged."
+        }
     ]
 } %}
 

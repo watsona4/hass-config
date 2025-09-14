@@ -1,0 +1,125 @@
+{# File: macros/libre_hardware_monitor.jinja #}
+
+{% macro lhm_card_stack(machine_match='.*', root_match='.*', columns=2) %}
+
+    {# --- sorting prefs --- #}
+    {# Lower numbers sort earlier #}
+    {%- set section_order = {
+        "Throughput": 0,
+        "Load": 1,
+        "Data": 2,
+        "Levels": 3,
+        "Voltages": 10,
+        "Powers": 11,
+        "Clocks": 12,
+        "Temperatures": 13,
+        "Factors": 14,
+        "Other": 999
+    } -%}
+    {%- set leaf_priority = {
+        "bus speed": 0,
+        "cpu total": 0,
+        "cpu core max": 1,
+        "upload speed": 0,
+        "download speed": 1,
+        "total activity": 2,
+        "network utilization": 3,
+        "data downloaded": 4,
+        "data uploaded": 5
+    } -%}
+
+    {# --- collect sensors --- #}
+    {# Build a tree of sensors by root/section #}
+    {%- set tree = namespace(by_root={}) -%}
+    {%- for s in states.sensor if s.attributes.friendly_name is defined and ' LHM ' in s.attributes.friendly_name -%}
+        {%- set fn = s.attributes.friendly_name -%}
+        {%- set p1 = fn.split(' LHM ') -%}
+        {%- if p1|length >= 2 -%}
+            {%- set host = p1[0] -%}
+            {%- set rest = p1[1] -%}
+            {%- set p2 = rest.split(' / ') -%}
+            {%- set root = p2[0] -%}
+            {%- set section = p2[1] if p2|length > 1 else 'Other' -%}
+            {%- if host is match(machine_match) and root is match(root_match) -%}
+                {%- set secmap = tree.by_root.get(root, {}) -%}
+                {%- set lst = (secmap.get(section, []) + [s]) -%}
+                {%- set secmap = secmap | combine({section: lst}) -%}
+                {%- set tree.by_root = tree.by_root | combine({root: secmap}) -%}
+            {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+
+    {# --- card rendering helpers --- #}
+    {%- set sec_tpl = "{{% from 'main.jinja' import get_label %}} {{{{ get_label(entity, '{}', '{}') }}}}" -%}
+    {%- set ico_tpl = "{{% from 'main.jinja' import get_icon %}} {{{{ get_icon(entity, '{}', '{}') }}}}" -%}
+    {%- set col_tpl = "{{% from 'main.jinja' import get_color %}} {{{{ get_color(entity, '{}', '{}') }}}}" -%}
+
+    {# --- section -> {device_class, app} -- #}
+    {%- set app_map = {
+        "Load": { "device_class": "none", "app": "cpu_utilization" },
+        "Voltages": { "device_class": "voltage", "app": "core_voltage" },
+        "Powers": { "device_class": "power", "app": "core_power" },
+        "Clocks": { "device_class": "frequency", "app": "cpu_clock" },
+        "Temperatures": { "device_class": "temperature", "app": "cpu" },
+        "Factors": { "device_class": "none", "app": "core_factor" },
+        "Data": { "device_class": "data_size", "app": "ram_size" },
+        "Levels": { "device_class": "battery", "app": "discharging" },
+        "Capacities": { "device_class": "energy", "app": "laptop_charge" },
+        "Throughput": { "device_class": "data_rate", "app": "download" },
+    } -%}
+
+    {# --- build output cards --- #}
+    {%- set out = namespace(cards=[]) -%}
+    {%- for root, secmap in tree.by_root | dictsort -%}
+
+        {# Root heading #}
+        {%- set out.cards = out.cards + [ {
+            "type": "heading",
+            "heading": root,
+            "heading_style": "title"
+        } ] -%}
+
+        {# Gather section list with ordering #}
+        {%- set ns = namespace(sections=[]) -%}
+        {%- for secname, lst in secmap.items() -%}
+            {%- set ns.sections = ns.sections + [ (section_order.get(secname,999), secname, lst) ] -%}
+        {%- endfor -%}
+
+        {%- for _, secname, lst in ns.sections | sort(attribute=0) -%}
+
+            {%- set app = app_map.get(secname, {}).get('app', 'generic') -%}
+            {%- set options = "device_class=" ~ app_map.get(secname, {}).get('device_class', 'none') -%}
+
+            {%- set ns2 = namespace(items=[]) -%}
+            {%- for s in lst -%}
+                {%- set leaf = s.attributes.friendly_name.split(' / ')[-1] -%}
+                {%- set pr = leaf_priority.get(leaf|lower, 1000) -%}
+                {%- set nums = leaf | regex_findall('(\d+)') -%}
+                {%- set num = (nums[0]|int(0) if nums|length>0 else 0) -%}
+                {%- set base = (leaf | regex_replace('\s*#\d+','') | lower) -%}
+                {%- set card = {
+                    "type":"custom:mushroom-template-card",
+                    "entity": s.entity_id,
+                    "primary": leaf,
+                    "secondary": sec_tpl.format(app, options),
+                    "icon": ico_tpl.format(app, options),
+                    "icon_color": col_tpl.format(app, options),
+                    "tap_action": {"action": "more-info"}
+                } -%}
+                {%- set ns2.items = ns2.items + [ (pr, base, num, card) ] -%}
+            {%- endfor -%}
+
+            {%- set sorted = ns2.items | sort(attribute=2) | sort(attribute=1) | sort(attribute=0) | map(attribute=3) | list -%}
+
+            {%- set out.cards = out.cards + [
+                { "type": "heading", "heading": secname, "heading_style": "subtitle" },
+                { "type": "grid", "columns": columns, "square": false, "cards": sorted }
+            ] -%}
+        {%- endfor -%}
+    {%- endfor -%}
+
+    {# --- return the stack of cards --- #}
+    {{- out.cards -}}
+{% endmacro %}
+
+{# --- End of lhm_card_stack macro --- #}

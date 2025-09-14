@@ -37,9 +37,17 @@
         'base': 'lx',
         'map': { 'fc': 10.763910416709722 }
     },
-    'data': {
+    'data_size': {
         'base': 'B',
         'map': { 'bit': 0.125 }
+    },
+    'data_rate': {
+        'base': 'B/s',
+        'map': { 'b/s': 0.125 }
+    },
+    'frequency': {
+        'base': 'Hz',
+        'map': { 'kHz': 1000, 'MHz': 1000000, 'GHz': 1000000000 }
     },
     'temperature': {
         'base': '°C',
@@ -248,7 +256,7 @@
 {# djlint:off #}
 {# Allow-list of base units that may be prefixed; never prefix time. #}
 {% set PREFIXABLE = ["m", "g", "W", "J", "Pa", "B", "bit", "lx", "L", "m³", "Wh",
-    "bit/s", "B/s"
+    "bit/s", "B/s", "Hz",
 ] %}
 
 {# Block-list for common non-SI/US-customary units where prefixes are undesirable. #}
@@ -346,5 +354,5 @@
 {% endmacro %}
 
 {% macro u_humanize_entity(entity_id) -%}
-    {{- u_humanize_value(states(entity_id), state_attr(entity_id, 'unit_of_measurement')) -}}
+    {{- u_humanize_value(states(entity_id) , state_attr(entity_id, 'unit_of_measurement')) -}}
 {%- endmacro %}

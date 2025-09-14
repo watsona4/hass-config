@@ -221,12 +221,12 @@ machine_summary:
                 type: template
                 entity: this.entity_id
                 icon: |
-                  {{ 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' }}
+                  {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
                 icon_color: |
-                  {{ 'green' if is_state(entity,'on') else 'red' }}
+                  {{- 'green' if is_state(entity,'on') else 'red' -}}
                 content: >
-                  {%- set s = state_attr(entity,'friendly_name') %} {{
-                  (s.partition('Service')[2]) if 'Service' in s else '' }}
+                  {%- set s = state_attr(entity,'friendly_name') -%}
+                  {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                 tap_action: none
           exclude: []
         sort:
@@ -250,14 +250,28 @@ machine_summary:
                 type: template
                 entity: this.entity_id
                 icon: >
-                  {{ 'mdi:server' if is_state(entity,'on') else
-                  'mdi:server-off' }}
+                  {{- 'mdi:server' if is_state(entity,'on') else 'mdi:server-off' -}}
                 icon_color: |
-                  {{ 'green' if is_state(entity,'on') else 'red' }}
+                  {{- 'green' if is_state(entity,'on') else 'red' -}}
                 content: >
-                  {%- set s = state_attr(entity,'friendly_name') %} {{
-                  (s.partition('Container')[2]) if 'Container' in s else '' }}
+                  {%- set s = state_attr(entity,'friendly_name') -%}
+                  {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
                 tap_action: none
           exclude: []
         sort:
           method: name
+
+# =====================================================================================
+# LibreHardwareMonitor Card Stack
+lhm_card_stack:
+  default:
+    - columns: 2
+  card:
+    type: custom:auto-entities
+    card:
+      type: vertical-stack
+    card_param: cards
+    filter:
+      template: >-
+        {%- from 'macros/libre_hardware_monitor.jinja' import lhm_card_stack -%}
+        {{- lhm_card_stack('[[machine_match]]', '[[root_match]]', [[columns]]) -}}
