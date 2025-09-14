@@ -57,6 +57,71 @@
             "full_desc": "Reading is at the top end of the scale; may indicate maximum capacity or potential overload."
         }
     ],
+    "count_pending": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Count sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Count not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "None Pending",
+            "short_desc": "0",
+            "long_desc": "No items pending",
+            "icon": "mdi:check-circle-outline",
+            "color": "#22c55e",
+            "full_desc": "No pending items."
+        },
+        {
+            "min_value": 1,
+            "default_desc": "One Pending",
+            "short_desc": "1",
+            "long_desc": "One item pending",
+            "icon": "mdi:counter",
+            "color": "#84cc16",
+            "full_desc": "A single pending item."
+        },
+        {
+            "min_value": 2,
+            "default_desc": "Few Pending",
+            "short_desc": "2–4",
+            "long_desc": "Few items pending",
+            "icon": "mdi:counter",
+            "color": "#ffde33",
+            "full_desc": "A small number of items are pending."
+        },
+        {
+            "min_value": 5,
+            "default_desc": "Several Pending",
+            "short_desc": "5–9",
+            "long_desc": "Several items pending",
+            "icon": "mdi:counter",
+            "color": "#ff9933",
+            "full_desc": "Several items are waiting for attention."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Many Pending",
+            "short_desc": "10–24",
+            "long_desc": "Many items pending",
+            "icon": "mdi:counter",
+            "color": "#a20000",
+            "full_desc": "Many items pending; consider taking action."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Backlog",
+            "short_desc": "25+",
+            "long_desc": "Large backlog",
+            "icon": "mdi:alert-circle",
+            "color": "#7e0023",
+            "full_desc": "Large backlog of items; immediate action recommended."
+        }
+    ],
     "uv_index": [
         {
             "min_value": none,
@@ -162,10 +227,67 @@
             "long_desc":"Three or more home",
             "icon":"mdi:account-group",
             "color":"#15803d",
-            "full_desc":"Three or more occupants present." }
-        ]
-    } %}
+            "full_desc":"Three or more occupants present."
+        }
+    ],
+    "cpu_utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "CPU sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "CPU utilization data not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "CPU Idle",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#009966",
+            "full_desc": "CPU is mostly idle, with minimal processing load."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Light Load",
+            "short_desc": "Light",
+            "long_desc": "Light CPU Utilization",
+            "icon": "mdi:cpu-32-bit",
+            "color": "#00e400",
+            "full_desc": "CPU is lightly loaded; system performance should be optimal."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Moderate Load",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate CPU Utilization",
+            "icon": "mdi:chip",
+            "color": "#ffde33",
+            "full_desc": "CPU utilization is moderate; system is handling tasks normally."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High Load",
+            "short_desc": "High",
+            "long_desc": "High CPU Utilization",
+            "icon": "mdi:chart-bell-curve",
+            "color": "#ff9933",
+            "full_desc": "CPU is under heavy load; monitor performance to avoid slowdowns."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical Load",
+            "short_desc": "Critical",
+            "long_desc": "Critical CPU Utilization",
+            "icon": "mdi:alert-circle",
+            "color": "#7e0023",
+            "full_desc": "CPU is near maximum capacity; may indicate overload or bottlenecks."
+        }
+    ],
+} %}
 
-    {% macro get_dc_context() %}
-        {{- {'levels': levels} | tojson -}}
-    {% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'levels': levels} | tojson -}}
+{% endmacro %}
