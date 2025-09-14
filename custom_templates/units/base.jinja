@@ -344,3 +344,7 @@
         {%- endif -%}
     {%- endif -%}
 {% endmacro %}
+
+{% macro u_humanize_entity(entity_id) -%}
+    {{- u_humanize_value(states(entity_id), state_attr(entity_id, 'unit_of_measurement')) -}}
+{%- endmacro %}

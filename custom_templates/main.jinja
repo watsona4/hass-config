@@ -123,8 +123,8 @@
         is_unavail=is_unavail,
     ) -%}
 
-    {%- set value_text = H.get_value(value, enhanced_options) if ns.device_class != 'binary' else state_translated(entity_id) -%}
-
+    {%- set value_text = (DC.get_value(value, app, enhanced_options) if DC.get_value is defined
+        else H.get_value(value, app, enhanced_options) if ns.device_class != 'binary' else state_translated(entity_id)) -%}
     {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
     {%- set def_desc = (DC.get_default_desc(value, app, enhanced_options) if DC.get_default_desc is defined
@@ -144,11 +144,11 @@
     {%- set badge_color = (DC.get_badge_color(value, app, enhanced_options) if DC.get_badge_color is defined
         else H.get_badge_color(value, app, enhanced_options)) -%}
     {%- set label = (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
-        else H.format_label(value_text, def_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
+        else H.format_label(value_text, def_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
     {%- set short_label = (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
-        else H.format_label(value_text, short_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
+        else H.format_label(value_text, short_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
     {%- set long_label = (DC.get_long_label(value, app, enhanced_options,) if DC.get_long_label is defined
-        else H.format_label(value_text, long_desc, is_unavail, long_desc, options.get('vertical', false))) -%}
+        else H.format_label(value_text, long_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {

@@ -136,7 +136,7 @@ machine_summary:
               - entity: '[[i_uptime]]'
               - name: Uptime
               - app: uptime
-              - options: 'device_class=duration; uom=s'
+              - options: 'device_class=duration;uom=s'
               - layout: vertical
               - multiline_secondary: true
           - type: custom:decluttering-card
@@ -163,7 +163,7 @@ machine_summary:
               - entity: '[[i_cpu_pct]]'
               - name: CPU
               - app: cpu_utilization
-              - layout: vertical
+              - options: 'load=[[i_load1]]'
               - multiline_secondary: true
           - type: custom:decluttering-card
             template: template_card
@@ -171,34 +171,43 @@ machine_summary:
               - entity: '[[i_mem_pct]]'
               - name: Memory
               - app: memory_utilization
-              - layout: vertical
+              - options: 'used=[[i_mem_used]]'
               - multiline_secondary: true
+      - type: horizontal-stack
+        cards:
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: '[[i_disk_pct]]'
               - name: Disk
               - app: disk_utilization
-              - layout: vertical
+              - options: 'free=[[i_disk_free]]'
               - multiline_secondary: true
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: '[[i_temp]]'
               - name: Temp
-              - app: temperature
-              - layout: vertical
+              - app: cpu
+              - device_class: temperature
               - multiline_secondary: true
           - type: custom:decluttering-card
             template: template_card
+            visibility:
+              - condition: state
+                entity: '[[i_gpu_pct]]'
+                state_not: unknown
             variables:
               - entity: '[[i_gpu_pct]]'
               - name: GPU
-              - app: gpu_utilization
-              - layout: vertical
+              - app: cpu_utilization
               - multiline_secondary: true
       - type: custom:mushroom-title-card
-        subtitle: Services
+        subtitle: Stopped Services
+        visibility:
+          - condition: state
+            entity: '[[i_services_display]]'
+            state: 'on'
       - type: custom:auto-entities
         card:
           type: custom:mushroom-chips-card
@@ -223,7 +232,7 @@ machine_summary:
         sort:
           method: name
       - type: custom:mushroom-title-card
-        subtitle: Containers
+        subtitle: Stopped Containers
         visibility:
           - condition: state
             entity: '[[i_containers_display]]'
@@ -236,6 +245,7 @@ machine_summary:
         filter:
           include:
             - entity_id: '[[i_containers_glob]]'
+              state: 'off'
               options:
                 type: template
                 entity: this.entity_id

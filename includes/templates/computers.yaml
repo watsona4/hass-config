@@ -15,3 +15,33 @@
       device_class: problem
       availability: "{{ has_value('binary_sensor.opnsense_overall_status_ok') }}"
       state: "{{ is_state('binary_sensor.opnsense_overall_status_ok','off') }}"
+
+- binary_sensor:
+    - name: Laptop Display Containers
+      state: "{{ false }}"
+    - name: Desktop Display Containers
+      state: "{{ false }}"
+    - name: Frigate Display Containers
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.frigate.*_container_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+    - name: OPNSense Display Containers
+      state: "{{ false }}"
+
+- binary_sensor:
+    - name: Laptop Display Services
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.laptop_oo58t6kn.*_service_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+    - name: Desktop Display Services
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.desktop_bq063ig.*_service_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+    - name: Frigate Display Services
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.frigate.*_service_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+    - name: OPNSense Display Services
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.opnsense.*_service_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}

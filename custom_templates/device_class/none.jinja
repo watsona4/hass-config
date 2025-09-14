@@ -1,5 +1,7 @@
 {# Severity definitions for generic status measurements (HA device_class: none) #}
 
+{% from 'units/base.jinja' import u_humanize_entity %}
+
 {% set levels = {
     "generic": [
         {
@@ -286,8 +288,107 @@
             "full_desc": "CPU is near maximum capacity; may indicate overload or bottlenecks."
         }
     ],
+    "memory_utilization": [
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "Low Memory Use",
+            "icon": "mdi:memory",
+            "color": "#22c55e",
+            "full_desc": "Plenty of free memory; system is under little to no load."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate Memory Use",
+            "icon": "mdi:memory",
+            "color": "#eab308",
+            "full_desc": "About half of memory in use; normal for most workloads."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High Memory Use",
+            "icon": "mdi:memory",
+            "color": "#f97316",
+            "full_desc": "Memory pressure is increasing; performance may degrade."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical Memory Use",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Memory almost exhausted; risk of out-of-memory errors."
+        }
+    ],
+    "disk_utilization": [
+        {
+            "min_value": 0,
+            "default_desc": "Empty",
+            "short_desc": "Empty",
+            "long_desc": "Disk Mostly Empty",
+            "icon": "mdi:harddisk",
+            "color": "#22c55e",
+            "full_desc": "Ample free disk space available."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Half Full",
+            "short_desc": "Half",
+            "long_desc": "Disk About Half Full",
+            "icon": "mdi:harddisk",
+            "color": "#eab308",
+            "full_desc": "Roughly half of disk capacity in use."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "Low Space",
+            "short_desc": "Low",
+            "long_desc": "Disk Space Low",
+            "icon": "mdi:harddisk",
+            "color": "#f97316",
+            "full_desc": "Most of the disk is used; free space is shrinking."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Disk Critically Full",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Disk nearly full; immediate cleanup or expansion required."
+        }
+    ],
 } %}
 
 {% macro get_dc_context() %}
     {{- {'levels': levels} | tojson -}}
+{% endmacro %}
+
+{% macro get_value(value, app, options) %}
+    {%- if app != 'count_pending' -%}
+        {{- H.get_value(value, app, options) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) %}
+    {%- set ns = namespace(pre_text='', post_text='') -%}
+    {%- if app == 'cpu_utilization' and options.load is defined -%}
+        {%- set load = states(options.load) -%}
+        {%- set ns.pre_text = 'Load: ' ~ load ~ options.get('delim', '\n') -%}
+    {%- elif app == 'memory_utilization' and options.used is defined -%}
+        {%- set used = u_humanize_entity(options.used) -%}
+        {%- set ns.pre_text = 'Used: ' ~ used ~ options.get('delim', '\n') -%}
+    {%- elif app == 'disk_utilization' and options.free is defined -%}
+        {%- set free = u_humanize_entity(options.free) -%}
+        {%- set ns.pre_text = 'Free: ' ~ free ~ options.get('delim', '\n') -%}
+    {%- elif app == 'count_pending' and value|int >= 5 -%}
+        {%- set ns.post_text = ' (' ~ value|int ~ ')' -%}
+    {%- endif -%}
+    {{- ns.pre_text ~ H.get_long_desc(value, app, options) ~ ns.post_text -}}
 {% endmacro %}

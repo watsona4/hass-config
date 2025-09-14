@@ -38,7 +38,8 @@ sections:
           - i_uptime: sensor.laptop_oo58t6kn_uptime_s
           - i_cpu_pct: sensor.laptop_oo58t6kn_cpu_utilization
           - i_load1: sensor.laptop_oo58t6kn_cpu_load_1m
-          - i_mem_pct: sensor.laptop_oo58t6kn_memory_used
+          - i_mem_pct: sensor.laptop_oo58t6kn_memory_percent
+          - i_mem_used: sensor.laptop_oo58t6kn_memory_used
           - i_disk_pct: sensor.laptop_oo58t6kn_fs_c_percent
           - i_disk_free: sensor.laptop_oo58t6kn_fs_c_free
           - i_temp: sensor.laptop_oo58t6kn_cpu_temp_pkg
@@ -46,6 +47,7 @@ sections:
           - i_updates: sensor.laptop_oo58t6kn_updates_pending
           - i_alerts_any: binary_sensor.laptop_status_alarm
           - i_status: sensor.laptop_oo58t6kn_overall_status_summary
+          - i_services_display: binary_sensor.laptop_display_services
           - i_services_glob: binary_sensor.laptop_oo58t6kn*_service_*
           - i_containers_display: binary_sensor.laptop_display_containers
       - type: custom:decluttering-card
@@ -56,6 +58,7 @@ sections:
           - i_cpu_pct: sensor.frigate_cpu_utilization
           - i_load1: sensor.frigate_cpu_load_1m
           - i_mem_pct: sensor.frigate_memory_percent
+          - i_mem_used: sensor.frigate_memory_used
           - i_disk_pct: sensor.frigate_fs_percent
           - i_disk_free: sensor.frigate_fs_free
           - i_temp: sensor.frigate_cpu_temp_package_id_0
@@ -63,6 +66,7 @@ sections:
           - i_updates: sensor.frigate_updates_pending
           - i_alerts_any: binary_sensor.frigate_status_alarm
           - i_status: sensor.frigate_overall_status_summary
+          - i_services_display: binary_sensor.frigate_display_services
           - i_services_glob: binary_sensor.frigate*_service_*
           - i_containers_glob: binary_sensor.frigate*_container_*
           - i_containers_display: binary_sensor.frigate_display_containers
@@ -73,7 +77,8 @@ sections:
           - i_uptime: sensor.desktop_bq063ig_uptime_s
           - i_cpu_pct: sensor.desktop_bq063ig_cpu_utilization
           - i_load1: sensor.desktop_bq063ig_cpu_load_1m
-          - i_mem_pct: sensor.desktop_bq063ig_memory_used
+          - i_mem_pct: sensor.desktop_bq063ig_memory_percent
+          - i_mem_used: sensor.desktop_bq063ig_memory_used
           - i_disk_pct: sensor.desktop_bq063ig_fs_c_percent
           - i_disk_free: sensor.desktop_bq063ig_fs_c_free
           - i_temp: sensor.desktop_bq063ig_cpu_temp_pkg
@@ -81,6 +86,7 @@ sections:
           - i_updates: sensor.desktop_bq063ig_updates_pending
           - i_alerts_any: binary_sensor.desktop_status_alarm
           - i_status: sensor.desktop_bq063ig_overall_status_summary
+          - i_services_display: binary_sensor.desktop_display_services
           - i_services_glob: binary_sensor.desktop_bq063ig*_service_*
           - i_containers_display: binary_sensor.desktop_display_containers
       - type: custom:decluttering-card
@@ -91,6 +97,7 @@ sections:
           - i_cpu_pct: sensor.opnsense_cpu_utilization
           - i_load1: sensor.opnsense_cpu_load_1m
           - i_mem_pct: sensor.opnsense_memory_percent
+          - i_mem_used: sensor.opnsense_memory_used
           - i_disk_pct: sensor.opnsense_fs_percent
           - i_disk_free: sensor.opnsense_fs_free
           - i_temp: sensor.opnsense_cpu_temp_avg
@@ -98,5 +105,6 @@ sections:
           - i_updates: sensor.opnsense_updates_pending
           - i_status: sensor.opnsense_overall_status_summary
           - i_alerts_any: binary_sensor.opnsense_status_alarm
+          - i_services_display: binary_sensor.opnsense_display_services
           - i_services_glob: binary_sensor.opnsense*_service_*
           - i_containers_display: binary_sensor.opnsense_display_containers

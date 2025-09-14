@@ -101,22 +101,22 @@
 {% endmacro %}
 
 {#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
-{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', vertical=false) %}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n') %}
     {%- if is_unavail and long_desc_text -%}
         {{- long_desc_text -}}
     {%- elif value_text is string and value_text | trim != '' -%}
-        {{- value_text ~ ('\n' if vertical else ' • ') ~ desc_text -}}
+        {{- value_text ~ (vert_delim if vertical else delim) ~ desc_text -}}
     {%- else -%}
         {{- desc_text -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', vertical=false) %}
-    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, vertical) -}}
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n') %}
+    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
 {% endmacro %}
 
-{% macro format_long_label(value_text, long_desc_text, is_unavail=false, vertical=false) %}
-    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, vertical) -}}
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', vertical=false, vert_delim='\n') %}
+    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
 {% endmacro %}
 
 {# ======================================================================
@@ -208,7 +208,7 @@
   6) Public Getters (used by main.jinja)
 ====================================================================== #}
 
-{% macro get_value(value, options) %}
+{% macro get_value(value, app, options) %}
     {%- if options.get('is_unavail', false) -%}
         {{- 'Unavailable' -}}
     {%- else -%}
@@ -263,19 +263,16 @@
 
 {#- Parse "k=v; k2=(a,b); flag=true; none=null" into a dict -#}
 {% macro parse_options_kv(s) %}
-    {%- set raw = (s | string) | trim -%}
+    {%- set raw = (s | string) -%}
     {%- if not raw -%}
         {{- {} | tojson -}}
     {%- else -%}
         {%- set ns = namespace(d={}, val=none) -%}
         {%- for pair in raw.split(';') if pair | trim -%}
-            {%- set pair = pair | trim -%}
             {%- if '=' not in pair -%}
                 {%- continue -%}
             {%- endif -%}
             {%- set k, v = pair.split('=', 1) -%}
-            {%- set k = k | trim -%}
-            {%- set v = v | trim -%}
 
             {#- list syntax: (a,b,c) -#}
             {%- if v.startswith('(') and v.endswith(')') -%}
