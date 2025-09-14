@@ -281,7 +281,16 @@
     {%- if basev.error is defined -%}
         {{- value ~ ' ' ~ unit -}}
     {%- else -%}
-        {{- timedelta(seconds=(basev.value|float|round(0) |int)) -}}
+        {%- set s = basev.value|float -%}
+        {%- set sign = '-' if s < 0 else '' -%}
+        {%- set a = (0 - s) if s < 0 else s -%}
+        {%- if a >= 1 -%}
+            {{- sign ~ (timedelta(seconds=(a|round(0) |int))|string) -}}
+        {%- elif a >= 0.001 -%}
+            {{- sign ~ ((a*1000)|round(0) |int) ~ ' ms' -}}
+        {%- else -%}
+            {{- sign ~ ((a*1000000)|round(0) |int) ~ ' µs' -}}
+        {%- endif -%}
     {%- endif -%}
 {%- endmacro %}
 
@@ -309,7 +318,7 @@
 
         {#- Time: use timedelta and stop here -#}
         {%- if is_time -%}
-            {{- u_humanize_duration(n, sp.base) -}}
+            {{- u_humanize_duration(n, norm_u) -}}
         {%- else -%}
             {#- If the input carried a prefix, normalize value to base using scale_value -#}
             {%- if sp.prefix and can_pref -%}

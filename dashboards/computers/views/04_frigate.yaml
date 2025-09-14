@@ -1,0 +1,327 @@
+title: Frigate Server
+type: sections
+max_columns: 3
+badges:
+  - type: custom:decluttering-card
+    template: status_badge
+    variables:
+      - overall_status_ok: binary_sensor.frigate_overall_status_ok
+      - overall_status_summary: sensor.frigate_overall_status_summary
+  - type: custom:decluttering-card
+    template: load_badge
+    variables:
+      - cpu_load_1m: sensor.frigate_cpu_load_1m
+      - cpu_cores: sensor.frigate_cpu_cores
+  - type: custom:decluttering-card
+    template: temp_badge
+    variables:
+      - cpu_temp_pkg: sensor.frigate_cpu_temp_package_id_0
+  - type: custom:decluttering-card
+    template: memory_badge
+    variables:
+      - memory_percent: sensor.frigate_memory_percent
+sections:
+  - type: grid
+    columns: 3
+    grid_options:
+      columns: full
+    column_span: 3
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: CPU & Memory
+              - subtitle: Utilization and system load
+          - type: custom:decluttering-card
+            template: info_cpu_load
+            variables:
+              - load1m: sensor.frigate_cpu_load_1m
+              - load5m: sensor.frigate_cpu_load_5m
+              - load15m: sensor.frigate_cpu_load_15m
+              - cores: sensor.frigate_cpu_cores
+          - type: custom:decluttering-card
+            template: info_memory
+            variables:
+              - mem_pct: sensor.frigate_memory_percent
+              - mem_used: sensor.frigate_memory_used
+              - mem_total: sensor.frigate_memory_total
+              - mem_free: sensor.frigate_memory_available
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: CPU Temperatures
+              - subtitle: Thermal status and cooling headroom
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_package_id_0
+              - label: CPU Package Temp
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_composite
+              - label: CPU Composite Temp
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_core_0
+              - label: CPU Temp Core 0
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_core_1
+              - label: CPU Temp Core 1
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_core_2
+              - label: CPU Temp Core 2
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.frigate_cpu_temp_core_3
+              - label: CPU Temp Core 3
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Network
+              - subtitle: Connectivity, latency, and throughput
+          - type: custom:decluttering-card
+            template: info_network_active
+            variables:
+              - nic_name: sensor.frigate_network_active_name
+              - ipv4: sensor.frigate_network_active_ipv4
+              - up_bps: sensor.frigate_network_active_up
+              - down_bps: sensor.frigate_network_active_down
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Filesystems
+              - subtitle: Storage capacity and usage
+          - type: custom:decluttering-card
+            template: info_fs
+            variables:
+              - label: /
+              - total: sensor.frigate_fs_total
+              - used: sensor.frigate_fs_used
+              - pct: sensor.frigate_fs_percent
+          - type: custom:decluttering-card
+            template: info_fs
+            variables:
+              - label: /home
+              - total: sensor.frigate_fs_home_total
+              - used: sensor.frigate_fs_home_used
+              - pct: sensor.frigate_fs_home_percent
+          - type: custom:decluttering-card
+            template: info_fs
+            variables:
+              - label: /data
+              - total: sensor.frigate_fs_data_total
+              - used: sensor.frigate_fs_data_used
+              - pct: sensor.frigate_fs_data_percent
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Disk I/O
+              - subtitle: Read/write activity and performance
+          - type: custom:decluttering-card
+            template: info_disk_io
+            variables:
+              - name: nvme0n1
+              - read_bps: sensor.frigate_disk_nvme0n1_read_rate
+              - write_bps: sensor.frigate_disk_nvme0n1_write_rate
+              - read_bytes: sensor.frigate_disk_nvme0n1_read_bytes
+              - write_bytes: sensor.frigate_disk_nvme0n1_write_bytes
+          - type: custom:decluttering-card
+            template: info_disk_io
+            variables:
+              - name: sda
+              - read_bps: sensor.frigate_disk_sda_read_rate
+              - write_bps: sensor.frigate_disk_sda_write_rate
+              - read_bytes: sensor.frigate_disk_sda_read_bytes
+              - write_bytes: sensor.frigate_disk_sda_write_bytes
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: SMART Monitors
+              - subtitle: Drive health and diagnostics
+          - type: custom:decluttering-card
+            template: info_smart
+            variables:
+              - name: /dev/nvme0n1
+              - ok: binary_sensor.frigate_smart_dev_nvme0n1_health
+              - temp: sensor.frigate_smart_dev_nvme0n1_temperature
+              - life_pct: sensor.frigate_smart_dev_nvme0n1_percentage_used
+              - poh: sensor.frigate_smart_dev_nvme0n1_power_on_hours
+              - read: sensor.frigate_smart_dev_nvme0n1_total_bytes_read
+              - written: sensor.frigate_smart_dev_nvme0n1_total_bytes_written
+          - type: custom:decluttering-card
+            template: info_smart
+            variables:
+              - name: /dev/sda
+              - ok: binary_sensor.frigate_smart_dev_sda_health
+              - temp: sensor.frigate_smart_dev_sda_temperature
+              - life_pct: sensor.frigate_smart_dev_sda_percentage_used
+              - poh: sensor.frigate_smart_dev_sda_power_on_hours
+              - read: sensor.frigate_smart_dev_sda_total_bytes_read
+              - written: sensor.frigate_smart_dev_sda_total_bytes_written
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Borg Backup
+              - subtitle: Archive status, sizes, and runtime history
+          - type: custom:mushroom-template-card
+            primary: Last Run
+            secondary: >-
+              {{
+              (states('sensor.frigate_borg_last_run_utc')|as_datetime(default=None)|default(now()))|as_local|relative_time
+              }} ago · {{ states('sensor.frigate_borg_archives_count')
+              }}                  archives · Runtime: {{
+              states('sensor.frigate_borg_last_duration') }} sec
+            icon: >-
+              {{ 'mdi:cloud-check' if
+              is_state('binary_sensor.frigate_borg_last_run_success','on')
+              else 'mdi:cloud-alert' }}
+            icon_color: >-
+              {{ 'green' if
+              is_state('binary_sensor.frigate_borg_last_run_success','on')
+              else 'red' }}
+            layout: horizontal
+          - type: custom:mushroom-template-card
+            primary: Borg Repository
+            secondary: >-
+              {% from 'hwmon.jinja' import hw_secondary %} {{
+              states('sensor.frigate_borg_repo') }} · Unique {{
+              hw_secondary('sensor.frigate_borg_repo_unique_bytes') }} ·
+              Archives {{ states('sensor.frigate_borg_archives_count') }}
+            icon: mdi:server
+            icon_color: blue
+            layout: horizontal
+          - type: custom:mushroom-template-card
+            primary: Last Backup
+            secondary: >-
+              {% from 'hwmon.jinja' import hw_secondary %} {{
+              (states('sensor.frigate_borg_last_run_utc')|as_datetime|as_local).strftime('%c')
+              }} · {{ states('sensor.frigate_borg_last_archive') }}
+
+              {{ hw_secondary('sensor.frigate_borg_size_original') }} ➝ {{
+              hw_secondary('sensor.frigate_borg_size_compressed') }} ➝ {{
+              hw_secondary('sensor.frigate_borg_size_deduplicated') }}
+            icon: >-
+              {{ 'mdi:cloud-check' if
+              is_state('binary_sensor.frigate_borg_success','on') else
+              'mdi:cloud-alert' }}
+            icon_color: >-
+              {% if
+              is_state('binary_sensor.frigate_borg_last_run_success','on')
+              %}
+                {% if is_state('binary_sensor.frigate_borg_warnings','on') %} orange {% else %} green {% endif %}
+              {% else %} red {% endif %}
+            layout: horizontal
+            multiline_secondary: true
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Coral TPU
+              - subtitle: Temperature monitoring and throttle controls
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_coral_apex_0_temp
+            primary: Thermal Setpoints
+            secondary: >-
+              {% from 'hwmon.jinja' import hw_secondary %} {% from
+              'helpers.jinja' import convert_temp_value %} {% set t =
+              convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
+              states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+              %} {% set tp1 =
+              states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+              %} {% set tp2 =
+              states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+              %} {% set w2 =
+              states('number.frigate_coral_apex_0_hw_temp_warn2')|float(0)
+              %} {% set w2e =
+              is_state('switch.frigate_coral_apex_0_hw_temp_warn2_en','on')
+              %}
+
+              Now: {{ hw_secondary(entity) }} · Warn2: {{
+              hw_secondary('number.frigate_coral_apex_0_hw_temp_warn2') }}
+              ({{ 'on' if
+              is_state('switch.frigate_coral_apex_0_hw_temp_warn2_en','on')
+              else 'off' }})
+
+              TP0: {{
+              hw_secondary('number.frigate_coral_apex_0_trip_point0_temp')
+              }} — mild throttling begins
+
+              TP1: {{
+              hw_secondary('number.frigate_coral_apex_0_trip_point1_temp')
+              }} — stronger throttling
+
+              TP2: {{
+              hw_secondary('number.frigate_coral_apex_0_trip_point2_temp')
+              }} — critical; device may reset/disable
+            icon: >-
+              {% from 'helpers.jinja' import convert_temp_value %} {% set t =
+              convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
+              states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+              %} {% set tp1 =
+              states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+              %} {% set tp2 =
+              states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+              %} {% if tp2>0 and t >= tp2 %} mdi:thermometer-alert {% elif
+              tp1>0 and t >= tp1 %} mdi:thermometer-high {% elif tp0>0 and t
+              >= tp0 %} mdi:thermometer {% else %} mdi:thermometer-low {%
+              endif %}
+            icon_color: >-
+              {% from 'helpers.jinja' import convert_temp_value %} {% set t =
+              convert_temp_value(states(entity),"f","c")|float(0) %} {% set tp0 =
+              states('number.frigate_coral_apex_0_trip_point0_temp')|float(0)
+              %} {% set tp1 =
+              states('number.frigate_coral_apex_0_trip_point1_temp')|float(0)
+              %} {% set tp2 =
+              states('number.frigate_coral_apex_0_trip_point2_temp')|float(0)
+              %} {% if tp2>0 and t >= tp2 %} red {% elif tp1>0 and t >= tp1
+              %} orange {% elif tp0>0 and t >= tp0 %} amber {% else %} green
+              {% endif %}
+            layout: horizontal
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: CPU Metrics
+        subtitle: Core utilization, system load, and clock speeds
+      - type: custom:decluttering-card
+        template: lhm_block
+        variables:
+          - machine_match: frigate
+          - root_match: CPU
+          - columns: 2
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Network Connection Metrics
+        subtitle: Interfaces, throughput, and latency monitoring
+      - type: custom:decluttering-card
+        template: lhm_block
+        variables:
+          - machine_match: frigate
+          - root_match: Network
+          - columns: 2
+cards: []

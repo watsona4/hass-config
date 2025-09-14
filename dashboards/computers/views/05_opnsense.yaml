@@ -1,0 +1,173 @@
+title: OPNSense Router
+type: sections
+max_columns: 3
+badges:
+  - type: custom:decluttering-card
+    template: status_badge
+    variables:
+      - overall_status_ok: binary_sensor.opnsense_overall_status_ok
+      - overall_status_summary: sensor.opnsense_overall_status_summary
+  - type: custom:decluttering-card
+    template: load_badge
+    variables:
+      - cpu_load_1m: sensor.opnsense_cpu_load_1m
+      - cpu_cores: sensor.opnsense_cpu_cores
+  - type: custom:decluttering-card
+    template: temp_badge
+    variables:
+      - cpu_temp_pkg: sensor.opnsense_cpu_temp_avg
+  - type: custom:decluttering-card
+    template: memory_badge
+    variables:
+      - memory_percent: sensor.opnsense_memory_percent
+dense_section_placement: true
+sections:
+  - type: grid
+    columns: 3
+    grid_options:
+      columns: full
+    column_span: 3
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: CPU & Memory
+              - subtitle: Utilization and system load
+          - type: custom:decluttering-card
+            template: info_cpu_load
+            variables:
+              - load1m: sensor.opnsense_cpu_load_1m
+              - load5m: sensor.opnsense_cpu_load_5m
+              - load15m: sensor.opnsense_cpu_load_15m
+              - cores: sensor.opnsense_cpu_cores
+          - type: custom:decluttering-card
+            template: info_memory
+            variables:
+              - mem_pct: sensor.opnsense_memory_percent
+              - mem_used: sensor.opnsense_memory_used
+              - mem_total: sensor.opnsense_memory_total
+              - mem_free: sensor.opnsense_memory_free
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: CPU Temperatures
+              - subtitle: Thermal status and cooling headroom
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.opnsense_cpu_temp_avg
+              - label: CPU Average Temp
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.opnsense_cpu_temp_core0
+              - label: CPU Temp Core 0
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.opnsense_cpu_temp_core1
+              - label: CPU Temp Core 1
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.opnsense_cpu_temp_core2
+              - label: CPU Temp Core 2
+          - type: custom:decluttering-card
+            template: info_cpu_temp
+            variables:
+              - temp_entity: sensor.opnsense_cpu_temp_core3
+              - label: CPU Temp Core 3
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Network
+              - subtitle: Connectivity, latency, and throughput
+          - type: custom:decluttering-card
+            template: info_network_active
+            variables:
+              - title: 'Active NIC #1'
+              - nic_name: sensor.opnsense_net_active_1_name
+              - ipv4: sensor.opnsense_net_active_1_ipv4
+              - up_bps: sensor.opnsense_net_active_1_up
+              - down_bps: sensor.opnsense_net_active_1_down
+          - type: custom:decluttering-card
+            template: info_network_active
+            variables:
+              - title: 'Active NIC #2'
+              - nic_name: sensor.opnsense_net_active_2_name
+              - ipv4: sensor.opnsense_net_active_2_ipv4
+              - up_bps: sensor.opnsense_net_active_2_up
+              - down_bps: sensor.opnsense_net_active_2_down
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Filesystems
+              - subtitle: Storage capacity and usage
+          - type: custom:decluttering-card
+            template: info_fs
+            variables:
+              - label: /
+              - total: sensor.opnsense_fs_total
+              - used: sensor.opnsense_fs_used
+              - pct: sensor.opnsense_fs_percent
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: Disk I/O
+              - subtitle: Read/write activity and performance
+          - type: custom:decluttering-card
+            template: info_disk_io
+            variables:
+              - name: ada0
+              - read_bps: sensor.opnsense_disk_ada0_read_rate
+              - write_bps: sensor.opnsense_disk_ada0_write_rate
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: title_section
+            variables:
+              - title: SMART Monitors
+              - subtitle: Drive health and diagnostics
+          - type: custom:decluttering-card
+            template: info_smart
+            variables:
+              - name: /dev/ada0
+              - ok: binary_sensor.opnsense_smart_dev_ada0_health
+              - temp: sensor.opnsense_smart_dev_ada0_temp
+              - life_pct: sensor.opnsense_smart_dev_ada0_used
+              - poh: sensor.opnsense_smart_dev_ada0_poh
+              - read: sensor.opnsense_smart_dev_ada0_tbr
+              - written: sensor.opnsense_smart_dev_ada0_tbw
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: CPU Metrics
+        subtitle: Core utilization, system load, and clock speeds
+      - type: custom:decluttering-card
+        template: lhm_block
+        variables:
+          - machine_match: opnsense
+          - root_match: CPU
+          - columns: 2
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Network Connection Metrics
+        subtitle: Interfaces, throughput, and latency monitoring
+      - type: custom:decluttering-card
+        template: lhm_block
+        variables:
+          - machine_match: opnsense
+          - root_match: Network
+          - columns: 2
+cards: []
