@@ -2156,20 +2156,45 @@
       entity_id: timer.gym_event_loop_running
     id: Stop
     trigger: event
-  - entity_id:
-    - timer.gym_event_loop_running
-    from: idle
-    to: active
-    id: Start
-    trigger: state
+  - topic: site/home/devices/zigbee2mqtt/Teams Button/action
+    payload: single
+    trigger: mqtt
+    id: Manual
+  - trigger: state
+    entity_id: input_button.start_gym_event_loop
+    id: Manual
+  - trigger: state
+    entity_id: sensor.zwift_online_1747373
+    to: 'False'
+    for: 00:02:00
+    id: RideFinished
   conditions:
-  - condition: time
-    weekday:
-    - tue
-    - fri
-  - condition: state
-    entity_id: person.aaron_watson
-    state: home
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: trigger
+        id: Start
+      - condition: time
+        weekday:
+        - tue
+        - fri
+      - condition: state
+        entity_id: person.aaron_watson
+        state: home
+    - condition: and
+      conditions:
+      - condition: trigger
+        id: Manual
+      - condition: state
+        entity_id: person.aaron_watson
+        state: home
+    - condition: not
+      conditions:
+      - condition: trigger
+        id:
+        - Start
+        - Manual
   actions:
   - action: timer.start
     metadata: {}
@@ -2182,6 +2207,7 @@
       - condition: trigger
         id:
         - Start
+        - Manual
       sequence:
       - action: timer.start
         metadata: {}
@@ -2242,6 +2268,16 @@
           hvac_mode: auto
         target:
           entity_id: climate.gym_minisplit_setall_gym_minisplit
+    - conditions:
+      - condition: trigger
+        id:
+        - RideFinished
+      sequence:
+      - action: timer.start
+        target:
+          entity_id: timer.gym_event_loop_running
+        data:
+          duration: 01:00:00
     - conditions:
       - condition: trigger
         id:
@@ -5439,12 +5475,6 @@
     entity_id: binary_sensor.webcam_running
     to: 'off'
     id: webcam_off
-  - domain: mqtt
-    device_id: 8b94475676ff4827f2115847b7b3e800
-    type: action
-    subtype: single
-    trigger: device
-    id: button
   actions:
   - variables:
       current: '{{ states(''input_boolean.in_a_teams_meeting'') }}'
