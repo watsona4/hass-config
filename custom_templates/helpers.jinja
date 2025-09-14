@@ -7,7 +7,7 @@
 ====================================================================== #}
 
 {# -- Imports ---------------------------------------------------------- #}
-{% from 'units/base.jinja' import u_convert_value %}
+{% from 'units/base.jinja' import u_convert_value, u_humanize_value %}
 
 {# ======================================================================
   1) Numeric Utilities
@@ -133,105 +133,7 @@
 {% endmacro %}
 
 {# ======================================================================
-  4) Units & Conversion
-====================================================================== #}
-
-{#- Humanize a number with unit; auto SI/IEC prefixes -#}
-{% macro humanize_unit(n, unit='', system='') %}
-    {%- if not unit or unit | trim == '' -%}
-        {{- smartfmt(n) -}}
-    {%- else -%}
-        {%- set sgn = -1 if (n | float(0)) < 0 else 1 -%}
-        {%- set unit = unit | string | trim -%}
-        {%- set ns = namespace(v=n | float(0) | abs, system=(system or '') | lower, pref_out=none) -%}
-
-        {#- Prefix tables -#}
-        {#- djlint:off -#}
-        {%- set si_list = [
-            ('Y',1e24),('Z',1e21),('E',1e18),('P',1e15),('T',1e12),('G',1e9),
-            ('M',1e6),('k',1e3),('h',100.0),('da',10.0),('d',0.1),('c',0.01),('m',0.001),
-            ('µ',1e-6),('u',1e-6),('n',1e-9),('p',1e-12),('f',1e-15),('a',1e-18),('z',1e-21),('y',1e-24)
-        ] -%}
-        {%- set iec_list = [
-            ('Yi',2**80),('Zi',2**70),('Ei',2**60),('Pi',2**50),('Ti',2**40),('Gi',2**30),('Mi',2**20),('Ki',2**10)
-        ] -%}
-        {#- djlint:on -#}
-
-        {#- Detect existing prefix in 'unit' -#}
-        {%- set det = namespace(kind='', pref='', factor=1.0) -%}
-        {%- for p, m in iec_list -%}
-            {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
-                {%- set det.kind = "iec" -%}
-                {%- set det.pref = p -%}
-                {%- set det.factor = m -%}
-                {%- break -%}
-            {%- endif -%}
-        {%- endfor -%}
-        {%- if not det.kind -%}
-            {%- for p,m in si_list -%}
-                {%- if unit.startswith(p) and (unit | length) > (p | length) -%}
-                    {%- set det.kind = "si" -%}
-                    {%- set det.pref = p -%}
-                    {%- set det.factor = m -%}
-                    {%- break -%}
-                {%- endif -%}
-            {%- endfor -%}
-        {%- endif -%}
-
-        {#- Peel prefix and normalize value -#}
-        {%- set base_unit = unit[det.pref | length:] if det.pref else unit -%}
-        {%- set ns.v = ns.v * det.factor -%}
-
-        {#- Choose system if not provided -#}
-        {%- if ns.system not in ['si','iec'] -%}
-            {%- set base_token = base_unit.split('/', 1)[0] -%}
-            {%- set base_token_l = base_token | lower -%}
-            {%- set is_bytes = base_token_l in ['b','byte','bytes'] and base_token[:1] == 'B' -%}
-            {%- set ns.system = 'iec' if det.kind == 'iec' or is_bytes else 'si' -%}
-        {%- endif -%}
-
-        {#- Scale value to readable prefix -#}
-        {%- if ns.system == 'iec' -%}
-            {%- set base = 1024.0 -%}
-            {%- set prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"] -%}
-            {%- set ns2 = namespace(i=0) -%}
-            {%- for _ in range(prefixes | length - 1) -%}
-                {%- if ns.v < base -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v / base -%}
-                {%- set ns2.i = ns2.i + 1 -%}
-            {%- endfor -%}
-            {%- set ns.pref_out = prefixes[i] -%}
-        {%- else -%}
-            {%- set base = 1000.0 -%}
-            {%- set prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M",
-                "G", "T", "P", "E", "Z", "Y"] -%}
-            {%- set ns2 = namespace(i=8) -%}
-            {%- for _ in range(prefixes | length - 1) -%}
-                {%- if ns.v < base or ns2.i >= prefixes | length - 1 -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v / base -%}
-                {%- set ns2.i = ns2.i + 1 -%}
-            {%- endfor -%}
-            {%- for _ in range(prefixes | length - 1) -%}
-                {%- if ns.v >= 1 or ns2.i <= 0 or ns.v == 0 -%}
-                    {%- break -%}
-                {%- endif -%}
-                {%- set ns.v = ns.v * base -%}
-                {%- set ns2.i = ns2.i - 1 -%}
-            {%- endfor -%}
-            {%- set ns.pref_out = prefixes[ns2.i] -%}
-        {%- endif -%}
-
-        {%- set out = (ns.v if ns.v < 100 else ns.v | round(0)) | round(1) -%}
-        {{- (out * sgn) ~ ' ' ~ ns.pref_out ~ base_unit -}}
-    {%- endif -%}
-{% endmacro %}
-
-{# ======================================================================
-  5) Level Utilities (selection & attribute retrieval)
+  4) Level Utilities (selection & attribute retrieval)
 ====================================================================== #}
 
 {#- Pick the entry with the greatest min_value <= value (handles mixed order) -#}
@@ -255,7 +157,7 @@
    - Enable with options.project_daily = true
    - Optional guard: options.project_guard (fraction of a day, default 0.05)
    - No-op for unavailable/None. #}
-{% macro _apply_projection(val, options) %}
+{% macro apply_projection(val, options) %}
   {%- if val is none -%}
     {{- val -}}
   {%- elif options is mapping and options.get('project_daily', false) -%}
@@ -295,7 +197,7 @@
             {{- unavailable_fallback.get(attr, '') -}}
         {%- else -%}
             {%- set lookup = u_convert_value(value, options.uom, ctx.lookup_unit) -%}
-            {%- set lookup = _apply_projection(lookup, options) -%}
+            {%- set lookup = apply_projection(lookup, options) -%}
             {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
             {{- match.get(attr, '') -}}
         {%- endif -%}
@@ -308,11 +210,11 @@
 
 {% macro get_value(value, options) %}
     {%- if options.get('is_unavail', false) -%}
-        Unavailable
+        {{- 'Unavailable' -}}
     {%- else -%}
         {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
-        {%- set val = _apply_projection(val, options) -%}
-        {%- set text = humanize_unit(val, options.display_unit) -%}
+        {%- set val = apply_projection(val, options) -%}
+        {%- set text =  u_humanize_value(val, options.display_unit) -%}
         {%- if options is mapping and options.get('project_daily', false) -%}
             {{- "~" ~ text -}}
         {%- else -%}

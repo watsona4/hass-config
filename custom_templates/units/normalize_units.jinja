@@ -5,98 +5,98 @@
   {%- set cleaned = raw | replace(' ', '') -%}
 
   {#- rate shortcuts -#}
-  {%- if cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}mi/h
-  {%- elif cleaned | lower in ['kmh','km/h','kph','kilometersperhour'] -%}km/h
-  {%- elif cleaned | lower in ['rps','rev/s','revspersecond'] -%}rev/s
-  {%- elif cleaned | lower in ['rpm','rev/min','revolutionsperminute'] -%}rev/min
-  {%- elif cleaned | lower in ['kts','kt','knots'] -%}kn
+  {%- if cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}{{- 'mi/h' -}}
+  {%- elif cleaned | lower in ['kmh','km/h','kph','kilometersperhour'] -%}{{- 'km/h' -}}
+  {%- elif cleaned | lower in ['rps','rev/s','revspersecond'] -%}{{- 'rev/s' -}}
+  {%- elif cleaned | lower in ['rpm','rev/min','revolutionsperminute'] -%}{{- 'rev/min' -}}
+  {%- elif cleaned | lower in ['kts','kt','knots'] -%}{{- 'kn' -}}
 
     {#- temperature -#}
-  {%- elif cleaned | lower in ['f','°f','fahrenheit','degf','deg_f'] -%}°F
-  {%- elif cleaned | lower in ['c','°c','celsius','degc','deg_c'] -%}°C
-  {%- elif cleaned | lower in ['k','kelvin','degk','deg_k'] -%}K
+  {%- elif cleaned | lower in ['f','°f','fahrenheit','degf','deg_f'] -%}{{- '°F' -}}
+  {%- elif cleaned | lower in ['c','°c','celsius','degc','deg_c'] -%}{{- '°C' -}}
+  {%- elif cleaned | lower in ['k','kelvin','degk','deg_k'] -%}{{- 'K' -}}
 
     {#- time -#}
-  {%- elif cleaned | lower in ['ms'] -%}ms
-  {%- elif cleaned | lower in ['s','sec','secs','second','seconds'] -%}s
-  {%- elif cleaned | lower in ['m','min','mins','minute','minutes'] and raw | lower not in ['meter','metre','meters','metres'] -%}min
-  {%- elif cleaned | lower in ['h','hr','hrs','hour','hours'] -%}h
-  {%- elif cleaned | lower in ['d','day','days'] -%}d
+  {%- elif cleaned | lower in ['ms'] -%}{{- 'ms' -}}
+  {%- elif cleaned | lower in ['s','sec','secs','second','seconds'] -%}{{- 's' -}}
+  {%- elif cleaned | lower in ['m','min','mins','minute','minutes'] and raw | lower not in ['meter','metre','meters','metres'] -%}{{- 'min' -}}
+  {%- elif cleaned | lower in ['h','hr','hrs','hour','hours'] -%}{{- 'h' -}}
+  {%- elif cleaned | lower in ['d','day','days'] -%}{{- 'd' -}}
 
     {#- length -#}
-  {%- elif cleaned | lower in ['mm','millimeter','millimeters','millimetre'] -%}mm
-  {%- elif cleaned | lower in ['cm','centimeter','centimeters','centimetre'] -%}cm
-  {%- elif cleaned | lower in ['m','meter','meters','metre','metres'] -%}m
-  {%- elif cleaned | lower in ['km','kilometer','kilometers','kilometre'] -%}km
-  {%- elif cleaned | lower in ['in','inch','inches'] -%}in
-  {%- elif cleaned | lower in ['ft','foot','feet'] -%}ft
-  {%- elif cleaned | lower in ['yd','yard','yards'] -%}yd
-  {%- elif cleaned | lower in ['mi','mile','miles'] -%}mi
-  {%- elif cleaned | lower in ['nmi','nauticalmile','nauticalmiles'] -%}nmi
+  {%- elif cleaned | lower in ['mm','millimeter','millimeters','millimetre'] -%}{{- 'mm' -}}
+  {%- elif cleaned | lower in ['cm','centimeter','centimeters','centimetre'] -%}{{- 'cm' -}}
+  {%- elif cleaned | lower in ['m','meter','meters','metre','metres'] -%}{{- 'm' -}}
+  {%- elif cleaned | lower in ['km','kilometer','kilometers','kilometre'] -%}{{- 'km' -}}
+  {%- elif cleaned | lower in ['in','inch','inches'] -%}{{- 'in' -}}
+  {%- elif cleaned | lower in ['ft','foot','feet'] -%}{{- 'ft' -}}
+  {%- elif cleaned | lower in ['yd','yard','yards'] -%}{{- 'yd' -}}
+  {%- elif cleaned | lower in ['mi','mile','miles'] -%}{{- 'mi' -}}
+  {%- elif cleaned | lower in ['nmi','nauticalmile','nauticalmiles'] -%}{{- 'nmi' -}}
 
     {#- power -#}
-  {%- elif cleaned | lower in ['w','watt','watts'] -%}W
-  {%- elif cleaned | lower in ['kw','kilowatt','kilowatts'] -%}kW
-  {%- elif cleaned | lower in ['mw','megawatt','megawatts'] -%}MW
-  {%- elif cleaned | lower in ['hp','horsepower'] -%}hp
+  {%- elif cleaned | lower in ['w','watt','watts'] -%}{{- 'W' -}}
+  {%- elif cleaned | lower in ['kw','kilowatt','kilowatts'] -%}{{- 'kW' -}}
+  {%- elif cleaned | lower in ['mw','megawatt','megawatts'] -%}{{- 'MW' -}}
+  {%- elif cleaned | lower in ['hp','horsepower'] -%}{{- 'hp' -}}
 
     {#- energy -#}
-  {%- elif cleaned | lower in ['j','joule','joules'] -%}J
-  {%- elif cleaned | lower in ['kj','kilojoule','kilojoules'] -%}kJ
-  {%- elif cleaned | lower in ['wh'] -%}Wh
-  {%- elif cleaned | lower in ['kwh'] -%}kWh
+  {%- elif cleaned | lower in ['j','joule','joules'] -%}{{- 'J' -}}
+  {%- elif cleaned | lower in ['kj','kilojoule','kilojoules'] -%}{{- 'kJ' -}}
+  {%- elif cleaned | lower in ['wh'] -%}{{- 'Wh' -}}
+  {%- elif cleaned | lower in ['kwh'] -%}{{- 'kWh' -}}
 
     {#- pressure -#}
-  {%- elif cleaned | lower == 'pa' -%}Pa
-  {%- elif cleaned | lower == 'hpa' -%}hPa
-  {%- elif cleaned | lower == 'kpa' -%}kPa
-  {%- elif cleaned | lower == 'psi' -%}psi
-  {%- elif cleaned | lower == 'bar' -%}bar
-  {%- elif cleaned | lower in ['mbar','millibar','millibars'] -%}mbar
+  {%- elif cleaned | lower == 'pa' -%}{{- 'Pa' -}}
+  {%- elif cleaned | lower == 'hpa' -%}{{- 'hPa' -}}
+  {%- elif cleaned | lower == 'kpa' -%}{{- 'kPa' -}}
+  {%- elif cleaned | lower == 'psi' -%}{{- 'psi' -}}
+  {%- elif cleaned | lower == 'bar' -%}{{- 'bar' -}}
+  {%- elif cleaned | lower in ['mbar','millibar','millibars'] -%}{{- 'mbar' -}}
 
     {#- volume -#}
-  {%- elif cleaned | lower in ['m3','m^3','m³'] -%}m³
-  {%- elif cleaned | lower in ['l','liter','litre','liters','litres'] -%}L
-  {%- elif cleaned | lower in ['ml','milliliter','millilitre','milliliters'] -%}mL
-  {%- elif cleaned | lower in ['ft3','ft^3','ft³'] -%}ft³
-  {%- elif cleaned | lower in ['in3','in^3','in³'] -%}in³
-  {%- elif cleaned | lower in ['gal','gallon','gallons'] -%}gal
-  {%- elif cleaned | lower in ['qt','quart','quarts'] -%}qt
-  {%- elif cleaned | lower in ['pt','pint','pints'] -%}pt
-  {%- elif cleaned | lower in ['cup','cups'] -%}cup
-  {%- elif cleaned | lower in ['floz','fl.oz','fluidounce','fluidounces'] -%}fl oz
+  {%- elif cleaned | lower in ['m3','m^3','m³'] -%}{{- 'm³' -}}
+  {%- elif cleaned | lower in ['l','liter','litre','liters','litres'] -%}{{- 'L' -}}
+  {%- elif cleaned | lower in ['ml','milliliter','millilitre','milliliters'] -%}{{- 'mL' -}}
+  {%- elif cleaned | lower in ['ft3','ft^3','ft³'] -%}{{- 'ft³' -}}
+  {%- elif cleaned | lower in ['in3','in^3','in³'] -%}{{- 'in³' -}}
+  {%- elif cleaned | lower in ['gal','gallon','gallons'] -%}{{- 'gal' -}}
+  {%- elif cleaned | lower in ['qt','quart','quarts'] -%}{{- 'qt' -}}
+  {%- elif cleaned | lower in ['pt','pint','pints'] -%}{{- 'pt' -}}
+  {%- elif cleaned | lower in ['cup','cups'] -%}{{- 'cup' -}}
+  {%- elif cleaned | lower in ['floz','fl.oz','fluidounce','fluidounces'] -%}{{- 'fl oz' -}}
 
   {#- data size -#}
-  {%- elif cleaned in ['B'] -%}B
-  {%- elif cleaned | lower in ['kb'] -%}KB
-  {%- elif cleaned | lower in ['mb'] -%}MB
-  {%- elif cleaned | lower in ['gb'] -%}GB
-  {%- elif cleaned | lower in ['tb'] -%}TB
-  {%- elif cleaned in ['KiB'] -%}KiB
-  {%- elif cleaned in ['MiB'] -%}MiB
-  {%- elif cleaned in ['GiB'] -%}GiB
-  {%- elif cleaned in ['TiB'] -%}TiB
+  {%- elif cleaned in ['B'] -%}{{- 'B' -}}
+  {%- elif cleaned | lower in ['kb'] -%}{{- 'KB' -}}
+  {%- elif cleaned | lower in ['mb'] -%}{{- 'MB' -}}
+  {%- elif cleaned | lower in ['gb'] -%}{{- 'GB' -}}
+  {%- elif cleaned | lower in ['tb'] -%}{{- 'TB' -}}
+  {%- elif cleaned in ['KiB'] -%}{{- 'KiB' -}}
+  {%- elif cleaned in ['MiB'] -%}{{- 'MiB' -}}
+  {%- elif cleaned in ['GiB'] -%}{{- 'GiB' -}}
+  {%- elif cleaned in ['TiB'] -%}{{- 'TiB' -}}
 
   {#- data size, bits -#}
-  {%- elif cleaned | lower in ['bit','b'] -%}bit
-  {%- elif cleaned | lower in ['kbit','kb','kilobit','kilobits'] -%}kbit
-  {%- elif cleaned | lower in ['mbit','mb','megabit','megabits'] -%}Mbit
-  {%- elif cleaned | lower in ['gbit','gb','gigabit','gigabits'] -%}Gbit
+  {%- elif cleaned | lower in ['bit','b'] -%}{{- 'bit' -}}
+  {%- elif cleaned | lower in ['kbit','kb','kilobit','kilobits'] -%}{{- 'kbit' -}}
+  {%- elif cleaned | lower in ['mbit','mb','megabit','megabits'] -%}{{- 'Mbit' -}}
+  {%- elif cleaned | lower in ['gbit','gb','gigabit','gigabits'] -%}{{- 'Gbit' -}}
 
   {#- data rate -#}
-  {%- elif cleaned | lower in ['bps','bit/s','bitspersecond'] -%}bit/s
-  {%- elif cleaned | lower in ['kbps','kbit/s','kb/s','kbits/s','kbitsps'] -%}kbit/s
-  {%- elif cleaned | lower in ['mbps','mbit/s','mb/s','mbits/s','mbitsps'] -%}Mbit/s
-  {%- elif cleaned | lower in ['gbps','gbit/s','gb/s','gbits/s','gbitsps'] -%}Gbit/s
+  {%- elif cleaned | lower in ['bps','bit/s','bitspersecond'] -%}{{- 'bit/s' -}}
+  {%- elif cleaned | lower in ['kbps','kbit/s','kb/s','kbits/s','kbitsps'] -%}{{- 'kbit/s' -}}
+  {%- elif cleaned | lower in ['mbps','mbit/s','mb/s','mbits/s','mbitsps'] -%}{{- 'Mbit/s' -}}
+  {%- elif cleaned | lower in ['gbps','gbit/s','gb/s','gbits/s','gbitsps'] -%}{{- 'Gbit/s' -}}
 
-    {# illuminance #}
-  {%- elif cleaned|lower in ['lx','lux'] -%}lx
-  {%- elif cleaned|lower in ['klx','kilolux','kilo_lux','k_lux'] -%}klx
-  {%- elif cleaned|lower in ['mlx','millilux','milli_lux','m_lux'] -%}mlx
-  {%- elif cleaned|lower in ['fc','footcandle','footcandles','foot-candle','foot-candles','footcandle(s)'] -%}fc
+    {#- illuminance -#}
+  {%- elif cleaned|lower in ['lx','lux'] -%}{{- 'lx' -}}
+  {%- elif cleaned|lower in ['klx','kilolux','kilo_lux','k_lux'] -%}{{- 'klx' -}}
+  {%- elif cleaned|lower in ['mlx','millilux','milli_lux','m_lux'] -%}{{- 'mlx' -}}
+  {%- elif cleaned|lower in ['fc','footcandle','footcandles','foot-candle','foot-candles','footcandle(s)'] -%}{{- 'fc' -}}
 
-    {#- counts -#}
-  {%- elif cleaned | lower in ['rev','revolution','revolutions'] -%}rev
+    {#- percentage -#}
+  {%- elif cleaned | lower in ['percent','percentage','%'] -%} {{- none -}}
 
     {#- default -#}
   {%- else -%}
