@@ -4,21 +4,24 @@
 
 {% macro get_device_state_info(entity_id, app, options={}) %}
 
+    {#- Parse options if given as a string -#}
+    {%- set options = H.parse_options_kv(options) | from_json if options is string else options -%}
+
     {#- Get the entity's device class if it exists, otherwise use 'none' -#}
     {%- set ns = namespace(device_class=none) -%}
-    {%- set ns.device_class = state_attr(entity_id, 'device_class') or 'none' -%}
+    {%- set ns.device_class = state_attr(entity_id, 'device_class') or options.get('device_class') or 'none' -%}
 
-    {# domain convenience #}
+    {#- domain convenience -#}
     {%- set domain = entity_id.split('.', 1)[0] -%}
 
-    {# if this is a binary_sensor with no device_class, use synthetic 'binary' #}
+    {#- if this is a binary_sensor with no device_class, use synthetic 'binary' -#}
     {%- if domain in ['binary_sensor', 'input_boolean'] -%}
         {%- set ns.device_class = "binary" -%}
     {%- endif -%}
 
     {#- Raw & numeric value (preserve 'unavailable' instead of coercing to 0) -#}
     {%- set raw_state = states(entity_id) -%}
-    {%- set value = raw_state | float(none) -%}
+    {%- set value = raw_state|bool if ns.device_class == 'binary' else raw_state|float(none) -%}
 
     {#- Meta & units -#}
     {%- set friendly_name = state_attr(entity_id, 'friendly_name') -%}
@@ -98,10 +101,15 @@
     {%- endif -%}
 
     {#- Import the device class template -#}
-    {% import 'device_class/' ~ ns.device_class ~ '.jinja' as DC with context %}
+    {%- import 'device_class/' ~ ns.device_class ~ '.jinja' as DC with context -%}
     {%- set dc = DC.get_dc_context() | from_json -%}
     {%- set lookup_unit = dc.lookup_unit -%}
     {%- set levels = dc.levels -%}
+
+    {%- set is_unavail = (
+        raw_state is string
+        and (raw_state | trim | lower) in ['unavailable','unknown','none','null','nan']
+        ) or (raw_state is not string and raw_state is none) -%}
 
     {#- Create options dict with unit info for the getters -#}
     {%- set enhanced_options = dict(
@@ -112,17 +120,8 @@
         raw_state=raw_state,
         levels=levels,
         lookup_unit=lookup_unit,
-        ) -%}
-
-    {%- set is_unavail = (
-        raw_state is string
-        and (raw_state | trim | lower) in ['unavailable','unknown','none','null','nan']
-        ) or (raw_state is not string and raw_state is none) -%}
-
-    {%- set enhanced_options = dict(
-        enhanced_options,
         is_unavail=is_unavail,
-        ) -%}
+    ) -%}
 
     {%- set value_text = H.get_value(value, enhanced_options) if ns.device_class != 'binary' else state_translated(entity_id) -%}
 
@@ -153,25 +152,25 @@
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
-    'value': value_text,
-    'name': name,
-    'default_desc': def_desc,
-    'short_desc': short_desc,
-    'long_desc': long_desc,
-    'full_desc': full_desc,
-    'icon': icon,
-    'color': color,
-    'badge': badge,
-    'badge_color': badge_color,
-    'label': label,
-    'short_label': short_label,
-    'long_label': long_label,
-    'options': options,
-    'friendly_name': friendly_name,
-    'uom': uom,
-    'display_unit': display_unit,
-    'raw_state': raw_state,
-    'is_unavail': is_unavail,
+        'value': value_text,
+        'name': name,
+        'default_desc': def_desc,
+        'short_desc': short_desc,
+        'long_desc': long_desc,
+        'full_desc': full_desc,
+        'icon': icon,
+        'color': color,
+        'badge': badge,
+        'badge_color': badge_color,
+        'label': label,
+        'short_label': short_label,
+        'long_label': long_label,
+        'options': options,
+        'friendly_name': friendly_name,
+        'uom': uom,
+        'display_unit': display_unit,
+        'raw_state': raw_state,
+        'is_unavail': is_unavail,
     } | tojson -}}
 
 {% endmacro %}
@@ -182,7 +181,7 @@
     {{- info[attribute] -}}
 {% endmacro %}
 
-{# ---- convenience wrappers ---- #}
+{#- ---- convenience wrappers ---- -#}
 {% macro get_value(entity_id, app, options={}) %}
     {{- get_attribute(entity_id, app, 'value', options) -}}
 {% endmacro %}
@@ -214,7 +213,7 @@
     {{- get_attribute(entity_id, app, 'badge_color', options) -}}
 {% endmacro %}
 
-{# ---- labels now use helpers for fallback formatting ---- #}
+{#- ---- labels now use helpers for fallback formatting ---- -#}
 {% macro get_label(entity_id, app, options={}) %}
     {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
     {%- if info.label and info.label|trim != '' -%}
