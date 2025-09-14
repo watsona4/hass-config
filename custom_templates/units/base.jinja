@@ -118,7 +118,7 @@
     {%- set dim = get_dimension(sp.base) -%}
     {%- set system = ('IEC' if (sp.prefix|string).endswith('i') else 'SI') -%}
     {%- set val = scale_value(v|float, sp.prefix, '', system) | float -%}
-    {%- if dim in CONVERSION -%}
+    {%- if dim in CONVERSION and dim != 'temperature' -%}
         {%- set spec = CONVERSION[dim] -%}
         {%- if sp.base == spec.base -%}
             {{- {'value': val, 'unit': spec.base} | tojson -}}
@@ -145,7 +145,7 @@
     {%- set dim = get_dimension(sp.base) -%}
     {%- set system = ('IEC' if (sp.prefix|string).endswith('i') else 'SI') -%}
     {%- set value = v|float -%}
-    {%- if dim in CONVERSION -%}
+    {%- if dim in CONVERSION and dim != 'temperature' -%}
         {%- set spec = CONVERSION[dim] -%}
         {%- if sp.base == spec.base -%}
             {{- {'value': scale_value(value, '', sp.prefix, system) , 'unit': sp.prefix ~ sp.base } | tojson -}}

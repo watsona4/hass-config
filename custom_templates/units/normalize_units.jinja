@@ -96,7 +96,7 @@
   {%- elif cleaned|lower in ['fc','footcandle','footcandles','foot-candle','foot-candles','footcandle(s)'] -%}{{- 'fc' -}}
 
     {#- percentage -#}
-  {%- elif cleaned | lower in ['percent','percentage','%'] -%} {{- none -}}
+  {%- elif cleaned | lower in ['percent','percentage','%'] -%} {{- '%' -}}
 
     {#- default -#}
   {%- else -%}

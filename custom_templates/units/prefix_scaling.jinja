@@ -7,13 +7,23 @@
 } %}
 
 {% set IEC_PREFIXES = { 'Yi': 80, 'Zi':70, 'Ei':60, 'Pi':50, 'Ti':40, 'Gi':30, 'Mi':20, 'Ki':10, '':0 } %}
+
+{% set SPECIAL = {
+    "ft³": {"prefix": "", "base": "ft³"},
+    "mi": {"prefix": "", "base": "mi"},
+    "mi/h": {"prefix": "", "base": "mi/h"},
+    "min": {"prefix": "", "base": "min"},
+    "mph": {"prefix": "", "base": "mph"},
+    "ms": {"prefix": "m", "base": "s"},
+    "m³": {"prefix": "", "base": "m³"},
+    "nmi": {"prefix": "", "base": "nmi"},
+} %}
 {# djlint:on #}
 
 {% macro split_prefix_unit(unit_str) %}
     {%- set u = unit_str | string -%}
-    {%- set special = {"min": {"prefix": "", "base": "min"}, "ms": {"prefix": "m", "base": "s"}} -%}
-    {%- if u in special -%}
-        {{- special[u] | tojson -}}
+    {%- if u in SPECIAL -%}
+        {{- SPECIAL[u] | tojson -}}
     {%- else -%}
         {#- try IEC first (two letters), then SI -#}
         {%- set ns = namespace(_=none) -%}
