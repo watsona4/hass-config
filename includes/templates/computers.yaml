@@ -1,0 +1,17 @@
+- binary_sensor:
+    - name: Laptop Status Alarm
+      device_class: problem
+      availability: "{{ has_value('binary_sensor.laptop_oo58t6kn_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.laptop_oo58t6kn_overall_status_ok','off') }}"
+    - name: Desktop Status Alarm
+      device_class: problem
+      availability: "{{ has_value('binary_sensor.desktop_bq063ig_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.desktop_bq063ig_overall_status_ok','off') }}"
+    - name: Frigate Status Alarm
+      device_class: problem
+      availability: "{{ has_value('binary_sensor.frigate_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.frigate_overall_status_ok','off') }}"
+    - name: OPNSense Status Alarm
+      device_class: problem
+      availability: "{{ has_value('binary_sensor.opnsense_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.opnsense_overall_status_ok','off') }}"

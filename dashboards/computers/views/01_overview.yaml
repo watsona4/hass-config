@@ -44,7 +44,7 @@ sections:
           - i_temp: sensor.laptop_oo58t6kn_cpu_temp_pkg
           - i_gpu_pct: sensor.laptop_oo58t6kn_gpu_utilization
           - i_updates: sensor.laptop_oo58t6kn_updates_pending
-          - i_alerts_any: binary_sensor.laptop_oo58t6kn_overall_status_ok
+          - i_alerts_any: binary_sensor.laptop_status_alarm
           - i_status: sensor.laptop_oo58t6kn_overall_status_summary
           - i_services_glob: binary_sensor.laptop_oo58t6kn*_service_*
           - i_containers_display: binary_sensor.laptop_display_containers
@@ -61,7 +61,8 @@ sections:
           - i_temp: sensor.frigate_cpu_temp_package_id_0
           - i_gpu_pct: sensor.frigate_gpu_utilization
           - i_updates: sensor.frigate_updates_pending
-          - i_alerts_any: binary_sensor.frigate_overall_status_ok
+          - i_alerts_any: binary_sensor.frigate_status_alarm
+          - i_status: sensor.frigate_overall_status_summary
           - i_services_glob: binary_sensor.frigate*_service_*
           - i_containers_glob: binary_sensor.frigate*_container_*
           - i_containers_display: binary_sensor.frigate_display_containers
@@ -78,7 +79,8 @@ sections:
           - i_temp: sensor.desktop_bq063ig_cpu_temp_pkg
           - i_gpu_pct: sensor.desktop_bq063ig_gpu_utilization
           - i_updates: sensor.desktop_bq063ig_updates_pending
-          - i_alerts_any: binary_sensor.desktop_bq063ig_overall_status_ok
+          - i_alerts_any: binary_sensor.desktop_status_alarm
+          - i_status: sensor.desktop_bq063ig_overall_status_summary
           - i_services_glob: binary_sensor.desktop_bq063ig*_service_*
           - i_containers_display: binary_sensor.desktop_display_containers
       - type: custom:decluttering-card
@@ -94,6 +96,7 @@ sections:
           - i_temp: sensor.opnsense_cpu_temp_avg
           - i_gpu_pct: sensor.opnsense_gpu_utilization
           - i_updates: sensor.opnsense_updates_pending
-          - i_alerts_any: binary_sensor.opnsense_overall_status_ok
+          - i_status: sensor.opnsense_overall_status_summary
+          - i_alerts_any: binary_sensor.opnsense_status_alarm
           - i_services_glob: binary_sensor.opnsense*_service_*
           - i_containers_display: binary_sensor.opnsense_display_containers
