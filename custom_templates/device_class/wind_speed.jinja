@@ -1,7 +1,7 @@
 {# Severity definitions for wind speed measurements (HA device_class: wind_speed) #}
 
 {% import 'helpers.jinja' as H with context %}
-{% from 'units/base.jinja' import u_convert_entity %}
+{% from 'units/base.jinja' import u_convert_entity, u_humanize_value %}
 
 {% set lookup_unit = 'mph' %}
 {% set levels = {
@@ -160,7 +160,7 @@
     {%- set dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'] -%}
     {%- set dirtxt = (dirs[((deg|float(0)+11.25)/22.5)|int % 16]) if deg is not none else '—' -%}
     {%- set gust = u_convert_entity(options.gusts, options.display_unit) -%}
-    {%- set gusttxt = ' (Gusts ' ~ H.humanize_unit(gust, options.display_unit) ~ ')' if gust is not none else '' -%}
+    {%- set gusttxt = ' (Gusts ' ~ u_humanize_value(gust, options.display_unit) ~ ')' if gust is not none else '' -%}
     {{- dirtxt ~ ' ' ~ H.get_value(value, options) ~ gusttxt -}}
 {% endmacro %}
 
