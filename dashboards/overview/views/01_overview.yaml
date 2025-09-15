@@ -555,7 +555,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('brightness') }}
+                            {{ build_blind_cards('brightness') | from_json }}
 
                       # Closed for Temperature
                       - type: heading
@@ -576,7 +576,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('temperature') }}
+                            {{ build_blind_cards('temperature') | from_json }}
 
                       # Closed for Presence
                       - type: heading
@@ -597,7 +597,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('presence') }}
+                            {{ build_blind_cards('presence') | from_json }}
 
                       # Closed for Devices
                       - type: heading
@@ -618,7 +618,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('device') }}
+                            {{ build_blind_cards('device') | from_json }}
 
                       # Closed by Button
                       - type: heading
@@ -639,7 +639,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('button') }}
+                            {{ build_blind_cards('button') | from_json }}
 
                       # Closed by Nighttime
                       - type: heading
@@ -660,7 +660,7 @@ sections:
                         filter:
                           template: >-
                             {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('nighttime') }}
+                            {{ build_blind_cards('nighttime') | from_json }}
             styles:
               card:
                 - position: fixed
