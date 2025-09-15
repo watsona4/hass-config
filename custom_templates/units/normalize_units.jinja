@@ -67,36 +67,21 @@
     {%- elif cleaned | lower in ['floz','fl.oz','fluidounce','fluidounces'] -%}{{- 'fl oz' -}}
 
         {#- data size -#}
-    {%- elif cleaned in ['B'] -%}{{- 'B' -}}
-    {%- elif cleaned | lower in ['kb'] -%}{{- 'KB' -}}
-    {%- elif cleaned | lower in ['mb'] -%}{{- 'MB' -}}
-    {%- elif cleaned | lower in ['gb'] -%}{{- 'GB' -}}
-    {%- elif cleaned | lower in ['tb'] -%}{{- 'TB' -}}
-    {%- elif cleaned in ['KiB'] -%}{{- 'KiB' -}}
-    {%- elif cleaned in ['MiB'] -%}{{- 'MiB' -}}
-    {%- elif cleaned in ['GiB'] -%}{{- 'GiB' -}}
-    {%- elif cleaned in ['TiB'] -%}{{- 'TiB' -}}
+    {%- elif cleaned in ['B'] or cleaned | lower in ['byte','bytes'] -%}{{- 'B' -}}
+    {%- elif cleaned in ['kB','KB'] or cleaned | lower in ['kilobyte','kilobytes'] -%}{{- 'KB' -}}
+    {%- elif cleaned in ['mB','MB'] or cleaned | lower in ['megabyte','megabytes'] -%}{{- 'MB' -}}
+    {%- elif cleaned in ['gB','GB'] or cleaned | lower in ['gigabyte','gigabytes'] -%}{{- 'GB' -}}
+    {%- elif cleaned in ['tB','TB'] or cleaned | lower in ['terabyte','terabytes'] -%}{{- 'TB' -}}
+    {%- elif cleaned | lower in ['kib'] -%}{{- 'KiB' -}}
+    {%- elif cleaned | lower in ['mib'] -%}{{- 'MiB' -}}
+    {%- elif cleaned | lower in ['gib'] -%}{{- 'GiB' -}}
+    {%- elif cleaned | lower in ['tib'] -%}{{- 'TiB' -}}
 
         {#- data size, bits -#}
     {%- elif cleaned | lower in ['bit','b'] -%}{{- 'bit' -}}
     {%- elif cleaned | lower in ['kbit','kb','kilobit','kilobits'] -%}{{- 'kbit' -}}
     {%- elif cleaned | lower in ['mbit','mb','megabit','megabits'] -%}{{- 'Mbit' -}}
     {%- elif cleaned | lower in ['gbit','gb','gigabit','gigabits'] -%}{{- 'Gbit' -}}
-
-        {#- data rate -#}
-    {%- elif cleaned | lower in ['b/s'] -%}{{- 'B/s' -}}
-    {%- elif cleaned | lower in ['kb/s'] -%}{{- 'kB/s' -}}
-    {%- elif cleaned | lower in ['mb/s'] -%}{{- 'MB/s' -}}
-    {%- elif cleaned | lower in ['gb/s'] -%}{{- 'GB/s' -}}
-    {%- elif cleaned in ['KiB/s'] -%}{{- 'KiB/s' -}}
-    {%- elif cleaned in ['MiB/s'] -%}{{- 'MiB/s' -}}
-    {%- elif cleaned in ['GiB/s'] -%}{{- 'GiB/s' -}}
-
-        {#- data rate, bits -#}
-    {%- elif cleaned | lower in ['bps','bit/s','bitspersecond'] -%}{{- 'bit/s' -}}
-    {%- elif cleaned | lower in ['kbps','kbit/s','kbits/s','kbitsps'] -%}{{- 'kbit/s' -}}
-    {%- elif cleaned | lower in ['mbps','mbit/s','mbits/s','mbitsps'] -%}{{- 'Mbit/s' -}}
-    {%- elif cleaned | lower in ['gbps','gbit/s','gbits/s','gbitsps'] -%}{{- 'Gbit/s' -}}
 
         {#- frequency -#}
     {%- elif cleaned|lower in ['hz','hertz'] -%}{{- 'Hz' -}}

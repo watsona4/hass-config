@@ -39,11 +39,7 @@
     },
     'data_size': {
         'base': 'B',
-        'map': { 'bit': 0.125 }
-    },
-    'data_rate': {
-        'base': 'B/s',
-        'map': { 'b/s': 0.125 }
+        'map': { 'bit': 0.125, 'b': 0.125 }
     },
     'frequency': {
         'base': 'Hz',
@@ -140,7 +136,7 @@
             {{- {'error': 'unknown ' ~ dim ~ ' unit ' ~ sp.base} | tojson -}}
         {%- endif -%}
     {%- elif dim == 'temperature' -%}
-        {%- set c = temp_to_c(val, sp.base) -%}
+        {%- set c = temp_to_c(val, sp.base)|float(none) -%}
         {%- if c is none -%}
             {{- {'error': 'unknown temperature unit ' ~ sp.base} | tojson -}}
         {%- else -%}
@@ -160,14 +156,14 @@
     {%- if dim in CONVERSION and dim != 'temperature' -%}
         {%- set spec = CONVERSION[dim] -%}
         {%- if sp.base == spec.base -%}
-            {{- {'value': scale_value(value, '', sp.prefix, system) , 'unit': sp.prefix ~ sp.base } | tojson -}}
+            {{- {'value': scale_value(value, '', sp.prefix, system) |float , 'unit': sp.prefix ~ sp.base } | tojson -}}
         {%- elif sp.base in spec.map -%}
-            {{- {'value': scale_value(value / spec.map[sp.base], '', sp.prefix, system) , 'unit': sp.prefix ~ sp.base } | tojson -}}
+            {{- {'value': scale_value(value / spec.map[sp.base], '', sp.prefix, system) |float , 'unit': sp.prefix ~ sp.base } | tojson -}}
         {%- else -%}
             {{- {'error': 'unknown ' ~ dim ~ ' unit ' ~ sp.base} | tojson -}}
         {%- endif -%}
     {%- elif dim == 'temperature' -%}
-        {%- set t = temp_from_c(value, sp.base) -%}
+        {%- set t = temp_from_c(value, sp.base)|float(none) -%}
         {%- if t is none -%}
             {{- {'error': 'unknown temperature unit ' ~ sp.base} | tojson -}}
         {%- else -%}
