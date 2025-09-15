@@ -543,7 +543,7 @@ sections:
                         heading_style: subtitle
                         visibility:
                           - condition: state
-                            entity: group.closed_brightness
+                            entity: binary_sensor.closed_brightness
                             state: 'on'
                       - type: custom:auto-entities
                         card:
@@ -564,7 +564,7 @@ sections:
                         heading_style: subtitle
                         visibility:
                           - condition: state
-                            entity: group.closed_temperature
+                            entity: binary_sensor.closed_temperature
                             state: 'on'
                       - type: custom:auto-entities
                         card:
@@ -585,7 +585,7 @@ sections:
                         heading_style: subtitle
                         visibility:
                           - condition: state
-                            entity: group.closed_presence
+                            entity: binary_sensor.closed_presence
                             state: 'on'
                       - type: custom:auto-entities
                         card:
@@ -606,7 +606,7 @@ sections:
                         heading_style: subtitle
                         visibility:
                           - condition: state
-                            entity: group.closed_devices
+                            entity: binary_sensor.closed_devices
                             state: 'on'
                       - type: custom:auto-entities
                         card:
@@ -627,7 +627,7 @@ sections:
                         heading_style: subtitle
                         visibility:
                           - condition: state
-                            entity: group.closed_button
+                            entity: binary_sensor.closed_button
                             state: 'on'
                       - type: custom:auto-entities
                         card:
