@@ -1,0 +1,114 @@
+{# Severity definitions for apparent power #}
+{# Device: Apparent power, product of RMS voltage and current #}
+{# Typical applications: Residential branch circuits, rack PDU outlets #}
+
+{% set lookup_unit = "VA" %}
+{% set levels = {
+    "residential_branch": [
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "No load",
+            "icon": "mdi:power-plug-off",
+            "color": "#9ca3af",
+            "full_desc": "Circuit idle."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light load",
+            "icon": "mdi:power-plug",
+            "color": "#22c55e",
+            "full_desc": "Small electronics."
+        },
+        {
+            "min_value": 600,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate load",
+            "icon": "mdi:power-plug",
+            "color": "#10b981",
+            "full_desc": "Typical appliances."
+        },
+        {
+            "min_value": 1200,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High load",
+            "icon": "mdi:power-plug",
+            "color": "#eab308",
+            "full_desc": "Near half of 15 A at 120 V."
+        },
+        {
+            "min_value": 1600,
+            "default_desc": "Near Limit",
+            "short_desc": "Limit",
+            "long_desc": "Near breaker limit",
+            "icon": "mdi:alert",
+            "color": "#f97316",
+            "full_desc": "Watch breaker capacity."
+        },
+        {
+            "min_value": 1800,
+            "default_desc": "Over",
+            "short_desc": "Over",
+            "long_desc": "Over typical limit",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Risk of trip on 15 A circuit."
+        }
+    ],
+    "rack_pdu_outlet": [
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "No load",
+            "icon": "mdi:server-off",
+            "color": "#9ca3af",
+            "full_desc": "Outlet idle."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low draw",
+            "icon": "mdi:server",
+            "color": "#22c55e",
+            "full_desc": "Single server idle."
+        },
+        {
+            "min_value": 300,
+            "default_desc": "Nominal",
+            "short_desc": "Nom",
+            "long_desc": "Nominal draw",
+            "icon": "mdi:server",
+            "color": "#10b981",
+            "full_desc": "Typical single server load."
+        },
+        {
+            "min_value": 700,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High draw",
+            "icon": "mdi:server-network",
+            "color": "#eab308",
+            "full_desc": "Dense compute or GPU."
+        },
+        {
+            "min_value": 1200,
+            "default_desc": "Critical",
+            "short_desc": "Crit",
+            "long_desc": "Near PDU outlet limit",
+            "icon": "mdi:server-alert",
+            "color": "#dc2626",
+            "full_desc": "Check derating and cabling."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

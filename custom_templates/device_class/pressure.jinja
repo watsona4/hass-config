@@ -1,0 +1,96 @@
+{# Severity definitions for pressure #}
+{# Device: Fluid or air pressure #}
+{# Typical applications: HVAC static pressure, water line pressure #}
+
+{% set lookup_unit = "kPa" %}
+{% set levels = {
+    "hvac_duct": [
+        {
+            "min_value": -1.0,
+            "default_desc": "Leak",
+            "short_desc": "Leak",
+            "long_desc": "Negative beyond spec",
+            "icon": "mdi:pipe-leak",
+            "color": "#dc2626",
+            "full_desc": "Leak or blockage suspected."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "System off",
+            "icon": "mdi:fan-off",
+            "color": "#9ca3af",
+            "full_desc": "No pressure."
+        },
+        {
+            "min_value": 0.05,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low static",
+            "icon": "mdi:fan",
+            "color": "#22c55e",
+            "full_desc": "Light airflow."
+        },
+        {
+            "min_value": 0.15,
+            "default_desc": "Normal",
+            "short_desc": "Norm",
+            "long_desc": "Normal static",
+            "icon": "mdi:fan",
+            "color": "#10b981",
+            "full_desc": "Typical HVAC."
+        },
+        {
+            "min_value": 0.3,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High static",
+            "icon": "mdi:fan-alert",
+            "color": "#eab308",
+            "full_desc": "Filter or damper issue."
+        }
+    ],
+    "water_line": [
+        {
+            "min_value": 0.0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "No pressure",
+            "icon": "mdi:water-off",
+            "color": "#9ca3af",
+            "full_desc": "Valve closed."
+        },
+        {
+            "min_value": 275.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low pressure",
+            "icon": "mdi:water",
+            "color": "#eab308",
+            "full_desc": "Below typical residential."
+        },
+        {
+            "min_value": 345.0,
+            "default_desc": "Normal",
+            "short_desc": "Norm",
+            "long_desc": "Normal",
+            "icon": "mdi:water",
+            "color": "#22c55e",
+            "full_desc": "Around 50 psi."
+        },
+        {
+            "min_value": 550.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High pressure",
+            "icon": "mdi:water-alert",
+            "color": "#f97316",
+            "full_desc": "Consider PRV."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

@@ -1,0 +1,78 @@
+{# Severity definitions for PM1 particulate matter #}
+{# Device: Particles 1 micron and smaller #}
+{# Typical applications: WHO guidance, indoor monitoring #}
+
+{% set lookup_unit = "µg/m³" %}
+{% set levels = {
+    "who_guidance": [
+        {
+            "min_value": 0,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Low particulates",
+            "icon": "mdi:weather-windy",
+            "color": "#22c55e",
+            "full_desc": "Clean air."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate",
+            "icon": "mdi:weather-hazy",
+            "color": "#eab308",
+            "full_desc": "Sensitive groups monitor."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Unhealthy",
+            "short_desc": "UH",
+            "long_desc": "Unhealthy",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Limit exposure."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Very Unhealthy",
+            "short_desc": "VUH",
+            "long_desc": "Very unhealthy",
+            "icon": "mdi:alert-octagon",
+            "color": "#7c3aed",
+            "full_desc": "Avoid outdoor activity."
+        }
+    ],
+    "indoor_monitor": [
+        {
+            "min_value": 0,
+            "default_desc": "Clean",
+            "short_desc": "Clean",
+            "long_desc": "Clean indoor air",
+            "icon": "mdi:home",
+            "color": "#22c55e",
+            "full_desc": "HVAC working."
+        },
+        {
+            "min_value": 5,
+            "default_desc": "Elevated",
+            "short_desc": "Elev",
+            "long_desc": "Elevated",
+            "icon": "mdi:home-alert",
+            "color": "#eab308",
+            "full_desc": "Ventilate or filter."
+        },
+        {
+            "min_value": 15,
+            "default_desc": "Poor",
+            "short_desc": "Poor",
+            "long_desc": "Poor",
+            "icon": "mdi:air-filter",
+            "color": "#dc2626",
+            "full_desc": "Run purifier."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

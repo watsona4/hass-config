@@ -1,0 +1,105 @@
+{# Severity definitions for electric current #}
+{# Device: Current flow in amperes #}
+{# Typical applications: Residential circuits, DC rails #}
+
+{% set lookup_unit = "A" %}
+{% set levels = {
+    "residential_circuit_15a": [
+        {
+            "min_value": 0.0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "No current",
+            "icon": "mdi:flash-off",
+            "color": "#9ca3af",
+            "full_desc": "Load off or standby."
+        },
+        {
+            "min_value": 0.2,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light load",
+            "icon": "mdi:flash",
+            "color": "#22c55e",
+            "full_desc": "Small electronics."
+        },
+        {
+            "min_value": 8.0,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate load",
+            "icon": "mdi:flash",
+            "color": "#10b981",
+            "full_desc": "Appliances or tools."
+        },
+        {
+            "min_value": 13.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High load",
+            "icon": "mdi:flash-triangle",
+            "color": "#eab308",
+            "full_desc": "Approaching limit."
+        },
+        {
+            "min_value": 15.0,
+            "default_desc": "Over",
+            "short_desc": "Over",
+            "long_desc": "Over rating",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Breaker may trip."
+        }
+    ],
+    "dc_rail": [
+        {
+            "min_value": 0.0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "No draw",
+            "icon": "mdi:power-plug-off",
+            "color": "#9ca3af",
+            "full_desc": "Rail idle."
+        },
+        {
+            "min_value": 0.1,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low draw",
+            "icon": "mdi:power-plug",
+            "color": "#22c55e",
+            "full_desc": "Nominal idle."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc": "Nominal",
+            "short_desc": "Nom",
+            "long_desc": "Typical draw",
+            "icon": "mdi:power-plug",
+            "color": "#10b981",
+            "full_desc": "Typical workload."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High draw",
+            "icon": "mdi:power-plug",
+            "color": "#eab308",
+            "full_desc": "Heavy load or short bursts."
+        },
+        {
+            "min_value": 10.0,
+            "default_desc": "Critical",
+            "short_desc": "Crit",
+            "long_desc": "Over design",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Over current risk."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

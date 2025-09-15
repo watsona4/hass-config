@@ -1,0 +1,96 @@
+{# Severity definitions for monetary values #}
+{# Device: Currency amounts #}
+{# Typical applications: Daily spending, monthly totals #}
+
+{% set lookup_unit = "USD" %}
+{% set levels = {
+    "daily_spend": [
+        {
+            "min_value": 0.0,
+            "default_desc": "None",
+            "short_desc": "None",
+            "long_desc": "No spend",
+            "icon": "mdi:cash-off",
+            "color": "#9ca3af",
+            "full_desc": "No transactions."
+        },
+        {
+            "min_value": 10.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low spend",
+            "icon": "mdi:cash",
+            "color": "#22c55e",
+            "full_desc": "Within light budget."
+        },
+        {
+            "min_value": 50.0,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate",
+            "icon": "mdi:cash",
+            "color": "#eab308",
+            "full_desc": "Typical daily expenses."
+        },
+        {
+            "min_value": 150.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High spend",
+            "icon": "mdi:cash-multiple",
+            "color": "#f97316",
+            "full_desc": "Review discretionary items."
+        },
+        {
+            "min_value": 300.0,
+            "default_desc": "Spike",
+            "short_desc": "Spike",
+            "long_desc": "Spending spike",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Large or unusual purchase."
+        }
+    ],
+    "monthly_total": [
+        {
+            "min_value": 0.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low spend",
+            "icon": "mdi:wallet",
+            "color": "#22c55e",
+            "full_desc": "Well under budget."
+        },
+        {
+            "min_value": 1000.0,
+            "default_desc": "Typical",
+            "short_desc": "Typ",
+            "long_desc": "Typical",
+            "icon": "mdi:wallet",
+            "color": "#10b981",
+            "full_desc": "Within expected range."
+        },
+        {
+            "min_value": 2500.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High",
+            "icon": "mdi:chart-line",
+            "color": "#eab308",
+            "full_desc": "Monitor."
+        },
+        {
+            "min_value": 4000.0,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very high",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Over budget or unusual."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

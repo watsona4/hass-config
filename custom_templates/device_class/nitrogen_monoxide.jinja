@@ -1,0 +1,69 @@
+{# Severity definitions for nitrogen monoxide #}
+{# Device: NO gas concentration #}
+{# Typical applications: Indoor air monitoring, outdoor urban #}
+
+{% set lookup_unit = "ppb" %}
+{% set levels = {
+    "indoor_air": [
+        {
+            "min_value": 0,
+            "default_desc": "Clean",
+            "short_desc": "Clean",
+            "long_desc": "Very low NO",
+            "icon": "mdi:home",
+            "color": "#22c55e",
+            "full_desc": "Good indoor quality."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Elevated",
+            "short_desc": "Elev",
+            "long_desc": "Elevated NO",
+            "icon": "mdi:air-filter",
+            "color": "#eab308",
+            "full_desc": "Ventilation recommended."
+        },
+        {
+            "min_value": 150,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High NO",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Check combustion sources."
+        }
+    ],
+    "outdoor_urban": [
+        {
+            "min_value": 0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low NO",
+            "icon": "mdi:city",
+            "color": "#22c55e",
+            "full_desc": "Clean conditions."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate NO",
+            "icon": "mdi:city-variant",
+            "color": "#eab308",
+            "full_desc": "Traffic influence."
+        },
+        {
+            "min_value": 300,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High NO",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Poor air quality."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

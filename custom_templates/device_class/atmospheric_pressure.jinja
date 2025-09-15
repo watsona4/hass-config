@@ -1,0 +1,78 @@
+{# Severity definitions for atmospheric pressure #}
+{# Device: Barometric pressure at sensor elevation #}
+{# Typical applications: Sea level weather, indoor adjusted sensors #}
+
+{% set lookup_unit = "hPa" %}
+{% set levels = {
+    "sea_level_weather": [
+        {
+            "min_value": 950,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low pressure",
+            "icon": "mdi:weather-windy",
+            "color": "#60a5fa",
+            "full_desc": "Stormy pattern likely."
+        },
+        {
+            "min_value": 990,
+            "default_desc": "Normal",
+            "short_desc": "Norm",
+            "long_desc": "Typical range",
+            "icon": "mdi:weather-cloudy",
+            "color": "#22c55e",
+            "full_desc": "Common barometric range."
+        },
+        {
+            "min_value": 1020,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High pressure",
+            "icon": "mdi:weather-sunny",
+            "color": "#eab308",
+            "full_desc": "Stable and fair weather."
+        },
+        {
+            "min_value": 1040,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Unusually high",
+            "icon": "mdi:weather-sunny-alert",
+            "color": "#f97316",
+            "full_desc": "Strong inversion possible."
+        }
+    ],
+    "indoor_altitude_adjusted": [
+        {
+            "min_value": 800,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low pressure",
+            "icon": "mdi:gauge-empty",
+            "color": "#60a5fa",
+            "full_desc": "Verify sensor altitude setting."
+        },
+        {
+            "min_value": 850,
+            "default_desc": "Normal",
+            "short_desc": "Norm",
+            "long_desc": "Adjusted range",
+            "icon": "mdi:gauge",
+            "color": "#22c55e",
+            "full_desc": "Altitude adjusted reading."
+        },
+        {
+            "min_value": 900,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High pressure",
+            "icon": "mdi:gauge-full",
+            "color": "#eab308",
+            "full_desc": "Stable conditions."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}
