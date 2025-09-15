@@ -86,7 +86,7 @@
 
     {%- set badge_tmpl -%}
         {% raw -%}
-            {% set r = (states('{{ reason_eid }}') or '') | trim | lower %}
+            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
             {% if r == 'nighttime' %}
                 mdi:weather-night
             {% elif r == 'brightness' %}
@@ -107,7 +107,7 @@
 
     {%- set badge_color_tmpl -%}
         {% raw -%}
-            {% set r = (states('{{ reason_eid }}') or '') | trim | lower%}
+            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower%}
             {% if r == 'nighttime' %}
                 blue
             {% elif r == 'brightness' %}

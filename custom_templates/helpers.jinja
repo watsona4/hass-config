@@ -18,66 +18,6 @@
     {{- -x if x < 0 else x -}}
 {% endmacro %}
 
-{# Smart number formatter (sig-fig-ish) with thousands separators #}
-{% macro smartfmt(x) %}
-    {%- set v = x | float(none) -%}
-    {%- if v is not number -%}
-        {{- x -}}
-    {%- else -%}
-        {%- set sign = '-' if v < 0 else '' -%}
-        {%- set a = abs(v) | float(v) -%}
-        {%- set s = ("%0.15f") | format(a) -%}
-        {%- set parts = s.split('.') -%}
-        {%- set int = parts[0] -%}
-        {%- set frac = parts[1] -%}
-        {%- set int_nz = int.lstrip('0') -%}
-        {%- set D = int_nz | length -%}
-
-        {#- Keep integer only for very large magnitudes -#}
-        {%- set keep_int_only = (D>3 and (D>0 and int_nz[0]=='1')) or (D>2 and (D==0 or int_nz[0]!='1')) -%}
-        {%- if keep_int_only -%}
-            {{- sign ~ '{:,}'.format(int_nz | int) -}}
-        {%- else -%}
-            {%- set ns = namespace(first_sig=None, L=None, decimals=none, k=none) -%}
-            {%- if D >= 1 -%}
-                {%- set ns.first_sig = int_nz[0] if D>0 else '0' -%}
-                {%- set ns.L = 4 if ns.first_sig == '1' else 3 -%}
-                {%- set ns.decimals = -508 -%}
-            {%- else -%}
-                {#- first sig digit in fraction -#}
-                {%- set ns.k = -1 -%}
-                {%- for i in range(frac | length) -%}
-                    {%- if ns.k == -1 and frac[i] != '0' -%}
-                        {%- set ns.k = i -%}
-                    {%- endif -%}
-                {%- endfor -%}
-                {%- if ns.k == -1 -%}
-                    {{- '0' -}}
-                    {%- set ns.decimals = none -%}
-                {%- else -%}
-                    {%- set ns.first_sig = frac[ns.k] -%}
-                    {%- set ns.L = 4 if ns.first_sig == '1' else 3 -%}
-                    {%- set ns.decimals = ns.k + ns.L -%}
-                {%- endif -%}
-            {%- endif -%}
-
-            {%- if ns.decimals is not none -%}
-                {%- set out = ("%." ~ (ns.decimals if ns.decimals > 0 else 0) ~ "f") | format(a) -%}
-                {%- set op = out.split('.') -%}
-                {%- if op | length == 1 -%}
-                    {%- set i = op[0] -%}
-                    {{- sign ~ ('{:,}'.format(i | int) if (i | int) >= 1000 else i) -}}
-                {%- else -%}
-                    {%- set i = op[0] -%}
-                    {%- set f = op[1].rstrip('0') -%}
-                    {%- set i2 = ('{:,}'.format(i | int) if (i | int) >= 1000 else i) -%}
-                    {{- sign ~ i2 ~ ('.' ~ f if f else '') -}}
-                {%- endif -%}
-            {%- endif -%}
-        {%- endif -%}
-    {%- endif -%}
-{% endmacro %}
-
 {# ======================================================================
   2) Name & Label Formatting
 ====================================================================== #}
@@ -101,21 +41,27 @@
 {% endmacro %}
 
 {#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
-{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n') %}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
     {%- if is_unavail and long_desc_text -%}
         {{- long_desc_text -}}
-    {%- elif value_text is string and value_text | trim != '' -%}
-        {{- value_text ~ (vert_delim if vertical else delim) ~ desc_text -}}
+    {%- elif binary -%}
+        {{- desc_text if desc_text|trim != '' else value_text -}}
     {%- else -%}
-        {{- desc_text -}}
+        {%- if value_text|trim != '' and desc_text|trim != '' -%}
+            {{- value_text ~ (vert_delim if vertical else delim) ~ desc_text -}}
+        {%- elif vt != '' -%}
+            {{- value_text -}}
+        {%- else -%}
+            {{- desc_text -}}
+        {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
-{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n') %}
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
     {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
 {% endmacro %}
 
-{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', vertical=false, vert_delim='\n') %}
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
     {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
 {% endmacro %}
 
@@ -158,19 +104,19 @@
    - Optional guard: options.project_guard (fraction of a day, default 0.05)
    - No-op for unavailable/None. #}
 {% macro apply_projection(val, options) %}
-  {%- if val is none -%}
-    {{- val -}}
-  {%- elif options is mapping and options.get('project_daily', false) -%}
-    {%- set h = now().hour -%}
-    {%- set m = now().minute -%}
-    {%- set share = (h + (m / 60.0)) / 24.0 -%}
-    {%- set guard = (options.get('project_guard', 0.05) | float(0.05)) -%}
-    {#- avoid divide-by-near-zero early in the morning -#}
-    {%- set denom = share if share > guard else guard -%}
-    {{- (val | float(none)) / denom if (val | float(none)) is not none else none -}}
-  {%- else -%}
-    {{- val -}}
-  {%- endif -%}
+    {%- if val is none -%}
+        {{- val -}}
+    {%- elif options is mapping and options.get('project_daily', false) -%}
+        {%- set h = now().hour -%}
+        {%- set m = now().minute -%}
+        {%- set share = (h + (m / 60.0)) / 24.0 -%}
+        {%- set guard = (options.get('project_guard', 0.05) | float(0.05)) -%}
+        {#- avoid divide-by-near-zero early in the morning -#}
+        {%- set denom = share if share > guard else guard -%}
+        {{- (val | float(none) ) / denom if (val | float(none)) is not none else none -}}
+    {%- else -%}
+        {{- val -}}
+    {%- endif -%}
 {% endmacro %}
 
 {# Universal accessor used by the device-class getters #}
@@ -214,7 +160,7 @@
     {%- else -%}
         {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
         {%- set val = apply_projection(val, options) -%}
-        {%- set text =  u_humanize_value(val, options.display_unit) -%}
+        {%- set text = u_humanize_value(val, options.display_unit) -%}
         {%- if options is mapping and options.get('project_daily', false) -%}
             {{- "~" ~ text -}}
         {%- else -%}

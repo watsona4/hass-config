@@ -141,12 +141,18 @@
         else H.get_badge(value, app, enhanced_options)) -%}
     {%- set badge_color = (DC.get_badge_color(value, app, enhanced_options) if DC.get_badge_color is defined
         else H.get_badge_color(value, app, enhanced_options)) -%}
+
+    {%- set delim = options.get('delim',' • ') -%}
+    {%- set vertical = options.get('vertical', false) -%}
+    {%- set vert_delim = options.get('vert_delim','\n') -%}
+    {%- set binary = ns.device_class == 'binary' -%}
+
     {%- set label = (DC.get_label(value, app, enhanced_options) if DC.get_label is defined
-        else H.format_label(value_text, def_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
+        else H.format_label(value_text, def_desc, is_unavail, long_desc, delim, vertical, vert_delim, binary)) -%}
     {%- set short_label = (DC.get_short_label(value, app, enhanced_options) if DC.get_short_label is defined
-        else H.format_label(value_text, short_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
+        else H.format_short_label(value_text, short_desc, is_unavail, long_desc, delim, vertical, vert_delim, binary)) -%}
     {%- set long_label = (DC.get_long_label(value, app, enhanced_options,) if DC.get_long_label is defined
-        else H.format_label(value_text, long_desc, is_unavail, long_desc, options.get('delim',' • '), options.get('vertical', false), options.get('vert_delim','\n'))) -%}
+        else H.format_long_label(value_text, long_desc, is_unavail, delim, vertical, vert_delim, binary)) -%}
 
     {#- Return a dictionary with all the relevant information -#}
     {{- {
