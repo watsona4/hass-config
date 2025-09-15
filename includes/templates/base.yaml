@@ -97,6 +97,7 @@
   binary_sensor:
     - name: Daytime
       unique_id: daytime_sensor
+      device_class: running
       state: >-
         {% set normal_daytime = (daytime == 'on') and (is_holiday != 'on') %}
         {% set holiday_daytime = (is_holiday == 'on') and (in_holiday_window | bool) %}
@@ -106,6 +107,7 @@
 
     - name: Evening
       unique_id: evening_sensor
+      device_class: running
       state: >-
         {{ (evening == 'on') or ((override == 'on') and (late | bool)) }}
 
@@ -213,6 +215,7 @@
   binary_sensor:
     - name: Before School Time
       unique_id: before_school_time
+      device_class: running
       state: >-
         {% set m = now().month %}
         {% set wd = now().weekday() %}  {# Mon=0..Sun=6 #}
@@ -686,26 +689,31 @@
 - binary_sensor:
     - name: Furnace Heating State
       unique_id: furnace_heating_state
+      device_class: running
       availability: "{{ state_attr('climate.downstairs_thermostat','hvac_action') is not none }}"
       state: "{{ is_state_attr('climate.downstairs_thermostat','hvac_action','heating') }}"
 
     - name: Dryer Heating State
       unique_id: dryer_heating_state
+      device_class: running
       availability: "{{ has_value('sensor.dryer_power') }}"
       state: "{{ states('sensor.dryer_power') | float(0) > 10 }}"
 
     - name: Water Heater Heating State
       unique_id: water_heater_heating_state
+      device_class: running
       availability: "{{ has_value('sensor.water_heater_outlet_power') }}"
       state: "{{ states('sensor.water_heater_outlet_power') | float(0) > 10 }}"
 
     - name: Gas Stove Heating State
       unique_id: gas_stove_heating_state
+      device_class: running
       availability: "{{ has_value('switch.gas_stove_switch') }}"
       state: "{{ is_state('switch.gas_stove_switch','on') }}"
 
     - name: Shop Furnace Heating State
       unique_id: shop_furnace_heating_state
+      device_class: running
       availability: "{{ has_value('sensor.shop_furnace_switch_0_power') }}"
       state: "{{ states('sensor.shop_furnace_switch_0_power') | float(0) > 10 }}"
 
@@ -1097,6 +1105,7 @@
     - name: Netprobe Jitter Down
       unique_id: netprobe_jitter_dl_ms
       unit_of_measurement: ms
+      device_class: duration
       state_class: measurement
       icon: mdi:chart-timeline-variant
       availability: "{{ has_value('sensor.netprobe_status') }}"
@@ -1104,6 +1113,7 @@
     - name: Netprobe Jitter Up
       unique_id: netprobe_jitter_ul_ms
       unit_of_measurement: ms
+      device_class: duration
       state_class: measurement
       icon: mdi:chart-timeline-variant
       availability: "{{ has_value('sensor.netprobe_status') }}"
@@ -1146,8 +1156,10 @@
       icon: mdi:package-variant-closed
       availability: "{{ has_value('sensor.netprobe_status') }}"
       state: "{{ state_attr('sensor.netprobe_status','packets_ul') }}"
+  binary_sensor:
     - name: Netprobe Quality
       unique_id: netprobe_quality_text
+      device_class: connectivity
       icon: mdi:check-network-outline
       availability: "{{ has_value('sensor.netprobe_status') }}"
       state: >-
@@ -1161,8 +1173,7 @@
           (ldl is number and ldl > 1.0) or
           (lul is number and lul > 1.0)
         ) %}
-        {{ 'degraded' if bad else 'ok' }}
-  binary_sensor:
+        {{ 'off' if bad else 'on' }}
     - name: Netprobe Hiccup
       unique_id: netprobe_hiccup_flag
       device_class: problem
@@ -1213,12 +1224,14 @@
     - name: Netprobe Jitter Down RV
       unique_id: netprobe_jitter_dl_rv_ms
       unit_of_measurement: ms
+      device_class: duration
       state_class: measurement
       icon: mdi:chart-timeline-variant
       availability: "{{ has_value('sensor.netprobe_status_rv') }}"
       state: "{{ state_attr('sensor.netprobe_status_rv','jitter_dl_ms') }}"
     - name: Netprobe Jitter Up RV
       unique_id: netprobe_jitter_ul_rv_ms
+      device_class: duration
       unit_of_measurement: ms
       state_class: measurement
       icon: mdi:chart-timeline-variant
@@ -1262,8 +1275,10 @@
       icon: mdi:package-variant-closed
       availability: "{{ has_value('sensor.netprobe_status_rv') }}"
       state: "{{ state_attr('sensor.netprobe_status_rv','packets_ul') }}"
+  binary_sensor:
     - name: Netprobe Quality RV
       unique_id: netprobe_quality_text_rv
+      device_class: connectivity
       icon: mdi:check-network-outline
       availability: "{{ has_value('sensor.netprobe_status_rv') }}"
       state: >-
@@ -1277,8 +1292,7 @@
           (ldl is number and ldl > 1.0) or
           (lul is number and lul > 1.0)
         ) %}
-        {{ 'degraded' if bad else 'ok' }}
-  binary_sensor:
+        {{ 'off' if bad else 'on' }}
     - name: Netprobe Hiccup RV
       unique_id: netprobe_hiccup_flag_rv
       device_class: problem
