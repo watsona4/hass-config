@@ -294,6 +294,9 @@ sections:
           template: "{% from 'macros/unavailable_devices.jinja' import generate %}{{ generate() }}"
           exclude:
             - device: Dishwasher
+            - device: Shop Lights
+            - device: Living Room Lights
+            - device: Dining Room Lights
             - device: Eleanor Presence
             - device: Kids Bathroom Presence
             - domain: person
