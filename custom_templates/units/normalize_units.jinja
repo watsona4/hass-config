@@ -6,6 +6,10 @@
 
     {#- rate shortcuts -#}
     {%- if cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}{{- 'mi/h' -}}
+    {%- elif cleaned in ['bps'] -%}{{- 'bit/s' -}}
+    {%- elif cleaned in ['kbps'] -%}{{- 'kbit/s' -}}
+    {%- elif cleaned in ['Mbps'] -%}{{- 'Mbit/s' -}}
+    {%- elif cleaned in ['Gbps'] -%}{{- 'Gbit/s' -}}
     {%- elif cleaned | lower in ['kmh','km/h','kph','kilometersperhour'] -%}{{- 'km/h' -}}
     {%- elif cleaned | lower in ['rps','rev/s','revspersecond'] -%}{{- 'rev/s' -}}
     {%- elif cleaned | lower in ['rpm','rev/min','revolutionsperminute'] -%}{{- 'rev/min' -}}
