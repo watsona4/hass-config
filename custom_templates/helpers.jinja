@@ -49,7 +49,7 @@
     {%- else -%}
         {%- if value_text|trim != '' and desc_text|trim != '' -%}
             {{- value_text ~ (vert_delim if vertical else delim) ~ desc_text -}}
-        {%- elif vt != '' -%}
+        {%- elif value_text != '' -%}
             {{- value_text -}}
         {%- else -%}
             {{- desc_text -}}
