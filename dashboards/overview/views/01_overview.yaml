@@ -36,7 +36,7 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.netprobe_download
+              - entity: sensor.home_download_rate
               - name: Download
               - app: download
               - layout: vertical
@@ -44,7 +44,7 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.netprobe_upload
+              - entity: sensor.home_upload_rate
               - name: Upload
               - app: upload
               - layout: vertical
@@ -52,7 +52,7 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.netprobe_latency_icmp
+              - entity: sensor.home_latency_icmp
               - name: Latency
               - app: latency
               - layout: vertical
