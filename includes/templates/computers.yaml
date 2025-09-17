@@ -53,6 +53,42 @@
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement
+    - name: Desktop PhysicalDrive0 Data Rate
+      availability: "{{ has_value('sensor.desktop_bq063ig_disk_physicaldrive0_read_rate') or has_value('sensor.desktop_bq063ig_disk_physicaldrive0_write_rate') }}"
+      state: "{{ states('sensor.desktop_bq063ig_disk_physicaldrive0_read_rate')|float(0) + states('sensor.desktop_bq063ig_disk_physicaldrive0_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Desktop PhysicalDrive1 Data Rate
+      availability: "{{ has_value('sensor.desktop_bq063ig_disk_physicaldrive1_read_rate') or has_value('sensor.desktop_bq063ig_disk_physicaldrive1_write_rate') }}"
+      state: "{{ states('sensor.desktop_bq063ig_disk_physicaldrive1_read_rate')|float(0) + states('sensor.desktop_bq063ig_disk_physicaldrive1_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Desktop PhysicalDrive2 Data Rate
+      availability: "{{ has_value('sensor.desktop_bq063ig_disk_physicaldrive2_read_rate') or has_value('sensor.desktop_bq063ig_disk_physicaldrive2_write_rate') }}"
+      state: "{{ states('sensor.desktop_bq063ig_disk_physicaldrive2_read_rate')|float(0) + states('sensor.desktop_bq063ig_disk_physicaldrive2_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Frigate nvme0n1 Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_nvme0n1_read_rate') or has_value('sensor.frigate_disk_nvme0n1_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_nvme0n1_read_rate')|float(0) + states('sensor.frigate_disk_nvme0n1_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Frigate sda Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_sda_read_rate') or has_value('sensor.frigate_disk_sda_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_sda_read_rate')|float(0) + states('sensor.frigate_disk_sda_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: OPNSense ada0 Data Rate
+      availability: "{{ has_value('sensor.opnsense_disk_ada0_read_rate') or has_value('sensor.opnsense_disk_ada0_write_rate') }}"
+      state: "{{ states('sensor.opnsense_disk_ada0_read_rate')|float(0) + states('sensor.opnsense_disk_ada0_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
 
 - sensor:
     - name: Laptop Battery Charge
