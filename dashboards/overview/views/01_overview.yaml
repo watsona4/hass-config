@@ -13,8 +13,52 @@ sections:
       - type: custom:decluttering-card
         template: title_card
         variables:
-          - title: Climate
-          - subtitle: Downstairs / Upstairs · Quick Setpoints
+          - title: "Home Status"
+          - subtitle: "Presence • Climate • Connectivity • Usage"
+
+      # Climate States
+      - type: custom:mushroom-chips-card
+        alignment: center
+        chips:
+          - type: template
+            entity: input_boolean.someone_is_home
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='someone_home') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='someone_home') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='someone_home') -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: input_boolean.home_alone
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='home_alone') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='home_alone') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='home_alone') -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: input_boolean.coming_home
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='returning_home') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='returning_home') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='returning_home') -}}
+            tap_action:
+              action: more-info
 
       # Climate Cards
       - type: horizontal-stack
@@ -58,6 +102,153 @@ sections:
               - layout: vertical
               - multiline_secondary: true
 
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-person-card
+            entity: person.aaron_watson
+          - type: custom:mushroom-person-card
+            entity: person.ashley_watson
+          - type: custom:mushroom-person-card
+            entity: person.eleanor_watson
+          - type: custom:mushroom-person-card
+            entity: person.michael_watson
+
+  # Outside Weather and Stats
+  - type: grid
+    cards:
+
+      # Outside Title
+      - type: custom:decluttering-card
+        template: title_card
+        variables:
+          - title: "Outdoor Conditions"
+          - subtitle: "Weather • Air Quality • Energy Use"
+            
+      # Climate States
+      - type: custom:mushroom-chips-card
+        alignment: center
+        chips:
+          - type: template
+            entity: binary_sensor.sunny
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {%- if is_state(entity, 'on') -%}
+                {{- get_label(entity, app='sunny') -}}
+              {%- elif is_state('binary_sensor.dark_outside','on') -%}
+                {{- get_label('binary_sensor.dark_outside', app='dark_outside') -}}
+              {%- else -%}
+                {{- get_label(entity, app='sunny') -}}
+              {%- endif -%}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {%- if is_state(entity, 'on') -%}
+                {{- get_icon(entity, app='sunny') -}}
+              {%- elif is_state('binary_sensor.dark_outside','on') -%}
+                {{- get_icon('binary_sensor.dark_outside', app='dark_outside') -}}
+              {%- else -%}
+                {{- get_icon(entity, app='sunny') -}}
+              {%- endif -%}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {%- if is_state(entity, 'on') -%}
+                {{- get_color(entity, app='sunny') -}}
+              {%- elif is_state('binary_sensor.dark_outside','on') -%}
+                {{- get_color('binary_sensor.dark_outside', app='dark_outside') -}}
+              {%- else -%}
+                {{- get_color(entity, app='sunny') -}}
+              {%- endif -%}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: binary_sensor.rainy
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='rainy') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='rainy') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='rainy') -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: binary_sensor.hot_inside
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='hot_inside') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='hot_inside') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='hot_inside') -}}
+            tap_action:
+              action: more-info
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+
+          # Temperature and Humidity
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.outside_temperature_state
+              - name: Outside Temp
+              - app: ambient
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.outside_humidity_state
+              - name: Outside Humidity
+              - app: outdoor
+
+          # Sunlight and UV Index
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.light_sensor_illuminance
+              - name: Illuminance
+              - app: outdoor
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.openmeteo_nearby_uv_index
+              - name: UV Index
+              - app: uv_index
+              - options: uom=
+
+          # Wind and Precipitation
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.openmeteo_nearby_wind_speed
+              - options: >-
+                  direction=sensor.openmeteo_nearby_wind_direction;
+                  gusts=sensor.openmeteo_nearby_wind_gust
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.openmeteo_nearby_today_precip_sum
+              - options: prob=sensor.openmeteo_nearby_today_precip_prob_max
+
+          # Air Quality and Dew Point
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.waqi_nearby_aqi
+              - name: Air Quality Index
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: sensor.openmeteo_nearby_dew_point
+              - name: Dew Point
+              - app: dew_point
+
       # Utility Usage
       - type: horizontal-stack
         cards:
@@ -100,81 +291,6 @@ sections:
                   navigation_path: /energy
               - icon_tap_action:
                   action: more-info
-
-  # Outside Weather and Stats
-  - type: grid
-    cards:
-
-      # Outside Title
-      - type: custom:decluttering-card
-        template: title_card
-        variables:
-          - title: Outside
-          - subtitle: Temperature · Humidity · Other Stats
-
-      # Temperature and Humidity
-      - type: horizontal-stack
-        cards:
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.outside_temperature_state
-              - name: Outside Temp
-              - app: ambient
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.outside_humidity_state
-              - name: Outside Humidity
-              - app: outdoor
-
-      # Sunlight and UV Index
-      - type: horizontal-stack
-        cards:
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.light_sensor_illuminance
-              - name: Illuminance
-              - app: outdoor
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.openmeteo_nearby_uv_index
-              - name: UV Index
-              - app: uv_index
-              - options: uom=
-
-      # Wind and Precipitation
-      - type: horizontal-stack
-        cards:
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.openmeteo_nearby_wind_speed
-              - options: >-
-                  direction=sensor.openmeteo_nearby_wind_direction;
-                  gusts=sensor.openmeteo_nearby_wind_gust
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.openmeteo_nearby_today_precip_sum
-              - options: prob=sensor.openmeteo_nearby_today_precip_prob_max
-
-      # Air Quality and Dew Point
-      - type: horizontal-stack
-        cards:
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.waqi_nearby_aqi
-              - name: Air Quality Index
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: sensor.openmeteo_nearby_dew_point
-              - name: Dew Point
-              - app: dew_point
 
   # Status - Lights, Doors, Smoke/CO
   - type: grid
@@ -353,403 +469,224 @@ sections:
         tap_action:
           action: more-info
 
-      # Pop-up cards
-      - type: vertical-stack
+  # Climate Details
+  - type: grid
+    cards:
+
+      # Climate Title
+      - type: custom:mushroom-title-card
+        title: "Climate Control"
+        subtitle: "Thermostats • Humidity • Comfort"
+        grid_options:
+          columns: full
+
+      - type: grid
+        columns: 2
+        square: false
         cards:
 
-          # Climate Pop-up
-          - type: custom:button-card
-            name: Climate
-            icon: mdi:thermostat
-            show_name: false
-            tap_action:
-              action: fire-dom-event
-              browser_mod:
-                service: browser_mod.popup
-                data:
-                  title: Climate
-                  content:
-                    type: grid
-                    columns: 2
-                    square: false
-                    cards:
+          # Climate and Humidity Cards
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.downstairs_thermostat
+              - name: Downstairs
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.upstairs_thermostat
+              - name: Upstairs
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.playroom_minisplit_setall_playroom_minisplit
+              - name: Playroom
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.gym_minisplit_setall_gym_minisplit
+              - name: Gym
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.chicken_heat_lamp
+              - name: Chicken Coop
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.study_space_heater
+              - name: Study Space Heater
+          - type: custom:decluttering-card
+            template: humidifier_card
+            variables:
+              - entity: humidifier.living_room_dehumidifier
+              - name: Living Room Dehumidifier
+          - type: custom:decluttering-card
+            template: humidifier_card
+            variables:
+              - entity: humidifier.dehumidifier
+              - name: Basement Dehumidifier
+          - type: custom:decluttering-card
+            template: humidifier_card
+            variables:
+              - entity: humidifier.humidifier
+              - name: Parlor Humidifier
 
-                      # Climate and Humidity Cards
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.downstairs_thermostat
-                          - name: Downstairs
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.upstairs_thermostat
-                          - name: Upstairs
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.playroom_minisplit_setall_playroom_minisplit
-                          - name: Playroom
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.gym_minisplit_setall_gym_minisplit
-                          - name: Gym
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.chicken_heat_lamp
-                          - name: Chicken Coop
-                      - type: custom:decluttering-card
-                        template: climate_card
-                        variables:
-                          - entity: climate.study_space_heater
-                          - name: Study Space Heater
-                      - type: custom:decluttering-card
-                        template: humidifier_card
-                        variables:
-                          - entity: humidifier.living_room_dehumidifier
-                          - name: Living Room Dehumidifier
-                      - type: custom:decluttering-card
-                        template: humidifier_card
-                        variables:
-                          - entity: humidifier.dehumidifier
-                          - name: Basement Dehumidifier
-                      - type: custom:decluttering-card
-                        template: humidifier_card
-                        variables:
-                          - entity: humidifier.humidifier
-                          - name: Parlor Humidifier
+  # Blinds Details
+  - type: grid
+    cards:
 
-                      # Climate States
-                      - type: custom:decluttering-card
-                        template: template_card
-                        variables:
-                          - entity: binary_sensor.sunny
-                          - app: sunny
-                      - type: custom:decluttering-card
-                        template: template_card
-                        variables:
-                          - entity: binary_sensor.rainy
-                          - app: rainy
-                      - type: custom:decluttering-card
-                        template: template_card
-                        variables:
-                          - entity: binary_sensor.dark_outside
-                          - app: dark_outside
-                      - type: custom:decluttering-card
-                        template: template_card
-                        variables:
-                          - entity: binary_sensor.hot_inside
-                          - app: hot_inside
+      # Blinds Title
+      - type: custom:mushroom-title-card
+        title: "Blinds & Shades"
+        subtitle: "Closed status • Reasons • Automation"
+        grid_options:
+          columns: full
 
-            styles:
-              card:
-                - position: fixed
-                - right: 24px
-                - bottom: calc(env(safe-area-inset-bottom, 0px) + 16px)
-                - z-index: 1099
-                - width: 56px
-                - height: 56px
-                - aspect-ratio: 1 / 1
-                - box-sizing: border-box
-                - padding: 0
-                - border-radius: 50%
-                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
-                - background: var(--secondary-background-color)
-                - color: var(--primary-text-color)
-                - transition: opacity .25s ease, transform .25s ease
-              icon:
-                - width: 24px
-                - height: 24px
-                - transform: none !important
-              img_cell:
-                - background: none
+      # Closed for Brightness
+      - type: heading
+        icon: mdi:white-balance-sunny
+        heading: Closed for Brightness
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.closed_brightness
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('brightness') | from_json }}
 
-          # Exterior Lights Pop-up
-          - type: custom:button-card
-            name: Exterior
-            icon: mdi:lightbulb-on
-            show_name: false
-            tap_action:
-              action: fire-dom-event
-              browser_mod:
-                service: browser_mod.popup
-                data:
-                  title: Exterior Lights
-                  content:
-                    - type: grid
-                      columns: 2
-                      square: false
-                      cards:
-                        - type: custom:mushroom-light-card
-                          entity: light.front_porch_light
-                          tap_action:
-                            action: more-info
-                        - type: custom:mushroom-light-card
-                          entity: light.kitchen_porch_light
-                          tap_action:
-                            action: more-info
-                        - type: custom:mushroom-light-card
-                          entity: light.garage_lights
-                          tap_action:
-                            action: more-info
-                        - type: custom:mushroom-light-card
-                          entity: light.back_porch_lights
-                          tap_action:
-                            action: more-info
-            styles:
-              card:
-                - position: fixed
-                - right: 24px
-                - bottom: calc(env(safe-area-inset-bottom, 0px) + 80px)
-                - z-index: 1099
-                - width: 56px
-                - height: 56px
-                - aspect-ratio: 1 / 1
-                - box-sizing: border-box
-                - padding: 0
-                - border-radius: 50%
-                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
-                - background: var(--secondary-background-color)
-                - color: var(--primary-text-color)
-                - transition: opacity .25s ease, transform .25s ease
-              icon:
-                - width: 24px
-                - height: 24px
-                - transform: none !important
-              img_cell:
-                - background: none
+      # Closed for Temperature
+      - type: heading
+        icon: mdi:thermometer-high
+        heading: Closed for Temperature
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.closed_temperature
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('temperature') | from_json }}
 
-          # Blinds Pop-up
-          - type: custom:button-card
-            name: Blinds
-            icon: mdi:blinds
-            show_name: false
-            tap_action:
-              action: fire-dom-event
-              browser_mod:
-                service: browser_mod.popup
-                data:
-                  title: Blinds
-                  content:
-                    type: vertical-stack
-                    cards:
+      # Closed for Presence
+      - type: heading
+        icon: mdi:motion-sensor
+        heading: Closed for Presence
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.closed_presence
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('presence') | from_json }}
 
-                      # Closed for Brightness
-                      - type: heading
-                        icon: mdi:white-balance-sunny
-                        heading: Closed for Brightness
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: binary_sensor.closed_brightness
-                            state: 'on'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('brightness') | from_json }}
+      # Closed for Devices
+      - type: heading
+        icon: mdi:television
+        heading: Closed for Devices
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.closed_devices
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('device') | from_json }}
 
-                      # Closed for Temperature
-                      - type: heading
-                        icon: mdi:thermometer-high
-                        heading: Closed for Temperature
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: binary_sensor.closed_temperature
-                            state: 'on'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('temperature') | from_json }}
+      # Closed by Button
+      - type: heading
+        icon: mdi:gesture-tap-button
+        heading: Closed by Button
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.closed_button
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('button') | from_json }}
 
-                      # Closed for Presence
-                      - type: heading
-                        icon: mdi:motion-sensor
-                        heading: Closed for Presence
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: binary_sensor.closed_presence
-                            state: 'on'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('presence') | from_json }}
-
-                      # Closed for Devices
-                      - type: heading
-                        icon: mdi:television
-                        heading: Closed for Devices
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: binary_sensor.closed_devices
-                            state: 'on'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('device') | from_json }}
-
-                      # Closed by Button
-                      - type: heading
-                        icon: mdi:gesture-tap-button
-                        heading: Closed by Button
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: binary_sensor.closed_button
-                            state: 'on'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('button') | from_json }}
-
-                      # Closed by Nighttime
-                      - type: heading
-                        icon: mdi:gesture-tap-button
-                        heading: Closed by Nighttime
-                        heading_style: subtitle
-                        visibility:
-                          - condition: state
-                            entity: input_boolean.all_windows
-                            state: 'off'
-                      - type: custom:auto-entities
-                        card:
-                          type: grid
-                          columns: 2
-                          square: false
-                        card_param: cards
-                        show_empty: false
-                        filter:
-                          template: >-
-                            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-                            {{ build_blind_cards('nighttime') | from_json }}
-            styles:
-              card:
-                - position: fixed
-                - right: 24px
-                - bottom: calc(env(safe-area-inset-bottom, 0px) + 144px)
-                - z-index: 1099
-                - width: 56px
-                - height: 56px
-                - aspect-ratio: 1 / 1
-                - box-sizing: border-box
-                - padding: 0
-                - border-radius: 50%
-                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
-                - background: var(--secondary-background-color)
-                - color: var(--primary-text-color)
-                - transition: opacity .25s ease, transform .25s ease
-              icon:
-                - width: 24px
-                - height: 24px
-                - transform: none !important
-              img_cell:
-                - background: none
-
-          # Presence Pop-up
-          - type: custom:button-card
-            name: Presence
-            icon: mdi:account-group
-            show_name: false
-            tap_action:
-              action: fire-dom-event
-              browser_mod:
-                service: browser_mod.popup
-                data:
-                  title: Presence
-                  content:
-                    type: vertical-stack
-                    cards:
-                      - type: grid
-                        columns: 2
-                        square: false
-                        cards:
-                          - type: custom:mushroom-person-card
-                            entity: person.aaron_watson
-                          - type: custom:mushroom-person-card
-                            entity: person.ashley_watson
-                          - type: custom:mushroom-person-card
-                            entity: person.eleanor_watson
-                          - type: custom:mushroom-person-card
-                            entity: person.michael_watson
-                          - type: custom:decluttering-card
-                            template: template_card
-                            variables:
-                             - entity: input_boolean.someone_is_home
-                             - app: someone_home
-                          - type: custom:decluttering-card
-                            template: template_card
-                            variables:
-                              - entity: input_boolean.home_alone
-                              - app: home_alone
-                          - type: custom:decluttering-card
-                            template: template_card
-                            variables:
-                             - entity: input_boolean.coming_home
-                             - app: returning_home
-                          - type: custom:decluttering-card
-                            template: template_card
-                            variables:
-                             - entity: sensor.people_home_count
-                             - app: presence_count
-
-            styles:
-              card:
-                - position: fixed
-                - right: 24px
-                - bottom: calc(env(safe-area-inset-bottom, 0px) + 208px)
-                - z-index: 1099
-                - width: 56px
-                - height: 56px
-                - aspect-ratio: 1 / 1
-                - box-sizing: border-box
-                - padding: 0
-                - border-radius: 50%
-                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
-                - background: var(--secondary-background-color)
-                - color: var(--primary-text-color)
-                - transition: opacity .25s ease, transform .25s ease
-              icon:
-                - width: 24px
-                - height: 24px
-                - transform: none !important
-              img_cell:
-                - background: none
+      # Closed by Nighttime
+      - type: heading
+        icon: mdi:gesture-tap-button
+        heading: Closed by Nighttime
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: input_boolean.all_windows
+            state: 'off'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
+            {{ build_blind_cards('nighttime') | from_json }}
+        styles:
+          card:
+            - position: fixed
+            - right: 24px
+            - bottom: calc(env(safe-area-inset-bottom, 0px) + 144px)
+            - z-index: 1099
+            - width: 56px
+            - height: 56px
+            - aspect-ratio: 1 / 1
+            - box-sizing: border-box
+            - padding: 0
+            - border-radius: 50%
+            - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+            - background: var(--secondary-background-color)
+            - color: var(--primary-text-color)
+            - transition: opacity .25s ease, transform .25s ease
+          icon:
+            - width: 24px
+            - height: 24px
+            - transform: none !important
+          img_cell:
+            - background: none
