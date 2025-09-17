@@ -337,7 +337,8 @@
             {#- Decide output prefix using autoscale_prefix -#}
             {%- if can_pref -%}
                 {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
-                {%- set scaled = autoscale_prefix(ns.v, sys_tag) | from_json -%}
+                {%- set upper = (1024 if ns.sys == 'iec' else 1000) -%}
+                {%- set scaled = autoscale_prefix(ns.v, sys_tag, upper) | from_json -%}
                 {%- set ns.v = scaled.value | float -%}
                 {%- set ns.pref_out = scaled.prefix -%}
             {%- endif -%}
