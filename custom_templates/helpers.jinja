@@ -41,14 +41,14 @@
 {% endmacro %}
 
 {#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
-{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
     {%- if is_unavail and long_desc_text -%}
         {{- long_desc_text -}}
     {%- elif binary -%}
         {{- desc_text if desc_text|trim != '' else value_text -}}
     {%- else -%}
         {%- if value_text|trim != '' and desc_text|trim != '' -%}
-            {{- value_text ~ (vert_delim if vertical else delim) ~ desc_text -}}
+            {{- value_text ~ (vert_delim if layout == 'vertical' else delim) ~ desc_text -}}
         {%- elif value_text != '' -%}
             {{- value_text -}}
         {%- else -%}
@@ -57,12 +57,12 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
-    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
+    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, delim, layout, vert_delim) -}}
 {% endmacro %}
 
-{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', vertical=false, vert_delim='\n', binary=false) %}
-    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, delim, vertical, vert_delim) -}}
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
+    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, delim, layout, vert_delim) -}}
 {% endmacro %}
 
 {# ======================================================================

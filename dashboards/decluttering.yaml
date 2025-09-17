@@ -62,11 +62,11 @@ template_card:
     secondary: >-
       {%- import 'main.jinja' as main -%}
       {%- if '[[width]]' == 'narrow' -%}
-        {{- main.get_short_label(entity, '[[app]]', '[[options]];vertical=[[multiline_secondary]]') -}}
+        {{- main.get_short_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
       {%- elif '[[width]]' == 'wide' -%}
-        {{- main.get_long_label(entity, '[[app]]', '[[options]];vertical=[[multiline_secondary]]') -}}
+        {{- main.get_long_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
       {%- else -%}
-        {{- main.get_label(entity, '[[app]]', '[[options]];vertical=[[multiline_secondary]]') -}}
+        {{- main.get_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
       {%- endif -%}
     badge_icon: >-
       {%- from 'main.jinja' import get_badge -%}
