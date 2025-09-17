@@ -183,25 +183,39 @@ machine_summary:
               - app: disk_utilization
               - options: 'free=[[i_disk_free]]'
               - multiline_secondary: true
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - entity: '[[i_temp]]'
-              - name: Temp
-              - app: cpu
-              - device_class: temperature
-              - multiline_secondary: true
-          - type: custom:decluttering-card
-            template: template_card
-            visibility:
-              - condition: state
-                entity: '[[i_gpu_pct]]'
-                state_not: unknown
-            variables:
-              - entity: '[[i_gpu_pct]]'
-              - name: GPU
-              - app: cpu_utilization
-              - multiline_secondary: true
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: template_card
+                variables:
+                  - entity: '[[i_temp]]'
+                  - name: Temp
+                  - app: cpu
+                  - device_class: temperature
+                  - multiline_secondary: true
+              - type: custom:decluttering-card
+                template: template_card
+                visibility:
+                  - condition: state
+                    entity: '[[i_gpu_pct]]'
+                    state_not: unknown
+                variables:
+                  - entity: '[[i_gpu_pct]]'
+                  - name: GPU
+                  - app: cpu_utilization
+                  - multiline_secondary: true
+              - type: custom:decluttering-card
+                template: template_card
+                visibility:
+                  - condition: state
+                    entity: '[[i_tpu_temp]]'
+                    state_not: unknown
+                variables:
+                  - entity: '[[i_tpu_temp]]'
+                  - name: TPU
+                  - app: cpu
+                  - device_class: temperature
+                  - multiline_secondary: true
       - type: custom:mushroom-title-card
         subtitle: Stopped Services
         visibility:
