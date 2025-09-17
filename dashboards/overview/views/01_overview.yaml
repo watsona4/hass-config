@@ -299,7 +299,7 @@ sections:
       # Status Title
       - type: custom:mushroom-title-card
         title: Status
-        subtitle: Lights On · Doors & Windows Open · Smoke/CO Alerts
+        subtitle: Lights On • Doors & Windows Open • Smoke/CO Alerts
 
       # Smoke and CO Alerts
       - type: custom:auto-entities
@@ -396,7 +396,7 @@ sections:
       # Unavailable Title
       - type: custom:mushroom-title-card
         title: Unavailable Devices
-        subtitle: Impacted Devices · Count of Affected Entities
+        subtitle: Impacted Devices • Count of Affected Entities
 
       # Unavailable Devices Cards
       - type: custom:auto-entities
@@ -449,7 +449,7 @@ sections:
       # Cameras Title
       - type: custom:mushroom-title-card
         title: Cameras
-        subtitle: Stills Only · Tap for Live
+        subtitle: Stills Only • Tap for Live
         grid_options:
           columns: full
 

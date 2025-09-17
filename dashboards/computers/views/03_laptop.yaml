@@ -63,7 +63,7 @@ sections:
               {%- set m5 = states('sensor.laptop_oo58t6kn_cpu_load_5m')|float(0) -%}
               {%- set m15 = states('sensor.laptop_oo58t6kn_cpu_load_15m')|float(0) -%}
               {%- set c = states('sensor.laptop_oo58t6kn_cpu_cores')|int(0) -%}
-              {{- '1 min: ' ~ m1 ~ ' · 5 min: ' ~ m5 ~ ' · 15 min: ' ~ m15 ~ ' · ' ~ c ~ ' cores' -}}
+              {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
               {{- get_icon(entity, 'cpu_load') -}}
@@ -83,7 +83,7 @@ sections:
               {%- set mem_used = u_humanize_entity('sensor.laptop_oo58t6kn_memory_used') -%}
               {%- set mem_total = u_humanize_entity('sensor.laptop_oo58t6kn_memory_total') -%}
               {%- set mem_free = u_humanize_entity('sensor.laptop_oo58t6kn_memory_available') -%}
-              {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' · Free: ' ~ mem_free ~ ' · ' ~ mem_pct -}}
+              {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
               {{- get_icon(entity, 'memory_utilization') -}}
@@ -139,7 +139,7 @@ sections:
               {%- set ip = states('sensor.laptop_oo58t6kn_network_active_ipv4') -%}
               {%- set up = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_up') -%}
               {%- set down = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_down') -%}
-              {{- nic ~ ' · ' ~ ip ~ ' · Up: ' ~ up ~ ' · Down: ' ~ down -}}
+              {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
             icon: mdi:lan-check
             icon_color: blue
             tap_action:
@@ -164,7 +164,7 @@ sections:
               {%- set total = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_total') -%}
               {%- set used = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_used') -%}
               {%- set pct = u_humanize_entity(entity) -%}
-              {{- 'Total: ' ~ total ~ ' · Used: ' ~ used ~ ' · ' ~ pct -}}
+              {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
               {{- get_icon(entity, 'disk_utilization') -}}
@@ -194,7 +194,7 @@ sections:
               {%- set write_bps = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate') -%}
               {%- set read_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_bytes') -%}
               {%- set write_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_bytes') -%}
-              {{- 'Read: ' ~ read_bps ~ ' · Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' · Total Write: ' ~ write_bytes -}}
+              {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
               {{- get_icon(entity, 'drive_data_rate') -}}
@@ -223,7 +223,7 @@ sections:
               {%- from 'units/base.jinja' import u_humanize_entity -%}
               {%- set pct = u_humanize_entity('sensor.laptop_oo58t6kn_battery_percent') -%}
               {%- set plugged = is_state('binary_sensor.laptop_oo58t6kn_battery_plugged','on')|bool(false) -%}
-              {{- 'Battery: ' ~ pct ~ ' · ' ~ ('Plugged' if plugged else 'On battery') -}}
+              {{- 'Battery: ' ~ pct ~ ' • ' ~ ('Plugged' if plugged else 'On battery') -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
               {{- get_icon(entity, 'discharging', {'charging_entity': 'binary_sensor.laptop_oo58t6kn_battery_plugged'}) -}}
@@ -260,9 +260,9 @@ sections:
               {%- set ns = namespace(life_pct_str='') -%}
               {%- if has_life_pct -%}
                 {%- set life_pct = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used') -%}
-                {%- set ns.life_pct_str = ' · Used ' ~ life_pct -%}
+                {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
               {%- endif -%}
-              {{- health_str ~ ' · ' ~ temp ~ ns.life_pct_str ~ ' · POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' · Bytes Written: ' ~ written -}}
+              {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
             multiline_secondary: true
             icon: >-
               {{- 'mdi:heart-pulse' if is_state(entity,'on') else 'mdi:heart-broken' -}}
