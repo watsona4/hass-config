@@ -175,3 +175,28 @@
     {%- endfor -%}
     {{ ns.cards | tojson }}
 {%- endmacro %}
+
+{% macro any_blinds_closed(wanted=None, suffix='_window') -%}
+    {# True/False: is there at least one matching blind that is closed/closing? #}
+    {%- set ns = namespace(found=false) -%}
+
+    {%- set wanted_list = wanted if wanted is iterable and wanted is not string
+        else ([wanted] if wanted not in [None, ''] else []) -%}
+
+    {%- for c in states.cover -%}
+        {%- set eid = c.entity_id -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+        {%- if c.state not in ['closed','closing'] -%}{% continue %}{%- endif -%}
+
+        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set code = (states(reason_eid) or '') | trim | lower -%}
+
+        {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
+
+        {%- set ns.found = true -%}
+        {# no break used, for HA template compatibility; loop will end quickly anyway #}
+    {%- endfor -%}
+
+    {{ ns.found }}
+{%- endmacro %}
