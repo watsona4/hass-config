@@ -466,7 +466,54 @@
             "color":"#dc2626",
             "full_desc":"Scaling factor >2.0; may indicate reporting anomaly or unsafe conditions."
         }
-    ]
+    ],
+    "pollen": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Low Pollen",
+            "short_desc": "LowPol",
+            "long_desc": "Low Pollen Count",
+            "icon": "mdi:flower-tulip-outline",
+            "color": "#009966",
+            "full_desc": "Low pollen count. No special precautions needed."
+        },
+        {
+            "min_value": 2.5,
+            "default_desc": "Moderate Pol",
+            "short_desc": "ModPol",
+            "long_desc": "Moderate Pollen Count",
+            "icon": "mdi:flower-tulip",
+            "color": "#ffde33",
+            "full_desc": "Moderate pollen count. Individuals who are sensitive to pollen may experience mild symptoms."
+        },
+        {
+            "min_value": 4.0,
+            "default_desc": "High Pollen",
+            "short_desc": "HighPol",
+            "long_desc": "High Pollen Count",
+            "icon": "mdi:flower-poppy",
+            "color": "#ff9933",
+            "full_desc": "High pollen count. Sensitive individuals may experience more severe symptoms. Consider limiting outdoor activities."
+        },
+        {
+            "min_value": 9.7,
+            "default_desc": "Very High Pollen",
+            "short_desc": "VHighPol",
+            "long_desc": "Very High Pollen Count",
+            "icon": "mdi:flower-shamrock",
+            "color": "#cc0033",
+            "full_desc": "Very high pollen count. Sensitive individuals should take extra precautions, such as staying indoors and using air purifiers."
+        },
+    ],
 } %}
 
 {% macro get_dc_context() %}

@@ -1,59 +1,108 @@
-{# # File: config/custom_templates/env/pollen.jinja ## #}
-{# Macros for Pollen Count Index calculations and representations #}
+{# ===============================================================
+   Pollen (Google Pollen API) helpers
+   - build_ctx(entity_id): returns {di, d, plants, pick, days}
+   - best_species(d): choose species with highest value (fallback to a species with a picture)
+   - summarize_days(di, n=3): first n days summary with dominant type & a “spotlight” species
+   =============================================================== #}
 
-{% from 'helpers.jinja' import level_find %}
-
-{# Breakpoints for Pollen Count Index levels #}
-{% set bps = [0, 2.5, 4.9, 9.7] %}
-
-{# Names for Pollen Count Index levels #}
-{% set names = ["Low Pollen", "Moderate Pol", "High Pollen", "Very High Pol"] %}
-
-{# Short names for Pollen Count Index levels #}
-{% set shorts = ["LowPol", "ModPol", "HighPol", "VHighPol"] %}
-
-{# Long names for Pollen Count Index levels #}
-{% set longs = ["Low Pollen Count", "Moderate Pollen Count", "High Pollen Count", "Very High Pollen Count"] %}
-
-{# Icons for Pollen Count Index levels #}
-{% set icons = ["mdi:flower-tulip-outline", "mdi:flower-tulip", "mdi:flower-poppy", "mdi:flower-shamrock"] %}
-
-{# Colors for Pollen Count Index levels #}
-{% set colors = ["#009966", "#ffde33", "#ff9933", "#cc0033", "disabled"] %}
-
-{# Descriptions for Pollen Count Index levels #}
-{% set descriptions = [
-    "Low pollen count. No special precautions needed.",
-    "Moderate pollen count. Individuals who are sensitive to pollen may experience mild symptoms.",
-    "High pollen count. Sensitive individuals may experience more severe symptoms. Consider limiting outdoor activities.",
-    "Very high pollen count. Sensitive individuals should take extra precautions, such as staying indoors and using air purifiers."
-] %}
-
-{# Wrappers for standard functions #}
-{# djlint:off #}
-{% macro name(i) %}{{- names[level(i) |int-1] -}}{% endmacro %}
-{% macro short(i) %}{{- shorts[level(i) |int-1] -}}{% endmacro %}
-{% macro long(i) %}{{- longs[level(i) |int-1] -}}{% endmacro %}
-{% macro icon(i) %}{{- icons[level(i) |int-1] -}}{% endmacro %}
-{% macro desc(i) %}{{- descriptions[level(i) |int-1] -}}{% endmacro %}
-{% macro color(i) %}{{- colors[level(i) |int-1] -}}{% endmacro %}
-{% macro level(i) %}{{- level_find(i, bps) -}}{% endmacro %}
-{# djlint:on #}
-
-{% macro get_date_string(entity) %}
-  {%- set ds = state_attr(entity, "date") -%}
-  {%- set d  = ds | as_datetime(default=none) -%}
-  {%- if d is not none -%}
-    {%- set today = now().date() -%}
-    {%- set dd = d.date() -%}
-    {%- if dd == today -%}
-      {{- "Today" -}}
-    {%- elif dd == (today + timedelta(days=1)) -%}
-      {{- "Tomorrow" -}}
-    {%- else -%}
-      {{- d.strftime("%A") -}}
-    {%- endif -%}
-  {%- else -%}
-    {{- none -}}
-  {%- endif -%}
+{# ---- Helpers ---- #}
+{% macro _hex_from_rgb01(col) %}
+    {%- set r = ((col.get('red')   or 0) * 255) | round(0) | int -%}
+    {%- set g = ((col.get('green') or 0) * 255) | round(0) | int -%}
+    {%- set b = ((col.get('blue')  or 0) * 255) | round(0) | int -%}
+    {{- '#%02X%02X%02X'|format(r, g, b) -}}
 {% endmacro %}
+
+{% macro _safe_date(dt) %}
+    {%- if dt -%}
+        {{- "%04d-%02d-%02d" | format(dt.get('year',0) , dt.get('month',0), dt.get('day',0)) -}}
+    {%- else -%}
+        {{- none -}}
+    {%- endif -%}
+{% endmacro %}
+
+{# ---- Choose a “best” species from a day object ---- #}
+{% macro best_species(d) -%}
+    {%- set plants = d.get('plantInfo') or [] -%}
+    {%- set best = namespace(p=None, v=-1) -%}
+    {%- for p in plants -%}
+        {%- set v = (p.get('indexInfo') or {}).get('value') -%}
+        {%- if v is not none and v > best.v -%}
+            {%- set best.p = p -%}
+            {%- set best.v = v -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- if best.p is none -%}
+        {%- for p in plants -%}
+            {%- set desc = p.get('plantDescription') or {} -%}
+            {%- if desc.get('picture') or desc.get('pictureCloseup') -%}
+                {%- set best.p = p -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- set p = best.p or (plants | first) or {} -%}
+    {%- set desc = p.get('plantDescription') or {} -%}
+    {%- set ii = p.get('indexInfo') or {} -%}
+    {{- {
+        'name': p.get("displayName") or p.get('code'),
+        'code': p.get('code'),
+        'type': desc.get('type'),
+        'in_season': p.get('inSeason'),
+        'value': ii.get('value'),
+        'category': ii.get('category'),
+        'picture': desc.get('picture') or desc.get('pictureCloseup')
+    } -}}
+{%- endmacro %}
+
+{# ---- Summarize first n days for forecast tiles ---- #}
+{% macro summarize_days(di, n=3) -%}
+    {%- set out = namespace(items=[]) -%}
+    {%- for d in di[:n] -%}
+        {%- set types = d.get('pollenTypeInfo') or [] -%}
+        {%- set best = namespace(t=None, v=-1) -%}
+        {%- for t in types -%}
+            {%- set ii = t.get('indexInfo') or {} -%}
+            {%- set v = ii.get('value') -%}
+            {%- if v is not none and v > best.v -%}
+                {%- set best.t = t -%}
+                {%- set best.v = v -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- set top = best.t or {} -%}
+        {%- set ii = top.get('indexInfo') or {} -%}
+        {%- set col = ii.get('color') or {} -%}
+        {%- set hex = _hex_from_rgb01(col) -%}
+        {%- set sp = best_species(d) -%}
+        {%- set dt = d.get('date') or {} -%}
+        {%- set item = {
+            'exists': true,
+            'date': _safe_date(dt),
+            'state': ii.get('category') or 'unknown',
+            'dominant_type': top.get('displayName') or top.get('code'),
+            'dominant_value': ii.get('value'),
+            'dominant_category': ii.get('category'),
+            'dominant_hex': hex,
+            'species_name': sp.get('name'),
+            'species_value': sp.get('value'),
+            'species_category': sp.get('category'),
+            'species_type': sp.get('type'),
+            'species_picture': sp.get('picture')
+        } -%}
+        {%- set out.items = out.items + [item] -%}
+    {%- endfor -%}
+    {{- out.items -}}
+{%- endmacro %}
+
+{# ---- Build full context for a source entity ---- #}
+{% macro build_ctx(src) -%}
+    {%- set di = state_attr(src, 'dailyInfo') | default([], true) -%}
+    {%- set d = (di | first) | default({}, true) -%}
+    {{- {
+        'di': di,
+        'd':  d,
+        'plants': d.get("plantInfo") or [],
+        'pick': best_species(d),
+        'days': summarize_days(di, 3)
+    } -}}
+{%- endmacro %}
