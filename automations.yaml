@@ -5807,22 +5807,22 @@
   alias: Parlor Humidifier, keep ~50%
   description: Turn humidifier off above 50%, on below 50%
   triggers:
-  - entity_id: sensor.parlor_humidity
+  - entity_id: sensor.humidifier_humidity
     above: 50
     for: 00:02:00
     trigger: numeric_state
-  - entity_id: sensor.parlor_humidity
+  - entity_id: sensor.humidifier_humidity
     below: 50
     for: 00:02:00
     trigger: numeric_state
   actions:
   - choose:
-    - conditions: '{{ states(''sensor.parlor_humidity'')|float(0) > 50 }}'
+    - conditions: '{{ states(''sensor.humidifier_humidity'')|float(0) > 50 }}'
       sequence:
       - target:
           entity_id: switch.parlor_humidifier
         action: switch.turn_off
-    - conditions: '{{ states(''sensor.parlor_humidity'')|float(0) < 50 }}'
+    - conditions: '{{ states(''sensor.humidifier_humidity'')|float(0) < 50 }}'
       sequence:
       - target:
           entity_id: switch.parlor_humidifier
