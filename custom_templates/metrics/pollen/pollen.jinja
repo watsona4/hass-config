@@ -31,11 +31,29 @@
 
 {# Wrappers for standard functions #}
 {# djlint:off #}
-{% macro name(i) %}{{ names[level(i) |int-1] }}{% endmacro %}
-{% macro short(i) %}{{ shorts[level(i) |int-1] }}{% endmacro %}
-{% macro long(i) %}{{ longs[level(i) |int-1] }}{% endmacro %}
-{% macro icon(i) %}{{ icons[level(i) |int-1] }}{% endmacro %}
-{% macro desc(i) %}{{ descriptions[level(i) |int-1] }}{% endmacro %}
-{% macro color(i) %}{{ colors[level(i) |int-1] }}{% endmacro %}
-{% macro level(i) %}{{ level_find(i, bps) }}{% endmacro %}
+{% macro name(i) %}{{- names[level(i) |int-1] -}}{% endmacro %}
+{% macro short(i) %}{{- shorts[level(i) |int-1] -}}{% endmacro %}
+{% macro long(i) %}{{- longs[level(i) |int-1] -}}{% endmacro %}
+{% macro icon(i) %}{{- icons[level(i) |int-1] -}}{% endmacro %}
+{% macro desc(i) %}{{- descriptions[level(i) |int-1] -}}{% endmacro %}
+{% macro color(i) %}{{- colors[level(i) |int-1] -}}{% endmacro %}
+{% macro level(i) %}{{- level_find(i, bps) -}}{% endmacro %}
 {# djlint:on #}
+
+{% macro get_date_string(entity) %}
+  {%- set ds = state_attr(entity, "date") -%}
+  {%- set d  = ds | as_datetime(default=none) -%}
+  {%- if d is not none -%}
+    {%- set today = now().date() -%}
+    {%- set dd = d.date() -%}
+    {%- if dd == today -%}
+      {{- "Today" -}}
+    {%- elif dd == (today + timedelta(days=1)) -%}
+      {{- "Tomorrow" -}}
+    {%- else -%}
+      {{- d.strftime("%A") -}}
+    {%- endif -%}
+  {%- else -%}
+    {{- none -}}
+  {%- endif -%}
+{% endmacro %}
