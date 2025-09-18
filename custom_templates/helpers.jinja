@@ -154,7 +154,7 @@
   6) Public Getters (used by main.jinja)
 ====================================================================== #}
 
-{% macro get_value(value, app, options) %}
+{% macro get_value(value, app='default', options={}) %}
     {%- if options.get('is_unavail', false) -%}
         {{- 'Unavailable' -}}
     {%- else -%}
@@ -169,7 +169,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro get_name(value, app, options) %}
+{% macro get_name(value, app='default', options={}) %}
     {%- set exceptions = ['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC'] -%}
     {%- if options is mapping and options.get('name') -%}
         {{- format_name(options.name, exceptions=exceptions) -}}
@@ -178,28 +178,28 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro get_default_desc(value, app, options) %}
+{% macro get_default_desc(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'default_desc', options) -}}
 {% endmacro %}
-{% macro get_short_desc(value, app, options) %}
+{% macro get_short_desc(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'short_desc', options) -}}
 {% endmacro %}
-{% macro get_long_desc(value, app, options) %}
+{% macro get_long_desc(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'long_desc', options) -}}
 {% endmacro %}
-{% macro get_full_desc(value, app, options) %}
+{% macro get_full_desc(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'full_desc', options) -}}
 {% endmacro %}
-{% macro get_icon(value, app, options) %}
+{% macro get_icon(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'icon', options) -}}
 {% endmacro %}
-{% macro get_color(value, app, options) %}
+{% macro get_color(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'color', options) -}}
 {% endmacro %}
-{% macro get_badge(value, app, options) %}
+{% macro get_badge(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'badge', options) -}}
 {% endmacro %}
-{% macro get_badge_color(value, app, options) %}
+{% macro get_badge_color(value, app='default', options={}) %}
     {{- get_level_attr(value, app, 'badge_color', options) or get_level_attr(value, app, 'color', options) -}}
 {% endmacro %}
 
