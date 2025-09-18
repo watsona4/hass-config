@@ -409,7 +409,7 @@ sections:
               {% set compressed = u_humanize_entity('sensor.frigate_borg_size_compressed') %}
               {% set deduplicated = u_humanize_entity('sensor.frigate_borg_size_deduplicated') %}
               {{ last_run ~ ' • ' ~ last_archive }}
-              {{ original ~ ' ➝ ' ~ compressed ~ ' ➝ ' ~ deduplicated }}
+              {{ '\n' ~ original ~ ' ➝ ' ~ compressed ~ ' ➝ ' ~ deduplicated }}
             icon: >-
               {{ 'mdi:cloud-check' if is_state('binary_sensor.frigate_borg_success','on') else 'mdi:cloud-alert' }}
             icon_color: >-
@@ -448,9 +448,9 @@ sections:
               {% set point1 = u_humanize_entity('number.frigate_coral_apex_0_trip_point1_temp') %}
               {% set point2 = u_humanize_entity('number.frigate_coral_apex_0_trip_point2_temp') %}
               {{ 'Now: ' ~ temp ~ ' • Warn2: ' ~ warn2 ~ ' (' ~ warn2_on ~ ')' }}
-              {{ '\nTP0: ' ~ point0 ~ ' — mild throttling begins' }}
-              {{ '\nTP1: ' ~ point1 ~ ' — stronger throttling' }}
-              {{ '\nTP2: ' ~ point2 ~ ' — critical; device may reset/disable' }}
+              {{ '\n    TP0: ' ~ point0 ~ ' — mild throttling begins' }}
+              {{ '\n    TP1: ' ~ point1 ~ ' — stronger throttling' }}
+              {{ '\n    TP2: ' ~ point2 ~ ' — critical; device may reset/disable' }}
             icon: >-
               {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
               {% set t = u_convert_entity(entity,"c")|float(none) %}
