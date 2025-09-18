@@ -1,0 +1,90 @@
+{# Estimate vitamin D production time in minutes given UV index and skin type #}
+{% macro vitd_minutes(uv, skin_type) %}
+    {#- Minutes needed 3x/week, no sunscreen, shorts+T-shirt, around midday.
+     Source ranges by UV band 3–5, 6–7, 8–10, 11+ for skin types I–VI. -#}
+    {# djlint:off #}
+    {%- set bins = [
+        {'min': 3, 'max': 5, 'I': (10, 15), 'II': (15, 20), 'III': (20, 30), 'IV': (30, 40), 'V': (40, 60), 'VI': (40, 60)},
+        {'min': 5, 'max': 7, 'I': (5, 10), 'II': (10, 15), 'III': (15, 20), 'IV': (20, 30), 'V': (30, 40), 'VI': (30, 40)},
+        {'min': 7, 'max': 10, 'I': (2, 8), 'II': (5, 10), 'III': (10, 15), 'IV': (15, 20), 'V': (20, 30), 'VI': (20, 30)},
+        {'min': 10, 'max': 99, 'I': (1, 5), 'II': (2, 8), 'III': (5, 10), 'IV': (10, 15), 'V': (15, 20), 'VI': (15, 20)}
+    ] -%}
+    {# djlint:on #}
+    {%- set uv = uv | float(0) -%}
+    {%- if uv < 3 -%}
+        {{- none | tojson -}}
+    {%- else -%}
+        {#- Normalize skin type input: accepts "I", "1", "ii", etc. Default III if unknown. -#}
+        {%- set st = skin_type | string | upper | replace(' ', '') -%}
+        {%- set ns = namespace(key=None) -%}
+        {%- if st in ['1','I'] -%}
+            {%- set ns.key = "I" -%}
+        {%- elif st in ['2','II'] -%}
+            {%- set ns.key = "II" -%}
+        {%- elif st in ['3','III'] -%}
+            {%- set ns.key = "III" -%}
+        {%- elif st in ['4','IV'] -%}
+            {%- set ns.key = "IV" -%}
+        {%- elif st in ['5','V'] -%}
+            {%- set ns.key = "V" -%}
+        {%- elif st in ['6','VI'] -%}
+            {%- set ns.key = "VI" -%}
+        {%- else -%}
+            {%- set ns.key = "III" -%}
+        {%- endif -%}
+
+        {%- set b = bins | selectattr('min','le',uv) | selectattr('max','ge',uv) | list | first -%}
+        {%- if b is not none -%}
+            {%- set pair = b[ns.key] -%}
+            {{- {'min': pair[0], 'max': pair[1], 'mid': ((pair[0] + pair[1]) / 2) | round(0) } | tojson -}}
+        {%- else -%}
+            {{- none | tojson -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro -%}
+
+{# Format a duration in minutes into a friendly label #}
+{% macro fmt_duration(mins) %}
+    {%- set m = mins | int(0) -%}
+    {%- if m < 60 -%}
+        {{- m ~ ' mins' -}}
+    {%- else -%}
+        {%- set h = (m // 60) -%}
+        {%- set rem = m % 60 -%}
+        {%- if rem == 0 -%}
+            {{- h ~ (' hour' if h == 1 else ' hours') -}}
+        {%- else -%}
+            {{- h ~ (' hour, ' if h == 1 else ' hours, ' ) ~ rem ~ ' mins' -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro -%}
+
+{# Format a min-max range of durations in minutes into a friendly label #}
+{% macro fmt_range(min_mins, max_mins) %}
+    {%- set has_min = min_mins is not none -%}
+    {%- set has_max = max_mins is not none -%}
+    {%- if not has_min and not has_max -%}
+        {{- 'N/A' -}}
+    {%- elif not has_min and has_max -%}
+        {{- '< ' ~ fmt_duration(max_mins) -}}
+    {%- elif has_min and not has_max -%}
+        {{- '> ' ~ fmt_duration(min_mins) -}}
+    {%- else -%}
+        {#- If both under 60, keep ultra-compact like "5-15 mins" -#}
+        {%- if min_mins < 60 and max_mins < 60 -%}
+            {{- min_mins | int ~ '-' ~ max_mins | int ~ ' mins' -}}
+        {%- else -%}
+            {{- fmt_duration(min_mins) ~ ' - ' ~ fmt_duration(max_mins) -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro -%}
+
+{# Generate a label for vitamin D production time given UV index and skin type #}
+{% macro vitd_label(uv, skin_type) %}
+    {%- set r = vitd_minutes(uv, skin_type) | from_json -%}
+    {%- if r is not none -%}
+        {{- fmt_range(r.min, r.max) -}}
+    {%- else -%}
+        {{- 'Insufficient UV' -}}
+    {%- endif -%}
+{%- endmacro -%}

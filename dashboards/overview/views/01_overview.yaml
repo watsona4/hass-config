@@ -217,7 +217,7 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.openmeteo_nearby_uv_index
+              - entity: sensor.nearby_uv_index
               - name: UV Index
               - app: uv_index
               - options: uom=
@@ -226,15 +226,15 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.openmeteo_nearby_wind_speed
+              - entity: sensor.nearby_wind_speed
               - options: >-
-                  direction=sensor.openmeteo_nearby_wind_direction;
-                  gusts=sensor.openmeteo_nearby_wind_gust
+                  direction=sensor.nearby_wind_direction;
+                  gusts=sensor.nearby_wind_gust
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.openmeteo_nearby_today_precip_sum
-              - options: prob=sensor.openmeteo_nearby_today_precip_prob_max
+              - entity: sensor.nearby_today_precip_sum
+              - options: prob=sensor.nearby_today_precip_prob_max
 
           # Air Quality and Dew Point
           - type: custom:decluttering-card
@@ -245,7 +245,7 @@ sections:
           - type: custom:decluttering-card
             template: template_card
             variables:
-              - entity: sensor.openmeteo_nearby_dew_point
+              - entity: sensor.nearby_dew_point
               - name: Dew Point
               - app: dew_point
 

@@ -1,0 +1,85 @@
+
+{% macro uv_window(entity_id, threshold) -%}
+    {%- set hourly = state_attr(entity_id, 'hourly') -%}
+    {%- set times = hourly.time if hourly is mapping else [] -%}
+    {%- set uvs = hourly.uv_index if hourly is mapping else [] -%}
+    {%- set n = [ (times|length), (uvs|length) ] | min -%}
+
+    {# figure out first day's date from first hourly timestamp #}
+    {%- set first_dt = (times[0] | default(None)) | as_datetime(default=None) -%}
+    {%- set first_date = (first_dt | as_local).date() if first_dt else now().date() -%}
+
+    {%- set ns = namespace(
+        prev_t=None, prev_v=None,
+        first_t=None, first_v=None,
+        last_t=None,  last_v=None,
+        start_ts=None, end_ts=None,
+        ever_above=false
+        ) -%}
+
+    {%- for i in range(0, n) -%}
+        {%- set t = (times[i] | as_datetime(default=None)) -%}
+        {%- if not t %}
+            {% continue %}
+        {% endif -%}
+        {%- set tl = t | as_local -%}
+        {%- if tl.date() != first_date -%}
+            {%- if tl.date() > first_date -%}
+                {% break %}
+            {% else %}
+                {% continue %}
+            {% endif -%}
+        {%- endif -%}
+
+        {%- set v = (uvs[i] | float(0)) -%}
+
+        {%- if ns.first_t is none -%}
+            {%- set ns.first_t = tl -%}
+            {%- set ns.first_v = v -%}
+        {%- endif -%}
+        {%- set ns.last_t = tl -%}
+        {%- set ns.last_v = v -%}
+        {%- if v >= threshold %}
+            {%- set ns.ever_above = true -%}
+        {%- endif -%}
+
+        {%- if ns.prev_t is not none -%}
+            {# first rising edge #}
+            {%- if ns.start_ts is none and ns.prev_v < threshold and v >= threshold -%}
+                {%- set dv = v - ns.prev_v -%}
+                {%- set frac = (threshold - ns.prev_v) / (dv if dv != 0 else 1) -%}
+                {%- set ns.start_ts = ns.prev_t.timestamp() + frac * (tl.timestamp() - ns.prev_t.timestamp()) -%}
+            {%- endif -%}
+            {# last falling edge #}
+            {%- if ns.prev_v >= threshold and v < threshold -%}
+                {%- set dv2 = ns.prev_v - v -%}
+                {%- set frac2 = (ns.prev_v - threshold) / (dv2 if dv2 != 0 else 1) -%}
+                {%- set ns.end_ts = ns.prev_t.timestamp() + frac2 * (tl.timestamp() - ns.prev_t.timestamp()) -%}
+            {%- endif -%}
+        {%- endif -%}
+
+        {%- set ns.prev_t = tl -%}
+        {%- set ns.prev_v = v -%}
+    {%- endfor -%}
+
+    {# fallback: day starts already above threshold #}
+    {%- if ns.start_ts is none and ns.first_t is not none and ns.first_v is not none and ns.first_v >= threshold -%}
+        {%- set ns.start_ts = ns.first_t.timestamp() -%}
+    {%- endif -%}
+
+    {# fallback: never detected a fall but were above at some point #}
+    {%- if ns.end_ts is none and ns.last_t is not none and ns.ever_above -%}
+        {%- set ns.end_ts = ns.last_t.timestamp() -%}
+    {%- endif -%}
+
+    {# guard against inverted window #}
+    {%- if ns.start_ts is not none and ns.end_ts is not none and ns.end_ts < ns.start_ts -%}
+        {%- set ns.end_ts = ns.last_t.timestamp() if ns.last_t else ns.end_ts -%}
+    {%- endif -%}
+
+    {%- set start_iso = ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if ns.start_ts is not none else none -%}
+    {%- set end_iso = ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if ns.end_ts is not none else none -%}
+    {%- set duration_min = ((ns.end_ts - ns.start_ts) / 60) | round(0) if ns.start_ts is not none and ns.end_ts is not none else 0 -%}
+
+    {{ {'start': start_iso, 'end': end_iso, 'duration_min': duration_min} | tojson }}
+{%- endmacro %}
