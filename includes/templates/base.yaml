@@ -9,8 +9,8 @@
       state_class: measurement
       availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t10') is not none }}"
       state: >-
-        {% from "helpers.jinja" import convert_temp_value %}
-        {{ convert_temp_value(state_attr('sensor.agromonitoring','t10'),'k','f') }}
+        {% from "units/base.jinja" import u_convert_value %}
+        {{ u_convert_value(state_attr('sensor.agromonitoring','t10'),'k','f') }}
 
     - name: Soil Moisture
       unique_id: soil_moisture
@@ -28,8 +28,8 @@
       state_class: measurement
       availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t0') is not none }}"
       state: >-
-        {% from "helpers.jinja" import convert_temp_value %}
-        {{ convert_temp_value(state_attr('sensor.agromonitoring','t0'),'k','f') }}
+        {% from "units/base.jinja" import u_convert_value %}
+        {{ u_convert_value(state_attr('sensor.agromonitoring','t0'),'k','f') }}
 
 # ===============================
 # RV connectivity pulse
