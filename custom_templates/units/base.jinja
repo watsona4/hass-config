@@ -216,7 +216,7 @@
     {%- set fu = normalize_unit(from_unit|string) -%}
     {%- set tu = normalize_unit(to_unit|string) -%}
     {%- if fu == tu -%}
-        {{- {'value': value|float, 'unit': tu} | tojson -}}
+        {{- {'value': value|float(0), 'unit': tu} | tojson -}}
     {%- else -%}
         {%- set fp = split_compound_unit(fu) | from_json -%}
         {%- set tp = split_compound_unit(tu) | from_json -%}
