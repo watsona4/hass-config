@@ -4,7 +4,7 @@
   Based on U.S. EPA AQI categories (0–500)
 ====================================================================== #}
 
-{% set lookup_unit = '' %}  {# AQI is unitless; leave blank so we don't force a unit #}
+{% set lookup_unit = none %}  {# AQI is unitless; leave blank so we don't force a unit #}
 {% set levels = {
   "default": [
     {

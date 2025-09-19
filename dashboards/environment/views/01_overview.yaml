@@ -183,8 +183,8 @@ sections:
                   {%- set dom_val = state_attr(entity,'dominant_value') -%}
                   {{- (dom_cat or 'unknown') ~ ' · Index ' ~ (dom_val if dom_val is not none else '–') -}}
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 fill_container: false
                 multiline_secondary: false
                 tap_action:
@@ -213,8 +213,8 @@ sections:
                   {%- set v = state_attr(entity,'grass_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'grass_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='grass_value')) }}
                 tap_action:
                   action: more-info
 
@@ -227,8 +227,8 @@ sections:
                   {%- set v = state_attr(entity,'tree_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'tree_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='tree_value')) }}
                 tap_action:
                   action: more-info
 
@@ -241,8 +241,8 @@ sections:
                   {%- set v = state_attr(entity,'weed_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'weed_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='weed_value')) }}
                 tap_action:
                   action: more-info
 
@@ -256,8 +256,8 @@ sections:
               {{- recs | join(' ') if recs else '—' -}}
             multiline_secondary: true
             icon_color: >-
-              {% from 'device_class/none.jinja' import get_color -%}
-              {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+              {% from 'main.jinja' import get_color -%}
+              {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
             tap_action:
               action: more-info
 
@@ -272,8 +272,8 @@ sections:
                 primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -284,8 +284,8 @@ sections:
                 primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -296,8 +296,8 @@ sections:
                 primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -323,8 +323,8 @@ sections:
                 primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -335,8 +335,8 @@ sections:
                 primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -347,8 +347,8 @@ sections:
                 primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -376,8 +376,8 @@ sections:
                 primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -388,8 +388,8 @@ sections:
                 primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -400,8 +400,8 @@ sections:
                 primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {% from 'device_class/none.jinja' import get_color -%}
-                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
                 tap_action:
                   action: more-info
 
@@ -552,69 +552,45 @@ sections:
           - from: 0
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(0, options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(0, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
           - from: 51
             color: >-
-              {%- from 'helpers.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(51, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(51, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
           - from: 101
             color: >-
-              {%- from 'helpers.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(101, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(101, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
           - from: 151
             color: >-
-              {%- from 'helpers.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(151, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(151, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
           - from: 201
             color: >-
-              {%- from 'helpers.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(201, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(201, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
           - from: 301
             color: >-
-              {%- from 'helpers.jinja' import get_color -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(301, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(301, options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
         secondary:
           unit: AQI
           show_gauge: none
@@ -684,8 +660,8 @@ sections:
           {{- get_icon(entity) -}}
         primary: Health Advice
         secondary: >-
-          {%- from 'main.jinja' import get_default_desc -%}
-          {{- get_default_desc(entity) -}}
+          {%- from 'main.jinja' import get_full_desc -%}
+          {{- get_full_desc(entity) -}}
         multiline_secondary: true
         icon_color: >-
           {%- from 'main.jinja' import get_color -%}
@@ -754,69 +730,45 @@ sections:
                       - from: 0
                         color: >-
                           {%- from 'main.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(0, options=context | combine( { 'uom': none } )) -}}
+                          {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(0, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
                       - from: 51
                         color: >-
-                          {%- from 'helpers.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(51, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_color -%}
+                          {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(51, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
                       - from: 101
                         color: >-
-                          {%- from 'helpers.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(101, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_color -%}
+                          {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(101, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
                       - from: 151
                         color: >-
-                          {%- from 'helpers.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(151, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_color -%}
+                          {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(151, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
                       - from: 201
                         color: >-
-                          {%- from 'helpers.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(201, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_color -%}
+                          {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(201, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
                       - from: 301
                         color: >-
-                          {%- from 'helpers.jinja' import get_color -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_color(301, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_color -%}
+                          {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
                         label: >-
-                          {%- from 'helpers.jinja' import get_long_desc -%}
-                          {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                          {%- set context = get_dc_context() | from_json -%}
-                          {{- get_long_desc(301, options=context | combine( { 'uom': none } )) -}}
+                          {%- from 'main.jinja' import get_long_desc -%}
+                          {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
                     secondary:
                       unit: AQI
                       show_gauge: none
@@ -890,69 +842,45 @@ sections:
                   - from: 0
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(0, options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(0, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
                   - from: 51
                     color: >-
-                      {%- from 'helpers.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(51, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(51, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
                   - from: 101
                     color: >-
-                      {%- from 'helpers.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(101, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(101, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
                   - from: 151
                     color: >-
-                      {%- from 'helpers.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(151, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(151, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
                   - from: 201
                     color: >-
-                      {%- from 'helpers.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(201, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(201, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
                   - from: 301
                     color: >-
-                      {%- from 'helpers.jinja' import get_color -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(301, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/aqi.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(301, options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
                 secondary:
                   unit: AQI
                   show_gauge: none
@@ -1015,58 +943,38 @@ sections:
           - from: 0
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
           - from: 2
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
           - from: 5
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
           - from: 7
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
           - from: 10
             color: >-
               {%- from 'main.jinja' import get_color -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_color(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
             label: >-
-              {%- from 'helpers.jinja' import get_long_desc -%}
-              {%- from 'device_class/none.jinja' import get_dc_context -%}
-              {%- set context = get_dc_context() | from_json -%}
-              {{- get_long_desc(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
         secondary:
           show_gauge: none
           unit: UVI
@@ -1115,28 +1023,28 @@ sections:
             entity: sensor.openmeteo_nearby
             primary: Today
             secondary: >-
-              {%- from 'device_class/none.jinja' import get_label -%}
-              {{- get_label(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
             icon: >-
-              {%- from 'device_class/none.jinja' import get_icon -%}
-              {{- get_icon(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
             icon_color: >-
-              {%- from 'device_class/none.jinja' import get_color -%}
-              {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.openmeteo_nearby
             primary: Tomorrow
             secondary: >-
-              {%- from 'device_class/none.jinja' import get_label -%}
-              {{- get_label(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
             icon: >-
-              {%- from 'device_class/none.jinja' import get_icon -%}
-              {{- get_icon(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
             icon_color: >-
-              {%- from 'device_class/none.jinja' import get_color -%}
-              {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
@@ -1144,14 +1052,14 @@ sections:
             primary: >-
               {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
             secondary: >-
-              {%- from 'device_class/none.jinja' import get_label -%}
-              {{- get_label(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
             icon: >-
-              {%- from 'device_class/none.jinja' import get_icon -%}
-              {{- get_icon(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
             icon_color: >-
-              {%- from 'device_class/none.jinja' import get_color -%}
-              {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
             tap_action:
               action: more-info
       - type: vertical-stack
@@ -1174,58 +1082,38 @@ sections:
                   - from: 0
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
                   - from: 2
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
                   - from: 5
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
                   - from: 7
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
                   - from: 10
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
                 secondary:
                   show_gauge: none
                   unit: UVI
@@ -1240,51 +1128,49 @@ sections:
                 adaptive_state_color: true
               - type: vertical-stack
                 cards:
-                  - type: horizontal-stack
-                    cards:
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_home
-                        primary: Today
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_home
-                        primary: Tomorrow
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_home
-                        primary: >-
-                          {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: Today
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: Tomorrow
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: >-
+                      {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    tap_action:
+                      action: more-info
       - type: vertical-stack
         visibility:
           - condition: state
@@ -1308,58 +1194,38 @@ sections:
                   - from: 0
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(0, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
                   - from: 2
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(2, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
                   - from: 5
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(5, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
                   - from: 7
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(7, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
                   - from: 10
                     color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_color(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
                     label: >-
-                      {%- from 'helpers.jinja' import get_long_desc -%}
-                      {%- from 'device_class/none.jinja' import get_dc_context -%}
-                      {%- set context = get_dc_context() | from_json -%}
-                      {{- get_long_desc(10, app='uv_index', options=context | combine( { 'uom': none } )) -}}
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
                 secondary:
                   show_gauge: none
                   unit: UVI
@@ -1374,48 +1240,46 @@ sections:
                 adaptive_state_color: true
               - type: vertical-stack
                 cards:
-                  - type: horizontal-stack
-                    cards:
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_rv
-                        primary: Today
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_rv
-                        primary: Tomorrow
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
-                      - type: custom:mushroom-template-card
-                        entity: sensor.openmeteo_rv
-                        primary: >-
-                          {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
-                        secondary: >-
-                          {%- from 'device_class/none.jinja' import get_label -%}
-                          {{- get_label(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        icon: >-
-                          {%- from 'device_class/none.jinja' import get_icon -%}
-                          {{- get_icon(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        icon_color: >-
-                          {%- from 'device_class/none.jinja' import get_color -%}
-                          {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
-                        tap_action:
-                          action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: Today
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: Tomorrow
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: >-
+                      {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                    tap_action:
+                      action: more-info
