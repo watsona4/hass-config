@@ -1,0 +1,65 @@
+{# Simple helpers for picking coordinates and formatting the WAQI URL #}
+
+{% macro nearby_lat() %}
+    {{- state_attr('device_tracker.aaron_helper_tracker', 'latitude') | float(0) -}}
+{% endmacro %}
+
+{% macro nearby_lon() %}
+    {{- state_attr('device_tracker.aaron_helper_tracker', 'longitude') | float(0) -}}
+{% endmacro %}
+
+{% macro nearby_alt() %}
+    {{- state_attr('device_tracker.aaron_helper_tracker', 'altitude') | float(0) -}}
+{% endmacro %}
+
+{% macro nearby_is_valid() %}
+    {{- (nearby_lat() | float(0) != 0) and (nearby_lon() | float(0) != 0) -}}
+{% endmacro %}
+
+{% macro nearby_has_alt() %}
+    {{- nearby_alt() | float(0) != 0 -}}
+{% endmacro %}
+
+{% macro home_lat() %}
+    {{- states("sensor.home_latitude") | float(0) -}}
+{% endmacro %}
+
+{% macro home_lon() %}
+    {{- states("sensor.home_longitude") | float(0) -}}
+{% endmacro %}
+
+{% macro home_alt() %}
+    {{- states("input_number.home_altitude") | float(0) -}}
+{% endmacro %}
+
+{% macro home_is_valid() %}
+    {{- (home_lat() | float(0) != 0) and (home_lon() | float(0) != 0) -}}
+{% endmacro %}
+
+{% macro home_has_alt() %}
+    {{- home_alt() | float(0) != 0 -}}
+{% endmacro %}
+
+{% macro rv_lat() %}
+    {{- state_attr('device_tracker.rv_device_tracker', 'latitude') | float(0) -}}
+{% endmacro %}
+
+{% macro rv_lon() %}
+    {{- state_attr('device_tracker.rv_device_tracker', 'longitude') | float(0) -}}
+{% endmacro %}
+
+{% macro rv_alt() %}
+    {{- state_attr('device_tracker.rv_device_tracker', 'altitude') | float(0) -}}
+{% endmacro %}
+
+{% macro rv_is_valid() %}
+    {{- (rv_lat() | float(0) != 0) and (rv_lon() | float(0) != 0) -}}
+{% endmacro %}
+
+{% macro rv_has_alt() %}
+    {{- rv_alt() | float(0) != 0 -}}
+{% endmacro %}
+
+{% macro waqi_url(lat, lon) %}
+    {{- 'https://api.waqi.info/feed/geo:%0.6f;%0.6f'|format(lat,lon) -}}
+{% endmacro %}

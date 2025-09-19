@@ -12,23 +12,16 @@ sensor:
     scan_interval: 600
     timeout: 8
     resource_template: >-
-      {%- set plat = states('sensor.aaron_latitude') | float(0) -%}
-      {%- set hlat = states('sensor.home_latitude')  | float(0) -%}
-      {%- set plon = states('sensor.aaron_longitude') | float(0) -%}
-      {%- set hlon = states('sensor.home_longitude')  | float(0) -%}
-      {%- set lat = plat if plat != 0 else hlat -%}
-      {%- set lon = plon if plon != 0 else hlon -%}
-      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if lat!=0 and lon!=0 else 'http://127.0.0.1:65535/' -}}
+      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
+      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     method: GET
     params:
       location.latitude: >-
-        {%- set plat = states('sensor.aaron_latitude') | float(0) -%}
-        {%- set hlat = states('sensor.home_latitude')  | float(0) -%}
-        {{- plat if plat != 0 else hlat -}}
+        {%- from 'macros/rest_helpers.jinja' import nearby_lat -%}
+        {{- nearby_lat() -}}
       location.longitude: >-
-        {%- set plon = states('sensor.aaron_longitude') | float(0) -%}
-        {%- set hlon = states('sensor.home_longitude')  | float(0) -%}
-        {{- plon if plon != 0 else hlon -}}
+        {%- from 'macros/rest_helpers.jinja' import nearby_lon -%}
+        {{- nearby_lon() -}}
       days: 5
       languageCode: en
       key: !secret google_pollen_api_key
@@ -37,13 +30,8 @@ sensor:
       User-Agent: HomeAssistant
       Cache-Control: no-cache
     availability: >-
-      {%- set plat = states('sensor.aaron_latitude')  | float(0) -%}
-      {%- set plon = states('sensor.aaron_longitude') | float(0) -%}
-      {%- set hlat = states('sensor.home_latitude')   | float(0) -%}
-      {%- set hlon = states('sensor.home_longitude')  | float(0) -%}
-      {%- set lat = plat if plat != 0 else hlat -%}
-      {%- set lon = plon if plon != 0 else hlon -%}
-      {{- not (lat == 0 and lon == 0) -}}
+      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
+      {{- nearby_is_valid() | bool -}}
     value_template: >-
       {%- if value_json is mapping and value_json.error is not defined -%}
         {%- set di = value_json.get('dailyInfo') or [] -%}
@@ -62,13 +50,16 @@ sensor:
     scan_interval: 600
     timeout: 8
     resource_template: >-
-      {%- set lat = states('sensor.home_latitude')  | float(0) -%}
-      {%- set lon = states('sensor.home_longitude') | float(0) -%}
-      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if lat!=0 and lon!=0 else 'http://127.0.0.1:65535/' -}}
+      {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
+      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     method: GET
     params:
-      location.latitude: "{{- states('sensor.home_latitude') | float(0) -}}"
-      location.longitude: "{{- states('sensor.home_longitude') | float(0) -}}"
+      location.latitude: >-
+        {%- from 'macros/rest_helpers.jinja' import home_lat -%}
+        {{- home_lat() -}}
+      location.longitude: >-
+        {%- from 'macros/rest_helpers.jinja' import home_lon -%}
+        {{- home_lon() -}}
       days: 5
       languageCode: en
       key: !secret google_pollen_api_key
@@ -77,9 +68,8 @@ sensor:
       User-Agent: HomeAssistant
       Cache-Control: no-cache
     availability: >-
-      {%- set lat = states('sensor.home_latitude')  | float(0) -%}
-      {%- set lon = states('sensor.home_longitude') | float(0) -%}
-      {{- not (lat == 0 and lon == 0) -}}
+      {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
+      {{- home_is_valid() | bool -}}
     value_template: >-
       {%- if value_json is mapping and value_json.error is not defined -%}
         {%- set di = value_json.get('dailyInfo') or [] -%}
@@ -98,27 +88,16 @@ sensor:
     scan_interval: 600
     timeout: 8
     resource_template: >-
-      {%- set rlat = states('sensor.rv_latitude')   | float(0) -%}
-      {%- set alat = states('sensor.aaron_latitude')| float(0) -%}
-      {%- set hlat = states('sensor.home_latitude') | float(0) -%}
-      {%- set rlon = states('sensor.rv_longitude')    | float(0) -%}
-      {%- set alon = states('sensor.aaron_longitude') | float(0) -%}
-      {%- set hlon = states('sensor.home_longitude')  | float(0) -%}
-      {%- set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) -%}
-      {%- set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) -%}
-      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if lat!=0 and lon!=0 else 'http://127.0.0.1:65535/' -}}
+      {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
+      {{- 'https://pollen.googleapis.com/v1/forecast:lookup' if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     method: GET
     params:
       location.latitude: >-
-        {%- set rlat = states('sensor.rv_latitude')   | float(0) -%}
-        {%- set alat = states('sensor.aaron_latitude')| float(0) -%}
-        {%- set hlat = states('sensor.home_latitude') | float(0) -%}
-        {{- rlat if rlat != 0 else (alat if alat != 0 else hlat) -}}
+        {%- from 'macros/rest_helpers.jinja' import rv_lat -%}
+        {{- rv_lat() -}}
       location.longitude: >-
-        {%- set rlon = states('sensor.rv_longitude')    | float(0) -%}
-        {%- set alon = states('sensor.aaron_longitude') | float(0) -%}
-        {%- set hlon = states('sensor.home_longitude')  | float(0) -%}
-        {{- rlon if rlon != 0 else (alon if alon != 0 else hlon) -}}
+        {%- from 'macros/rest_helpers.jinja' import rv_lon -%}
+        {{- rv_lon() -}}
       days: 5
       languageCode: en
       key: !secret google_pollen_api_key
@@ -127,15 +106,8 @@ sensor:
       User-Agent: HomeAssistant
       Cache-Control: no-cache
     availability: >-
-      {%- set rlat = states('sensor.rv_latitude')   | float(0) -%}
-      {%- set rlon = states('sensor.rv_longitude')  | float(0) -%}
-      {%- set alat = states('sensor.aaron_latitude')| float(0) -%}
-      {%- set alon = states('sensor.aaron_longitude')| float(0) -%}
-      {%- set hlat = states('sensor.home_latitude') | float(0) -%}
-      {%- set hlon = states('sensor.home_longitude')| float(0) -%}
-      {%- set lat = rlat if rlat != 0 else (alat if alat != 0 else hlat) -%}
-      {%- set lon = rlon if rlon != 0 else (alon if alon != 0 else hlon) -%}
-      {{- not (lat == 0 and lon == 0) -}}
+      {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
+      {{- rv_is_valid() | bool -}}
     value_template: >-
       {%- if value_json is mapping and value_json.error is not defined -%}
         {%- set di = value_json.get('dailyInfo') or [] -%}
