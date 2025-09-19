@@ -7,25 +7,55 @@
     {#- Parse options if given as a string -#}
     {%- set options = H.parse_options_kv(options) | from_json if options is string else options -%}
 
-    {#- Get the entity's device class if it exists, otherwise use 'none' -#}
+    {#- domain convenience (when an entity_id is provided); else '' -#}
+    {%- set domain = (entity_id.split('.', 1)[0] if entity_id and '.' in entity_id else '') -%}
+
+    {#- Device class resolution -#}
     {%- set ns = namespace(device_class=none) -%}
-    {%- set ns.device_class = state_attr(entity_id, 'device_class') or options.get('device_class') or 'none' -%}
-
-    {#- domain convenience -#}
-    {%- set domain = entity_id.split('.', 1)[0] -%}
-
-    {#- if this is a binary_sensor with no device_class, use synthetic 'binary' -#}
-    {%- if domain in ['binary_sensor', 'input_boolean'] -%}
-        {%- set ns.device_class = "binary" -%}
+    {%- set ns.device_class = (options.get('device_class') or (state_attr(entity_id, 'device_class') if entity_id else none) or 'none') -%}
+    {%- if domain in ['binary_sensor','input_boolean'] and not options.get('device_class') -%}
+        {%- set ns.device_class = 'binary' -%}
     {%- endif -%}
 
-    {#- Raw & numeric value (preserve 'unavailable' instead of coercing to 0) -#}
-    {%- set raw_state = states(entity_id) -%}
-    {%- set value = raw_state|bool if ns.device_class == 'binary' else raw_state|float(none) -%}
+    {#- Raw state selection: priority = options.value > options.attr > states(entity) -#}
+    {%- set raw_state = (
+        options.get('value')
+        if options is mapping and options.value is defined
+        else (
+            state_attr(entity_id, options.attr)
+            if entity_id and options.get('attr')
+            else (states(entity_id) if entity_id else none)
+        )
+    ) -%}
+
+    {#- Numeric coercion rules:
+        - binary class uses boolean of the raw_state
+        - others use float(none), preserving None for unavailable
+    -#}
+    {%- set value = (raw_state|bool) if ns.device_class == 'binary' else (raw_state|float(none)) -%}
 
     {#- Meta & units -#}
-    {%- set friendly_name = state_attr(entity_id, 'friendly_name') -%}
-    {%- set uom = options.get('uom', state_attr(entity_id, 'unit_of_measurement') | default(none)) -%}
+    {%- set friendly_name = (
+        options.get('name')
+        or (state_attr(entity_id, 'friendly_name') if entity_id else none)
+        or app
+    ) -%}
+
+    {# Unit resolution order:
+       1) options.uom or options.unit (explicit override)
+       2) options.uom_attr on the entity, if provided
+       3) standard entity unit_of_measurement
+       4) none
+    -#}
+    {%- set uom = (
+        options.get('uom', options.get('unit'))
+        if options is mapping and (options.uom is defined or options.unit is defined)
+        else (
+            state_attr(entity_id, options.uom_attr)
+            if entity_id and options.get('uom_attr')
+            else (state_attr(entity_id, 'unit_of_measurement') if entity_id else none)
+        )
+    ) -%}
     {%- set display_unit = options.get('unit', uom) -%}
 
     {#- Import the appropriate template based on device class -#}
@@ -104,10 +134,10 @@
     {%- set lookup_unit = dc.lookup_unit -%}
     {%- set levels = dc.levels -%}
 
+    {#- Unavailable detection preserves None and common strings -#}
     {%- set is_unavail = (
-        raw_state is string
-        and (raw_state | trim | lower) in ['unavailable','unknown','none','null','nan']
-        ) or (raw_state is not string and raw_state is none) -%}
+        raw_state is string and (raw_state | trim | lower) in ['unavailable','unknown','none','null','nan']
+    ) or (raw_state is not string and raw_state is none) -%}
 
     {#- Create options dict with unit info for the getters -#}
     {%- set enhanced_options = dict(
@@ -121,8 +151,12 @@
         is_unavail=is_unavail,
     ) -%}
 
+    {#- Compute fields, honoring device-class specific overrides -#}
     {%- set value_text = (DC.get_value(value, app, enhanced_options) if DC.get_value is defined
-        else H.get_value(value, app, enhanced_options) if ns.device_class != 'binary' else state_translated(entity_id)) -%}
+        else H.get_value(value, app, enhanced_options) if ns.device_class != 'binary' else (
+            state_translated(entity_id) if entity_id else ('On' if value else 'Off')
+        )
+    ) -%}
     {%- set name = (DC.get_name(value, app, enhanced_options) if DC.get_name is defined
         else H.get_name(value, app, enhanced_options)) -%}
     {%- set def_desc = (DC.get_default_desc(value, app, enhanced_options) if DC.get_default_desc is defined
