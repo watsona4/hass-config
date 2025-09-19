@@ -6,6 +6,16 @@
 {% set levels = {
     "residential_branch": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Idle",
             "short_desc": "Idle",
@@ -61,6 +71,16 @@
         }
     ],
     "rack_pdu_outlet": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Idle",

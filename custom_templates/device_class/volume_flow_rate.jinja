@@ -6,6 +6,16 @@
 {% set levels = {
     "domestic_water": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0.0,
             "default_desc": "Off",
             "short_desc": "Off",
@@ -52,6 +62,16 @@
         }
     ],
     "irrigation_zone": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0.0,
             "default_desc": "Off",

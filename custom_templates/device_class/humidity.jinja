@@ -1,7 +1,7 @@
 {#- Severity definitions for humidity measurements (HA device_class: humidity) -#}
 
 {#- Humidity levels for various applications -#}
-{% set lookup_unit = '%' %}
+{% set lookup_unit = "%" %}
 {% set levels = {
     "indoor": [
         {
@@ -254,4 +254,6 @@
     ]
 } %}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

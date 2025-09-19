@@ -1,7 +1,7 @@
 {#- Severity definitions for temperature measurements (HA device_class: temperature) -#}
 
 {#- Standard temperature levels for various applications -#}
-{% set lookup_unit = '°C' %}
+{% set lookup_unit = "°C" %}
 {% set levels = {
     "dew_point": [
         {
@@ -455,4 +455,6 @@
     ]
 } -%}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

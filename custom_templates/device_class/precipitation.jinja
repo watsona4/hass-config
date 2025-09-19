@@ -4,7 +4,7 @@
 {% from 'units/base.jinja' import u_convert_entity %}
 
 {# Precipitation levels based on accumulation in mm #}
-{% set lookup_unit = 'mm' %}
+{% set lookup_unit = "mm" %}
 {% set levels = {
     "default": [
         {
@@ -74,7 +74,9 @@
     ]
 } %}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}
 
 {% macro get_name(value, app, options) -%}
     {{- 'Precipitation • ' ~ H.get_default_desc(value, app, options) -}}

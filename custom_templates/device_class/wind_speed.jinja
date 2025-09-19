@@ -3,7 +3,7 @@
 {% import 'helpers.jinja' as H with context %}
 {% from 'units/base.jinja' import u_convert_entity, u_humanize_value %}
 
-{% set lookup_unit = 'mph' %}
+{% set lookup_unit = "mph" %}
 {% set levels = {
     "default": [
         {
@@ -149,7 +149,9 @@
     ]
 } %}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}
 
 {% macro get_name(value, app, options) -%}
     {{- 'Wind • ' ~ H.get_default_desc(value, app, options) -}}
@@ -157,7 +159,9 @@
 
 {% macro get_label(value, app, options) %}
     {%- set deg = states(options.direction) -%}
+    {# djlint:off #}
     {%- set dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'] -%}
+    {# djlint:on #}
     {%- set dirtxt = (dirs[((deg|float(0)+11.25)/22.5)|int % 16]) if deg is not none else '—' -%}
     {%- set gust = u_convert_entity(options.gusts, options.display_unit) -%}
     {%- set gusttxt = ' (Gusts ' ~ u_humanize_value(gust, options.display_unit) ~ ')' if gust is not none else '' -%}

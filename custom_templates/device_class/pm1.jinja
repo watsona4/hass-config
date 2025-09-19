@@ -6,6 +6,16 @@
 {% set levels = {
     "who_guidance": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Good",
             "short_desc": "Good",
@@ -43,6 +53,16 @@
         }
     ],
     "indoor_monitor": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Clean",

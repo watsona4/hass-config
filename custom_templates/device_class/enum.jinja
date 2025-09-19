@@ -6,6 +6,16 @@
 {% set levels = {
     "binary_state": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Off",
             "short_desc": "Off",
@@ -25,6 +35,16 @@
         }
     ],
     "hvac_mode": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Off",
@@ -81,6 +101,16 @@
         }
     ],
     "device_health": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Unknown",

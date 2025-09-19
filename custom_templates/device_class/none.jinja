@@ -3,6 +3,7 @@
 {% from 'units/base.jinja' import u_humanize_entity %}
 {% import 'helpers.jinja' as H %}
 
+{% set lookup_unit = none %}
 {% set levels = {
     "generic": [
         {
@@ -143,7 +144,7 @@
             "long_desc": "Low UV Exposure",
             "icon": "mdi:white-balance-sunny",
             "color": "#146814",
-            "full_desc": "No protection needed. You can safely stay outside using minimal sun protection."
+            "full_desc": "No protection needed. You can safely remain outdoors with minimal sun protection. If you will be outside for extended periods, a light sunscreen and sunglasses are sensible but not essential."
         },
         {
             "min_value": 2,
@@ -153,7 +154,7 @@
             "long_desc": "Moderate UV Exposure",
             "icon": "mdi:sunglasses",
             "color": "#e0e005",
-            "full_desc": "Protection needed. Seek shade during late morning through mid-afternoon. When outside, generously apply broad-spectrum SPF-15 or higher sunscreen on exposed skin, and wear protective clothing, a wide-brimmed hat, and sunglasses."
+            "full_desc": "Protection is recommended. The sun’s rays can cause damage, particularly around midday. Stay in the shade during late morning through mid-afternoon, wear sunglasses and protective clothing, and apply broad-spectrum sunscreen of at least SPF-15 to exposed skin."
         },
         {
             "min_value": 5,
@@ -163,7 +164,7 @@
             "long_desc": "High UV Exposure",
             "icon": "mdi:weather-sunny-alert",
             "color": "#e19509",
-            "full_desc": "Protection needed. Seek shade during late morning through mid-afternoon. When outside, generously apply broad-spectrum SPF-15 or higher sunscreen on exposed skin, and wear protective clothing, a wide-brimmed hat, and sunglasses."
+            "full_desc": "Protection is essential. Reduce your time in the sun between 10 a.m. and 4 p.m. Apply broad-spectrum SPF-30 or higher every 2 hours, even on cloudy days. Wear long sleeves, a wide-brimmed hat, and UV-blocking sunglasses."
         },
         {
             "min_value": 7,
@@ -173,7 +174,7 @@
             "long_desc": "Very High UV Exposure",
             "icon": "mdi:umbrella-beach",
             "color": "#a20000",
-            "full_desc": "Extra protection needed. Be careful outside, especially during late morning through mid-afternoon. If your shadow is shorter than you, seek shade and wear protective clothing, a wide-brimmed hat, and sunglasses, and generously apply a minimum of  SPF-15, broad-spectrum sunscreen on exposed skin."
+            "full_desc": "Extra protection is needed. Minimize time outdoors during midday hours. If your shadow is shorter than you are, the sun’s rays are strong—seek shade, cover up with protective clothing, wear a wide-brimmed hat and sunglasses, and reapply high-SPF sunscreen frequently."
         },
         {
             "min_value": 10,
@@ -183,7 +184,7 @@
             "long_desc": "Extreme UV Exposure",
             "icon": "mdi:alert-decagram",
             "color": "#593f62",
-            "full_desc": "Extra protection needed. Be careful outside, especially during late morning through mid-afternoon. If your shadow is shorter than you, seek shade and wear protective clothing, a wide-brimmed hat, and sunglasses, and generously apply a minimum of  SPF-15, broad-spectrum sunscreen on exposed skin."
+            "full_desc": "Take all precautions. Unprotected skin and eyes can burn in minutes. Avoid going outside during peak sun hours. If unavoidable, seek shade, wear long protective clothing, a broad hat, wrap-around UV-blocking sunglasses, and apply SPF-50+ sunscreen generously and often."
         }
     ],
     "presence_count": [
@@ -193,7 +194,7 @@
             "short_desc":"N/A",
             "long_desc":"Presence count unavailable",
             "icon":"mdi:close-circle",
-            "color":"Disabled",
+            "color":"disabled",
             "full_desc":"No count available."
         },
         {
@@ -291,6 +292,16 @@
     ],
     "memory_utilization": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Idle",
             "short_desc": "Idle",
@@ -329,6 +340,16 @@
     ],
     "disk_utilization": [
         {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
             "min_value": 0,
             "default_desc": "Empty",
             "short_desc": "Empty",
@@ -366,6 +387,16 @@
         }
     ],
     "cpu_load": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Idle",
@@ -419,7 +450,7 @@
             "short_desc":"N/A",
             "long_desc":"Core factor unavailable",
             "icon":"mdi:close-circle",
-            "color":"Disabled",
+            "color":"disabled",
             "full_desc":"No reading from core factor sensor."
         },
         {
@@ -518,7 +549,7 @@
 } %}
 
 {% macro get_dc_context() %}
-    {{- {'levels': levels} | tojson -}}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
 {% endmacro %}
 
 {% macro get_value(value, app, options) %}

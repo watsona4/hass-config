@@ -10,7 +10,7 @@
     - friendly_name / name: usual naming override
 ====================================================================== #}
 
-{% set lookup_unit = "" %}
+{% set lookup_unit = none %}
 
 {# Default app library; override/extend per-entity via options.levels #}
 {% set levels = {
@@ -21,7 +21,7 @@
             "short_desc": "N/A",
             "long_desc": "Sensor unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "This binary sensor is not reporting.",
         },
         {
@@ -50,7 +50,7 @@
             "short_desc": "N/A",
             "long_desc": "Alarm status unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -79,7 +79,7 @@
             "short_desc": "N/A",
             "long_desc": "Occupancy unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -108,7 +108,7 @@
             "short_desc": "N/A",
             "long_desc": "Status unknown",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -137,7 +137,7 @@
             "short_desc": "N/A",
             "long_desc": "Status unknown",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -166,7 +166,7 @@
             "short_desc": "N/A",
             "long_desc": "Status unknown",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -195,7 +195,7 @@
             "short_desc": "N/A",
             "long_desc": "Status unknown",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -224,7 +224,7 @@
             "short_desc": "N/A",
             "long_desc": "Status unknown",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "No data.",
         },
         {
@@ -253,7 +253,7 @@
             "short_desc":"N/A",
             "long_desc":"Presence status unavailable",
             "icon":"mdi:close-circle",
-            "color":"Disabled",
+            "color":"disabled",
             "full_desc":"No presence data."
         },
         {
@@ -282,7 +282,7 @@
             "short_desc":"N/A",
             "long_desc":"Return status unavailable",
             "icon":"mdi:close-circle",
-            "color":"Disabled",
+            "color":"disabled",
             "full_desc":"No return-trip data."
         },
         {
@@ -311,7 +311,7 @@
             "short_desc":"N/A",
             "long_desc":"Alone status unavailable",
             "icon":"mdi:close-circle",
-            "color":"Disabled",
+            "color":"disabled",
             "full_desc":"No status data."
         },
         {
@@ -411,5 +411,5 @@
 
 {% macro get_name(value, app, options) %}
     {#- honor explicit name, then friendly_name, else app -#}
-    {{- (options.get('name') or options.get('friendly_name') or app) -}}
+    {{- (options.get("name") or options.get('friendly_name') or app) -}}
 {% endmacro %}

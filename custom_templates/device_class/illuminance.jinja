@@ -1,190 +1,191 @@
 {#- Severity definitions for illuminance measurements (HA device_class: illuminance) -#}
 
 {#- Illuminance levels for various applications -#}
-{% set lookup_unit = 'lx' %}
-{%- set levels = {
-  "indoor": [
-    {
-        "min_value": none,
-        "default_desc": "Unavailable",
-        "short_desc": "Disabled",
-        "long_desc": "Sensor unavailable",
-        "icon": "mdi:eye-off",
-        "color": "disabled",
-        "badge": "mdi:circle",
-        "full_desc": "Sensor not currently available."
-    },
-    {
-      "min_value": 0,
-      "default_desc": "Dark",
-      "short_desc": "Dark",
-      "long_desc": "Dark or Nighttime",
-      "icon": "mdi:weather-night",
-      "color": "#0f172a",
-      "full_desc": "Very little light; unsafe for reading or detailed tasks."
-    },
-    {
-      "min_value": 50,
-      "default_desc": "Dim",
-      "short_desc": "Dim",
-      "long_desc": "Dimly Lit Room",
-      "icon": "mdi:lightbulb-outline",
-      "color": "#713f12",
-      "full_desc": "Dim; suitable for ambiance but not reading."
-    },
-    {
-      "min_value": 200,
-      "default_desc": "Living",
-      "short_desc": "Living",
-      "long_desc": "General Living Light",
-      "icon": "mdi:sofa",
-      "color": "#f59e0b",
-      "full_desc": "Comfortable lighting for most indoor activities."
-    },
-    {
-      "min_value": 500,
-      "default_desc": "Bright",
-      "short_desc": "Bright",
-      "long_desc": "Bright Indoor Light",
-      "icon": "mdi:lightbulb-on",
-      "color": "#10b981",
-      "full_desc": "Bright light, suitable for reading or working."
-    },
-    {
-      "min_value": 1000,
-      "default_desc": "Very Bright",
-      "short_desc": "V Bright",
-      "long_desc": "Very Bright Indoor",
-      "icon": "mdi:spotlight-beam",
-      "color": "#3b82f6",
-      "full_desc": "Strong indoor lighting; can cause glare."
-    }
-  ],
+{% set lookup_unit = "lx" %}
+{% set levels = {
+    "indoor": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Dark",
+            "short_desc": "Dark",
+            "long_desc": "Dark or Nighttime",
+            "icon": "mdi:weather-night",
+            "color": "#0f172a",
+            "full_desc": "Very little light; unsafe for reading or detailed tasks."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Dim",
+            "short_desc": "Dim",
+            "long_desc": "Dimly Lit Room",
+            "icon": "mdi:lightbulb-outline",
+            "color": "#713f12",
+            "full_desc": "Dim; suitable for ambiance but not reading."
+        },
+        {
+            "min_value": 200,
+            "default_desc": "Living",
+            "short_desc": "Living",
+            "long_desc": "General Living Light",
+            "icon": "mdi:sofa",
+            "color": "#f59e0b",
+            "full_desc": "Comfortable lighting for most indoor activities."
+        },
+        {
+            "min_value": 500,
+            "default_desc": "Bright",
+            "short_desc": "Bright",
+            "long_desc": "Bright Indoor Light",
+            "icon": "mdi:lightbulb-on",
+            "color": "#10b981",
+            "full_desc": "Bright light, suitable for reading or working."
+        },
+        {
+            "min_value": 1000,
+            "default_desc": "Very Bright",
+            "short_desc": "V Bright",
+            "long_desc": "Very Bright Indoor",
+            "icon": "mdi:spotlight-beam",
+            "color": "#3b82f6",
+            "full_desc": "Strong indoor lighting; can cause glare."
+        }
+    ],
 
-  "outdoor": [
-    {
-        "min_value": none,
-        "default_desc": "Unavailable",
-        "short_desc": "Disabled",
-        "long_desc": "Sensor unavailable",
-        "icon": "mdi:eye-off",
-        "color": "disabled",
-        "badge": "mdi:circle",
-        "full_desc": "Sensor not currently available."
-    },
-    {
-      "min_value": 0,
-      "default_desc": "Night",
-      "short_desc": "Night",
-      "long_desc": "Night Sky",
-      "icon": "mdi:weather-night",
-      "color": "#0f172a",
-      "full_desc": "No sunlight; starlight or artificial light only."
-    },
-    {
-      "min_value": 1,
-      "default_desc": "Twilight",
-      "short_desc": "Twilight",
-      "long_desc": "Twilight/Dawn",
-      "icon": "mdi:weather-sunset",
-      "color": "#9333ea",
-      "full_desc": "Very low natural light; outlines visible."
-    },
-    {
-      "min_value": 100,
-      "default_desc": "Overcast",
-      "short_desc": "Overcast",
-      "long_desc": "Overcast Daylight",
-      "icon": "mdi:weather-cloudy",
-      "color": "#60a5fa",
-      "full_desc": "Dark cloudy day; feels dim but safe outdoors."
-    },
-    {
-      "min_value": 10000,
-      "default_desc": "Daylight",
-      "short_desc": "Daylight",
-      "long_desc": "Full Daylight",
-      "icon": "mdi:weather-sunny",
-      "color": "#facc15",
-      "full_desc": "Typical daylight outdoors, even with some cloud cover."
-    },
-    {
-      "min_value": 30000,
-      "default_desc": "Bright Sun",
-      "short_desc": "B Sun",
-      "long_desc": "Bright Sunlight",
-      "icon": "mdi:white-balance-sunny",
-      "color": "#f59e0b",
-      "full_desc": "Bright, direct sun; can cause eye strain."
-    },
-    {
-      "min_value": 100000,
-      "default_desc": "Extreme Sun",
-      "short_desc": "Extreme",
-      "long_desc": "Extreme Sunlight",
-      "icon": "mdi:sunglasses",
-      "color": "#e11d48",
-      "full_desc": "Peak direct sun at noon on clear days; protective eyewear recommended."
-    }
-  ],
+    "outdoor": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Night",
+            "short_desc": "Night",
+            "long_desc": "Night Sky",
+            "icon": "mdi:weather-night",
+            "color": "#0f172a",
+            "full_desc": "No sunlight; starlight or artificial light only."
+        },
+        {
+            "min_value": 1,
+            "default_desc": "Twilight",
+            "short_desc": "Twilight",
+            "long_desc": "Twilight/Dawn",
+            "icon": "mdi:weather-sunset",
+            "color": "#9333ea",
+            "full_desc": "Very low natural light; outlines visible."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Overcast",
+            "short_desc": "Overcast",
+            "long_desc": "Overcast Daylight",
+            "icon": "mdi:weather-cloudy",
+            "color": "#60a5fa",
+            "full_desc": "Dark cloudy day; feels dim but safe outdoors."
+        },
+        {
+            "min_value": 10000,
+            "default_desc": "Daylight",
+            "short_desc": "Daylight",
+            "long_desc": "Full Daylight",
+            "icon": "mdi:weather-sunny",
+            "color": "#facc15",
+            "full_desc": "Typical daylight outdoors, even with some cloud cover."
+        },
+        {
+            "min_value": 30000,
+            "default_desc": "Bright Sun",
+            "short_desc": "B Sun",
+            "long_desc": "Bright Sunlight",
+            "icon": "mdi:white-balance-sunny",
+            "color": "#f59e0b",
+            "full_desc": "Bright, direct sun; can cause eye strain."
+        },
+        {
+            "min_value": 100000,
+            "default_desc": "Extreme Sun",
+            "short_desc": "Extreme",
+            "long_desc": "Extreme Sunlight",
+            "icon": "mdi:sunglasses",
+            "color": "#e11d48",
+            "full_desc": "Peak direct sun at noon on clear days; protective eyewear recommended."
+        }
+    ],
+    "workshop": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Dark",
+            "short_desc": "Dark",
+            "long_desc": "No Workshop Light",
+            "icon": "mdi:flash-off",
+            "color": "#0f172a",
+            "full_desc": "No lighting; unsafe for any work."
+        },
+        {
+            "min_value": 200,
+            "default_desc": "Minimal Task",
+            "short_desc": "Minimal",
+            "long_desc": "Minimal Task Lighting",
+            "icon": "mdi:desk-lamp",
+            "color": "#d97706",
+            "full_desc": "Enough light for simple, low-precision tasks."
+        },
+        {
+            "min_value": 500,
+            "default_desc": "General Work",
+            "short_desc": "Work",
+            "long_desc": "General Workshop Lighting",
+            "icon": "mdi:hammer-screwdriver",
+            "color": "#22c55e",
+            "full_desc": "Adequate for woodworking, repairs, and most shop tasks."
+        },
+        {
+            "min_value": 1000,
+            "default_desc": "Detail Work",
+            "short_desc": "Detail",
+            "long_desc": "Detail Workshop Lighting",
+            "icon": "mdi:magnify",
+            "color": "#3b82f6",
+            "full_desc": "Bright lighting for detailed or precision work."
+        },
+        {
+            "min_value": 2000,
+            "default_desc": "Fine Detail",
+            "short_desc": "Fine",
+            "long_desc": "Fine Detail Lighting",
+            "icon": "mdi:spotlight-beam",
+            "color": "#9333ea",
+            "full_desc": "Very bright lighting; ideal for electronics, painting, or inspection tasks."
+        }
+    ]
+} %}
 
-  "workshop": [
-    {
-        "min_value": none,
-        "default_desc": "Unavailable",
-        "short_desc": "Disabled",
-        "long_desc": "Sensor unavailable",
-        "icon": "mdi:eye-off",
-        "color": "disabled",
-        "badge": "mdi:circle",
-        "full_desc": "Sensor not currently available."
-    },
-    {
-      "min_value": 0,
-      "default_desc": "Dark",
-      "short_desc": "Dark",
-      "long_desc": "No Workshop Light",
-      "icon": "mdi:flash-off",
-      "color": "#0f172a",
-      "full_desc": "No lighting; unsafe for any work."
-    },
-    {
-      "min_value": 200,
-      "default_desc": "Minimal Task",
-      "short_desc": "Minimal",
-      "long_desc": "Minimal Task Lighting",
-      "icon": "mdi:desk-lamp",
-      "color": "#d97706",
-      "full_desc": "Enough light for simple, low-precision tasks."
-    },
-    {
-      "min_value": 500,
-      "default_desc": "General Work",
-      "short_desc": "Work",
-      "long_desc": "General Workshop Lighting",
-      "icon": "mdi:hammer-screwdriver",
-      "color": "#22c55e",
-      "full_desc": "Adequate for woodworking, repairs, and most shop tasks."
-    },
-    {
-      "min_value": 1000,
-      "default_desc": "Detail Work",
-      "short_desc": "Detail",
-      "long_desc": "Detail Workshop Lighting",
-      "icon": "mdi:magnify",
-      "color": "#3b82f6",
-      "full_desc": "Bright lighting for detailed or precision work."
-    },
-    {
-      "min_value": 2000,
-      "default_desc": "Fine Detail",
-      "short_desc": "Fine",
-      "long_desc": "Fine Detail Lighting",
-      "icon": "mdi:spotlight-beam",
-      "color": "#9333ea",
-      "full_desc": "Very bright lighting; ideal for electronics, painting, or inspection tasks."
-    }
-  ]
-} -%}
-
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

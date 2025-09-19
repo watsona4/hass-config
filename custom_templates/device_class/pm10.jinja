@@ -1,90 +1,92 @@
 {# Severity definitions for PM10 measurements #}
 
 {# PM10 levels based on EPA and WHO standards #}
-{% set lookup_unit = 'µg/m³' %}
+{% set lookup_unit = "µg/m³" %}
 {% set levels = {
-  "default": [
-    {
-      "min_value": none,
-      "default_desc": "Unavailable",
-      "short_desc": "Disabled",
-      "long_desc": "Sensor is disabled or unavailable",
-      "icon": "mdi:eye-off",
-      "color": "Disabled",
-      "badge": "mdi:circle",
-      "full_desc": "PM10 input is disabled or not available; excluded from AQI component calculations."
-    },
-    {
-      "min_value": 0.0,
-      "default_desc": "Good",
-      "short_desc": "Good",
-      "long_desc": "Air quality is good",
-      "icon": "mdi:emoticon-excited-outline",
-      "color": "#00e400",
-      "badge": "mdi:numeric-0-circle",
-      "full_desc": "Air quality poses little or no risk."
-    },
-    {
-      "min_value": 55.0,
-      "default_desc": "Moderate",
-      "short_desc": "Moderate",
-      "long_desc": "Air quality is acceptable",
-      "icon": "mdi:emoticon-happy-outline",
-      "color": "#ffff00",
-      "badge": "mdi:numeric-2-circle",
-      "full_desc": "Generally acceptable; a concern for some sensitive individuals."
-    },
-    {
-      "min_value": 155.0,
-      "default_desc": "Unhealthy for Sensitive Groups",
-      "short_desc": "USG",
-      "long_desc": "Sensitive groups may be affected",
-      "icon": "mdi:emoticon-neutral-outline",
-      "color": "#ff7e00",
-      "badge": "mdi:numeric-4-circle",
-      "full_desc": "Sensitive groups may experience health effects; the general public is less likely to be affected."
-    },
-    {
-      "min_value": 255.0,
-      "default_desc": "Unhealthy",
-      "short_desc": "Unhealthy",
-      "long_desc": "Air quality is unhealthy",
-      "icon": "mdi:emoticon-sad-outline",
-      "color": "#ff0000",
-      "badge": "mdi:numeric-6-circle",
-      "full_desc": "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
-    },
-    {
-      "min_value": 355.0,
-      "default_desc": "Very Unhealthy",
-      "short_desc": "V Unhealthy",
-      "long_desc": "Air quality is very unhealthy",
-      "icon": "mdi:emoticon-dead-outline",
-      "color": "#8f3f97",
-      "badge": "mdi:numeric-8-circle",
-      "full_desc": "Health alert: everyone may experience more serious health effects."
-    },
-    {
-      "min_value": 425.0,
-      "default_desc": "Hazardous",
-      "short_desc": "Hazard",
-      "long_desc": "Air quality is hazardous",
-      "icon": "mdi:skull",
-      "color": "#7e0023",
-      "badge": "mdi:numeric-9-circle",
-      "full_desc": "Serious health warnings of emergency conditions; the entire population is at risk."
-    },
-    {
-      "min_value": 505.0,
-      "default_desc": "Hazardous+",
-      "short_desc": "Haz+",
-      "long_desc": "Extremely hazardous air quality",
-      "icon": "mdi:skull-crossbones",
-      "color": "#5b0217",
-      "badge": "mdi:numeric-10-circle",
-      "full_desc": "Extreme emergency conditions; avoid all outdoor activity."
-    }
-  ]
+    "default": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor is disabled or unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "PM10 input is disabled or not available; excluded from AQI component calculations."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Air quality is good",
+            "icon": "mdi:emoticon-excited-outline",
+            "color": "#00e400",
+            "badge": "mdi:numeric-0-circle",
+            "full_desc": "Air quality poses little or no risk."
+        },
+        {
+            "min_value": 55.0,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Air quality is acceptable",
+            "icon": "mdi:emoticon-happy-outline",
+            "color": "#ffff00",
+            "badge": "mdi:numeric-2-circle",
+            "full_desc": "Generally acceptable; a concern for some sensitive individuals."
+        },
+        {
+            "min_value": 155.0,
+            "default_desc": "Unhealthy for Sensitive Groups",
+            "short_desc": "USG",
+            "long_desc": "Sensitive groups may be affected",
+            "icon": "mdi:emoticon-neutral-outline",
+            "color": "#ff7e00",
+            "badge": "mdi:numeric-4-circle",
+            "full_desc": "Sensitive groups may experience health effects; the general public is less likely to be affected."
+        },
+        {
+            "min_value": 255.0,
+            "default_desc": "Unhealthy",
+            "short_desc": "Unhealthy",
+            "long_desc": "Air quality is unhealthy",
+            "icon": "mdi:emoticon-sad-outline",
+            "color": "#ff0000",
+            "badge": "mdi:numeric-6-circle",
+            "full_desc": "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
+        },
+        {
+            "min_value": 355.0,
+            "default_desc": "Very Unhealthy",
+            "short_desc": "V Unhealthy",
+            "long_desc": "Air quality is very unhealthy",
+            "icon": "mdi:emoticon-dead-outline",
+            "color": "#8f3f97",
+            "badge": "mdi:numeric-8-circle",
+            "full_desc": "Health alert: everyone may experience more serious health effects."
+        },
+        {
+            "min_value": 425.0,
+            "default_desc": "Hazardous",
+            "short_desc": "Hazard",
+            "long_desc": "Air quality is hazardous",
+            "icon": "mdi:skull",
+            "color": "#7e0023",
+            "badge": "mdi:numeric-9-circle",
+            "full_desc": "Serious health warnings of emergency conditions; the entire population is at risk."
+        },
+        {
+            "min_value": 505.0,
+            "default_desc": "Hazardous+",
+            "short_desc": "Haz+",
+            "long_desc": "Extremely hazardous air quality",
+            "icon": "mdi:skull-crossbones",
+            "color": "#5b0217",
+            "badge": "mdi:numeric-10-circle",
+            "full_desc": "Extreme emergency conditions; avoid all outdoor activity."
+        }
+    ]
 } %}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

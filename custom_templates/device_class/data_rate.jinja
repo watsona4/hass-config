@@ -20,7 +20,7 @@
             "short_desc": "N/A",
             "long_desc": "Data rate unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "Utilization sensor not reporting."
         },
         {
@@ -112,7 +112,7 @@
             "short_desc": "N/A",
             "long_desc": "Speed test unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "Speed test not run or not reporting."
         },
         {
@@ -195,7 +195,7 @@
             "short_desc": "N/A",
             "long_desc": "Upload rate unavailable",
             "icon": "mdi:close-circle",
-            "color": "Disabled",
+            "color": "disabled",
             "full_desc": "Upload sensor not reporting."
         },
         {
@@ -263,6 +263,16 @@
         }
     ],
   "drive_data_rate": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
     {
       "min_value": 0,
       "default_desc": "Idle",
@@ -310,6 +320,16 @@
     }
   ],
   "nvme_data_rate": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
     {
       "min_value": 0,
       "default_desc": "Idle",

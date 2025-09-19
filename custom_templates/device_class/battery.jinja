@@ -3,8 +3,19 @@
 {% from 'helpers.jinja' import find_matching_level %}
 
 {# Battery levels based on percentage #}
+{% set lookup_unit = none %}
 {% set levels = {
     "discharging": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Empty",
@@ -70,6 +81,16 @@
         }
     ],
     "charging": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
         {
             "min_value": 0,
             "default_desc": "Empty",
@@ -137,7 +158,7 @@
 } %}
 
 {% macro get_dc_context() %}
-    {{- {'levels': levels} | tojson -}}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
 {% endmacro %}
 
 {% import 'helpers.jinja' as H %}
@@ -145,31 +166,31 @@
 {% macro get_charging_state(options) %}
     {%- set ns = namespace(app='charging') -%}
     {%- if options.charging_entity is defined and is_state(options.charging_entity, 'on') -%}
-        {%- set ns.app = 'charging' -%}
+        {%- set ns.app = "charging" -%}
     {%- endif -%}
     {{- ns.app -}}
 {% endmacro %}
 
 {% macro get_default_desc(value, app, options) %}
-    {{- H.get_default_desc(value, get_charging_state(options), options) -}}
+    {{- H.get_default_desc(value, get_charging_state(options) , options) -}}
 {% endmacro %}
 
 {% macro get_short_desc(value, app, options) %}
-    {{- H.get_short_desc(value, get_charging_state(options), options) -}}
+    {{- H.get_short_desc(value, get_charging_state(options) , options) -}}
 {% endmacro %}
 
 {% macro get_long_desc(value, app, options) %}
-    {{- H.get_long_desc(value, get_charging_state(options), options) -}}
+    {{- H.get_long_desc(value, get_charging_state(options) , options) -}}
 {% endmacro %}
 
 {% macro get_full_desc(value, app, options) %}
-    {{- H.get_full_desc(value, get_charging_state(options), options) -}}
+    {{- H.get_full_desc(value, get_charging_state(options) , options) -}}
 {% endmacro %}
 
 {% macro get_icon(value, app, options) %}
-    {{- H.get_icon(value, get_charging_state(options), options) -}}
+    {{- H.get_icon(value, get_charging_state(options) , options) -}}
 {% endmacro %}
 
 {% macro get_color(value, app, options) %}
-    {{- H.get_color(value, get_charging_state(options), options) -}}
+    {{- H.get_color(value, get_charging_state(options) , options) -}}
 {% endmacro %}

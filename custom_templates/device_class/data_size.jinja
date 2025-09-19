@@ -1,240 +1,242 @@
 {# Severity definitions for data size measurements (HA device_class: data_size) #}
 
 {# Data size levels relative to total capacity #}
-{% set lookup_unit = 'B' %}
+{% set lookup_unit = "B" %}
 {% set levels = {
-  "file_size": [
-    {
-      "min_value": none,
-      "default_desc":"Unavailable",
-      "short_desc":"N/A",
-      "long_desc":"Size unavailable",
-      "icon":"mdi:close-circle",
-      "color":"Disabled",
-      "full_desc":"No size reported for this file."
-    },
-    {
-      "min_value": 0,
-      "default_desc":"Empty",
-      "short_desc":"Empty",
-      "long_desc":"Zero-length file",
-      "icon":"mdi:file-outline",
-      "color":"#9ca3af",
-      "full_desc":"File has no content (0 B)."
-    },
-    {
-      "min_value": 1,
-      "default_desc":"Tiny",
-      "short_desc":"Tiny",
-      "long_desc":"Tiny file",
-      "icon":"mdi:file-outline",
-      "color":"#84cc16",
-      "full_desc":"1 B – 1 KiB; config, pointers, or metadata."
-    },
-    {
-      "min_value": 1024,
-      "default_desc":"Small",
-      "short_desc":"Small",
-      "long_desc":"Small file",
-      "icon":"mdi:file",
-      "color":"#a3e635",
-      "full_desc":"1 KiB – 100 KiB; small logs, text, thumbnails."
-    },
-    {
-      "min_value": 102400,
-      "default_desc":"Medium",
-      "short_desc":"Medium",
-      "long_desc":"Medium file",
-      "icon":"mdi:file",
-      "color":"#facc15",
-      "full_desc":"100 KiB – 10 MiB; documents, small images, code archives."
-    },
-    {
-      "min_value": 10485760,
-      "default_desc":"Large",
-      "short_desc":"Large",
-      "long_desc":"Large file",
-      "icon":"mdi:archive",
-      "color":"#f59e0b",
-      "full_desc":"10–100 MiB; high-res images, short clips, medium datasets."
-    },
-    {
-      "min_value": 104857600,
-      "default_desc":"Huge",
-      "short_desc":"Huge",
-      "long_desc":"Huge file",
-      "icon":"mdi:archive",
-      "color":"#fb923c",
-      "full_desc":"100 MiB – 1 GiB; videos, VM layers, big assets."
-    },
-    {
-      "min_value": 1073741824,
-      "default_desc":"Massive",
-      "short_desc":"Massive",
-      "long_desc":"Massive file",
-      "icon":"mdi:database",
-      "color":"#ef4444",
-      "full_desc":"1–10 GiB; long videos, disk images, large datasets."
-    },
-    {
-      "min_value": 10737418240,
-      "default_desc":"Extreme",
-      "short_desc":"Extreme",
-      "long_desc":"Extremely large file",
-      "icon":"mdi:database",
-      "color":"#7c3aed",
-      "full_desc":">10 GiB; archival media or very large bundles."
-    }
-  ],
+    "file_size": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Size unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No size reported for this file."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Empty",
+            "short_desc":"Empty",
+            "long_desc":"Zero-length file",
+            "icon":"mdi:file-outline",
+            "color":"#9ca3af",
+            "full_desc":"File has no content (0 B)."
+        },
+        {
+            "min_value": 1,
+            "default_desc":"Tiny",
+            "short_desc":"Tiny",
+            "long_desc":"Tiny file",
+            "icon":"mdi:file-outline",
+            "color":"#84cc16",
+            "full_desc":"1 B – 1 KiB; config, pointers, or metadata."
+        },
+        {
+            "min_value": 1024,
+            "default_desc":"Small",
+            "short_desc":"Small",
+            "long_desc":"Small file",
+            "icon":"mdi:file",
+            "color":"#a3e635",
+            "full_desc":"1 KiB – 100 KiB; small logs, text, thumbnails."
+        },
+        {
+            "min_value": 102400,
+            "default_desc":"Medium",
+            "short_desc":"Medium",
+            "long_desc":"Medium file",
+            "icon":"mdi:file",
+            "color":"#facc15",
+            "full_desc":"100 KiB – 10 MiB; documents, small images, code archives."
+        },
+        {
+            "min_value": 10485760,
+            "default_desc":"Large",
+            "short_desc":"Large",
+            "long_desc":"Large file",
+            "icon":"mdi:archive",
+            "color":"#f59e0b",
+            "full_desc":"10–100 MiB; high-res images, short clips, medium datasets."
+        },
+        {
+            "min_value": 104857600,
+            "default_desc":"Huge",
+            "short_desc":"Huge",
+            "long_desc":"Huge file",
+            "icon":"mdi:archive",
+            "color":"#fb923c",
+            "full_desc":"100 MiB – 1 GiB; videos, VM layers, big assets."
+        },
+        {
+            "min_value": 1073741824,
+            "default_desc":"Massive",
+            "short_desc":"Massive",
+            "long_desc":"Massive file",
+            "icon":"mdi:database",
+            "color":"#ef4444",
+            "full_desc":"1–10 GiB; long videos, disk images, large datasets."
+        },
+        {
+            "min_value": 10737418240,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extremely large file",
+            "icon":"mdi:database",
+            "color":"#7c3aed",
+            "full_desc":">10 GiB; archival media or very large bundles."
+        }
+    ],
 
-  "drive_size": [
-    {
-      "min_value": none,
-      "default_desc":"Unavailable",
-      "short_desc":"N/A",
-      "long_desc":"Capacity unavailable",
-      "icon":"mdi:close-circle",
-      "color":"Disabled",
-      "full_desc":"No capacity reported for this drive."
-    },
-    {
-      "min_value": 0,
-      "default_desc":"Very Small",
-      "short_desc":"V Small",
-      "long_desc":"Very small drive",
-      "icon":"mdi:harddisk",
-      "color":"#84cc16",
-      "full_desc":"< 32 GiB; boot media, tiny USB sticks."
-    },
-    {
-      "min_value": 34359738368,
-      "default_desc":"Small",
-      "short_desc":"Small",
-      "long_desc":"Small drive",
-      "icon":"mdi:harddisk",
-      "color":"#a3e635",
-      "full_desc":"32–256 GiB; small SSDs, SD cards."
-    },
-    {
-      "min_value": 274877906944,
-      "default_desc":"Typical",
-      "short_desc":"Typical",
-      "long_desc":"Typical drive",
-      "icon":"mdi:harddisk",
-      "color":"#facc15",
-      "full_desc":"256 GiB – 1 TiB; common laptop/desktop SSDs."
-    },
-    {
-      "min_value": 1099511627776,
-      "default_desc":"Large",
-      "short_desc":"Large",
-      "long_desc":"Large drive",
-      "icon":"mdi:nas",
-      "color":"#f59e0b",
-      "full_desc":"1–4 TiB; larger SSDs/HDDs or basic NAS."
-    },
-    {
-      "min_value": 4398046511104,
-      "default_desc":"Very Large",
-      "short_desc":"V Large",
-      "long_desc":"Very large drive",
-      "icon":"mdi:nas",
-      "color":"#fb923c",
-      "full_desc":"4–16 TiB; big HDDs or mid-range NAS volumes."
-    },
-    {
-      "min_value": 17592186044416,
-      "default_desc":"Massive",
-      "short_desc":"Massive",
-      "long_desc":"Massive capacity",
-      "icon":"mdi:server",
-      "color":"#ef4444",
-      "full_desc":"16–64 TiB; multi-disk arrays or high-capacity single drives."
-    },
-    {
-      "min_value": 70368744177664,
-      "default_desc":"Extreme",
-      "short_desc":"Extreme",
-      "long_desc":"Extreme capacity",
-      "icon":"mdi:server",
-      "color":"#7c3aed",
-      "full_desc":">= 64 TiB; large RAID/ZFS pools or enterprise storage."
-    }
-  ],
-  "ram_size": [
-    {
-      "min_value": none,
-      "default_desc":"Unavailable",
-      "short_desc":"N/A",
-      "long_desc":"RAM size unavailable",
-      "icon":"mdi:close-circle",
-      "color":"Disabled",
-      "full_desc":"System memory capacity not reported."
-    },
-    {
-      "min_value": 0,
-      "default_desc":"Tiny",
-      "short_desc":"Tiny",
-      "long_desc":"Very small RAM",
-      "icon":"mdi:memory",
-      "color":"#84cc16",
-      "full_desc":"< 1 GiB; embedded systems or legacy PCs."
-    },
-    {
-      "min_value": 1073741824,
-      "default_desc":"Small",
-      "short_desc":"Small",
-      "long_desc":"Small RAM",
-      "icon":"mdi:memory",
-      "color":"#a3e635",
-      "full_desc":"1–4 GiB; low-end devices, older laptops."
-    },
-    {
-      "min_value": 4294967296,
-      "default_desc":"Moderate",
-      "short_desc":"Moderate",
-      "long_desc":"Moderate RAM",
-      "icon":"mdi:memory",
-      "color":"#facc15",
-      "full_desc":"4–8 GiB; common in budget laptops/desktops."
-    },
-    {
-      "min_value": 8589934592,
-      "default_desc":"Good",
-      "short_desc":"Good",
-      "long_desc":"Good RAM",
-      "icon":"mdi:memory",
-      "color":"#f59e0b",
-      "full_desc":"8–16 GiB; typical for mainstream systems."
-    },
-    {
-      "min_value": 17179869184,
-      "default_desc":"High",
-      "short_desc":"High",
-      "long_desc":"High RAM",
-      "icon":"mdi:memory",
-      "color":"#fb923c",
-      "full_desc":"16–32 GiB; power users, workstations, gaming rigs."
-    },
-    {
-      "min_value": 34359738368,
-      "default_desc":"Very High",
-      "short_desc":"V High",
-      "long_desc":"Very high RAM",
-      "icon":"mdi:memory",
-      "color":"#ef4444",
-      "full_desc":"32–64 GiB; advanced workstations, light servers."
-    },
-    {
-      "min_value": 68719476736,
-      "default_desc":"Extreme",
-      "short_desc":"Extreme",
-      "long_desc":"Extreme RAM",
-      "icon":"mdi:memory",
-      "color":"#7c3aed",
-      "full_desc":">= 64 GiB; servers, heavy compute, high-end workstations."
-    }
-  ]
-  } %}
+    "drive_size": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Capacity unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No capacity reported for this drive."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Very Small",
+            "short_desc":"V Small",
+            "long_desc":"Very small drive",
+            "icon":"mdi:harddisk",
+            "color":"#84cc16",
+            "full_desc":"< 32 GiB; boot media, tiny USB sticks."
+        },
+        {
+            "min_value": 34359738368,
+            "default_desc":"Small",
+            "short_desc":"Small",
+            "long_desc":"Small drive",
+            "icon":"mdi:harddisk",
+            "color":"#a3e635",
+            "full_desc":"32–256 GiB; small SSDs, SD cards."
+        },
+        {
+            "min_value": 274877906944,
+            "default_desc":"Typical",
+            "short_desc":"Typical",
+            "long_desc":"Typical drive",
+            "icon":"mdi:harddisk",
+            "color":"#facc15",
+            "full_desc":"256 GiB – 1 TiB; common laptop/desktop SSDs."
+        },
+        {
+            "min_value": 1099511627776,
+            "default_desc":"Large",
+            "short_desc":"Large",
+            "long_desc":"Large drive",
+            "icon":"mdi:nas",
+            "color":"#f59e0b",
+            "full_desc":"1–4 TiB; larger SSDs/HDDs or basic NAS."
+        },
+        {
+            "min_value": 4398046511104,
+            "default_desc":"Very Large",
+            "short_desc":"V Large",
+            "long_desc":"Very large drive",
+            "icon":"mdi:nas",
+            "color":"#fb923c",
+            "full_desc":"4–16 TiB; big HDDs or mid-range NAS volumes."
+        },
+        {
+            "min_value": 17592186044416,
+            "default_desc":"Massive",
+            "short_desc":"Massive",
+            "long_desc":"Massive capacity",
+            "icon":"mdi:server",
+            "color":"#ef4444",
+            "full_desc":"16–64 TiB; multi-disk arrays or high-capacity single drives."
+        },
+        {
+            "min_value": 70368744177664,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extreme capacity",
+            "icon":"mdi:server",
+            "color":"#7c3aed",
+            "full_desc":">= 64 TiB; large RAID/ZFS pools or enterprise storage."
+        }
+    ],
+    "ram_size": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"RAM size unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"System memory capacity not reported."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Tiny",
+            "short_desc":"Tiny",
+            "long_desc":"Very small RAM",
+            "icon":"mdi:memory",
+            "color":"#84cc16",
+            "full_desc":"< 1 GiB; embedded systems or legacy PCs."
+        },
+        {
+            "min_value": 1073741824,
+            "default_desc":"Small",
+            "short_desc":"Small",
+            "long_desc":"Small RAM",
+            "icon":"mdi:memory",
+            "color":"#a3e635",
+            "full_desc":"1–4 GiB; low-end devices, older laptops."
+        },
+        {
+            "min_value": 4294967296,
+            "default_desc":"Moderate",
+            "short_desc":"Moderate",
+            "long_desc":"Moderate RAM",
+            "icon":"mdi:memory",
+            "color":"#facc15",
+            "full_desc":"4–8 GiB; common in budget laptops/desktops."
+        },
+        {
+            "min_value": 8589934592,
+            "default_desc":"Good",
+            "short_desc":"Good",
+            "long_desc":"Good RAM",
+            "icon":"mdi:memory",
+            "color":"#f59e0b",
+            "full_desc":"8–16 GiB; typical for mainstream systems."
+        },
+        {
+            "min_value": 17179869184,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High RAM",
+            "icon":"mdi:memory",
+            "color":"#fb923c",
+            "full_desc":"16–32 GiB; power users, workstations, gaming rigs."
+        },
+        {
+            "min_value": 34359738368,
+            "default_desc":"Very High",
+            "short_desc":"V High",
+            "long_desc":"Very high RAM",
+            "icon":"mdi:memory",
+            "color":"#ef4444",
+            "full_desc":"32–64 GiB; advanced workstations, light servers."
+        },
+        {
+            "min_value": 68719476736,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extreme RAM",
+            "icon":"mdi:memory",
+            "color":"#7c3aed",
+            "full_desc":">= 64 GiB; servers, heavy compute, high-end workstations."
+        }
+    ]
+} %}
 
-{% macro get_dc_context() %}{{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}{% endmacro %}
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}
