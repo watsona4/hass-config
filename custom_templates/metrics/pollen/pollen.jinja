@@ -52,7 +52,7 @@
         'value': ii.get('value'),
         'category': ii.get('category'),
         'picture': desc.get('picture') or desc.get('pictureCloseup')
-    } -}}
+    } | tojson -}}
 {%- endmacro %}
 
 {# ---- Summarize first n days for forecast tiles ---- #}
@@ -73,7 +73,7 @@
         {%- set ii = top.get('indexInfo') or {} -%}
         {%- set col = ii.get('color') or {} -%}
         {%- set hex = _hex_from_rgb01(col) -%}
-        {%- set sp = best_species(d) -%}
+        {%- set sp = best_species(d) | from_json -%}
         {%- set dt = d.get('date') or {} -%}
         {%- set item = {
             'exists': true,
@@ -91,7 +91,7 @@
         } -%}
         {%- set out.items = out.items + [item] -%}
     {%- endfor -%}
-    {{- out.items -}}
+    {{- out.items | tojson -}}
 {%- endmacro %}
 
 {# ---- Build full context for a source entity ---- #}
@@ -102,7 +102,7 @@
         'di': di,
         'd':  d,
         'plants': d.get("plantInfo") or [],
-        'pick': best_species(d),
-        'days': summarize_days(di, 3)
-    } -}}
+        'pick': best_species(d) | from_json,
+        'days': summarize_days(di, 3) | from_json
+    } | tojson -}}
 {%- endmacro %}

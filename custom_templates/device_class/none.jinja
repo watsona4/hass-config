@@ -1,6 +1,7 @@
 {# Severity definitions for generic status measurements (HA device_class: none) #}
 
 {% from 'units/base.jinja' import u_humanize_entity %}
+{% import 'helpers.jinja' as H %}
 
 {% set levels = {
     "generic": [
@@ -561,4 +562,24 @@
         {%- set ns.post_text = ' • ' ~ states(options.cores)|int ~ ' cores' -%}
     {%- endif -%}
     {{- ns.pre_text ~ H.get_short_desc(value, app, options) ~ ns.post_text -}}
+{% endmacro %}
+
+{% macro get_icon(value, app='default', options={}) %}
+    {{- H.get_icon(value, app, options) -}}
+{% endmacro %}
+
+{% macro get_color(value, app='default', options={}) %}
+    {{- H.get_color(value, app, options | combine(get_dc_context() | from_json)) -}}
+{% endmacro %}
+
+{% macro get_label(value, app='default', options={}) %}
+    {%- set value_text = get_value(value, app, options) -%}
+    {%- set default_desc = get_default_desc(value, app, options) -%}
+    {%- set long_desc = H.get_long_desc(value, app, options) -%}
+    {%- set is_unavail = options.get('is_unavail',false) -%}
+    {%- set delim = options.get('delim',' • ') -%}
+    {%- set layout = options.get('layout', 'horizontal') -%}
+    {%- set vert_delim = options.get('vert_delim','\n') -%}
+    {%- set binary = ns.device_class == 'binary' -%}
+    {{- H.format_label(value_text, default_desc, is_unavail, long_desc, delim, layout, vert_delim, binary) -}}
 {% endmacro %}

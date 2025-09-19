@@ -34,72 +34,88 @@
     {%- set types = ['st1','st2','st3','st4','st5','st6'] -%}
     {# djlint:on #}
 
-    {#- ---- Time anchors ---- -#}
-    {%- set tnow = now().timestamp() -%}
-
-    {#- ---- Future points and positivity checks ---- -#}
-    {%- set fut = pts | selectattr('ts','gt', tnow) | list -%}
-    {%- set fut_pos = fut | selectattr('uv','gt', 0) | list -%}
-    {%- if fut_pos | length == 0 -%}
-        {{- {
+    {#- ---- Output namespace ---- -#}
+    {%- set out = namespace(obj={
         'st1': {'end_ts': none, 'mins': 0, 'capped': false},
         'st2': {'end_ts': none, 'mins': 0, 'capped': false},
         'st3': {'end_ts': none, 'mins': 0, 'capped': false},
         'st4': {'end_ts': none, 'mins': 0, 'capped': false},
         'st5': {'end_ts': none, 'mins': 0, 'capped': false},
         'st6': {'end_ts': none, 'mins': 0, 'capped': false}
-        } | tojson -}}
-    {%- else -%}
+        }) -%}
+
+    {#- ---- Time anchors ---- -#}
+    {%- set tnow = now().timestamp() -%}
+
+    {#- ---- Future points and positivity checks ---- -#}
+    {%- set fut = pts | selectattr('ts','gt', tnow) | list -%}
+    {%- set fut_pos = fut | selectattr('uv','gt', 0) | list -%}
+    {%- if fut_pos | length != 0 -%}
 
         {#- ---- Seed previous sample at or before now ---- -#}
         {%- set prev_list = pts | selectattr('ts','le', tnow) | list -%}
+        {%- set next_list = pts | selectattr('ts','gt', tnow) | list -%}
         {%- set prev_pt = prev_list[-1] if prev_list else none -%}
-        {%- set prev_t = (prev_pt.ts if prev_pt is not none else tnow) -%}
-        {%- set prev_v = (prev_pt.uv if prev_pt is not none else 0.0) -%}
+        {%- set next_pt = next_list[0] if next_list else none -%}
+
+        {%- set seedns = namespace(t=none, v=none) -%}
+        {%- if prev_pt and next_pt and (next_pt.ts > prev_pt.ts) -%}
+            {#- linear interpolation of UV at now -#}
+            {%- set frac = (tnow - prev_pt.ts) / (next_pt.ts - prev_pt.ts) -%}
+            {%- set uv_now = prev_pt.uv + frac * (next_pt.uv - prev_pt.uv) -%}
+            {%- set seedns.t = tnow -%}
+            {%- set seedns.v = uv_now -%}
+        {%- elif next_pt -%}
+            {#- no previous point today; start at now with next UV (best we can do) -#}
+            {%- set seedns.t = tnow -%}
+            {%- set seedns.v = next_pt.uv -%}
+        {%- endif -%}
 
         {#- ---- Cap timestamp is last future point with uv>0 ---- -#}
         {%- set cap_ts = fut_pos[-1].ts -%}
 
         {#- ---- Accumulators in a namespace ---- -#}
-        {%- set ns = namespace(acc = {}, end_ts = {}, done = {}, prev_t = prev_t, prev_v = prev_v) -%}
+        {%- set ns = namespace(acc={}, end_ts={}, done={}, prev_t=seedns.t, prev_v=seedns.v) -%}
         {%- for k in types -%}
             {%- set ns.acc = ns.acc | combine({k: 0.0}) -%}
             {%- set ns.end_ts = ns.end_ts | combine({k: none}) -%}
             {%- set ns.done = ns.done | combine({k: false}) -%}
         {%- endfor -%}
 
-        {#- ---- Integrate over future segments only ---- -#}
-        {%- for q in fut -%}
-            {%- set dtm = (q.ts - ns.prev_t) / 60.0 -%}
-            {%- if dtm > 0 -%}
-                {%- set area = ((ns.prev_v | float(0)) + (q.uv | float(0))) / 2.0 * dtm -%}
-                {%- for k in types -%}
-                    {%- if not ns.done[k] and budgets[k] > 0 -%}
-                        {%- if ns.acc[k] + area >= budgets[k] -%}
-                            {%- set rem = budgets[k] - ns.acc[k] -%}
-                            {%- set frac = rem / area if area > 0 else 0 -%}
-                            {%- set ns.end_ts = ns.end_ts | combine({k: (ns.prev_t + frac * (q.ts - ns.prev_t))}) -%}
-                            {%- set ns.done = ns.done | combine({k: true}) -%}
-                        {%- else -%}
-                            {%- set ns.acc = ns.acc | combine({k: (ns.acc[k] + area)}) -%}
-                        {%- endif -%}
-                    {%- endif -%}
-                {%- endfor -%}
-                {%- set ns.prev_t = q.ts -%}
-                {%- set ns.prev_v = q.uv -%}
-            {%- endif -%}
-        {%- endfor -%}
+        {%- if ns.prev_t is not none and ns.prev_v is not none -%}
 
-        {#- ---- Build output using a namespace ---- -#}
-        {%- set out = namespace(obj={}) -%}
-        {%- for k in types -%}
-            {%- set reached = ns.end_ts[k] is not none -%}
-            {%- set final = ns.end_ts[k] if reached else cap_ts -%}
-            {%- set capped = (not reached) and (cap_ts is not none) -%}
-            {%- set mins = (((final - tnow) / 60) | round(0)) if final is not none else 0 -%}
-            {%- set mins = 0 if mins < 0 else mins -%}
-            {%- set out.obj = out.obj | combine({k: {'end_ts': final, 'mins': mins, 'capped': capped}}) -%}
-        {%- endfor -%}
+            {#- ---- Integrate over future segments only ---- -#}
+            {%- for q in fut -%}
+                {%- set dtm = (q.ts - ns.prev_t) / 60.0 -%}
+                {%- if dtm > 0 -%}
+                    {%- set area = ((ns.prev_v | float(0)) + (q.uv | float(0))) / 2.0 * dtm -%}
+                    {%- for k in types -%}
+                        {%- if not ns.done[k] and budgets[k] > 0 -%}
+                            {%- if ns.acc[k] + area >= budgets[k] -%}
+                                {%- set rem = budgets[k] - ns.acc[k] -%}
+                                {%- set frac = rem / area if area > 0 else 0 -%}
+                                {%- set ns.end_ts = ns.end_ts | combine({k: (ns.prev_t + frac * (q.ts - ns.prev_t))}) -%}
+                                {%- set ns.done = ns.done | combine({k: true}) -%}
+                            {%- else -%}
+                                {%- set ns.acc = ns.acc | combine({k: (ns.acc[k] + area)}) -%}
+                            {%- endif -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {%- set ns.prev_t = q.ts -%}
+                    {%- set ns.prev_v = q.uv -%}
+                {%- endif -%}
+            {%- endfor -%}
+
+            {#- ---- Build output using a namespace ---- -#}
+            {%- for k in types -%}
+                {%- set reached = ns.end_ts[k] is not none -%}
+                {%- set final = ns.end_ts[k] if reached else cap_ts -%}
+                {%- set capped = (not reached) and (cap_ts is not none) -%}
+                {%- set mins = (((final - tnow) / 60) | round(0)) if final is not none else 0 -%}
+                {%- set mins = 0 if mins < 0 else mins -%}
+                {%- set out.obj = out.obj | combine({k: {'end_ts': final, 'mins': mins, 'capped': capped} }) -%}
+            {%- endfor -%}
+        {%- endif -%}
 
         {{- out.obj | tojson -}}
     {%- endif -%}

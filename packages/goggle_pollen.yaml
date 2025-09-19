@@ -157,8 +157,8 @@ template:
     variables:
       src: sensor.google_pollen_nearby
       ctx: >-
-        {%- from 'env/pollen_core.jinja' import build_ctx -%}
-        {{- build_ctx(src) -}}
+        {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
+        {{- build_ctx(src) | from_json -}}
     sensor:
       - name: Google Pollen Nearby Today
         unique_id: google_pollen_nearby_today
@@ -167,7 +167,7 @@ template:
         state: >-
           {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
           {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
@@ -176,15 +176,15 @@ template:
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
@@ -305,7 +305,7 @@ template:
           {%- if (types | count) == 0 -%}
             {{- none -}}
           {%- else -%} 
-            {{- (types | map(attribute='indexInfo.value') | list | max) -}}
+            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
           {%- endif -%}
 
   # ================= HOME =================
@@ -315,8 +315,8 @@ template:
     variables:
       src: sensor.google_pollen_home
       ctx: >-
-        {%- from 'env/pollen_core.jinja' import build_ctx -%}
-        {{- build_ctx(src) -}}
+        {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
+        {{- build_ctx(src) | from_json -}}
     sensor:
       - name: Google Pollen Home Today
         unique_id: google_pollen_home_today
@@ -325,7 +325,7 @@ template:
         state: >-
           {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
           {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
@@ -334,15 +334,15 @@ template:
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
@@ -463,7 +463,7 @@ template:
           {%- if (types | count) == 0 -%}
             {{- none -}}
           {%- else -%}
-            {{- (types | map(attribute='indexInfo.value') | list | max) -}}
+            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
           {%- endif -%}
 
   # ================= RV =================
@@ -473,8 +473,8 @@ template:
     variables:
       src: sensor.google_pollen_rv
       ctx: >-
-        {%- from 'env/pollen_core.jinja' import build_ctx -%}
-        {{- build_ctx(src) -}}
+        {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
+        {{- build_ctx(src) | from_json -}}
     sensor:
       - name: Google Pollen RV Today
         unique_id: google_pollen_rv_today
@@ -483,7 +483,7 @@ template:
         state: >-
           {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
           {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
@@ -492,15 +492,15 @@ template:
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
             {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
+            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
             {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
@@ -621,5 +621,5 @@ template:
           {%- if (types | count) == 0 -%}
             {{- none -}}
           {%- else -%}
-            {{- (types | map(attribute='indexInfo.value') | list | max) -}}
+            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
           {%- endif -%}

@@ -182,10 +182,12 @@ sections:
                   {%- set dom_val = state_attr(entity,'dominant_value') -%}
                   {{- (dom_cat or 'unknown') ~ ' · Index ' ~ (dom_val if dom_val is not none else '–') -}}
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
                 fill_container: false
                 multiline_secondary: false
+                tap_action:
+                  action: more-info
 
               # Dominant Pollen Species
               - type: custom:mushroom-template-card
@@ -194,6 +196,8 @@ sections:
                 primary: Dominant Species
                 picture: "{{- state_attr(entity, 'entity_picture') -}}"
                 secondary: "{{- states(entity) -}}"
+                tap_action:
+                  action: more-info
 
           # Individual Pollen Categories
           - type: horizontal-stack
@@ -208,8 +212,10 @@ sections:
                   {%- set v = state_attr(entity,'grass_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'grass_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'grass_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Tree pollen levels
               - type: custom:mushroom-template-card
@@ -220,8 +226,10 @@ sections:
                   {%- set v = state_attr(entity,'tree_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'tree_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'tree_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Weed pollen levels
               - type: custom:mushroom-template-card
@@ -232,8 +240,10 @@ sections:
                   {%- set v = state_attr(entity,'weed_value') -%}
                   {{- 'Index ' ~ v if v is not none else '–' -}}
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'weed_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'weed_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
           # Health Advice
           - type: custom:mushroom-template-card
@@ -245,8 +255,10 @@ sections:
               {{- recs | join(' ') if recs else '—' -}}
             multiline_secondary: true
             icon_color: >-
-              {%- from 'metrics/pollen/pollen.jinja' import color -%}
-              {{- color(state_attr(entity,'dominant_value')) -}}
+              {% from 'device_class/none.jinja' import get_color -%}
+              {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+            tap_action:
+              action: more-info
 
           # 3-Day Pollen Forecast
           - type: horizontal-stack
@@ -256,36 +268,37 @@ sections:
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_nearby_day_0
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 1 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_nearby_day_1
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 2 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_nearby_day_2
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
       # Home Pollen
       - type: vertical-stack
@@ -306,37 +319,37 @@ sections:
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_home_day_0
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 1 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_home_day_1
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 2 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_home_day_2
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
       # RV Pollen
       - type: vertical-stack
@@ -359,37 +372,37 @@ sections:
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_rv_day_0
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Today
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 1 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_rv_day_1
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: Tomorrow
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
               # Day 2 Forecast
               - type: custom:mushroom-template-card
                 entity: sensor.pollen_forecast_rv_day_2
                 icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
-                primary: >-
-                  {%- from 'metric/pollen/pollen.jinja' import get_date_string -%}
-                  {{- get_date_string(entity) -}}
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
                 secondary: "{{- state_attr(entity, 'species_name') -}}"
                 icon_color: >-
-                  {%- from 'metrics/pollen/pollen.jinja' import color -%}
-                  {{- color(state_attr(entity,'dominant_value')) -}}
+                  {% from 'device_class/none.jinja' import get_color -%}
+                  {{ get_color(state_attr(entity,'dominant_value'), app='pollen', options={ 'uom': none }) }}
+                tap_action:
+                  action: more-info
 
       - type: vertical-stack
         cards:
@@ -621,42 +634,48 @@ sections:
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
           - type: template
             entity: sensor.waqi_nearby_pm10
             icon: mdi:blur-radial
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
           - type: template
             entity: sensor.waqi_nearby_o3
             icon: mdi:chemical-weapon
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
           - type: template
             entity: sensor.waqi_nearby_co
             icon: mdi:molecule-co
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
           - type: template
             entity: sensor.waqi_nearby_no2
             icon: mdi:periodic-table
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
           - type: template
             entity: sensor.waqi_nearby_so2
             icon: mdi:factory
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
-            content: ""
+            tap_action:
+              action: more-info
       - type: custom:mushroom-template-card
         entity: sensor.waqi_nearby_aqi
         icon: >-
@@ -673,6 +692,8 @@ sections:
         grid_options:
           columns: full
           rows: 2
+        tap_action:
+          action: more-info
       - type: horizontal-stack
         cards:
           - type: custom:mushroom-template-card
@@ -685,6 +706,8 @@ sections:
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.aqi_forecast_nearby_day_1
             icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -695,6 +718,8 @@ sections:
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.aqi_forecast_nearby_day_2
             icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -705,6 +730,8 @@ sections:
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
           - type: vertical-stack
             visibility:
               - condition: state
@@ -812,6 +839,8 @@ sections:
                         icon_color: >-
                           {%- from 'main.jinja' import get_color -%}
                           {{- get_color(entity) -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_home_day_1
                         icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -822,6 +851,8 @@ sections:
                         icon_color: >-
                           {%- from 'main.jinja' import get_color -%}
                           {{- get_color(entity) -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.aqi_forecast_home_day_2
                         icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -832,6 +863,8 @@ sections:
                         icon_color: >-
                           {%- from 'main.jinja' import get_color -%}
                           {{- get_color(entity) -}}
+                        tap_action:
+                          action: more-info
       - type: vertical-stack
         visibility:
           - condition: state
@@ -942,6 +975,8 @@ sections:
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
                       {{- get_color(entity) -}}
+                    tap_action:
+                      action: more-info
                   - type: custom:mushroom-template-card
                     entity: sensor.aqi_forecast_rv_day_1
                     icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -952,6 +987,8 @@ sections:
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
                       {{- get_color(entity) -}}
+                    tap_action:
+                      action: more-info
                   - type: custom:mushroom-template-card
                     entity: sensor.aqi_forecast_rv_day_2
                     icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'level') ~ '-box-outline' -}}"
@@ -962,6 +999,8 @@ sections:
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
                       {{- get_color(entity) -}}
+                    tap_action:
+                      action: more-info
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -1049,6 +1088,8 @@ sections:
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity, app='uv_index') -}}
+            tap_action:
+              action: more-info
           - type: template
             content: "Safe Min: {{- states(entity) -}}"
             entity: sensor.nearby_safe_exposure_minutes_st1
@@ -1056,6 +1097,8 @@ sections:
             icon_color: >-
               {%- set v = states(entity)|float(0) -%}
               {{- 'red' if v < 30 else 'yellow' if v < 60 else 'green' -}}
+            tap_action:
+              action: more-info
         alignment: center
       - type: custom:decluttering-card
         template: template_card
@@ -1079,6 +1122,8 @@ sections:
             icon_color: >-
               {%- from 'device_class/none.jinja' import get_color -%}
               {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+            tap_action:
+              action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.openmeteo_nearby
             primary: Tomorrow
@@ -1091,6 +1136,8 @@ sections:
             icon_color: >-
               {%- from 'device_class/none.jinja' import get_color -%}
               {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+            tap_action:
+              action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.openmeteo_nearby
             primary: >-
@@ -1104,6 +1151,8 @@ sections:
             icon_color: >-
               {%- from 'device_class/none.jinja' import get_color -%}
               {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+            tap_action:
+              action: more-info
       - type: vertical-stack
         visibility:
           - condition: state
@@ -1204,6 +1253,8 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.openmeteo_home
                         primary: Tomorrow
@@ -1216,6 +1267,8 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.openmeteo_home
                         primary: >-
@@ -1229,6 +1282,8 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
       - type: vertical-stack
         visibility:
           - condition: state
@@ -1332,6 +1387,8 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[0], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.openmeteo_rv
                         primary: Tomorrow
@@ -1344,6 +1401,8 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[1], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
                       - type: custom:mushroom-template-card
                         entity: sensor.openmeteo_rv
                         primary: >-
@@ -1357,3 +1416,5 @@ sections:
                         icon_color: >-
                           {%- from 'device_class/none.jinja' import get_color -%}
                           {{- get_color(state_attr(entity,'daily').uv_index_max[2], app='uv_index') -}}
+                        tap_action:
+                          action: more-info
