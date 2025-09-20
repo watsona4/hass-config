@@ -1,0 +1,14 @@
+type: sections
+max_columns: 4
+title: Alarms & Smoke
+path: alarms-smoke
+sections:
+  - type: grid
+    cards:
+      - type: alarm-panel
+        entity: alarm_control_panel.home_alarm
+        name: Home Alarm
+        states:
+          - arm_home
+          - arm_away
+          - arm_night

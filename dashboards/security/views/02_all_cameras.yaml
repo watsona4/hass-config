@@ -1,0 +1,71 @@
+type: sections
+max_columns: 4
+title: All Cameras
+path: all-cameras
+sections:
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Doorbell Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.doorbell_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Garage Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.garage_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Backyard Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.backyard_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Driveway Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.driveway_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: RV Port Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.rv_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Side Yard Camera
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.side_yard_camera
+            live_provider: go2rtc
+            go2rtc:
+              modes:
+                - webrtc
