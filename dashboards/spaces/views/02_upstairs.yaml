@@ -1,0 +1,9 @@
+type: sections
+max_columns: 4
+title: Upstairs
+path: upstairs
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: New section
