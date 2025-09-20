@@ -35,9 +35,10 @@ badges:
     entity: sensor.nws_alerts_alerts
     icon: mdi:weather-lightning
     color: >-
-      {{- 'red' if states(entity)|int(0) > 0 else 'green' -}}
+      {{- 'red' if states(entity) | int(0) > 0 else 'green' -}}
     content: >-
-      {{- states(entity) ~ ' Active Alerts' if states(entity)|int(0) > 0 else 'No Active Alerts' -}}
+      {%- set alerts = state_attr(entity, 'Alerts') -%}
+      {{- alerts | map(attribute='Event') | join(', ') if alerts else 'No Active Alerts' -}}
     tap_action:
       action: more-info
 
@@ -109,18 +110,21 @@ sections:
             entity: weather.openmeteo_weather_nearby
             show_humidity: true
             forecast_type: hourly
+            temperature_sensor: sensor.local_temperature
+            humidity_sensor: sensor.local_humidity
             apparent_sensor: sensor.nearby_apparent_temperature
+            aqi_sensor: sensor.waqi_nearby_aqi
 
           # Hourly Forecast Grid
           - type: custom:hourly-weather
             entity: weather.openmeteo_weather_nearby
             name: null
+            show_precipitation_amounts: true
+            show_precipitation_probability: true
+            show_wind: "true"
             grid_options:
               columns: 12
               rows: 2
-            show_precipitation_amounts: true
-            show_precipitation_probability: true
-            show_wind: true
 
       # RV Weather
       - type: vertical-stack
@@ -975,7 +979,7 @@ sections:
           - type: template
             entity: sensor.nearby_today_uv_index_max
             icon: mdi:weather-sunny-alert
-            content: "{{- 'Max UV: ' ~ states(entity)|float(0)|round(1) -}}"
+            content: "{{- 'Max UV: ' ~ states(entity) | float(0) | round(1) -}}"
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
               {{- get_color(entity, app='uv_index') -}}
@@ -986,7 +990,7 @@ sections:
             entity: sensor.nearby_safe_exposure_minutes_st1
             icon: mdi:timer-sand
             icon_color: >-
-              {%- set v = states(entity)|float(0) -%}
+              {%- set v = states(entity) | float(0) -%}
               {{- 'red' if v < 30 else 'yellow' if v < 60 else 'green' -}}
             tap_action:
               action: more-info
