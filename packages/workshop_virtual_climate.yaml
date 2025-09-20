@@ -138,7 +138,7 @@ automation:
           ac_on: "{{ is_state('binary_sensor.workshop_ac_running','on') }}"
           temp_c: >-
             {%- from 'units/base.jinja' import u_convert_entity -%}
-            {{ u_convert_entity('sensor.workshop_temperature','°C')|float(0) }}
+            {{ u_convert_entity('sensor.workshop_temperature','f')|float(0) }}
           hum_pct: >
             {% if has_value('sensor.workshop_humidity') %}
               {{ states('sensor.workshop_humidity')|float(0) }}
