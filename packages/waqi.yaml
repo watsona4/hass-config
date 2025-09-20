@@ -20,7 +20,9 @@ sensor:
     scan_interval: 60
     timeout: 15
     resource_template: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid, waqi_url -%}
+      {%- from 'macros/rest_helpers.jinja' import nearby_lat, nearby_lon, nearby_is_valid, waqi_url -%}
+      {%- set lat = nearby_lat() | int(0) -%}
+      {%- set lon = nearby_lon() | int(0) -%}
       {{- waqi_url(lat, lon) if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     params:
       token: !secret waqi_token
@@ -52,7 +54,9 @@ sensor:
     scan_interval: 60
     timeout: 15
     resource_template: >-
-      {%- from 'macros/rest_helpers.jinja' import home_is_valid, waqi_url -%}
+      {%- from 'macros/rest_helpers.jinja' import home_lat, home_lon, home_is_valid, waqi_url -%}
+      {%- set lat = home_lat() | int(0) -%}
+      {%- set lon = home_lon() | int(0) -%}
       {{- waqi_url(lat, lon) if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     params:
       token: !secret waqi_token
@@ -84,7 +88,9 @@ sensor:
     scan_interval: 60
     timeout: 15
     resource_template: >-
-      {%- from 'macros/rest_helpers.jinja' import rv_is_valid, waqi_url -%}
+      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon, rv_is_valid, waqi_url -%}
+      {%- set lat = rv_lat() | int(0) -%}
+      {%- set lon = rv_lon() | int(0) -%}
       {{- waqi_url(lat, lon) if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
     params:
       token: !secret waqi_token
@@ -275,7 +281,8 @@ template:
           title: "{{ (aqi_days[0] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[0] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
 
       - name: AQI Forecast Nearby Day 1
         unique_id: aqi_forecast_nearby_day_1
@@ -287,7 +294,8 @@ template:
           title: "{{ (aqi_days[1] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[1] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
 
       - name: AQI Forecast Nearby Day 2
         unique_id: aqi_forecast_nearby_day_2
@@ -299,7 +307,8 @@ template:
           title: "{{ (aqi_days[2] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[2] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
 
       - name: AQI Forecast Nearby Day 3
         unique_id: aqi_forecast_nearby_day_3
@@ -311,7 +320,8 @@ template:
           title: "{{ (aqi_days[3] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[3] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
 
       - name: AQI Forecast Nearby Day 4
         unique_id: aqi_forecast_nearby_day_4
@@ -323,7 +333,8 @@ template:
           title: "{{ (aqi_days[4] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[4] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"
 
   # -------------------- Home block --------------------
   - trigger:
@@ -466,7 +477,8 @@ template:
           title: "{{ (aqi_days[0] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[0] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
 
       - name: AQI Forecast Home Day 1
         unique_id: aqi_forecast_home_day_1
@@ -478,7 +490,8 @@ template:
           title: "{{ (aqi_days[1] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[1] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
 
       - name: AQI Forecast Home Day 2
         unique_id: aqi_forecast_home_day_2
@@ -490,7 +503,8 @@ template:
           title: "{{ (aqi_days[2] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[2] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
 
       - name: AQI Forecast Home Day 3
         unique_id: aqi_forecast_home_day_3
@@ -502,7 +516,8 @@ template:
           title: "{{ (aqi_days[3] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[3] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
 
       - name: AQI Forecast Home Day 4
         unique_id: aqi_forecast_home_day_4
@@ -514,7 +529,8 @@ template:
           title: "{{ (aqi_days[4] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[4] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"
 
   # -------------------- RV block --------------------
   - trigger:
@@ -657,7 +673,8 @@ template:
           title: "{{ (aqi_days[0] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[0] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
 
       - name: AQI Forecast RV Day 1
         unique_id: aqi_forecast_rv_day_1
@@ -669,7 +686,8 @@ template:
           title: "{{ (aqi_days[1] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[1] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
 
       - name: AQI Forecast RV Day 2
         unique_id: aqi_forecast_rv_day_2
@@ -681,7 +699,8 @@ template:
           title: "{{ (aqi_days[2] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[2] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
 
       - name: AQI Forecast RV Day 3
         unique_id: aqi_forecast_rv_day_3
@@ -693,7 +712,8 @@ template:
           title: "{{ (aqi_days[3] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[3] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
 
       - name: AQI Forecast RV Day 4
         unique_id: aqi_forecast_rv_day_4
@@ -705,4 +725,5 @@ template:
           title: "{{ (aqi_days[4] or {}).get('title') }}"
           aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
           hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
-          badge_icon: "{{ (aqi_days[4] or {}).get('badge_icon') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"

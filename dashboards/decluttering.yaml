@@ -43,6 +43,9 @@ template_card:
         action: more-info
     - icon_tap_action:
         action: nothing
+    - grid_options:
+        columns: 12
+        rows: auto
   card:
     type: custom:mushroom-template-card
     entity: '[[entity]]'
@@ -78,6 +81,7 @@ template_card:
     multiline_secondary: '[[multiline_secondary]]'
     tap_action: '[[tap_action]]'
     icon_tap_action: '[[icon_tap_action]]'
+    grid_options: '[[grid_options]]'
 
 # =====================================================================================
 # Template Badge

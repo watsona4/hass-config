@@ -1,3 +1,4 @@
+{# UV Protection Window #}
 
 {% macro uv_window(entity_id, threshold) -%}
     {%- set hourly = state_attr(entity_id, 'hourly') -%}
@@ -12,7 +13,7 @@
     {%- set ns = namespace(
         prev_t=None, prev_v=None,
         first_t=None, first_v=None,
-        last_t=None,  last_v=None,
+        last_t=None,last_v=None,
         start_ts=None, end_ts=None,
         ever_above=false
         ) -%}
@@ -77,9 +78,49 @@
         {%- set ns.end_ts = ns.last_t.timestamp() if ns.last_t else ns.end_ts -%}
     {%- endif -%}
 
-    {%- set start_iso = ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if ns.start_ts is not none else none -%}
-    {%- set end_iso = ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if ns.end_ts is not none else none -%}
-    {%- set duration_min = ((ns.end_ts - ns.start_ts) / 60) | round(0) if ns.start_ts is not none and ns.end_ts is not none else 0 -%}
+    {%- set has_window = ns.start_ts is not none and ns.end_ts is not none -%}
+    {%- set start_iso = ns.start_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if has_window else none -%}
+    {%- set end_iso = ns.end_ts | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) if has_window else none -%}
+    {%- set duration_min = ((ns.end_ts - ns.start_ts) / 60) | round(0) if has_window else none -%}
 
-    {{ {'start': start_iso, 'end': end_iso, 'duration_min': duration_min} | tojson }}
+    {{- { 'start': start_iso, 'end': end_iso, 'duration_min': duration_min, 'ever_above': ns.ever_above, 'active': has_window } | tojson -}}
+{%- endmacro %}
+
+{% macro uv_badge_color(entity_id) -%}
+    {%- if not has_value(entity_id) -%}
+        disabled
+    {%- elif is_state(entity_id, 'on') -%}
+        #e0e005
+    {%- else -%}
+        grey
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro uv_badge_content(entity_id) -%}
+    {%- set ns = namespace(start_dt=none, end_dt=none) -%}
+    {%- set s_raw = state_attr(entity_id, 'start') -%}
+    {%- set e_raw = state_attr(entity_id, 'end') -%}
+    {%- if s_raw is not none -%}
+        {%- set ns.start_dt = as_datetime(s_raw, default=none) | as_local if s_raw else none -%}
+    {%- endif -%}
+    {%- if e_raw is not none -%}
+        {%- set ns.end_dt = as_datetime(e_raw, default=none) | as_local if e_raw else none -%}
+    {%- endif -%}
+
+    {%- set start_txt = ns.start_dt.strftime('%-I:%M %p') if ns.start_dt else '' -%}
+    {%- set end_txt = ns.end_dt.strftime('%-I:%M %p') if ns.end_dt   else '' -%}
+
+    {# optional flags if your sensor provides them; safe defaults otherwise #}
+    {%- set active = state_attr(entity_id, 'active') | default(is_state(entity_id,'on')) -%}
+    {%- set ever_above = state_attr(entity_id, 'ever_above') | default(false) -%}
+
+    {%- if not has_value(entity_id) -%}
+        UV Protection · N/A
+    {%- elif active -%}
+        {{ 'UV Protection · ' ~ (start_txt ~ '–' ~ end_txt if start_txt and end_txt else 'Active') }}
+    {%- elif ever_above and end_txt -%}
+        {{ 'UV Protection · Ended ' ~ end_txt }}
+    {%- else -%}
+        UV Protection · Not Needed
+    {%- endif -%}
 {%- endmacro %}
