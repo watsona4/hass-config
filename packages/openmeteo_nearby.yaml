@@ -209,6 +209,29 @@ template:
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
 
+      - name: Nearby Tomorrow Uv Index Max
+        unique_id: nearby_daily1_uv_index_max
+        state_class: measurement
+        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
+        state: >-
+          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
+          {{- _l[1] if (_l | length) > 1 else none -}}
+
+      - name: Nearby Day 2 Uv Index Max
+        unique_id: nearby_daily2_uv_index_max
+        state_class: measurement
+        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
+        state: >-
+          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
+          {{- _l[2] if (_l | length) > 2 else none -}}
+
+      - name: Nearby Day 2 Weekday
+        unique_id: nearby_daily2_weekday
+        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
+        state: >-
+          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('time') or [] -%}
+          {{- (_l[2] | as_datetime).strftime('%A') if (_l | length) > 2 else none -}}
+
       - name: Nearby Today Precip Sum
         unique_id: nearby_daily0_precip_sum
         device_class: precipitation

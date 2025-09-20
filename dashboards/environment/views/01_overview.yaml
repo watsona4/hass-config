@@ -1015,61 +1015,60 @@ sections:
             entity: sensor.openmeteo_nearby
             primary: Today
             secondary: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
             badge_icon: >-
               {%- from 'main.jinja' import get_badge -%}
-              {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
             badge_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.openmeteo_nearby
             primary: Tomorrow
             secondary: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
             badge_icon: >-
               {%- from 'main.jinja' import get_badge -%}
-              {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
             badge_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.openmeteo_nearby
-            primary: >-
-              {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
+            primary: "{{ states('sensor.nearby_day_2_weekday') }}"
             secondary: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
             icon: >-
               {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
             icon_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
             badge_icon: >-
               {%- from 'main.jinja' import get_badge -%}
-              {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
             badge_color: >-
               {%- from 'main.jinja' import get_color -%}
-              {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
             tap_action:
               action: more-info
       - type: vertical-stack
@@ -1143,19 +1142,19 @@ sections:
                     primary: Today
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
                   - type: custom:mushroom-template-card
@@ -1163,40 +1162,39 @@ sections:
                     primary: Tomorrow
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
                   - type: custom:mushroom-template-card
                     entity: sensor.openmeteo_home
-                    primary: >-
-                      {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
+                    primary: "{{ states('sensor.home_day_2_weekday') }}"
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
       - type: vertical-stack
@@ -1273,19 +1271,19 @@ sections:
                     primary: Today
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[0])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
                   - type: custom:mushroom-template-card
@@ -1293,39 +1291,38 @@ sections:
                     primary: Tomorrow
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[1])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
                   - type: custom:mushroom-template-card
                     entity: sensor.openmeteo_rv
-                    primary: >-
-                      {{- (state_attr(entity, 'daily').time[2] | as_datetime).strftime('%A') -}}
+                    primary: "{{ states('sensor.rv_day_2_weekday') }}"
                     secondary: >-
                       {%- from 'main.jinja' import get_label -%}
-                      {{- get_label(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
                     icon: >-
                       {%- from 'main.jinja' import get_icon -%}
-                      {{- get_icon(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
                     icon_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
                     badge_icon: >-
                       {%- from 'main.jinja' import get_badge -%}
-                      {{- get_badge(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
                     badge_color: >-
                       {%- from 'main.jinja' import get_color -%}
-                      {{- get_color(none, app='uv_index', options=dict(value=state_attr(entity,'daily').uv_index_max[2])) -}}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
                     tap_action:
                       action: more-info
