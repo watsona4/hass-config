@@ -167,6 +167,39 @@
         target:
           entity_id: cover.ratgdov25i_f6128e_door
     - conditions:
+      - condition: trigger
+        id:
+        - Someone is Home
+      - condition: state
+        entity_id: binary_sensor.dark_outside
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'on'
+      - condition: state
+        entity_id: binary_sensor.rainy
+        state: 'off'
+      - condition: state
+        entity_id: input_boolean.someone_is_home
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.home_alone
+        state: 'off'
+      - not:
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: opening
+      - not:
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: closing
+      sequence:
+      - action: cover.open_cover
+        metadata: {}
+        data: {}
+        target:
+          entity_id: cover.ratgdov25i_f6128e_door
+    - conditions:
       - condition: state
         entity_id: binary_sensor.dark_outside
         state: 'off'
@@ -202,6 +235,7 @@
         - condition: trigger
           id:
           - Manual Open
+          - Someone is Home
       - not:
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
