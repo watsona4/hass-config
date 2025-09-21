@@ -4,44 +4,71 @@ max_columns: 4
 sections:
   - type: grid
     cards:
-      - type: vertical-stack
-        cards:
-          - alert_classes:
-              - motion
-              - moisture
-            sensor_classes:
-              - temperature
-              - humidity
-            type: area
-            area: parlor
-          - type: custom:mushroom-title-card
-            title: ''
-            subtitle: Climate & Comfort
-          - type: custom:auto-entities
-            card:
-              type: grid
-              columns: 2
-              square: false
-            card_param: cards
-            filter:
-              include:
-                - area: parlor
-                  domain: sensor
-                  attributes:
-                    device_class: temperature
-                  options:
-                    type: custom:mushroom-template-card
-                - area: parlor
-                  domain: sensor
-                  attributes:
-                    device_class: humidity
-                  options:
-                    type: custom:mushroom-template-card
-                    entity: this.entity_id
-                    primary: '{{ state_attr(entity,''friendly_name'') }}'
-                    secondary: >-
-                      {% from 'hwmon.jinja' import hw_secondary %}{{
-                      hw_secondary(entity) }}
-                    icon: mdi:water-percent
-                    icon_color: blue
-              exclude: []
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('parlor') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('living_room') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('dining_room') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('breakfast_room') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('kitchen') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('pantry') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('laundry_room') | from_json -}}

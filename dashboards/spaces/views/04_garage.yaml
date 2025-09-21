@@ -5,5 +5,21 @@ path: garage
 sections:
   - type: grid
     cards:
-      - type: heading
-        heading: New section
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('garage') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('shop') | from_json -}}

@@ -5,5 +5,91 @@ path: upstairs
 sections:
   - type: grid
     cards:
-      - type: heading
-        heading: New section
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('front_hallway') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('study') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('guest_bedroom') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('master_bedroom') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('master_bathroom') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('back_hallway') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('eleanor_s_room') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('michael_s_room') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('kids_bathroom') | from_json -}}

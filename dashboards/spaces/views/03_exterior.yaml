@@ -5,5 +5,33 @@ path: exterior
 sections:
   - type: grid
     cards:
-      - type: heading
-        heading: New section
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('exterior') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('chicken_coop') | from_json -}}
+  - type: grid
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        card_param: cards
+        filter:
+          template: >-
+            {%- from 'macros/area_cards.jinja' import area_cards -%}
+            {{- area_cards('rv') | from_json -}}

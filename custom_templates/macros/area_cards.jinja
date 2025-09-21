@@ -1,0 +1,235 @@
+{# auto/area_cards.jinja ------------------------------------------------
+   Macro: area_cards(area_name)
+   Returns: JSON array (valid YAML) of card dictionaries for Auto-Entities (card_param: cards)
+----------------------------------------------------------------------- #}
+
+{% macro area_cards(area_name) -%}
+
+    {%- set entities = area_entities(area_name) | default([], true) -%}
+    {%- set ns = namespace(
+        cards=[],
+        temp=[], hum=[], climates=[], humidifiers=[],
+        switches=[], lights=[], fans=[], covers=[], locks=[], media=[],
+        bin_motion=[], bin_opening=[], bin_env=[], bin_safety=[], bin_power=[], bin_other=[],
+        bin_pairs=[], bin_chips=[]
+        ) -%}
+
+    {#- Collect entities in the area -#}
+    {%- for e in entities %}
+        {%- set dom = e.split('.', 1)[0] %}
+        {%- if dom == 'sensor' %}
+            {%- set dc = state_attr(e, 'device_class') | default('') %}
+            {%- if dc == 'temperature' %}
+                {%- set ns.temp = ns.temp + [e] %}
+            {%- endif -%}
+            {%- if dc == 'humidity' %}
+                {%- set ns.hum = ns.hum + [e] %}
+            {%- endif -%}
+        {%- elif dom == 'climate' %}
+            {%- set ns.climates = ns.climates + [e] -%}
+        {%- elif dom == 'humidifier' %}
+            {%- set ns.humidifiers = ns.humidifiers + [e] -%}
+        {%- elif dom == 'switch' %}
+            {%- set ns.switches = ns.switches + [e] -%}
+        {%- elif dom == 'light' %}
+            {%- set ns.lights = ns.lights + [e] -%}
+        {%- elif dom == 'fan' %}
+            {%- set ns.fans = ns.fans + [e] -%}
+        {%- elif dom == 'cover' %}
+            {%- set ns.covers = ns.covers + [e] -%}
+        {%- elif dom == 'lock' %}
+            {%- set ns.locks = ns.locks + [e] -%}
+        {%- elif dom == 'media_player' %}
+            {%- set ns.media = ns.media + [e] -%}
+        {%- elif dom == 'binary_sensor' -%}
+            {%- set dc = state_attr(e, 'device_class') | default('') -%}
+            {%- if dc in ['motion','occupancy','presence'] %}
+                {%- set ns.bin_motion = ns.bin_motion + [e] -%}
+            {%- elif dc in ['opening','door','window','garage_door'] %}
+                {%- set ns.bin_opening = ns.bin_opening + [e] -%}
+            {%- elif dc in ['moisture','water','cold','heat','vibration','tamper'] %}
+                {%- set ns.bin_env = ns.bin_env + [e] -%}
+            {%- elif dc in ['smoke','carbon_monoxide','gas','problem','safety'] %}
+                {%- set ns.bin_safety = ns.bin_safety + [e] -%}
+            {%- elif dc in ['battery','power','plug','connectivity'] %}
+                {%- set ns.bin_power = ns.bin_power + [e] -%}
+            {%- else -%}
+                {%- set ns.bin_other = ns.bin_other + [e] -%}
+            {%- endif -%}
+        {%- endif %}
+    {%- endfor %}
+
+    {#- Area card -#}
+    {%- set ns.cards = ns.cards + [{
+        'type': 'area',
+        'area': area_name,
+        'features': [{
+        'type': 'area-controls',
+        'controls': ['light', 'switch']
+        }],
+        'alert_classes': ['motion', 'moisture', 'problem'],
+        'sensor_classes': ['temperature', 'humidity', 'power'],
+        'tap_action': {'action': 'more-info'},
+        }] -%}
+
+    {#- Safety & Status (binary sensors as chips) -#}
+    {%- set any_bin = (ns.bin_motion|length) + (ns.bin_opening|length) + (ns.bin_env|length) + (ns.bin_safety|length) + (ns.bin_power|length) + (ns.bin_other|length) -%}
+    {%- if any_bin > 0 %}
+        {# build (name, entity) pairs in a consistent category order #}
+        {%- set ns.bin_pairs = [] -%}
+        {%- for e in ns.bin_safety %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for e in ns.bin_opening %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for e in ns.bin_motion %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for e in ns.bin_env %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for e in ns.bin_power %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for e in ns.bin_other %}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+
+        {# sort and build chips #}
+        {%- set ns.bin_chips = [] -%}
+        {%- for _, e in ns.bin_pairs | sort(attribute=0) %}
+            {%- set ns.bin_chips = ns.bin_chips + [{ 'type': 'entity', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+
+        {%- set ns.cards = ns.cards + [
+                { 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Safety & Status' },
+                { 'type': 'custom:mushroom-chips-card', 'chips': ns.bin_chips }
+                ] -%}
+    {%- endif %}
+
+    {#- Comfort & Climate -#}
+    {%- if (ns.temp|length) + (ns.hum|length) + (ns.climates|length) + (ns.humidifiers|length) > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Comfort & Climate' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.temp -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{'type': 'custom:decluttering-card', 'template': 'template_card', 'variables': [ {'entity': e}, {'app': 'ambient'} ]}] -%}
+        {%- endfor %}
+        {%- set grid.pairs = [] -%}
+        {%- for e in ns.hum -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:decluttering-card', 'template': 'template_card', 'variables': [ {'entity': e}, {'app': 'indoor'} ]}] -%}
+        {%- endfor %}
+        {%- set grid.pairs = [] -%}
+        {%- for e in ns.climates -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-climate-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set grid.pairs = [] -%}
+        {%- for e in ns.humidifiers -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-humidifier-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Switches -#}
+    {%- if ns.switches | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Switches & Outlets' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.switches -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-entity-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Lights -#}
+    {%- if ns.lights | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Lighting' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.lights -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-light-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Fans -#}
+    {%- if ns.fans | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Airflow' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.fans -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-fan-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Covers -#}
+    {%- if ns.covers | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Shades & Covers' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.covers -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-cover-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Locks -#}
+    {%- if ns.locks | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Access & Locks' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.locks -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-lock-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Media Players (vertical stack) -#}
+    {%- if ns.media | length > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Audio & Video' }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.media -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) %}
+            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-media-player-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+        {%- endfor %}
+        {%- set ns.cards = ns.cards + [{'type': 'vertical-stack', 'cards': grid.cards}] -%}
+    {%- endif %}
+
+    {#- Climate History -#}
+    {%- if (ns.temp|length) + (ns.hum|length) > 0 %}
+        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Climate Trends (24 hours)' }] -%}
+        {%- if ns.temp | length > 0 %}
+            {%- set ns.cards = ns.cards + [{'type': 'history-graph', 'title': 'Temperature', 'hours_to_show': 24, 'entities': ns.temp}] -%}
+        {%- endif %}
+        {%- if ns.hum | length > 0 %}
+            {%- set ns.cards = ns.cards + [{'type': 'history-graph', 'title': 'Humidity', 'hours_to_show': 24, 'entities': ns.hum}] -%}
+        {%- endif %}
+    {%- endif %}
+
+    {{- ns.cards | tojson -}}
+{%- endmacro %}
