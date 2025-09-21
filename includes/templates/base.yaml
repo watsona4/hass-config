@@ -1089,25 +1089,30 @@
           {{ states(src) if has_value(src) else this.state }}
         {% endif %}
 
-- sensor:
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.user_context
+        - sensor.outside_temperature_state
+        - sensor.nearby_temperature
+        - sensor.outside_humidity_state
+        - sensor.nearby_humidity
+  variables:
+    at_home: "{{ is_state('sensor.user_context', 'home') }}"
+    temp_src: "{{ 'sensor.outside_temperature_state' if (at_home | bool) else 'sensor.nearby_temperature' }}"
+    humid_src: "{{ 'sensor.outside_humidity_state' if (at_home | bool) else 'sensor.nearby_humidity' }}"
+    temp_val: "{{ states(temp_src) | float(none) }}"
+    humid_val: "{{ states(humid_src) | float(none) }}"
+  sensor:
     - name: Local Temperature
       unique_id: current_location_temperature
       device_class: temperature
       unit_of_measurement: "°F"
-      state: >-
-        {% if is_state('sensor.user_context', 'home') %}
-          {{ states('sensor.outside_temperature_state') }}
-        {% else %}
-          {{ states('sensor.nearby_temperature') }}
-        {% endif %}
-
+      availability: "{{ (temp_val | float(none)) is not none }}"
+      state: "{{ temp_val | float }}"
     - name: Local Humidity
       unique_id: current_location_humidity
       device_class: humidity
       unit_of_measurement: "%"
-      state: >-
-        {% if is_state('sensor.user_context', 'home') %}
-          {{ states('sensor.outside_humidity_state') }}
-        {% else %}
-          {{ states('sensor.nearby_humidity') }}
-        {% endif %}
+      availability: "{{ (humid_val | float(none)) is not none }}"
+      state: "{{ humid_val | float }}"
