@@ -1,0 +1,160 @@
+{# macros/zepbound.jinja
+   Helpers for ZepBound dosing:
+   - _exp(x)
+   - _rates(hl_days, hl_abs_h)
+   - _amount_at(t_hours, resid_prev, dose, ke, ka)
+   - zep_residual(t0_iso, last_peak, dose, hl_days, hl_abs_h)
+   - zep_next_ready(t0_iso, last_peak, dose, hl_days, hl_abs_h, desired_peak)
+     Returns JSON: {"target": <mg>, "peak": <mg>, "timestamp": "<ISO or 'unknown'>"}  (peak is enforced)
+   - _t_peak_hours(resid_prev, dose, ke, ka)
+   - zep_peak_value(t0_iso, last_peak, dose, hl_days, hl_abs_h)
+   - zep_peak_time(t0_iso, last_peak, dose, hl_days, hl_abs_h)
+#}
+
+{% macro _exp(x) -%}
+    {{- 2.718281828459045 ** (x | float(0) ) -}}
+{%- endmacro %}
+
+{% macro _rates(hl_days, hl_abs_h) -%}
+    {# returns a string "ke,ka" which callers immediately split/float #}
+    {%- set ln2 = 0.6931471805599453 -%}
+    {%- set ke = ln2 / ((hl_days | float(5)) * 24.0) -%}
+    {%- set ka = ln2 / (hl_abs_h | float(5)) -%}
+    {{- ke ~ ',' ~ ka -}}
+{%- endmacro %}
+
+{% macro _amount_at(t_hours, resid_prev, dose, ke, ka) -%}
+    {%- set t = t_hours | float(0) -%}
+    {%- if (ka - ke) | float | abs < 1e-9 -%}
+        {{- (resid_prev | float(0) ) * (_exp(-ke * t) | float)
+        + (dose | float(0)) * ke * t * (_exp(-ke * t) | float) -}}
+    {%- else -%}
+        {%- set term = (_exp(-ke * t) | float) - (_exp(-ka * t) | float) -%}
+        {{- (resid_prev | float(0) ) * (_exp(-ke * t) | float)
+        + (dose | float(0)) * (ka / (ka - ke)) * term -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Public: current residual, using last_peak and dose to reconstruct carryover #}
+{% macro zep_residual(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
+    {%- set t0 = as_timestamp(t0_iso) -%}
+    {%- if t0 is none -%}
+        0
+    {%- else -%}
+        {%- set dt_h = (as_timestamp(now()) - t0) / 3600.0 -%}
+        {%- if dt_h < 0 -%}
+            0
+        {%- else -%}
+            {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+            {%- set ke = parts[0] | float -%}
+            {%- set ka = parts[1] | float -%}
+            {%- set resid_prev = [ (last_peak | float(0)) - (dose | float(0)), 0 ] | max -%}
+            {{- [_amount_at(dt_h, resid_prev, dose, ke, ka) | float, 0] | max | round(3) -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}
+
+{# JSON-emitting scheduler (enforces desired_peak). Always returns:
+   {"target": <effective residual mg>, "peak": <desired peak mg>, "timestamp": "<ISO or 'unknown'>"} #}
+{% macro zep_next_ready(t0_iso, last_peak, dose, hl_days, hl_abs_h, desired_peak) -%}
+    {%- set t0 = as_datetime(t0_iso) -%}
+    {%- if t0 is none -%}
+        {{ dict(target=None, peak=None, timestamp='unknown') | tojson }}
+    {%- else -%}
+        {# minimum interval 1 day; never schedule in the past #}
+        {%- set t0l = t0 | as_local -%}
+        {%- set min_time = [t0l + timedelta(hours=24), now()] | max -%}
+
+        {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+        {%- set ke = parts[0] | float -%}
+        {%- set ka = parts[1] | float -%}
+        {%- set tau_p = (ka > ke) and ((ka/ke) | log) / (ka - ke) or 0.0 -%}
+        {%- set K = (ka/(ka - ke)) * ( (_exp(-ke * tau_p) | float) - (_exp(-ka * tau_p) | float) ) -%}
+
+        {# effective residual target implied by REQUIRED desired_peak #}
+        {%- if desired_peak is none -%}
+            {{ dict(target=None, peak=None, timestamp='unknown') | tojson }}
+        {%- endif -%}
+        {%- set T_eff = [ ((desired_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
+
+        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
+
+        {# A(t) wrapper #}
+        {% macro A(t) -%}
+            {{- _amount_at(t, resid_prev, dose, ke, ka) -}}
+        {%- endmacro %}
+
+        {%- set start_h = [ ((min_time - t0l).total_seconds() / 3600.0), ( (ka>ke) and ((ka/ke)|log)/(ka-ke) or 0.0 ), 0.0 ] | max -%}
+        {%- set lo = start_h -%}
+        {%- set hi = start_h + 24*30 -%}  {# 30 days window #}
+        {%- set f_lo = A(lo) | float -%}
+        {%- set f_hi = A(hi) | float -%}
+
+        {# If already below target and still falling, no crossing ahead #}
+        {%- if f_lo <= T_eff and f_hi <= T_eff -%}
+            {{ dict(target=T_eff, peak=(desired_peak | float) , timestamp='unknown') | tojson }}
+        {%- else -%}
+            {%- set ns = namespace(mid=none, lo=lo, hi=hi) -%}
+            {%- for _ in range(0, 24) -%}
+                {%- set ns.mid = (ns.lo + ns.hi) / 2 -%}
+                {%- set f_mid = A(ns.mid) | float -%}
+                {%- if f_mid > T_eff -%}
+                    {%- set ns.lo = ns.mid -%}
+                {%- else -%}
+                    {%- set ns.hi = ns.mid -%}
+                {%- endif -%}
+            {%- endfor -%}
+            {%- set result_time = t0l + timedelta(hours=ns.mid) -%}
+            {{ dict(target=T_eff, peak=(desired_peak | float) , timestamp=result_time.isoformat()) | tojson }}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}
+
+{# --- Peak helpers: true Bateman peak value and time --- #}
+
+{% macro _t_peak_hours(resid_prev, dose, ke, ka) -%}
+    {# Returns t* in hours where A(t) is maximal.
+       Closed form when ka > ke and dose > 0 and argument in (0, 1).
+       Otherwise clamp to 0 (peak at injection). #}
+    {%- if (dose | float(0)) <= 0 or (ka | float) <= (ke | float) -%}
+        0
+    {%- else -%}
+        {%- set num = (ke / ka) * (1 + ((ka - ke) / ka) * ((resid_prev | float(0)) / (dose | float(0)))) -%}
+        {%- if num <= 0 -%}
+            0
+        {%- else -%}
+            {%- set ln = num | log -%}
+            {%- set denom = (ka - ke) -%}
+            {%- set tstar = -(ln / denom) -%}
+            {{- [tstar, 0] | max -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro zep_peak_value(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
+    {%- set t0 = as_timestamp(t0_iso) -%}
+    {%- if t0 is none -%}
+        0
+    {%- else -%}
+        {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+        {%- set ke = parts[0] | float -%}
+        {%- set ka = parts[1] | float -%}
+        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
+        {%- set tstar = _t_peak_hours(resid_prev, dose, ke, ka) | float -%}
+        {{- _amount_at(tstar, resid_prev, dose, ke, ka) | float | round(3) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro zep_peak_time(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
+    {%- set t0 = as_datetime(t0_iso) -%}
+    {%- if t0 is none -%}
+        unknown
+    {%- else -%}
+        {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+        {%- set ke = parts[0] | float -%}
+        {%- set ka = parts[1] | float -%}
+        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
+        {%- set tstar = _t_peak_hours(resid_prev, dose, ke, ka) | float -%}
+        {{- (t0 + timedelta(hours=tstar) ).isoformat() -}}
+    {%- endif -%}
+{%- endmacro %}

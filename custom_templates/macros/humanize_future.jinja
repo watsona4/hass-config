@@ -1,0 +1,53 @@
+{# macros/time_humanize.jinja
+   humanize_future(dt, ready_text='Ready', unknown_text='unknown',
+                   show_clock=True, date_if_over_days=1,
+                   clock_format='%I:%M %p', date_format='%b %d')
+#}
+{% macro humanize_future(dt, ready_text='Ready', unknown_text='unknown', show_clock=True, date_if_over_days=1, clock_format='%I:%M %p', date_format='%a %-m/%-d') -%}
+
+    {%- set ns = namespace(ts=(dt | as_datetime(default=None)), phrase='', parts=[]) -%}
+
+    {%- if ns.ts is none -%}
+        {{- unknown_text -}}
+
+    {%- else -%}
+        {%- set local = ns.ts | as_local -%}
+        {%- set delta = ((local - now()).total_seconds() // 60) * 60 -%}
+
+        {#- Build the primary phrase -#}
+        {%- if delta <= 0 -%}
+            {%- set ns.phrase = ready_text -%}
+        {%- else -%}
+            {#- Mirror future into the past so relative_time works -#}
+            {%- set past_ref = now() - timedelta(seconds=delta) -%}
+            {%- set ns.phrase = 'In ' ~ (past_ref | relative_time) -%}
+        {%- endif -%}
+
+        {# Today/Tomorrow tag and formatted date string #}
+        {%- set day_tag = namespace(t='') -%}
+        {%- set today = (now() | as_local).date() -%}
+        {%- if local.date() == today + timedelta(days=1) -%}
+            {%- set day_tag.t = 'Tomorrow ' -%}
+        {%- elif local.date() == today -%}
+            {%- set day_tag.t = 'Today ' -%}
+        {%- endif -%}
+        {%- set date_str = day_tag.t ~ local.strftime(date_format) -%}
+
+        {#- Decide if we append clock and date -#}
+        {%- set show_date = date_if_over_days is number and (delta / 86400.0) > date_if_over_days -%}
+         {%- if show_date and show_clock -%}
+             {# date first, then time; time lowercased and no leading 0 #}
+            {%- set ns.parts = [ date_str, (local.strftime(clock_format).lstrip('0') | lower) ] -%}
+        {%- elif show_clock -%}
+            {%- set ns.parts = [ local.strftime(clock_format).lstrip('0') ] -%}
+        {%- elif show_date -%}
+            {%- set ns.parts = [ local.strftime(date_format) ] -%}
+        {%- endif -%}
+
+        {%- if ns.parts -%}
+            {{- ns.phrase ~ ' (' ~ ns.parts | join(", ") ~ ')' -}}
+        {%- else -%}
+            {{- ns.phrase -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}

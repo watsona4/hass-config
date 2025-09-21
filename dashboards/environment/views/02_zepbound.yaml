@@ -1,0 +1,118 @@
+title: Zepbound
+path: zepbound
+type: masonry
+cards:
+  - type: vertical-stack
+    cards:
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: sensor
+            entity: sensor.zep_residual_mg
+            name: Residual
+          - type: sensor
+            entity: sensor.zep_target_residual_mg
+            name: Target Residual
+          - type: sensor
+            entity: sensor.zep_projected_peak_mg
+            name: Projected Peak
+          - type: entity
+            entity: binary_sensor.zep_ready_to_inject
+            name: Ready To Inject
+            icon: mdi:needle
+      - type: entity
+        entity: sensor.zep_next_ready_timestamp
+        name: Next At-Target Time
+        attribute: display
+      - type: markdown
+        visibility:
+          - condition: state
+            entity: binary_sensor.zep_ready_to_inject
+            state: 'on'
+          - condition: or
+            conditions:
+              - condition: state
+                entity: binary_sensor.daytime
+                state: 'on'
+              - condition: state
+                entity: binary_sensor.evening
+                state: 'on'
+        content: >
+          ## ✅ Zepbound: You are ready to inject
+
+          Residual **{{ states('sensor.zep_residual_mg') }} mg** at or below
+          target **{{ states('sensor.zep_target_residual_mg') }} mg**.
+
+          Dose **{{ states('input_number.zep_weekly_dose_mg') }} mg**.
+          Projected peak **{{ states('sensor.zep_projected_peak_mg') }}
+          mg**.  
+  - type: vertical-stack
+    cards:
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: button
+            name: Record Taken Now
+            icon: mdi:check
+            tap_action:
+              action: call-service
+              service: script.zep_ack_taken_now
+          - type: button
+            name: Snooze 12h
+            icon: mdi:alarm-snooze
+            tap_action:
+              action: call-service
+              service: script.zep_snooze_hours
+              data:
+                hours: 12
+          - type: button
+            name: Snooze 24h
+            icon: mdi:alarm-snooze
+            tap_action:
+              action: call-service
+              service: script.zep_snooze_hours
+              data:
+                hours: 24
+      - type: entities
+        title: Dosing Inputs
+        entities:
+          - entity: input_number.zep_desired_peak_mg
+          - entity: input_number.zep_weekly_dose_mg
+            icon: mdi:pill
+  - type: custom:config-template-card
+    entities:
+      - sensor.zep_target_residual_mg
+    card:
+      type: custom:apexcharts-card
+      header:
+        show: true
+        title: Body dosage over time
+        show_states: true
+        colorize_states: true
+      graph_span: 21d
+      now:
+        show: true
+        color: "#aaaaaa"
+      apex_config:
+        yaxis:
+          decimalsInFloat: 2
+          min: 0
+        annotations:
+          yaxis:
+            - y: ${ Number(states['sensor.zep_target_residual_mg'].state) }
+              borderColor: "#888888"
+              label:
+                text: Target residual
+                style:
+                  color: "#000"
+                  background: "#eeeeee"
+      series:
+        - entity: sensor.zep_residual_mg
+          name: Residual
+          type: line
+          extend_to: false
+          group_by:
+            duration: 1h
+            func: last
