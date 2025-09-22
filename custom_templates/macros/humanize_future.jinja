@@ -5,7 +5,7 @@
 #}
 {% macro humanize_future(dt, ready_text='Ready', unknown_text='unknown', show_clock=True, date_if_over_days=1, clock_format='%I:%M %p', date_format='%a %-m/%-d') -%}
 
-    {%- set ns = namespace(ts=(dt | as_datetime(default=None)), phrase='', parts=[]) -%}
+    {%- set ns = namespace(ts=(dt | as_datetime(default=None)), phrase='', parts=[], date_str='') -%}
 
     {%- if ns.ts is none -%}
         {{- unknown_text -}}
@@ -24,20 +24,20 @@
         {%- endif -%}
 
         {# Today/Tomorrow tag and formatted date string #}
-        {%- set day_tag = namespace(t='') -%}
         {%- set today = (now() | as_local).date() -%}
         {%- if local.date() == today + timedelta(days=1) -%}
-            {%- set day_tag.t = 'Tomorrow ' -%}
+            {%- set ns.date_str = 'Tomorrow' -%}
         {%- elif local.date() == today -%}
-            {%- set day_tag.t = 'Today ' -%}
+            {%- set ns.date_str = 'Today' -%}
+        {%- else -%}
+            {%- set ns.date_str = local.strftime(date_format) -%}
         {%- endif -%}
-        {%- set date_str = day_tag.t ~ local.strftime(date_format) -%}
 
         {#- Decide if we append clock and date -#}
         {%- set show_date = date_if_over_days is number and (delta / 86400.0) > date_if_over_days -%}
          {%- if show_date and show_clock -%}
              {# date first, then time; time lowercased and no leading 0 #}
-            {%- set ns.parts = [ date_str, (local.strftime(clock_format).lstrip('0') | lower) ] -%}
+            {%- set ns.parts = [ ns.date_str, (local.strftime(clock_format).lstrip('0') | lower) ] -%}
         {%- elif show_clock -%}
             {%- set ns.parts = [ local.strftime(clock_format).lstrip('0') ] -%}
         {%- elif show_date -%}
