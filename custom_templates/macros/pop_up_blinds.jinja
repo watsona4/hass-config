@@ -200,3 +200,38 @@
 
     {{ ns.found }}
 {%- endmacro %}
+
+{# Build cards list for a specific area.
+   area_name: HA area name (string).
+   wanted: single code or list of codes. Exact match only.
+   only_when_closed: True to include only closed/closing.
+   suffix: cover id suffix to include, default "_window". #}
+{% macro build_blind_cards_in_area(area_name, wanted=None, only_when_closed=True, suffix='_window') -%}
+    {%- set ns = namespace(cards=[]) -%}
+    {%- set wanted_list = wanted if wanted is iterable and wanted is not string
+        else ([wanted] if wanted not in [None, ''] else []) -%}
+
+    {%- set ents = area_entities(area_name) | default([], true) -%}
+    {%- for eid in ents if eid.startswith('cover.') -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+
+        {%- set s = states(eid) -%}
+        {%- if only_when_closed and s not in ['closed','closing'] -%}{% continue %}{%- endif -%}
+
+        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set code = (states(reason_eid) or '') | trim | lower -%}
+        {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
+
+        {%- set card_json = _card_for_cover(eid) -%}
+        {%- set ns.cards = ns.cards + [ card_json | from_json ] -%}
+    {%- endfor -%}
+    {{ ns.cards | tojson }}
+{%- endmacro %}
+
+{# Build a single card object for a specific cover entity_id.
+   entity_id: full cover entity_id (e.g., cover.kitchen_window).
+   Returns a JSON object suitable for use as a card. #}
+{% macro build_blind_card_for(entity_id) -%}
+    {{ _card_for_cover(entity_id) }}
+{%- endmacro %}
