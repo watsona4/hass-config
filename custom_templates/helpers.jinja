@@ -170,7 +170,7 @@
 {% endmacro %}
 
 {% macro get_name(value, app='default', options={}) %}
-    {%- set exceptions = ['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC'] -%}
+    {%- set exceptions = ['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC','A/C','W/D'] -%}
     {%- if options is mapping and options.get('name') -%}
         {{- format_name(options.name, exceptions=exceptions) -}}
     {%- else -%}

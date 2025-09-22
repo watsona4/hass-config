@@ -333,6 +333,156 @@
             "full_desc":"Child is home alone—heightened attention recommended."
         }
     ],
+    "battery": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Battery status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No battery status reported." },
+        { "min_value": 0,    "default_desc": "OK",           "short_desc": "OK", "long_desc": "Battery normal", "icon": "mdi:battery", "color": "#22c55e", "full_desc": "Battery level is acceptable." },
+        { "min_value": 1,    "default_desc": "Low Battery",  "short_desc": "Low", "long_desc": "Low battery detected", "icon": "mdi:battery-alert", "color": "#dc2626", "full_desc": "Battery is low; replace or recharge soon." }
+    ],
+    "battery_charging": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Charging status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No charging status reported." },
+        { "min_value": 0,    "default_desc": "Not Charging", "short_desc": "Idle", "long_desc": "Not charging", "icon": "mdi:battery-outline", "color": "#9ca3af", "full_desc": "Device is not currently charging." },
+        { "min_value": 1,    "default_desc": "Charging",     "short_desc": "Chg", "long_desc": "Charging in progress", "icon": "mdi:battery-charging", "color": "#0ea5e9", "full_desc": "Device is plugged in and charging." }
+    ],
+    "carbon_monoxide": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "CO status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No CO reading available." },
+        { "min_value": 0,    "default_desc": "Clear",       "short_desc": "Clear", "long_desc": "No CO detected", "icon": "mdi:molecule-co", "color": "#22c55e", "full_desc": "Air is clear of carbon monoxide per sensor." },
+        { "min_value": 1,    "default_desc": "CO Detected", "short_desc": "CO", "long_desc": "Carbon monoxide detected", "icon": "mdi:alarm-light", "color": "#dc2626", "full_desc": "Danger: CO detected. Ventilate and evacuate; investigate immediately." }
+    ],
+    "cold": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Cold status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No temperature alert data." },
+        { "min_value": 0,    "default_desc": "Normal",      "short_desc": "OK", "long_desc": "Temperature normal", "icon": "mdi:thermometer", "color": "#22c55e", "full_desc": "No cold condition detected." },
+        { "min_value": 1,    "default_desc": "Cold",        "short_desc": "Cold", "long_desc": "Cold condition", "icon": "mdi:snowflake", "color": "#0ea5e9", "full_desc": "Cold detected; protect temperature-sensitive equipment/pipes." }
+    ],
+    "connectivity": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Connectivity unknown", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No connectivity data." },
+        { "min_value": 0,    "default_desc": "Offline",     "short_desc": "Down", "long_desc": "Disconnected", "icon": "mdi:lan-disconnect", "color": "#dc2626", "full_desc": "Device is offline or unreachable." },
+        { "min_value": 1,    "default_desc": "Online",      "short_desc": "Up", "long_desc": "Connected", "icon": "mdi:lan-connect", "color": "#22c55e", "full_desc": "Device is reachable and responsive." }
+    ],
+    "door": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Door status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No door state reported." },
+        { "min_value": 0,    "default_desc": "Closed",      "short_desc": "Closed", "long_desc": "Door closed", "icon": "mdi:door-closed", "color": "#22c55e", "full_desc": "Door is closed." },
+        { "min_value": 1,    "default_desc": "Open",        "short_desc": "Open", "long_desc": "Door open", "icon": "mdi:door-open", "color": "#f59e0b", "full_desc": "Door is open." }
+    ],
+    "garage_door": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Garage status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No garage door state reported." },
+        { "min_value": 0,    "default_desc": "Closed",      "short_desc": "Closed", "long_desc": "Garage closed", "icon": "mdi:garage", "color": "#22c55e", "full_desc": "Garage door is closed." },
+        { "min_value": 1,    "default_desc": "Open",        "short_desc": "Open", "long_desc": "Garage open", "icon": "mdi:garage-open", "color": "#f59e0b", "full_desc": "Garage door is open." }
+    ],
+    "gas": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Gas status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No gas reading available." },
+        { "min_value": 0,    "default_desc": "Clear",       "short_desc": "Clear", "long_desc": "No gas detected", "icon": "mdi:gas-cylinder", "color": "#22c55e", "full_desc": "No gas detected by sensor." },
+        { "min_value": 1,    "default_desc": "Gas Detected","short_desc": "Gas", "long_desc": "Gas detected", "icon": "mdi:alarm-light", "color": "#dc2626", "full_desc": "Danger: gas detected. Ventilate and investigate immediately." }
+    ],
+    "heat": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Heat status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No heat alert data." },
+        { "min_value": 0,    "default_desc": "Normal",      "short_desc": "OK", "long_desc": "No overheat", "icon": "mdi:thermometer", "color": "#22c55e", "full_desc": "No overheating detected." },
+        { "min_value": 1,    "default_desc": "Overheat",    "short_desc": "Hot", "long_desc": "High temperature", "icon": "mdi:thermometer-alert", "color": "#dc2626", "full_desc": "Overheat detected; cool the area or shut down equipment." }
+    ],
+    "light": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Light status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No light level reported." },
+        { "min_value": 0,    "default_desc": "Dark",        "short_desc": "Dark", "long_desc": "Dark condition", "icon": "mdi:weather-night", "color": "#9ca3af", "full_desc": "Low ambient light." },
+        { "min_value": 1,    "default_desc": "Light",       "short_desc": "Light", "long_desc": "Light detected", "icon": "mdi:weather-sunny", "color": "#facc15", "full_desc": "Ambient light present." }
+    ],
+    "lock": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Lock status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No lock state reported." },
+        { "min_value": 0,    "default_desc": "Unlocked",    "short_desc": "Open", "long_desc": "Unlocked", "icon": "mdi:lock-open-variant", "color": "#dc2626", "full_desc": "Lock is open/unsecured." },
+        { "min_value": 1,    "default_desc": "Locked",      "short_desc": "Locked", "long_desc": "Locked", "icon": "mdi:lock", "color": "#22c55e", "full_desc": "Lock is engaged." }
+    ],
+    "moisture": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Leak status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No leak detection data." },
+        { "min_value": 0,    "default_desc": "Dry",         "short_desc": "Dry", "long_desc": "No moisture", "icon": "mdi:water-off", "color": "#22c55e", "full_desc": "No leak detected." },
+        { "min_value": 1,    "default_desc": "Leak",        "short_desc": "Leak", "long_desc": "Moisture detected", "icon": "mdi:water-alert", "color": "#2563eb", "full_desc": "Water/leak detected; inspect quickly to prevent damage." }
+    ],
+    "motion": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Motion status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No motion data." },
+        { "min_value": 0,    "default_desc": "No Motion",   "short_desc": "Clear", "long_desc": "No motion", "icon": "mdi:motion-sensor-off", "color": "#9ca3af", "full_desc": "No movement detected." },
+        { "min_value": 1,    "default_desc": "Motion",      "short_desc": "Motion", "long_desc": "Motion detected", "icon": "mdi:motion-sensor", "color": "#22c55e", "full_desc": "Movement detected in this area." }
+    ],
+    "moving": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Movement status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No movement data." },
+        { "min_value": 0,    "default_desc": "Still",       "short_desc": "Still", "long_desc": "Not moving", "icon": "mdi:play-pause", "color": "#9ca3af", "full_desc": "Object is stationary." },
+        { "min_value": 1,    "default_desc": "Moving",      "short_desc": "Move", "long_desc": "Object moving", "icon": "mdi:run-fast", "color": "#22c55e", "full_desc": "Motion detected (continuous)." }
+    ],
+    "occupancy": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Occupancy unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No occupancy data." },
+        { "min_value": 0,    "default_desc": "Vacant",      "short_desc": "Vacant", "long_desc": "No occupancy", "icon": "mdi:home-outline", "color": "#9ca3af", "full_desc": "No one detected." },
+        { "min_value": 1,    "default_desc": "Occupied",    "short_desc": "Occ", "long_desc": "Presence detected", "icon": "mdi:home-account", "color": "#22c55e", "full_desc": "Presence detected in this area." }
+    ],
+    "opening": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Opening status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No open/close state reported." },
+        { "min_value": 0,    "default_desc": "Closed",      "short_desc": "Closed", "long_desc": "Closed", "icon": "mdi:window-closed-variant", "color": "#22c55e", "full_desc": "Closed (door, window, or hatch)." },
+        { "min_value": 1,    "default_desc": "Open",        "short_desc": "Open", "long_desc": "Open", "icon": "mdi:window-open-variant", "color": "#f59e0b", "full_desc": "Open (door, window, or hatch)." }
+    ],
+    "plug": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Plug status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No plug state reported." },
+        { "min_value": 0,    "default_desc": "Unplugged",   "short_desc": "Unplug", "long_desc": "Unplugged", "icon": "mdi:power-plug-off", "color": "#9ca3af", "full_desc": "Device is not plugged in." },
+        { "min_value": 1,    "default_desc": "Plugged In",  "short_desc": "Plugged", "long_desc": "Plugged in", "icon": "mdi:power-plug", "color": "#22c55e", "full_desc": "Device is plugged into power." }
+    ],
+    "power": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Power state unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No power state reported." },
+        { "min_value": 0,    "default_desc": "No Power",    "short_desc": "Off", "long_desc": "No power detected", "icon": "mdi:power-plug-off", "color": "#9ca3af", "full_desc": "No power present." },
+        { "min_value": 1,    "default_desc": "Power",       "short_desc": "On", "long_desc": "Power detected", "icon": "mdi:power-plug", "color": "#22c55e", "full_desc": "Power present." }
+    ],
+    "presence": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Presence status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No presence data." },
+        { "min_value": 0,    "default_desc": "Away",        "short_desc": "Away", "long_desc": "No one present", "icon": "mdi:account-off", "color": "#9ca3af", "full_desc": "No presence detected." },
+        { "min_value": 1,    "default_desc": "Present",     "short_desc": "Here", "long_desc": "Presence detected", "icon": "mdi:account", "color": "#22c55e", "full_desc": "Person detected/present." }
+    ],
+    "problem": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Problem status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No problem status reported." },
+        { "min_value": 0,    "default_desc": "OK",          "short_desc": "OK", "long_desc": "No problem", "icon": "mdi:check-circle", "color": "#22c55e", "full_desc": "All systems nominal." },
+        { "min_value": 1,    "default_desc": "Problem",     "short_desc": "Issue", "long_desc": "Problem detected", "icon": "mdi:alert-circle", "color": "#dc2626", "full_desc": "A problem has been reported; check device or integration." }
+    ],
+    "running": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Run status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No run state reported." },
+        { "min_value": 0,    "default_desc": "Stopped",     "short_desc": "Stop", "long_desc": "Not running", "icon": "mdi:pause-circle", "color": "#9ca3af", "full_desc": "Device/process is stopped." },
+        { "min_value": 1,    "default_desc": "Running",     "short_desc": "Run", "long_desc": "Running", "icon": "mdi:play-circle", "color": "#22c55e", "full_desc": "Device/process is running." }
+    ],
+    "safety": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Safety status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No safety status reported." },
+        { "min_value": 0,    "default_desc": "Safe",        "short_desc": "Safe", "long_desc": "No safety issue", "icon": "mdi:shield-check", "color": "#22c55e", "full_desc": "No safety hazards detected." },
+        { "min_value": 1,    "default_desc": "Unsafe",      "short_desc": "Alert", "long_desc": "Safety issue", "icon": "mdi:shield-alert", "color": "#dc2626", "full_desc": "Unsafe condition detected; investigate immediately." }
+    ],
+    "smoke": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Smoke status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No smoke reading available." },
+        { "min_value": 0,    "default_desc": "Clear",       "short_desc": "Clear", "long_desc": "No smoke", "icon": "mdi:smoke-detector-variant", "color": "#22c55e", "full_desc": "No smoke detected by sensor." },
+        { "min_value": 1,    "default_desc": "Smoke",       "short_desc": "Smoke", "long_desc": "Smoke detected", "icon": "mdi:smoke-detector-variant-alert", "color": "#dc2626", "full_desc": "Smoke detected. Evacuate and investigate immediately." }
+    ],
+    "sound": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Sound status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No sound status reported." },
+        { "min_value": 0,    "default_desc": "Quiet",       "short_desc": "Quiet", "long_desc": "No significant sound", "icon": "mdi:volume-off", "color": "#9ca3af", "full_desc": "Ambient noise is low." },
+        { "min_value": 1,    "default_desc": "Sound",       "short_desc": "Noise", "long_desc": "Sound detected", "icon": "mdi:volume-high", "color": "#f59e0b", "full_desc": "Sound/noise detected above threshold." }
+    ],
+    "tamper": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Tamper status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No tamper status reported." },
+        { "min_value": 0,    "default_desc": "Secure",      "short_desc": "Secure", "long_desc": "No tamper", "icon": "mdi:shield-check", "color": "#22c55e", "full_desc": "Device enclosure appears secure." },
+        { "min_value": 1,    "default_desc": "Tamper",      "short_desc": "Tamper", "long_desc": "Tamper detected", "icon": "mdi:shield-alert", "color": "#dc2626", "full_desc": "Tamper/open case detected; inspect device." }
+    ],
+    "update": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Update status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No update status reported." },
+        { "min_value": 0,    "default_desc": "Up to Date",  "short_desc": "Latest", "long_desc": "No updates available", "icon": "mdi:package-check", "color": "#22c55e", "full_desc": "Device/software is up to date." },
+        { "min_value": 1,    "default_desc": "Update Available", "short_desc": "Update", "long_desc": "Update available", "icon": "mdi:package-up", "color": "#0ea5e9", "full_desc": "An update is available; apply when convenient." }
+    ],
+    "vibration": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Vibration status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No vibration data." },
+        { "min_value": 0,    "default_desc": "Still",       "short_desc": "Still", "long_desc": "No vibration", "icon": "mdi:vibrate-off", "color": "#9ca3af", "full_desc": "No vibration detected." },
+        { "min_value": 1,    "default_desc": "Vibration",   "short_desc": "Vibe", "long_desc": "Vibration detected", "icon": "mdi:vibrate", "color": "#f59e0b", "full_desc": "Vibration or impact detected." }
+    ],
+    "window": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Window status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No window state reported." },
+        { "min_value": 0,    "default_desc": "Closed",      "short_desc": "Closed", "long_desc": "Window closed", "icon": "mdi:window-closed", "color": "#22c55e", "full_desc": "Window is closed." },
+        { "min_value": 1,    "default_desc": "Open",        "short_desc": "Open", "long_desc": "Window open", "icon": "mdi:window-open", "color": "#f59e0b", "full_desc": "Window is open." }
+    ],
+    "pressurized": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Pressure status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No pressurization status reported." },
+        { "min_value": 0,    "default_desc": "Not Pressurized", "short_desc": "Low", "long_desc": "No/low pressure", "icon": "mdi:gauge-empty", "color": "#dc2626", "full_desc": "System not pressurized; check pumps/valves." },
+        { "min_value": 1,    "default_desc": "Pressurized", "short_desc": "OK", "long_desc": "Nominal pressure", "icon": "mdi:gauge", "color": "#22c55e", "full_desc": "System is pressurized within expected range." }
+    ],
+    "water": [
+        { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Water status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No water/leak data." },
+        { "min_value": 0,    "default_desc": "Dry",         "short_desc": "Dry", "long_desc": "No water present", "icon": "mdi:water-off", "color": "#22c55e", "full_desc": "No water/leak detected." },
+        { "min_value": 1,    "default_desc": "Leak",        "short_desc": "Leak", "long_desc": "Water present", "icon": "mdi:water-alert", "color": "#2563eb", "full_desc": "Water detected; inspect promptly." }
+    ]
 } %}
 
 {% macro get_dc_context() %}
