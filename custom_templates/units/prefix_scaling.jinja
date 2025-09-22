@@ -52,7 +52,7 @@
 {% endmacro %}
 
 {% macro scale_value(value, from_prefix, to_prefix, system='SI') %}
-    {%- set v = value | float -%}
+    {%- set v = value | float(none) -%}
     {%- if system == 'IEC' -%}
         {%- set from_e = IEC_PREFIXES[from_prefix] -%}
         {%- set to_e = IEC_PREFIXES[to_prefix] -%}
@@ -65,7 +65,7 @@
 {% endmacro %}
 
 {% macro autoscale_prefix(value, system='SI', upper=1000) %}
-    {%- set v = value|float -%}
+    {%- set v = value|float(none) -%}
     {%- if v == 0 -%}
         {{- {'value':0.0,'prefix':'','exponent':0}|tojson -}}
     {%- else -%}

@@ -230,19 +230,19 @@
                 {%- endfor -%}
                 {%- set ns.val = ns2.items -%}
 
-                {#- booleans and null -#}
+            {#- booleans and null -#}
             {%- elif v | lower in ['true','false'] -%}
                 {%- set ns.val = (v | lower == 'true') -%}
             {%- elif v | lower in ['null','none','~'] -%}
                 {%- set ns.val = none -%}
 
-                {#- numbers (int or float), else string -#}
+            {#- numbers (int or float), else string -#}
             {%- else -%}
                 {%- set vv = v.strip('"').strip("'") -%}
                 {%- if vv | replace('_','') | regex_match('^-?[0-9]+$') -%}
-                    {%- set ns.val = vv | int -%}
+                    {%- set ns.val = vv | int(none) -%}
                 {%- elif vv | regex_match('^-?[0-9]*\\.[0-9]+$') -%}
-                    {%- set ns.val = vv | float -%}
+                    {%- set ns.val = vv | float(none) -%}
                 {%- else -%}
                     {%- set ns.val = vv -%}
                 {%- endif -%}

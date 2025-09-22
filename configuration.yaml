@@ -74,25 +74,21 @@ lovelace:
       type: module
     - url: /local/community/apexcharts-card/apexcharts-card.js
       type: module
+    - url: /local/community/config-template-card/config-template-card.js
+      type: module
   dashboards:
-    lovelace-overview-old:
-      mode: yaml
-      title: Overview Old
-      icon: mdi:view-dashboard
-      show_in_sidebar: true
-      filename: dashboards/overview_old/dashboard.yaml
-    lovelace-computers:
-      mode: yaml
-      title: Computers
-      icon: mdi:server
-      show_in_sidebar: true
-      filename: dashboards/computers/dashboard.yaml
     lovelace-environment:
       mode: yaml
       title: Environment
       icon: mdi:leaf
       show_in_sidebar: true
       filename: dashboards/environment/dashboard.yaml
+    lovelace-computers:
+      mode: yaml
+      title: Computers
+      icon: mdi:server
+      show_in_sidebar: true
+      filename: dashboards/computers/dashboard.yaml
     lovelace-rv:
       mode: yaml
       title: RV

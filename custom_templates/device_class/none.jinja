@@ -571,7 +571,7 @@
         {%- set ns.pre_text = 'Load: ' ~ load ~ options.get('delim', '\n') -%}
         {%- set ns.desc = "long" -%}
     {%- elif app == 'cpu_load' and options.cores is defined -%}
-        {%- set ns.post_text = ' • ' ~ states(options.cores)|int ~ ' cores' -%}
+        {%- set ns.post_text = ' • ' ~ states(options.cores)|int(none) ~ ' cores' -%}
     {%- elif app == 'memory_utilization' and options.used is defined -%}
         {%- set used = u_humanize_entity(options.used) -%}
         {%- set ns.pre_text = 'Used: ' ~ used ~ options.get('delim', '\n') -%}
@@ -580,8 +580,8 @@
         {%- set free = u_humanize_entity(options.free) -%}
         {%- set ns.pre_text = 'Free: ' ~ free ~ options.get('delim', '\n') -%}
         {%- set ns.desc = "long" -%}
-    {%- elif app == 'count_pending' and value|int >= 5 -%}
-        {%- set ns.post_text = ' (' ~ value|int ~ ')' -%}
+    {%- elif app == 'count_pending' and value|int(none) >= 5 -%}
+        {%- set ns.post_text = ' (' ~ value|int(none) ~ ')' -%}
         {%- set ns.desc = "long" -%}
     {%- endif -%}
     {{- ns.pre_text ~ desc[ns.desc] ~ ns.post_text -}}
@@ -590,7 +590,7 @@
 {% macro get_short_desc(value, app, options) %}
     {%- set ns = namespace(pre_text='', post_text='') -%}
     {%- if app == 'cpu_load' and options.cores is defined -%}
-        {%- set ns.post_text = ' • ' ~ states(options.cores)|int ~ ' cores' -%}
+        {%- set ns.post_text = ' • ' ~ states(options.cores)|int(none) ~ ' cores' -%}
     {%- endif -%}
     {{- ns.pre_text ~ H.get_short_desc(value, app, options) ~ ns.post_text -}}
 {% endmacro %}

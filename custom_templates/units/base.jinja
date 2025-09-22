@@ -77,7 +77,7 @@
 
 {# -------------------- temperature helpers (inline, no external file) -------------------- #}
 {% macro temp_to_c(v, u) -%}
-    {%- set val = v|float -%}
+    {%- set val = v|float(none) -%}
     {%- if u == '°C' -%}
         {{- val -}}
     {%- elif u == '°F' -%}
@@ -90,7 +90,7 @@
 {%- endmacro %}
 
 {% macro temp_from_c(v_c, u) -%}
-    {%- set val = v_c|float -%}
+    {%- set val = v_c|float(none) -%}
     {%- if u == '°C' -%}
         {{- val -}}
     {%- elif u == '°F' -%}
@@ -125,7 +125,7 @@
     {%- set sp = split_prefix_unit(u_raw) | from_json -%}
     {%- set dim = get_dimension(sp.base) -%}
     {%- set system = ('IEC' if (sp.prefix|string).endswith('i') else 'SI') -%}
-    {%- set val = scale_value(v|float, sp.prefix, '', system) | float -%}
+    {%- set val = scale_value(v|float(none), sp.prefix, '', system) | float(0) -%}
     {%- if dim in CONVERSION and dim != 'temperature' -%}
         {%- set spec = CONVERSION[dim] -%}
         {%- if sp.base == spec.base -%}
@@ -152,13 +152,13 @@
     {%- set sp = split_prefix_unit(u_raw) | from_json -%}
     {%- set dim = get_dimension(sp.base) -%}
     {%- set system = ('IEC' if (sp.prefix|string).endswith('i') else 'SI') -%}
-    {%- set value = v|float -%}
+    {%- set value = v|float(none) -%}
     {%- if dim in CONVERSION and dim != 'temperature' -%}
         {%- set spec = CONVERSION[dim] -%}
         {%- if sp.base == spec.base -%}
-            {{- {'value': scale_value(value, '', sp.prefix, system) |float , 'unit': sp.prefix ~ sp.base } | tojson -}}
+            {{- {'value': scale_value(value, '', sp.prefix, system) |float(none) , 'unit': sp.prefix ~ sp.base } | tojson -}}
         {%- elif sp.base in spec.map -%}
-            {{- {'value': scale_value(value / spec.map[sp.base], '', sp.prefix, system) |float , 'unit': sp.prefix ~ sp.base } | tojson -}}
+            {{- {'value': scale_value(value / spec.map[sp.base], '', sp.prefix, system) |float(none) , 'unit': sp.prefix ~ sp.base } | tojson -}}
         {%- else -%}
             {{- {'error': 'unknown ' ~ dim ~ ' unit ' ~ sp.base} | tojson -}}
         {%- endif -%}
@@ -271,8 +271,8 @@
         {%- set sci = '%e'|format(ax) -%}
         {%- set parts = sci.split('e') -%}
         {%- set mant = parts[0] -%}
-        {%- set exp = parts[1]|int -%}
-        {%- set leading = mant.split('.')[0]|int -%}
+        {%- set exp = parts[1]|int(none) -%}
+        {%- set leading = mant.split('.')[0]|int(none) -%}
         {%- set sig = 4 if leading == 1 else 3 -%}
         {%- set decimals = sig - 1 - exp -%}
         {%- set r = x|round(decimals) -%}
@@ -289,15 +289,15 @@
     {%- if basev.error is defined -%}
         {{- value ~ ' ' ~ unit -}}
     {%- else -%}
-        {%- set s = basev.value|float -%}
+        {%- set s = basev.value|float(none) -%}
         {%- set sign = '-' if s < 0 else '' -%}
         {%- set a = (0 - s) if s < 0 else s -%}
         {%- if a >= 1 -%}
-            {{- sign ~ (timedelta(seconds=(a|round(0) |int))|string) -}}
+            {{- sign ~ (timedelta(seconds=(a|round(0) |int(none)))|string) -}}
         {%- elif a >= 0.001 -%}
-            {{- sign ~ ((a*1000)|round(0) |int) ~ ' ms' -}}
+            {{- sign ~ ((a*1000)|round(0) |int(none)) ~ ' ms' -}}
         {%- else -%}
-            {{- sign ~ ((a*1000000)|round(0) |int) ~ ' µs' -}}
+            {{- sign ~ ((a*1000000)|round(0) |int(none)) ~ ' µs' -}}
         {%- endif -%}
     {%- endif -%}
 {%- endmacro %}
@@ -331,7 +331,7 @@
             {#- If the input carried a prefix, normalize value to base using scale_value -#}
             {%- if sp.prefix and can_pref -%}
                 {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
-                {%- set ns.v = scale_value(ns.v, sp.prefix, '', sys_tag) | float -%}
+                {%- set ns.v = scale_value(ns.v, sp.prefix, '', sys_tag) | float(none) -%}
             {%- endif -%}
 
             {#- Decide output prefix using autoscale_prefix -#}
@@ -339,7 +339,7 @@
                 {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
                 {%- set upper = (1024 if ns.sys == 'iec' else 1000) -%}
                 {%- set scaled = autoscale_prefix(ns.v, sys_tag, upper) | from_json -%}
-                {%- set ns.v = scaled.value | float -%}
+                {%- set ns.v = scaled.value | float(none) -%}
                 {%- set ns.pref_out = scaled.prefix -%}
             {%- endif -%}
 

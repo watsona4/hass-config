@@ -131,8 +131,8 @@
     {#- Import the device class template -#}
     {%- import 'device_class/' ~ ns.device_class ~ '.jinja' as DC with context -%}
     {%- set dc = DC.get_dc_context() | from_json -%}
-    {%- set lookup_unit = dc.lookup_unit -%}
-    {%- set levels = dc.levels -%}
+    {%- set lookup_unit = dc.get('lookup_unit') -%}
+    {%- set levels = dc.get('levels') -%}
 
     {#- Unavailable detection preserves None and common strings -#}
     {%- set is_unavail = (
