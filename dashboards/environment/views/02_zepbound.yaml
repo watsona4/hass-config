@@ -15,12 +15,20 @@ cards:
             entity: sensor.zep_target_residual_mg
             name: Target Residual
           - type: sensor
-            entity: sensor.zep_projected_peak_mg
-            name: Projected Peak
+            entity: sensor.zep_current_course_peak_mg
+            name: Current Course Peak
           - type: entity
             entity: binary_sensor.zep_ready_to_inject
             name: Ready To Inject
             icon: mdi:needle
+      - type: entity
+        entity: sensor.zep_current_course_peak_mg
+        attribute: details
+        name: Current Course Peak Time
+        visibility:
+          - condition: state
+            entity: sensor.zep_current_course_phase
+            state: rising
       - type: entity
         entity: sensor.zep_next_ready_timestamp
         name: Next At-Target Time
@@ -49,9 +57,7 @@ cards:
           mg**.  
   - type: vertical-stack
     cards:
-      - type: grid
-        columns: 3
-        square: false
+      - type: horizontal-stack
         cards:
           - type: button
             name: Record Taken Now

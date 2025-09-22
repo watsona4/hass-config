@@ -3,12 +3,11 @@
    - _exp(x)
    - _rates(hl_days, hl_abs_h)
    - _amount_at(t_hours, resid_prev, dose, ke, ka)
-   - zep_residual(t0_iso, last_peak, dose, hl_days, hl_abs_h)
-   - zep_next_ready(t0_iso, last_peak, dose, hl_days, hl_abs_h, desired_peak)
+   - zep_residual(t0_iso, resid_prev, dose, hl_days, hl_abs_h)
+   - zep_next_ready(t0_iso, resid_prev, dose, hl_days, hl_abs_h, desired_peak)
      Returns JSON: {"target": <mg>, "peak": <mg>, "timestamp": "<ISO or 'unknown'>"}  (peak is enforced)
    - _t_peak_hours(resid_prev, dose, ke, ka)
-   - zep_peak_value(t0_iso, last_peak, dose, hl_days, hl_abs_h)
-   - zep_peak_time(t0_iso, last_peak, dose, hl_days, hl_abs_h)
+   - zep_next_peak(t0_iso, resid_prev, dose, hl_days, hl_abs_h)
 #}
 
 {% macro _exp(x) -%}
@@ -35,8 +34,8 @@
     {%- endif -%}
 {%- endmacro %}
 
-{# Public: current residual, using last_peak and dose to reconstruct carryover #}
-{% macro zep_residual(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
+{# Public: current residual, using last_residual and dose to reconstruct carryover #}
+{% macro zep_residual(t0_iso, resid_prev, dose, hl_days, hl_abs_h) -%}
     {%- set t0 = as_timestamp(t0_iso) -%}
     {%- if t0 is none -%}
         0
@@ -48,7 +47,6 @@
             {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
             {%- set ke = parts[0] | float -%}
             {%- set ka = parts[1] | float -%}
-            {%- set resid_prev = [ (last_peak | float(0)) - (dose | float(0)), 0 ] | max -%}
             {{- [_amount_at(dt_h, resid_prev, dose, ke, ka) | float, 0] | max | round(3) -}}
         {%- endif -%}
     {%- endif -%}
@@ -56,7 +54,7 @@
 
 {# JSON-emitting scheduler (enforces desired_peak). Always returns:
    {"target": <effective residual mg>, "peak": <desired peak mg>, "timestamp": "<ISO or 'unknown'>"} #}
-{% macro zep_next_ready(t0_iso, last_peak, dose, hl_days, hl_abs_h, desired_peak) -%}
+{% macro zep_next_ready(t0_iso, resid_prev, dose, hl_days, hl_abs_h, desired_peak) -%}
     {%- set t0 = as_datetime(t0_iso) -%}
     {%- if t0 is none -%}
         {{ dict(target=None, peak=None, timestamp='unknown') | tojson }}
@@ -76,8 +74,6 @@
             {{ dict(target=None, peak=None, timestamp='unknown') | tojson }}
         {%- endif -%}
         {%- set T_eff = [ ((desired_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
-
-        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
 
         {# A(t) wrapper #}
         {% macro A(t) -%}
@@ -131,30 +127,17 @@
     {%- endif -%}
 {%- endmacro %}
 
-{% macro zep_peak_value(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
-    {%- set t0 = as_timestamp(t0_iso) -%}
-    {%- if t0 is none -%}
-        0
-    {%- else -%}
-        {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
-        {%- set ke = parts[0] | float -%}
-        {%- set ka = parts[1] | float -%}
-        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
-        {%- set tstar = _t_peak_hours(resid_prev, dose, ke, ka) | float -%}
-        {{- _amount_at(tstar, resid_prev, dose, ke, ka) | float | round(3) -}}
-    {%- endif -%}
-{%- endmacro %}
-
-{% macro zep_peak_time(t0_iso, last_peak, dose, hl_days, hl_abs_h) -%}
+{% macro zep_next_peak(t0_iso, resid_prev, dose, hl_days, hl_abs_h) -%}
     {%- set t0 = as_datetime(t0_iso) -%}
     {%- if t0 is none -%}
-        unknown
+        {{- { 'value': 0, 'time': 'unknown' } | tojson -}}
     {%- else -%}
         {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
         {%- set ke = parts[0] | float -%}
         {%- set ka = parts[1] | float -%}
-        {%- set resid_prev = [ ((last_peak | float(0)) - (dose | float(0)) * K) * (_exp(ke * tau_p) | float), 0 ] | max -%}
         {%- set tstar = _t_peak_hours(resid_prev, dose, ke, ka) | float -%}
-        {{- (t0 + timedelta(hours=tstar) ).isoformat() -}}
+        {{- { 'value': _amount_at(tstar, resid_prev, dose, ke, ka) | float | round(3),
+            'time': (t0 + timedelta(hours=tstar) ).isoformat()
+            } | tojson -}}
     {%- endif -%}
 {%- endmacro %}
