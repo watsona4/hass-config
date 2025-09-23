@@ -17,6 +17,17 @@ cards:
           - type: sensor
             entity: sensor.zep_current_course_peak_mg
             name: Current Course Peak
+            visibility:
+              - condition: state
+                entity: sensor.zep_current_course_phase
+                state: rising
+          - type: sensor
+            entity: sensor.zep_next_course_peak_mg
+            name: Next Course Peak
+            visibility:
+              - condition: state
+                entity: sensor.zep_current_course_phase
+                state: past
           - type: entity
             entity: binary_sensor.zep_ready_to_inject
             name: Ready To Inject
@@ -29,6 +40,14 @@ cards:
           - condition: state
             entity: sensor.zep_current_course_phase
             state: rising
+      - type: entity
+        entity: sensor.zep_next_course_peak_mg
+        attribute: details
+        name: Next Course Peak Time
+        visibility:
+          - condition: state
+            entity: sensor.zep_current_course_phase
+            state: past
       - type: entity
         entity: sensor.zep_next_ready_timestamp
         name: Next At-Target Time
@@ -85,7 +104,7 @@ cards:
         title: Dosing Inputs
         entities:
           - entity: input_number.zep_desired_peak_mg
-          - entity: input_number.zep_weekly_dose_mg
+          - entity: input_number.zep_desired_dose_mg
             icon: mdi:pill
   - type: custom:config-template-card
     entities:
@@ -110,7 +129,8 @@ cards:
             - y: ${ Number(states['sensor.zep_target_residual_mg'].state) }
               borderColor: "#888888"
               label:
-                text: Target residual
+                text: Target
+                position: left
                 style:
                   color: "#000"
                   background: "#eeeeee"
