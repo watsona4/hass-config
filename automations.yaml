@@ -2179,6 +2179,7 @@
         weekday:
         - tue
         - fri
+        - wed
       - condition: state
         entity_id: person.aaron_watson
         state: home
