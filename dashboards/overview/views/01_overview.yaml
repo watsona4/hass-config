@@ -256,7 +256,7 @@ sections:
             template: template_card
             variables:
               - entity: sensor.electric_daily
-              - app: daily
+              - app: energy_daily_house
               - layout: vertical
               - multiline_secondary: true
               - options: project_daily=true

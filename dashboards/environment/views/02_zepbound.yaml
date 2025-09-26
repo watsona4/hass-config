@@ -129,8 +129,9 @@ cards:
             - y: ${ Number(states['sensor.zep_target_residual_mg'].state) }
               borderColor: "#888888"
               label:
-                text: Target
+                text: Target Residual
                 position: left
+                textAnchor: start
                 style:
                   color: "#000"
                   background: "#eeeeee"

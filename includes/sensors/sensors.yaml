@@ -2,47 +2,6 @@
   username: !secret my_zwift_username
   password: !secret my_zwift_password
 
-- platform: history_stats
-  name: Furnace On Time
-  unique_id: furnace_on_time
-  entity_id: binary_sensor.furnace_heating_state
-  state: "on"
-  start: 1729310400
-  end: "{{ now() }}"
-  type: time
-- platform: history_stats
-  name: Dryer On Time
-  unique_id: dryer_on_time
-  entity_id: binary_sensor.dryer_heating_state
-  state: "on"
-  start: 1729310400
-  end: "{{ now() }}"
-  type: time
-- platform: history_stats
-  name: Water Heater On Time
-  unique_id: water_heater_on_time
-  entity_id: binary_sensor.water_heater_heating_state
-  state: "on"
-  start: 1729310400
-  end: "{{ now() }}"
-  type: time
-- platform: history_stats
-  name: Gas Stove On Time
-  unique_id: gas_stove_on_time
-  entity_id: binary_sensor.gas_stove_heating_state
-  state: "on"
-  start: 1729310400
-  end: "{{ now() }}"
-  type: time
-- platform: history_stats
-  name: Shop Furnace On Time
-  unique_id: shop_furnace_on_time
-  entity_id: binary_sensor.shop_furnace_heating_state
-  state: "on"
-  start: 1729310400
-  end: "{{ now() }}"
-  type: time
-
 - platform: rest
   name: Agromonitoring
   unique_id: agromonitoring
@@ -163,17 +122,6 @@
   source: sensor.outside_temperature_state
   unit_time: h
   time_window: "0:30:00"
-
-- platform: derivative
-  name: Water Usage Rate
-  source: sensor.water_meter
-  unit_time: min
-  time_window: "0:30:00"
-
-- platform: integration
-  name: Electric Usage
-  unique_id: electric_usage
-  source: sensor.none_123_1min
 
 - platform: mold_indicator
   name: Mold Indicator

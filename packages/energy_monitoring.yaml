@@ -1,0 +1,838 @@
+# =============================================================================
+# Utilities Package
+# - Customization marks daily "Today" meters for UI logic.
+# - Gas flows are inferred from binary on/off states, then integrated to meters.
+# - Water total is persisted across restarts via a trigger-based sensor.
+# - "Relay" meters mirror absolute usage sensors and serve as billed totals.
+# - Cost sensors derive from relay totals.
+# Notes:
+#   * Replace the placeholder source for Electric Usage before enabling.
+#   * For dict-style containers (utility_meter entries), unique_id is listed first.
+#   * For template sensors, unique_id immediately follows name.
+# =============================================================================
+
+homeassistant:
+  customize:
+    # Mark all room "today" sensors as daily meters for your dashboards.
+    sensor.parlor_energy_today:
+      meter: daily
+    sensor.living_room_energy_today:
+      meter: daily
+    sensor.dining_room_energy_today:
+      meter: daily
+    sensor.breakfast_room_energy_today:
+      meter: daily
+    sensor.kitchen_energy_today:
+      meter: daily
+    sensor.pantry_energy_today:
+      meter: daily
+    sensor.laundry_room_energy_today:
+      meter: daily
+    sensor.front_hallway_energy_today:
+      meter: daily
+    sensor.study_energy_today:
+      meter: daily
+    sensor.master_bedroom_energy_today:
+      meter: daily
+    sensor.guest_bedroom_energy_today:
+      meter: daily
+    sensor.master_bathroom_energy_today:
+      meter: daily
+    sensor.kids_bathroom_energy_today:
+      meter: daily
+    sensor.back_hallway_energy_today:
+      meter: daily
+    sensor.eleanor_s_room_energy_today:
+      meter: daily
+    sensor.michael_s_room_energy_today:
+      meter: daily
+    sensor.garage_energy_today:
+      meter: daily
+    sensor.shop_energy_today:
+      meter: daily
+    sensor.playroom_energy_today:
+      meter: daily
+    sensor.exercise_room_energy_today:
+      meter: daily
+    sensor.exterior_energy_today:
+      meter: daily
+    sensor.chicken_coop_energy_today:
+      meter: daily
+    sensor.rv_energy_today:
+      meter: daily
+    sensor.attic_energy_today:
+      meter: daily
+    sensor.basement_energy_today:
+      meter: daily
+    sensor.furnace_gas_today:
+      meter: daily
+    sensor.dryer_gas_today:
+      meter: daily
+    sensor.water_heater_gas_today:
+      meter: daily
+    sensor.gas_stove_gas_today:
+      meter: daily
+    sensor.shop_furnace_gas_today:
+      meter: daily
+
+# -----------------------------------------------------------------------------
+# Physical/derived sensors (integration & derivative)
+# -----------------------------------------------------------------------------
+sensor:
+  # Integrate gas flow rates (m³/h) to cumulative volume (m³).
+  - platform: integration
+    name: "Furnace Gas Meter Raw"
+    unique_id: f61c144e-ac88-4da5-ac04-27fd4f5bd536
+    source: sensor.furnace_gas_flow
+    unit_prefix: null        # disable auto k/M/G scaling; keep base units
+    method: trapezoidal
+    round: 6
+
+  - platform: integration
+    name: "Dryer Gas Meter Raw"
+    unique_id: cb0adb1a-8a82-4c0d-b63f-9669fd583854
+    source: sensor.dryer_gas_flow
+    unit_prefix: null
+    method: trapezoidal
+    round: 6
+
+  - platform: integration
+    name: "Water Heater Gas Meter Raw"
+    unique_id: 3f3e2f7e-6d1b-4c8e-9f7a-5c3e2f7e6d1b
+    source: sensor.water_heater_gas_flow
+    unit_prefix: null
+    method: trapezoidal
+    round: 6
+
+  - platform: integration
+    name: "Gas Stove Gas Meter Raw"
+    unique_id: 47c9e6ca-56f8-4a96-8ff0-ee3f4c6af9e2
+    source: sensor.gas_stove_gas_flow
+    unit_prefix: null
+    method: trapezoidal
+    round: 6
+
+  - platform: integration
+    name: "Shop Furnace Gas Meter Raw"
+    unique_id: 12e599b3-dade-40e7-b418-10ef2f472f5b
+    source: sensor.shop_furnace_gas_flow
+    unit_prefix: null
+    method: trapezoidal
+    round: 6
+
+  # Water usage rate from totalizer. Units will match the totalizer per minute.
+  - platform: derivative
+    name: "Water Usage Rate"
+    source: sensor.water_meter
+    unit_time: min
+    time_window: "0:30:00"
+
+  # TODO: Replace source with your actual whole-home energy total sensor.
+  - platform: integration
+    name: "Electric Usage"
+    unique_id: bf476229-8d09-4c1e-979d-9f1c1086368a
+    source: sensor.none_123_1min   # <--- REPLACE THIS with the correct energy source
+    # unit_prefix: null            # Uncomment if you want to disable auto-scaling
+    method: trapezoidal
+    round: 6
+
+# -----------------------------------------------------------------------------
+# Template sensors: gas flows (m³/h) and meters mirroring the *_Raw integrations
+# -----------------------------------------------------------------------------
+template:
+  - sensor:
+      # Gas flow rates inferred from equipment state; uses your macro helper.
+      - name: "Furnace Gas Flow"
+        unique_id: b754f2ab-8bc9-4bfb-99e2-f3c7d051fd3f
+        device_class: volume_flow_rate
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        availability: "{{ has_value('binary_sensor.furnace_heating_state') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import flow_m3_per_h -%}
+          {{ flow_m3_per_h(135_000, 1.0) if is_state('binary_sensor.furnace_heating_state','on') else 0 }}
+
+      - name: "Dryer Gas Flow"
+        unique_id: 870ceaf9-b1df-4946-b05b-a22c5f0530a3
+        device_class: volume_flow_rate
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        availability: "{{ has_value('binary_sensor.dryer_heating_state') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import flow_m3_per_h -%}
+          {{ flow_m3_per_h(20_000, 1.0) if is_state('binary_sensor.dryer_heating_state','on') else 0 }}
+
+      - name: "Water Heater Gas Flow"
+        unique_id: d2c433aa-0c12-4bc9-8c1b-9b5b95a7f6b2
+        device_class: volume_flow_rate
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        availability: "{{ has_value('binary_sensor.water_heater_heating_state') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import flow_m3_per_h -%}
+          {{ flow_m3_per_h(30_000, 1.0) if is_state('binary_sensor.water_heater_heating_state','on') else 0 }}
+
+      - name: "Gas Stove Gas Flow"
+        unique_id: fbbf0a2d-d67e-4142-b5a0-80501b922a67
+        device_class: volume_flow_rate
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        availability: "{{ has_value('binary_sensor.gas_stove_heating_state') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import flow_m3_per_h -%}
+          {{ flow_m3_per_h(25_000, 1.0) if is_state('binary_sensor.gas_stove_heating_state','on') else 0 }}
+
+      - name: "Shop Furnace Gas Flow"
+        unique_id: bb5c5dce-e26f-469e-b4e4-5b0a07debce2
+        device_class: volume_flow_rate
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        availability: "{{ has_value('binary_sensor.shop_furnace_heating_state') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import flow_m3_per_h -%}
+          {{ flow_m3_per_h(45_000, 1.0) if is_state('binary_sensor.shop_furnace_heating_state','on') else 0 }}
+
+  - sensor:
+      # Mirror the *_Raw integrated totals with proper device classes and attributes.
+      - name: "Furnace Gas Meter"
+        unique_id: 95dbab4b-9ffe-4901-8a67-d2e790103ab7
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        availability: "{{ has_value('sensor.furnace_gas_meter_raw') }}"
+        state: "{{ states('sensor.furnace_gas_meter_raw') }}"
+        attributes:
+          source_entity: sensor.furnace_gas_flow
+
+      - name: "Dryer Gas Meter"
+        unique_id: d206a25f-c02c-4408-ae26-6160c2a015bd
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        availability: "{{ has_value('sensor.dryer_gas_meter_raw') }}"
+        state: "{{ states('sensor.dryer_gas_meter_raw') }}"
+        attributes:
+          source_entity: sensor.dryer_gas_flow
+
+      - name: "Water Heater Gas Meter"
+        unique_id: 7c21ce86-d047-4236-b98b-9493763c9948
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        availability: "{{ has_value('sensor.water_heater_gas_meter_raw') }}"
+        state: "{{ states('sensor.water_heater_gas_meter_raw') }}"
+        attributes:
+          source_entity: sensor.water_heater_gas_flow
+
+      - name: "Gas Stove Gas Meter"
+        unique_id: 8d3c6457-6ec3-4dee-8f5d-7b9e43e8f9be
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        availability: "{{ has_value('sensor.gas_stove_gas_meter_raw') }}"
+        state: "{{ states('sensor.gas_stove_gas_meter_raw') }}"
+        attributes:
+          source_entity: sensor.gas_stove_gas_flow
+
+      - name: "Shop Furnace Gas Meter"
+        unique_id: c277ccef-3644-4654-8b7b-81423098fd0c
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        availability: "{{ has_value('sensor.shop_furnace_gas_meter_raw') }}"
+        state: "{{ states('sensor.shop_furnace_gas_meter_raw') }}"
+        attributes:
+          source_entity: sensor.shop_furnace_gas_flow
+
+  - sensor:
+      # Cost models based on relay totals. Keep last_reset for transparency.
+      - name: "Gas Cost"
+        unique_id: ead7aa62-1770-4577-b13d-90ecb6eb105b
+        device_class: monetary
+        state_class: total
+        unit_of_measurement: "USD"
+        availability: "{{ has_value('sensor.gas_meter_relay') }}"
+        state: >-
+          {%- from 'metrics/utilities/gas_helpers.jinja' import m3_to_ccf -%}
+          {%- set m3 = states('sensor.gas_meter_relay')|float(0) -%}
+          {%- set x  = m3_to_ccf(m3)|float(0) -%}   {# x = CCF #}
+          {%- set cost = (22.06 + 1.0106*x) if x <= 50 else (46.58 + 0.48886*x) -%}
+          {{ cost | round(2) }}
+        attributes:
+          basis_volume_ccf: >-
+            {%- from 'metrics/utilities/gas_helpers.jinja' import m3_to_ccf -%}
+            {{ m3_to_ccf(states('sensor.gas_meter_relay')) | float(0) | round(3) }}
+          tier: >-
+            {%- from 'metrics/utilities/gas_helpers.jinja' import m3_to_ccf -%}
+            {{ 'Tier 1 (≤50 CCF)' if m3_to_ccf(states('sensor.gas_meter_relay'))|float(0) <= 50 else 'Tier 2 (>50 CCF)' }}
+          fixed_component_usd: >-
+            {%- set x = (states('sensor.gas_meter_relay')|float(0) / 2.83168466) -%}
+            {{ 22.06 if x <= 50 else 46.58 }}
+          variable_rate_usd_per_ccf: >-
+            {%- set x = (states('sensor.gas_meter_relay')|float(0) / 2.83168466) -%}
+            {{ 1.0106 if x <= 50 else 0.48886 }}
+          last_reset: "{{ state_attr('sensor.gas_meter_relay', 'last_reset') }}"
+
+      - name: "Electric Cost"
+        unique_id: 26814ee0-1876-45c7-bb43-c7d99410aaa3
+        device_class: monetary
+        state_class: total
+        unit_of_measurement: "USD"
+        availability: "{{ has_value('sensor.electric_meter_relay') }}"
+        state: >-
+          {% set x = states('sensor.electric_meter_relay') | float(0) %}
+          {{ 17.87 + 0.16008*x }}
+        attributes:
+          last_reset: "{{ state_attr('sensor.electric_meter_relay', 'last_reset') }}"
+
+      - name: "Water Cost"
+        unique_id: 59234f9a-e6d5-4470-9a6d-74e25593a45d
+        device_class: monetary
+        state_class: total
+        unit_of_measurement: "USD"
+        availability: "{{ has_value('sensor.water_meter_relay') }}"
+        state: >-
+          {% set x = states('sensor.water_meter_relay') | float(0) %}
+          {% if x < 10000 %}
+            {{ 76.00 }}
+          {% elif x < 56600 %}
+            {{ 76.00 + 0.0038*x }}
+          {% elif x < 66600 %}
+            {{ 291.08 + 0.00345*x }}
+          {% else %}
+            {{ 520.85 + 0.00259*x }}
+          {% endif %}
+        attributes:
+          last_reset: "{{ state_attr('sensor.water_meter_relay', 'last_reset') }}"
+
+  # Equipment state inference for gas flow availability.
+  - binary_sensor:
+      - name: "Furnace Heating State"
+        unique_id: f504459f-9f33-46fe-b307-5fc28eb4f4f6
+        device_class: running
+        availability: "{{ state_attr('climate.downstairs_thermostat','hvac_action') is not none }}"
+        state: "{{ is_state_attr('climate.downstairs_thermostat','hvac_action','heating') }}"
+
+      - name: "Dryer Heating State"
+        unique_id: 3f02581d-cca4-4c5d-8f73-3246650cabce
+        device_class: running
+        availability: "{{ has_value('sensor.dryer_power') }}"
+        state: "{{ states('sensor.dryer_power') | float(0) > 10 }}"
+
+      - name: "Water Heater Heating State"
+        unique_id: eb1a5556-863f-4fc6-aa3f-4c23b21a51c1
+        device_class: running
+        availability: "{{ has_value('sensor.water_heater_outlet_power') }}"
+        state: "{{ states('sensor.water_heater_outlet_power') | float(0) > 10 }}"
+
+      - name: "Gas Stove Heating State"
+        unique_id: 38bfe0bf-e1f9-4ee0-a55a-d4f8f3a02277
+        device_class: running
+        availability: "{{ has_value('switch.gas_stove_switch') }}"
+        state: "{{ is_state('switch.gas_stove_switch','on') }}"
+
+      - name: "Shop Furnace Heating State"
+        unique_id: 471b40cc-0463-4626-9e0f-b02bf8d2ea15
+        device_class: running
+        availability: "{{ has_value('sensor.shop_furnace_switch_0_power') }}"
+        state: "{{ states('sensor.shop_furnace_switch_0_power') | float(0) > 10 }}"
+
+  # Area energy totals (exclude self and the paired daily meter to prevent loops).
+  - sensor:
+      - name: "Parlor Energy Total"
+        unique_id: ebf5d912-827b-465a-b7b1-6a322f445ddb
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('parlor', exclude=[this.entity_id, 'sensor.parlor_energy_today']) }}
+
+      - name: "Living Room Energy Total"
+        unique_id: 59270ef0-cdc1-4480-89ff-c5485ef335bd
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('living_room', exclude=[this.entity_id, 'sensor.living_room_energy_today']) }}
+
+      - name: "Dining Room Energy Total"
+        unique_id: b472e105-06fc-479e-a9e9-98567017d325
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('dining_room', exclude=[this.entity_id, 'sensor.dining_room_energy_today']) }}
+
+      - name: "Breakfast Room Energy Total"
+        unique_id: db27e145-4f05-4b7f-9fce-928b88fe6581
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('breakfast_room', exclude=[this.entity_id, 'sensor.breakfast_room_energy_today']) }}
+
+      - name: "Kitchen Energy Total"
+        unique_id: b81d13b5-979d-4da6-8e43-f4a26c5c916f
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('kitchen', exclude=[this.entity_id, 'sensor.kitchen_energy_today']) }}
+
+      - name: "Pantry Energy Total"
+        unique_id: 6ec86914-e844-4fa5-aa94-f8f892e835af
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('pantry', exclude=[this.entity_id, 'sensor.pantry_energy_today']) }}
+
+      - name: "Laundry Room Energy Total"
+        unique_id: 91348ec4-5b7a-408c-bd2b-f82aca574b22
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('laundry_room', exclude=[this.entity_id, 'sensor.laundry_room_energy_today']) }}
+
+      - name: "Front Hallway Energy Total"
+        unique_id: fccdc200-4277-4293-87f5-955b92db0adf
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('front_hallway', exclude=[this.entity_id, 'sensor.front_hallway_energy_today']) }}
+
+      - name: "Study Energy Total"
+        unique_id: f6c62ec6-f192-4cf7-85fe-0ea2bdda64be
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('study', exclude=[this.entity_id, 'sensor.study_energy_today']) }}
+
+      - name: "Guest Bedroom Energy Total"
+        unique_id: ae03f693-4e06-4e84-8d93-46da039085f6
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('guest_bedroom', exclude=[this.entity_id, 'sensor.guest_bedroom_energy_today']) }}
+
+      - name: "Master Bedroom Energy Total"
+        unique_id: 9347c378-f1a8-486b-8df9-f377505cdf8e
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('master_bedroom', exclude=[this.entity_id, 'sensor.master_bedroom_energy_today']) }}
+
+      - name: "Master Bathroom Energy Total"
+        unique_id: 6a5a7125-cd20-4561-bbfe-fc1c57c19aea
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('master_bathroom', exclude=[this.entity_id, 'sensor.master_bathroom_energy_today']) }}
+
+      - name: "Back Hallway Energy Total"
+        unique_id: 987c1799-74ca-46a8-ac68-620729c8c830
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('back_hallway', exclude=[this.entity_id, 'sensor.back_hallway_energy_today']) }}
+
+      - name: "Eleanor's Room Energy Total"
+        unique_id: 2af923bf-9c1f-4b2f-a1f0-7e29f9840f3e
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('eleanor_s_room', exclude=[this.entity_id, 'sensor.eleanor_s_room_energy_today']) }}
+
+      - name: "Michael's Room Energy Total"
+        unique_id: 36ace539-838c-4459-9e52-83cde00b37c3
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('michael_s_room', exclude=[this.entity_id, 'sensor.michael_s_room_energy_today']) }}
+
+      - name: "Kids Bathroom Energy Total"
+        unique_id: 4a8db0bf-c558-4bfb-a87c-93572ddb043d
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('kids_bathroom', exclude=[this.entity_id, 'sensor.kids_bathroom_energy_today']) }}
+
+      - name: "Exterior Energy Total"
+        unique_id: c81b7e52-cf5e-42c6-a061-1df5f39b0768
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('exterior', exclude=[this.entity_id, 'sensor.exterior_energy_today']) }}
+
+      - name: "Chicken Coop Energy Total"
+        unique_id: ff250f18-4c9b-40ba-9ea8-af755c41bb69
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('chicken_coop', exclude=[this.entity_id, 'sensor.chicken_coop_energy_today']) }}
+
+      - name: "RV Energy Total"
+        unique_id: bd28c2e5-06f0-4be6-bc9a-9040d3b8e45e
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('rv', exclude=[this.entity_id, 'sensor.rv_energy_today']) }}
+
+      - name: "Garage Energy Total"
+        unique_id: d3453466-155f-444b-bd41-be83617320f5
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('garage', exclude=[this.entity_id, 'sensor.garage_energy_today']) }}
+
+      - name: "Shop Energy Total"
+        unique_id: 643588e5-996b-4a6c-b348-c2889c43d877
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('shop', exclude=[this.entity_id, 'sensor.shop_energy_today']) }}
+
+      - name: "Exercise Room Energy Total"
+        unique_id: aee106df-1ea0-41b8-8f2f-182811c3738d
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('exercise_room', exclude=[this.entity_id, 'sensor.exercise_room_energy_today']) }}
+
+      - name: "Playroom Energy Total"
+        unique_id: 5ec26667-b0bc-4f55-ac48-47c109404352
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('playroom', exclude=[this.entity_id, 'sensor.playroom_energy_today']) }}
+
+      - name: "Attic Energy Total"
+        unique_id: cc2020d9-8120-4178-a3f5-4deb7ab30106
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('attic', exclude=[this.entity_id, 'sensor.attic_energy_today']) }}
+
+      - name: "Basement Energy Total"
+        unique_id: 9f7f28c2-5bf9-4796-9fc8-8afab1ae90e6
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: >-
+          {% from 'metrics/utilities/electric_helpers.jinja' import area_energy %}
+          {{ area_energy('basement', exclude=[this.entity_id, 'sensor.basement_energy_today']) }}
+
+  # Aggregated total gas (sum of per-appliance meters).
+  - sensor:
+      - name: "Gas Meter"
+        unique_id: 1d2cf5f2-d5de-41c3-8f87-e93fbe71ba01
+        device_class: gas
+        unit_of_measurement: "m³"
+        state_class: total_increasing
+        state: >-
+          {{ [
+            states('sensor.furnace_gas_meter')|float(0),
+            states('sensor.dryer_gas_meter')|float(0),
+            states('sensor.water_heater_gas_meter')|float(0),
+            states('sensor.gas_stove_gas_meter')|float(0),
+            states('sensor.shop_furnace_gas_meter')|float(0)
+          ] | sum }}
+
+  # Persist water total across restarts without dropping to zero.
+  - trigger:
+      - platform: state
+        entity_id: sensor.water_meter
+        not_to: [unavailable, unknown, none]
+      - platform: homeassistant
+        event: start
+    sensor:
+      - name: "Water Meter (persisted)"
+        unique_id: 110bc6ae-7b66-41ac-bf7a-cfb6f020fa3c
+        device_class: water
+        unit_of_measurement: gal
+        state_class: total_increasing
+        state: >-
+          {% set src = 'sensor.water_meter' %}
+          {% if trigger.platform == 'state' %}
+            {{ trigger.to_state.state }}
+          {% else %}
+            {{ states(src) if has_value(src) else this.state }}
+          {% endif %}
+
+# -----------------------------------------------------------------------------
+# Utility meters
+# - Relay meters mirror absolute totals and may be billed monthly.
+# - Daily meters reset at midnight to feed "today" views per area/appliance.
+# -----------------------------------------------------------------------------
+utility_meter:
+  # ---------------------- Water ----------------------
+  water:
+    unique_id: 9b9b8ff4-527d-44c7-bd60-2bbbe8a682d1
+    name: "Water Meter Relay"
+    source: sensor.water_meter_persisted
+    periodically_resetting: false
+    always_available: true
+
+  water_daily:
+    unique_id: 5c083b7f-d821-484f-9df8-b6bf6e9b5230
+    name: "Water Daily"
+    source: sensor.water_meter_persisted
+    cycle: daily
+
+  # ---------------------- Electric -------------------
+  energy:
+    unique_id: a885f8a9-49e7-4960-a568-2238718a6466
+    name: "Electric Meter Relay"
+    source: sensor.electric_usage
+    periodically_resetting: true   # Billing month resets; aligns with offset below.
+    always_available: true
+    cycle: monthly
+    offset:
+      days: 17
+
+  energy_daily:
+    unique_id: d2897f5c-ac55-4ba9-b2a0-54f2dd40d609
+    name: "Electric Daily"
+    source: sensor.electric_usage
+    cycle: daily
+
+  # ---------------------- Gas ------------------------
+  gas:
+    unique_id: 18b3f488-6150-48d4-b4a7-518699fb2884
+    name: "Gas Meter Relay"
+    source: sensor.gas_meter
+    periodically_resetting: false
+    always_available: true
+    cycle: monthly
+    offset:
+      days: 17
+
+  gas_daily:
+    unique_id: ef5ec64f-f4f5-4f0e-870b-456c1a465a28
+    name: "Gas Daily"
+    source: sensor.gas_meter
+    cycle: daily
+
+  # Per-appliance daily gas usage
+  furnace_gas_today:
+    unique_id: a997d4c5-2793-4853-a997-e4e3c96dcc0c
+    name: "Furnace Gas Today"
+    source: sensor.furnace_gas_meter
+    cycle: daily
+
+  dryer_gas_today:
+    unique_id: eb708f8c-2d10-401c-bd11-7cbd97720e80
+    name: "Dryer Gas Today"
+    source: sensor.dryer_gas_meter
+    cycle: daily
+
+  water_heater_gas_today:
+    unique_id: 47c92a4e-c3ce-41ed-963a-4cfd7cc0034c
+    name: "Water Heater Gas Today"
+    source: sensor.water_heater_gas_meter
+    cycle: daily
+
+  gas_stove_gas_today:
+    unique_id: 2cd43003-efe3-4a1e-8ddd-ee946a8e3286
+    name: "Gas Stove Gas Today"
+    source: sensor.gas_stove_gas_meter
+    cycle: daily
+
+  shop_furnace_gas_today:
+    unique_id: 2047ddb2-a148-4185-9f09-31b86011bb29
+    name: "Shop Furnace Gas Today"
+    source: sensor.shop_furnace_gas_meter
+    cycle: daily
+
+  # ---------------------- Per-area Electric, Daily ----------------------
+  parlor_energy_today:
+    unique_id: 0133d212-084e-49ba-b751-9b1bc546ef95
+    name: "Parlor Energy Today"
+    source: sensor.parlor_energy_total
+    cycle: daily
+
+  living_room_energy_today:
+    unique_id: 0dae3b4a-c9f2-4c0d-9c1a-8c74e50c1cf7
+    name: "Living Room Energy Today"
+    source: sensor.living_room_energy_total
+    cycle: daily
+
+  dining_room_energy_today:
+    unique_id: c8d49b86-32f1-4718-bee7-284c2ea093b4
+    name: "Dining Room Energy Today"
+    source: sensor.dining_room_energy_total
+    cycle: daily
+
+  breakfast_room_energy_today:
+    unique_id: 756899a2-59f3-4278-9e5f-9f53070d5d5a
+    name: "Breakfast Room Energy Today"
+    source: sensor.breakfast_room_energy_total
+    cycle: daily
+
+  kitchen_energy_today:
+    unique_id: 148f761c-3986-481a-8127-47ec053851f4
+    name: "Kitchen Energy Today"
+    source: sensor.kitchen_energy_total
+    cycle: daily
+
+  pantry_energy_today:
+    unique_id: 9d7a1fe0-c443-4b77-acea-4b4565c35871
+    name: "Pantry Energy Today"
+    source: sensor.pantry_energy_total
+    cycle: daily
+
+  laundry_room_energy_today:
+    unique_id: 9e9f1163-6052-4f0c-b55d-269c92c8e66f
+    name: "Laundry Room Energy Today"
+    source: sensor.laundry_room_energy_total
+    cycle: daily
+
+  front_hallway_energy_today:
+    unique_id: e5ebb8d1-f816-42ca-a385-a15874c93dfb
+    name: "Front Hallway Energy Today"
+    source: sensor.front_hallway_energy_total
+    cycle: daily
+
+  study_energy_today:
+    unique_id: 3ebb3c38-15a2-44ab-86f4-8c3f9681158d
+    name: "Study Energy Today"
+    source: sensor.study_energy_total
+    cycle: daily
+
+  master_bedroom_energy_today:
+    unique_id: bf0ea669-1d1f-4e3a-8c65-5edba04451d3
+    name: "Master Bedroom Energy Today"
+    source: sensor.master_bedroom_energy_total
+    cycle: daily
+
+  guest_bedroom_energy_today:
+    unique_id: 8371f555-94c6-4c09-9f38-73952f9c63d5
+    name: "Guest Bedroom Energy Today"
+    source: sensor.guest_bedroom_energy_total
+    cycle: daily
+
+  master_bathroom_energy_today:
+    unique_id: 26ee6f47-12cc-4e39-9968-8cec3182e929
+    name: "Master Bathroom Energy Today"
+    source: sensor.master_bathroom_energy_total
+    cycle: daily
+
+  kids_bathroom_energy_today:
+    unique_id: c5950a5d-77b0-434e-a33b-d5cf4f0a39ce
+    name: "Kids Bathroom Energy Today"
+    source: sensor.kids_bathroom_energy_total
+    cycle: daily
+
+  back_hallway_energy_today:
+    unique_id: 0ef8b161-4683-4138-9e32-85c3a2a6de42
+    name: "Back Hallway Energy Today"
+    source: sensor.back_hallway_energy_total
+    cycle: daily
+
+  eleanor_s_room_energy_today:
+    unique_id: c6723ffd-3490-42bc-a61c-486f995f8d6d
+    name: "Eleanor's Room Energy Today"
+    source: sensor.eleanor_s_room_energy_total
+    cycle: daily
+
+  michael_s_room_energy_today:
+    unique_id: ca7ebfeb-6a5f-43e2-b246-a2614d92197f
+    name: "Michael's Room Energy Today"
+    source: sensor.michael_s_room_energy_total
+    cycle: daily
+
+  garage_energy_today:
+    unique_id: 449675a9-1553-4313-a60d-8f118925e998
+    name: "Garage Energy Today"
+    source: sensor.garage_energy_total
+    cycle: daily
+
+  shop_energy_today:
+    unique_id: b19f0b29-fbe4-40c6-b34b-1e799c7b5f59
+    name: "Shop Energy Today"
+    source: sensor.shop_energy_total
+    cycle: daily
+
+  playroom_energy_today:
+    unique_id: bc7c0e5e-b755-48f0-9e8f-0fbd5c7f17fe
+    name: "Playroom Energy Today"
+    source: sensor.playroom_energy_total
+    cycle: daily
+
+  exercise_room_energy_today:
+    unique_id: f7100db2-69c7-4435-8b80-877419f32426
+    name: "Exercise Room Energy Today"
+    source: sensor.exercise_room_energy_total
+    cycle: daily
+
+  exterior_energy_today:
+    unique_id: 6b9241aa-bb38-47a4-a652-364d225e5bc2
+    name: "Exterior Energy Today"
+    source: sensor.exterior_energy_total
+    cycle: daily
+
+  chicken_coop_energy_today:
+    unique_id: 4996f505-58a2-47ce-a2cc-dc46110824ca
+    name: "Chicken Coop Energy Today"
+    source: sensor.chicken_coop_energy_total
+    cycle: daily
+
+  rv_energy_today:
+    unique_id: 131dae00-cf5f-4885-8341-af1f610e25ec
+    name: "RV Energy Today"
+    source: sensor.rv_energy_total
+    cycle: daily
+
+  attic_energy_today:
+    unique_id: f389894d-010a-4aa7-9c9d-0175b87210e8
+    name: "Attic Energy Today"
+    source: sensor.attic_energy_total
+    cycle: daily
+
+  basement_energy_today:
+    unique_id: d54835e5-13b1-4cae-abb4-09669a37e159
+    name: "Basement Energy Today"
+    source: sensor.basement_energy_total
+    cycle: daily

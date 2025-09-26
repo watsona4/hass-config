@@ -1,19 +1,20 @@
-{# auto/area_cards.jinja ------------------------------------------------
+{# auto/area_cards.jinja --------------------------------------------------------------
    Macro: area_cards(area_name)
-   Returns: JSON array (valid YAML) of card dictionaries for Auto-Entities (card_param: cards)
------------------------------------------------------------------------ #}
+   Returns: JSON array (valid YAML) of card dictionaries for Auto-Entities
+        (card_param: cards)
+------------------------------------------------------------------------------------ #}
 
 {% from 'macros/pop_up_blinds.jinja' import build_blind_card_for %}
+{% from 'units/base.jinja' import u_convert_value %}
 
 {% macro area_cards(area_name) -%}
 
     {%- set entities = area_entities(area_name) | default([], true) -%}
-    {%- set ns = namespace(
-        cards=[],
-        temp=[], hum=[], climates=[], humidifiers=[], power=[], automations=[],
-        switches=[], lights=[], fans=[], covers=[], locks=[], media=[],
-        bin_motion=[], bin_opening=[], bin_env=[], bin_safety=[], bin_power=[], bin_other=[],
-        bin_pairs=[], bin_chips=[]
+    {%- set ns = namespace(cards=[], gas_rate=[], gas_daily=[], temp=[],
+        hum=[], climates=[], humidifiers=[], power=[], automations=[], switches=[],
+        lights=[], fans=[], covers=[], locks=[], media=[], bin_motion=[],
+        bin_opening=[], bin_env=[], bin_safety=[], bin_power=[], bin_other=[],
+        bin_pairs=[], bin_chips=[], energy_daily=[]
         ) -%}
 
     {# Collect entities in the area #}
@@ -21,13 +22,21 @@
         {%- set dom = e.split('.', 1)[0] -%}
         {%- if dom == 'sensor' -%}
             {%- set dc = state_attr(e, 'device_class') | default('') -%}
+            {%- set sc = state_attr(e, 'state_class') | default('') -%}
+            {%- set uom = state_attr(e, 'unit_of_measurement') | default('') -%}
             {%- if dc == 'temperature' -%}
                 {%- set ns.temp = ns.temp + [e] -%}
             {%- elif dc == 'humidity' -%}
                 {%- set ns.hum = ns.hum + [e] -%}
             {%- elif dc == 'power' -%}
                 {%- set ns.power = ns.power + [e] -%}
-            {%- endif -%}
+            {%- elif dc == 'volume_flow_rate' -%}
+                {%- set ns.gas_rate = ns.gas_rate + [e] -%}
+            {%- elif dc == 'gas' and state_attr(e,'meter')|default(none) is not none and state_attr(e,'meter')|lower == 'daily' -%}
+                {%- set ns.gas_daily = ns.gas_daily + [e] -%}
+            {%- elif dc == 'energy' and state_attr(e,'meter')|default(none) is not none and state_attr(e,'meter')|lower == 'daily' -%}
+                {% set ns.energy_daily = ns.energy_daily + [e] %}
+            {% endif %}
         {%- elif dom == 'climate' -%}
             {%- set ns.climates = ns.climates + [e] -%}
         {%- elif dom == 'humidifier' -%}
@@ -68,74 +77,105 @@
     {%- set ns.cards = ns.cards + [{
         'type': 'area',
         'area': area_name,
-        'features': [{
-        'type': 'area-controls',
-        'controls': ['light', 'switch']
-        }],
+        'features': [{ 'type': 'area-controls', 'controls': ['light', 'switch'] }],
         'alert_classes': ['motion', 'moisture', 'problem'],
         'sensor_classes': ['temperature', 'humidity', 'power'],
         'tap_action': {'action': 'more-info'}
         }] -%}
 
     {# Safety & Status (binary sensors as chips) #}
-    {%- set any_bin = (ns.bin_motion|length) + (ns.bin_opening|length) + (ns.bin_env|length) + (ns.bin_safety|length) + (ns.bin_power|length) + (ns.bin_other|length) -%}
+    {%- set any_bin = (ns.bin_motion|length) + (ns.bin_opening|length) +
+        (ns.bin_env|length) + (ns.bin_safety|length) + (ns.bin_power|length) +
+        (ns.bin_other|length) -%}
     {%- if any_bin > 0 -%}
         {# build (name, entity, app) triplets in a consistent category order #}
         {%- set ns.bin_pairs = [] -%}
         {%- for e in ns.bin_safety -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'),
+            )] -%}
         {%- endfor -%}
         {%- for e in ns.bin_opening -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default')
+            )] -%}
         {%- endfor -%}
         {%- for e in ns.bin_motion -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default')
+            )] -%}
         {%- endfor -%}
         {%- for e in ns.bin_env -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default')
+            )] -%}
         {%- endfor -%}
         {%- for e in ns.bin_power -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default')
+            )] -%}
         {%- endfor -%}
         {%- for e in ns.bin_other -%}
-            {%- set ns.bin_pairs = ns.bin_pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default'))] -%}
+            {%- set ns.bin_pairs = ns.bin_pairs + [(
+                state_attr(e,'friendly_name')|default(e), e, state_attr(e,'device_class')|default('default')
+            )] -%}
         {%- endfor -%}
+
+        {%- macro build_chip_content(app) -%}
+           {%- set pre = "{%- from 'main.jinja' import get_name, get_short_desc -%}\n{{ get_name(entity, app='" -%}
+           {%- set mid = "') ~ ': ' ~ get_short_desc(entity, app='" -%}
+           {%- set post = "') }}" -%}
+           {{- pre ~ app ~ mid ~ app ~ post -}}
+        {%- endmacro -%}
+
+        {%- macro build_chip_icon(app) -%}
+           {%- set pre = "{%- from 'main.jinja' import get_icon -%}\n{{ get_icon(entity, app='" -%}
+           {%- set post = "') }}" -%}
+           {{- pre ~ app ~ post -}}
+        {%- endmacro -%}
+
+        {%- macro build_chip_color(app) -%}
+           {%- set pre = "{%- from 'main.jinja' import get_color -%}\n{{ get_color(entity, app='" -%}
+           {%- set post = "') }}" -%}
+           {{- pre ~ app ~ post -}}
+        {%- endmacro -%}
 
         {# sort and build chips #}
         {%- set ns.bin_chips = [] -%}
         {%- for _, e, a in ns.bin_pairs | sort(attribute=0) -%}
             {%- set ns.bin_chips = ns.bin_chips + [{
-                        'type': 'template',
-                        'entity': e,
-                        'content': "{%- from 'main.jinja' import get_name, get_short_desc -%}
-            {{ get_name(entity, app='" ~ a ~ "') ~ ': ' ~ get_short_desc(entity, app='" ~ a ~ "') }}",
-            'icon': "{%- from 'main.jinja' import get_icon -%}
-            {{ get_icon(entity, app='" ~ a ~ "') }}",
-            'icon_color': "{%- from 'main.jinja' import get_color -%}
-            {{ get_color(entity, app='" ~ a ~ "') }}",
-            'tap_action': {'action': 'more-info'}
+                'type': 'template',
+                'entity': e,
+                'content': build_chip_content(a),
+                'icon': build_chip_icon(a),
+                'icon_color': build_chip_color(a),
+                'tap_action': {'action': 'more-info'}
             }] -%}
         {%- endfor -%}
 
-        {%- set ns.cards = ns.cards + [
-                { 'type': 'custom:mushroom-chips-card', 'alignment': 'center', 'chips': ns.bin_chips }
-                ] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-chips-card', 'alignment': 'center', 'chips': ns.bin_chips
+        }] -%}
     {%- endif -%}
 
-    {# Comfort & Climate #}
-    {%- if (ns.temp|length) + (ns.hum|length) + (ns.climates|length) + (ns.humidifiers|length) > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Comfort & Climate' }] -%}
-        {%- set grid = namespace(pairs=[], cards=[]) -%}
+    {%- set vertical_opts = [ {'layout': 'vertical'}, {'multiline_secondary': false}, {'options': 'vert_delim= • '} ] %}
 
+    {# Comfort & Climate #}
+    {%- if (ns.temp|length) + (ns.hum|length) + (ns.climates|length) +
+        (ns.humidifiers|length) > 0 -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Comfort & Climate',
+        }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.temp -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
             {%- set grid.cards = grid.cards + [{
-                        'type': 'custom:decluttering-card',
-                        'template': 'template_card',
-                        'variables': [ {'entity': e}, {'app': 'ambient'}, {'layout': 'vertical'} ]
-                        }] -%}
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'ambient'} ] + vertical_opts
+            }] -%}
         {%- endfor -%}
 
         {%- set grid.pairs = [] -%}
@@ -144,10 +184,10 @@
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
             {%- set grid.cards = grid.cards + [{
-                        'type': 'custom:decluttering-card',
-                        'template': 'template_card',
-                        'variables': [ {'entity': e}, {'app': 'indoor'}, {'layout': 'vertical'} ]
-                        }] -%}
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'indoor'} ] + vertical_opts
+            }] -%}
         {%- endfor -%}
 
         {%- set grid.pairs = [] -%}
@@ -156,11 +196,12 @@
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
             {%- set grid.cards = grid.cards + [{
-                        'type': 'custom:mushroom-climate-card',
-                        'entity': e,
-                        'tap_action': {'action': 'more-info'},
-                        'layout': 'vertical'
-                        }] -%}
+                'type': 'custom:mushroom-climate-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'},
+                'layout': 'vertical',
+                'multiline_secondary': true
+            }] -%}
         {%- endfor -%}
 
         {%- set grid.pairs = [] -%}
@@ -169,11 +210,12 @@
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
             {%- set grid.cards = grid.cards + [{
-                        'type': 'custom:mushroom-humidifier-card',
-                        'entity': e,
-                        'tap_action': {'action': 'more-info'},
-                        'layout': 'vertical'
-                        }] -%}
+                'type': 'custom:mushroom-humidifier-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'},
+                'layout': 'vertical',
+                'multiline_secondary': true
+            }] -%}
         {%- endfor -%}
 
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
@@ -181,72 +223,142 @@
 
     {# Switches #}
     {%- if ns.switches | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Switches & Outlets' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Switches & Outlets'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.switches -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-entity-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-entity-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'}
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Lights #}
     {%- if ns.lights | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Lighting' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Lighting'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.lights -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-light-card', 'entity': e, 'tap_action': {'action': 'more-info'}, 'layout': 'vertical' }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-light-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'},
+                'layout': 'vertical'
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Fans #}
     {%- if ns.fans | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Airflow' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Airflow'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.fans -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-fan-card', 'entity': e, 'tap_action': {'action': 'more-info'}, 'layout': 'vertical' }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-fan-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'},
+                'layout': 'vertical',
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Power & Energy #}
-    {%- if ns.power | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Power & Energy' }] -%}
+    {%- if (ns.gas_rate|length) + (ns.power | length) > 0 -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Power & Energy'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.gas_rate -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'gas_rate'}, {'width': 'narrow'} ]
+            }] -%}
+        {%- endfor -%}
+        {%- set grid.pairs = [] -%}
         {%- for e in ns.power -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
             {%- set grid.cards = grid.cards + [{
-                        'type': 'custom:decluttering-card',
-                        'template': 'template_card',
-                        'variables': [ {'entity': e}, {'app': 'default'}, {'width': 'narrow'} ]
-                        }] -%}
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'default'}, {'width': 'narrow'} ]
+            }] -%}
         {%- endfor -%}
+        {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
+    {%- endif -%}
+
+    {#- Gas & Heat -#}
+    {%- if (ns.gas_daily|length) + (ns.energy_daily|length) > 0 -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Utility Meters'
+        }] -%}
+        {%- set grid = namespace(pairs=[], cards=[]) -%}
+        {%- for e in ns.gas_daily -%}
+            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
+        {%- endfor -%}
+        {%- for _, e in grid.pairs | sort(attribute=0) -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'daily'}, {'project_daily': true} ] + vertical_opts
+            }] -%}
+        {%- endfor -%}
+        {%- set grid.pairs = [] -%}
+         {% for e in ns.energy_daily %}
+            {% set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] %}
+        {% endfor %}
+        {% for _, e in grid.pairs | sort(attribute=0) %}
+            {% set grid.cards = grid.cards + [{
+                'type': 'custom:decluttering-card',
+                'template': 'template_card',
+                'variables': [ {'entity': e}, {'app': 'energy_daily_area'}, {'project_daily': true} ] + vertical_opts
+            }] %}
+        {% endfor %}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Covers (vertical stack) #}
     {%- if ns.covers | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Shades & Covers' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Shades & Covers'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.covers -%}
-            {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e, state_attr(e, 'device_class')|default('default'))] -%}
+            {%- set grid.pairs = grid.pairs +
+                [(state_attr(e,'friendly_name')|default(e), e, state_attr(e, 'device_class')|default('default'))] -%}
         {%- endfor -%}
         {%- for _, e, dc in grid.pairs | sort(attribute=0) -%}
             {%- if dc == 'blind' -%}
                 {%- set grid.cards = grid.cards + [ build_blind_card_for(e) | from_json ] -%}
             {%- else -%}
-                {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-cover-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+                {%- set grid.cards = grid.cards + [{
+                    'type': 'custom:mushroom-cover-card',
+                    'entity': e,
+                    'tap_action': {'action': 'more-info'}
+                }] -%}
             {%- endif -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'vertical-stack', 'cards': grid.cards }] -%}
@@ -254,52 +366,159 @@
 
     {# Locks #}
     {%- if ns.locks | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Access & Locks' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Access & Locks'
+        }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.locks -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-lock-card', 'entity': e, 'tap_action': {'action': 'more-info'}, 'layout': 'vertical' }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-lock-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'},
+                'layout': 'vertical',
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Media Players (vertical stack) #}
     {%- if ns.media | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Audio & Video' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Audio & Video'
+            }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.media -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-media-player-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-media-player-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'}
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'vertical-stack', 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Automations #}
     {%- if ns.automations | length > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Automations & Scripts' }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Automations & Scripts'
+            }] -%}
         {%- set grid = namespace(pairs=[], cards=[]) -%}
         {%- for e in ns.automations -%}
             {%- set grid.pairs = grid.pairs + [(state_attr(e,'friendly_name')|default(e), e)] -%}
         {%- endfor -%}
         {%- for _, e in grid.pairs | sort(attribute=0) -%}
-            {%- set grid.cards = grid.cards + [{ 'type': 'custom:mushroom-entity-card', 'entity': e, 'tap_action': {'action': 'more-info'} }] -%}
+            {%- set grid.cards = grid.cards + [{
+                'type': 'custom:mushroom-entity-card',
+                'entity': e,
+                'tap_action': {'action': 'more-info'}
+            }] -%}
         {%- endfor -%}
         {%- set ns.cards = ns.cards + [{ 'type': 'grid', 'columns': 2, 'square': False, 'cards': grid.cards }] -%}
     {%- endif -%}
 
     {# Climate History #}
     {%- if (ns.temp|length) + (ns.hum|length) > 0 -%}
-        {%- set ns.cards = ns.cards + [{ 'type': 'custom:mushroom-title-card', 'title': '', 'subtitle': 'Climate Trends (24 hours)' }] -%}
-        {%- if ns.temp | length > 0 -%}
-            {%- set ns.cards = ns.cards + [{ 'type': 'history-graph', 'title': 'Temperature', 'hours_to_show': 24, 'entities': ns.temp }] -%}
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:mushroom-title-card',
+            'title': '',
+            'subtitle': 'Climate Trends (24 hours)'
+        }] -%}
+
+        {%- set temp_unit = (ns.temp|length > 0) and state_attr(ns.temp[0], 'unit_of_measurement') or '°F' -%}
+
+        {%- set ns2 = namespace(series=[]) -%}
+        {%- for e in ns.temp -%}
+            {%- set ns2.series = ns2.series + [ {'entity': e, 'yaxis_id': 'temp'} ] -%}
+        {%- endfor -%}
+        {%- for e in ns.hum -%}
+            {%- set ns2.series = ns2.series + [ {'entity': e, 'yaxis_id': 'hum'} ] -%}
+        {%- endfor -%}
+
+        {%- if ns2.series|length > 0 -%}
+            {%- set ns.cards = ns.cards + [{
+                'type': 'custom:apexcharts-card',
+                'graph_span': '24h',
+                'apex_config': {
+                    'yaxis': [{
+                        'id': 'temp',
+                        'opposite': False,
+                        'forceNiceScale': True,
+                        'title': {'text': 'Temperature (' ~ temp_unit ~ ')'},
+                        'labels': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(1); }" },
+                    }, {
+                        'id': 'hum',
+                        'opposite': True,
+                        'forceNiceScale': True,
+                        'title': {'text': 'Humidity (%)'},
+                        'labels': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(0); }" },
+                    }],
+                    'tooltip': {
+                        'shared': True,
+                        'y': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(2); }" }
+                    }
+                },
+                'series': ns2.series
+            }] -%}
         {%- endif -%}
-        {%- if ns.hum | length > 0 -%}
-            {%- set ns.cards = ns.cards + [{ 'type': 'history-graph', 'title': 'Humidity', 'hours_to_show': 24, 'entities': ns.hum }] -%}
-        {%- endif -%}
+    {%- endif -%}
+
+    {# Energy + Gas History #}
+    {%- if (ns.energy_daily|length) + (ns.gas_daily|length) > 0 -%}
+        {# Pick target units #}
+        {%- set energy_target = 'kWh' -%}
+        {%- set gas_target = (ns.gas_daily|length > 0) and state_attr(ns.gas_daily[0], 'unit_of_measurement') -%}
+
+        {# Build series with per-series transforms from your macros #}
+        {%- set ns3 = namespace(series=[]) -%}
+
+        {# Energy series, normalize to kWh when needed #}
+        {%- for e in ns.energy_daily -%}
+            {%- set ns3.series = ns3.series + [{
+                'entity': e,
+                'yaxis_id': 'energy',
+            }] -%}
+        {%- endfor -%}
+
+        {# Gas series, normalize to first unit (or 'therms' fallback) #}
+        {%- for g in ns.gas_daily -%}
+            {%- set ns3.series = ns3.series + [{
+                'entity': g,
+                'yaxis_id': 'gas',
+            }] -%}
+        {%- endfor -%}
+
+        {%- set ns.cards = ns.cards + [{
+            'type': 'custom:apexcharts-card',
+            'graph_span': '7d',
+            'apex_config': {
+                'yaxis': [{
+                    'id': 'energy',
+                    'opposite': False,
+                    'forceNiceScale': True, 
+                    'min': 0,
+                    'title': {'text': 'Energy (' ~ energy_target ~ ')'},
+                    'labels': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(2); }" }
+                }, {
+                    'id': 'gas',
+                    'opposite': True,  
+                    'forceNiceScale': True, 
+                    'min': 0,
+                    'title': {'text': 'Gas (' ~ gas_target ~ ')'},
+                    'labels': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(2); }" }
+                }],
+                'tooltip': {
+                    'shared': True,
+                    'y': { 'formatter': "EVAL:function(val) { return Number(val).toFixed(3); }" }
+                }
+            },
+            'series': ns3.series
+        }] -%}
     {%- endif -%}
 
     {{- ns.cards | tojson -}}

@@ -309,43 +309,56 @@
     {%- else -%}
         {%- set sgn = -1 if (n | float(0)) < 0 else 1 -%}
         {%- set raw_unit = unit | string | trim -%}
-        {%- set ns = namespace(v=n|float(0)|abs, pref_out='', pref_chain=none, base_unit=raw_unit, sys=(system or '')|lower) -%}
-
-        {#- Normalize, split any prefix using canonical helper -#}
         {%- set norm_u = normalize_unit(raw_unit) -%}
-        {%- set sp = split_prefix_unit(norm_u) | from_json -%}
 
-        {%- set dim = get_dimension(sp.base) -%}
-        {%- set is_time = (dim == 'time') -%}
-        {%- set can_pref = (sp.base in PREFIXABLE) and (sp.base not in NON_PREFIXABLE) and (not is_time) -%}
+        {%- set comp = split_compound_unit(norm_u) | from_json -%}
+        {%- if comp.den -%}
+            {# Humanize numerator using the scalar branch below, then reattach denominator #}
+            {%- set num_text = u_humanize_value(n, comp.num, system) -%}
+            {%- set parts = num_text.split(' ') -%}
+            {%- set val_txt = parts[0] -%}
+            {%- set unit_txt = parts[1:] | join(' ') -%}
+            {{- val_txt ~ ' ' ~ unit_txt ~ '/' ~ comp.den -}}
+            {# Done for compound units #}
 
-        {#- Choose system: default IEC for bytes prefixed with IEC or explicit B and no SI hint, else SI -#}
-        {%- if ns.sys not in ['si','iec'] -%}
-            {%- set ns.sys = ('iec' if (sp.prefix|string).endswith('i') or sp.base == 'B' else 'si') -%}
-        {%- endif -%}
-
-        {#- Time: use timedelta and stop here -#}
-        {%- if is_time -%}
-            {{- u_humanize_duration(n, norm_u) -}}
         {%- else -%}
-            {#- If the input carried a prefix, normalize value to base using scale_value -#}
-            {%- if sp.prefix and can_pref -%}
-                {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
-                {%- set ns.v = scale_value(ns.v, sp.prefix, '', sys_tag) | float(none) -%}
+            {%- set ns = namespace(v=n|float(0)|abs, pref_out='', pref_chain=none, base_unit=raw_unit, sys=(system or '')|lower) -%}
+
+            {#- Split any prefix using canonical helper -#}
+            {%- set sp = split_prefix_unit(norm_u) | from_json -%}
+
+            {%- set dim = get_dimension(sp.base) -%}
+            {%- set is_time = (dim == 'time') -%}
+            {%- set can_pref = (sp.base in PREFIXABLE) and (sp.base not in NON_PREFIXABLE) and (not is_time) -%}
+
+            {#- Choose system: default IEC for bytes prefixed with IEC or explicit B and no SI hint, else SI -#}
+            {%- if ns.sys not in ['si','iec'] -%}
+                {%- set ns.sys = ('iec' if (sp.prefix|string).endswith('i') or sp.base == 'B' else 'si') -%}
             {%- endif -%}
 
-            {#- Decide output prefix using autoscale_prefix -#}
-            {%- if can_pref -%}
-                {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
-                {%- set upper = (1024 if ns.sys == 'iec' else 1000) -%}
-                {%- set scaled = autoscale_prefix(ns.v, sys_tag, upper) | from_json -%}
-                {%- set ns.v = scaled.value | float(none) -%}
-                {%- set ns.pref_out = scaled.prefix -%}
-            {%- endif -%}
+            {#- Time: use timedelta and stop here -#}
+            {%- if is_time -%}
+                {{- u_humanize_duration(n, norm_u) -}}
+            {%- else -%}
+                {#- If the input carried a prefix, normalize value to base using scale_value -#}
+                {%- if sp.prefix and can_pref -%}
+                    {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
+                    {%- set ns.v = scale_value(ns.v, sp.prefix, '', sys_tag) | float(none) -%}
+                {%- endif -%}
 
-            {%- set out = sig_format(ns.v) -%}
-            {%- set sign_str = '-' if sgn == -1 and ns.v != 0 else '' -%}
-            {{- sign_str ~ out ~ ' ' ~ (ns.pref_out if can_pref else '') ~ sp.base -}}
+                {#- Decide output prefix using autoscale_prefix -#}
+                {%- if can_pref -%}
+                    {%- set sys_tag = ('IEC' if ns.sys == 'iec' else 'SI') -%}
+                    {%- set upper = (1024 if ns.sys == 'iec' else 1000) -%}
+                    {%- set scaled = autoscale_prefix(ns.v, sys_tag, upper) | from_json -%}
+                    {%- set ns.v = scaled.value | float(none) -%}
+                    {%- set ns.pref_out = scaled.prefix -%}
+                {%- endif -%}
+
+                {%- set out = sig_format(ns.v) -%}
+                {%- set sign_str = '-' if sgn == -1 and ns.v != 0 else '' -%}
+                {{- sign_str ~ out ~ ' ' ~ (ns.pref_out if can_pref else '') ~ sp.base -}}
+            {%- endif -%}
         {%- endif -%}
     {%- endif -%}
 {% endmacro %}

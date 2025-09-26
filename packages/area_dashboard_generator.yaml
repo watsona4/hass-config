@@ -1,0 +1,7 @@
+template:
+  - sensor:
+      - name: "Parlor Area Cards"
+        unique_id: parlor_area_cards
+        state: >-
+          {% from 'macros/area_cards.jinja' import area_cards %}
+          {{ area_cards('parlor') }}

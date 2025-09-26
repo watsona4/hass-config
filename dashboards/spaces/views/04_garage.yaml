@@ -1,25 +1,33 @@
-type: sections
-max_columns: 4
 title: Garage
-path: garage
-sections:
-  - type: grid
-    cards:
-      - type: custom:auto-entities
-        card:
-          type: vertical-stack
-        card_param: cards
-        filter:
-          template: >-
-            {%- from 'macros/area_cards.jinja' import area_cards -%}
-            {{- area_cards('garage') | from_json -}}
-  - type: grid
-    cards:
-      - type: custom:auto-entities
-        card:
-          type: vertical-stack
-        card_param: cards
-        filter:
-          template: >-
-            {%- from 'macros/area_cards.jinja' import area_cards -%}
-            {{- area_cards('shop') | from_json -}}
+type: masonry
+
+ae_base: &ae_base
+  type: custom:auto-entities
+  card:
+    type: custom:stack-in-card
+    mode: vertical
+    keep:
+      background: true
+      box_shadow: true
+      border_radius: true
+    card_mod:
+      style: |
+        ha-card {
+          border-radius: 12px;
+          background: var(--card-background-color);
+          box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2));
+          padding: 8px;
+        }
+  card_param: cards
+
+cards:
+  - <<: *ae_base
+    filter:
+      template: >-
+        {%- from 'macros/area_cards.jinja' import area_cards -%}
+        {{- area_cards('garage') | from_json -}}
+  - <<: *ae_base
+    filter:
+      template: >-
+        {%- from 'macros/area_cards.jinja' import area_cards -%}
+        {{- area_cards('shop') | from_json -}}
