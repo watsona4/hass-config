@@ -436,7 +436,7 @@ announce_door:
       media_player_entity_id: '{{players}}'
       message: '{{name}} is at the {{door}}'
     target:
-      entity_id: tts.home_assistant_cloud
+      entity_id: tts.google_en_com
     action: tts.speak
   - repeat:
       count: '{{ players|count }}'
@@ -999,7 +999,7 @@ announce:
       media_player_entity_id: '{{players}}'
       message: '{{message}}'
     target:
-      entity_id: tts.home_assistant_cloud
+      entity_id: tts.google_en_com
     action: tts.speak
   - repeat:
       count: '{{ players|count }}'
