@@ -1,12 +1,5 @@
-views:
-  - title: Home
-    type: panel
-    cards:
-      - type: map
-        entities:
-          - entity: person.aaron_watson
-          - entity: person.ashley_watson
-          - entity: person.eleanor_watson
-          - entity: person.michael_watson
-          - entity: person.rv
-        hours_to_show: 12
+# File: dashboards/rv/dashboard.yaml
+# Description: Main RV dashboard configuration
+
+title: RV
+views: !include_dir_list dashboards/rv/views

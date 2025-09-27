@@ -1,0 +1,81 @@
+# =========================
+# 1) OVERVIEW
+# =========================
+title: Overview
+icon: mdi:rv-truck
+path: overview
+type: masonry
+cards:
+  # Quick status chips
+  - type: custom:mushroom-chips-card
+    alignment: start
+    chips:
+      - type: template
+        entity: sensor.rv_status_summary
+        content: >-
+          {{ states('sensor.rv_status_summary') or 'RV status' }}
+        icon: mdi:information-outline
+        tap_action: {action: navigate, navigation_path: /dashboard-rv/systems}
+      - type: template
+        entity: sensor.rv_inside_temp
+        icon: mdi:home-thermometer
+        content: >-
+          {{ states('sensor.rv_inside_temp') }} · {{ states('sensor.rv_outside_temp') }}
+        tap_action: {action: navigate, navigation_path: /dashboard-rv/climate}
+      - type: template
+        entity: sensor.rv_battery_soc
+        icon: mdi:battery-high
+        content: >-
+          {{ states('sensor.rv_battery_soc') or 'SOC' }}
+        tap_action: {action: navigate, navigation_path: /dashboard-rv/electrical}
+      - type: template
+        entity: sensor.rv_fresh_tank
+        icon: mdi:water
+        content: >-
+          F {{ states('sensor.rv_fresh_tank')|default('?', true) }}%
+        tap_action: {action: navigate, navigation_path: /dashboard-rv/tanks}
+      - type: template
+        entity: device_tracker.rv_gps
+        icon: mdi:map-marker
+        content: >-
+          {{ state_attr('device_tracker.rv_gps','latitude') }}, {{ state_attr('device_tracker.rv_gps','longitude') }}
+        tap_action: {action: navigate, navigation_path: /dashboard-rv/location}
+
+  # Map centered on RV
+  - type: map
+    entities:
+      - entity: device_tracker.rv_gps     # your GPS dongle tracker
+    default_zoom: 12
+    auto_fit: true
+    hours_to_show: 12
+
+  # Today at a glance
+  - type: vertical-stack
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: custom:mushroom-entity-card
+          name: Power summary
+          icon: mdi:transmission-tower
+          layout: horizontal
+        filter:
+          include:
+            - entity_id: sensor.rv_battery_soc
+            - entity_id: sensor.rv_battery_voltage
+            - entity_id: sensor.rv_dc_current
+            - entity_id: sensor.rv_ac_input_amps
+            - entity_id: sensor.rv_solar_watts
+          exclude: []
+      - type: custom:auto-entities
+        card:
+          type: custom:mushroom-entity-card
+          name: Tanks summary
+          icon: mdi:gauge
+        filter:
+          include:
+            - entity_id: sensor.rv_fresh_tank
+            - entity_id: sensor.rv_gray_tank
+            - entity_id: sensor.rv_black_tank
+            - entity_id: sensor.rv_propane_left
+            - entity_id: sensor.rv_propane_right
+          exclude: []
