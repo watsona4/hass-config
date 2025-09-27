@@ -32,7 +32,6 @@ logger:
     homeassistant.components.bluetooth.manager: critical
     homeassistant.components.recorder: info
     sqlalchemy.engine.Engine: warning
-    custom_components.pyscript.file.build_area_views: debug
 
 recorder:
   db_url: "mysql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant?charset=utf8mb4"
