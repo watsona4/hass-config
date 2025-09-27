@@ -55,7 +55,7 @@ homeassistant:
     sensor.exercise_room_energy_today:
       meter: daily
     sensor.exterior_energy_today:
-      meter: daily
+      meter: daily_total
     sensor.chicken_coop_energy_today:
       meter: daily
     sensor.rv_energy_today:
@@ -74,6 +74,12 @@ homeassistant:
       meter: daily
     sensor.shop_furnace_gas_today:
       meter: daily
+    sensor.gas_daily:
+      meter: daily_total
+    sensor.water_daily:
+      meter: daily_total
+    sensor.energy_daily:
+      meter: daily_total
 
 # -----------------------------------------------------------------------------
 # Physical/derived sensors (integration & derivative)

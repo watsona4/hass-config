@@ -162,7 +162,7 @@ template:
              states('input_number.zep_half_life_days'),
              states('input_number.zep_absorption_half_life_hours'),
              states('input_number.zep_desired_peak_mg')
-           ) | from_json }}
+           ) | from_json(default={}) }}
     sensor:
       - name: zep_current_plan
         unique_id: zep_current_plan
@@ -194,7 +194,7 @@ template:
              states('input_number.zep_half_life_days'),
              states('input_number.zep_absorption_half_life_hours'),
              states('input_number.zep_desired_peak_mg')
-           ) | from_json }}
+           ) | from_json(default={}) }}
     sensor:
       - name: zep_next_plan
         unique_id: zep_next_plan
@@ -281,7 +281,7 @@ template:
              states('input_number.zep_weekly_dose_mg'),
              states('input_number.zep_half_life_days'),
              states('input_number.zep_absorption_half_life_hours')
-           ) | from_json }}
+           ) | from_json(default={}) }}
     sensor:
       - name: zep_current_peak
         unique_id: zep_current_peak
@@ -311,7 +311,7 @@ template:
              states('input_number.zep_desired_dose_mg'),
              states('input_number.zep_half_life_days'),
              states('input_number.zep_absorption_half_life_hours')
-           ) | from_json }}
+           ) | from_json(default={}) }}
     sensor:
       - name: zep_next_peak
         unique_id: zep_next_peak
@@ -326,7 +326,7 @@ template:
         unit_of_measurement: "mg"
         availability: "{{ has_value('sensor.zep_current_peak') }}"
         state: >-
-          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool %}
+          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
           {% set peak_value_mg = states('sensor.zep_current_peak') | float(0) | round(3) %}
           {% if rising %}
             {{ peak_value_mg }}
@@ -335,17 +335,17 @@ template:
           {% endif %}
         attributes:
           peak_time: >-
-            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool %}
+            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
             {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
             {% if rising %}
               {{ (peak_dt | as_local).isoformat() }}
             {% else %}
               {{ state_attr(this.entity_id, 'peak_time') or (peak_dt and (peak_dt | as_local).isoformat()) or 'unknown' }}
             {% endif %}
-          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool) else 'past' }}"
+          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
           details: >-
             {%- from 'macros/humanize_future.jinja' import humanize_future -%}
-            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool %}
+            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
             {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
             {% if rising %}
               {{ humanize_future(peak_dt) }}
@@ -358,7 +358,7 @@ template:
         icon: mdi:clock-outline
         availability: "{{ has_value('sensor.zep_current_peak') }}"
         state: >-
-          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool %}
+          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
           {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
           {% if rising %}
             {{ (peak_dt | as_local).isoformat() }}
@@ -367,11 +367,11 @@ template:
             {{ states(this.entity_id) if states(this.entity_id) not in ['unknown','unavailable','None'] else ((peak_dt | as_local).isoformat() if peak_dt is not none else 'unknown') }}
           {% endif %}
         attributes:
-          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool) else 'past' }}"
+          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
 
       - name: zep_current_course_phase
         availability: "{{ has_value('sensor.zep_current_peak') }}"
-        state: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool) else 'past' }}"
+        state: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
 
   - sensor:
       - name: zep_next_course_peak_mg
@@ -379,7 +379,7 @@ template:
         unit_of_measurement: "mg"
         availability: "{{ has_value('sensor.zep_next_peak') }}"
         state: >-
-          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool %}
+          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
           {% set peak_value_mg = states('sensor.zep_next_peak') | float(0) | round(3) %}
           {% if rising %}
             {{ peak_value_mg }}
@@ -388,17 +388,17 @@ template:
           {% endif %}
         attributes:
           peak_time: >-
-            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool %}
+            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
             {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
             {% if rising %}
               {{ (peak_dt | as_local).isoformat() }}
             {% else %}
               {{ state_attr(this.entity_id, 'peak_time') or (peak_dt and (peak_dt | as_local).isoformat()) or 'unknown' }}
             {% endif %}
-          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool) else 'past' }}"
+          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool(none)) else 'past' }}"
           details: >-
             {%- from 'macros/humanize_future.jinja' import humanize_future -%}
-            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool %}
+            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
             {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
             {% if rising %}
               {{ humanize_future(peak_dt) }}
@@ -411,7 +411,7 @@ template:
         icon: mdi:clock-outline
         availability: "{{ has_value('sensor.zep_next_peak') }}"
         state: >-
-          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool %}
+          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
           {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
           {% if rising %}
             {{ (peak_dt | as_local).isoformat() }}
@@ -420,7 +420,7 @@ template:
             {{ states(this.entity_id) if states(this.entity_id) not in ['unknown','unavailable','None'] else ((peak_dt | as_local).isoformat() if peak_dt is not none else 'unknown') }}
           {% endif %}
         attributes:
-          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool) else 'past' }}"
+          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool(none)) else 'past' }}"
 
 ###############################################################################
 # SCRIPTS

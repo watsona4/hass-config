@@ -130,7 +130,7 @@ template:
       src: sensor.google_pollen_nearby
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json -}}
+        {{- build_ctx(src) | from_json(default={}) -}}
     sensor:
       - name: Google Pollen Nearby Today
         unique_id: google_pollen_nearby_today
@@ -288,7 +288,7 @@ template:
       src: sensor.google_pollen_home
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json -}}
+        {{- build_ctx(src) | from_json(default={}) -}}
     sensor:
       - name: Google Pollen Home Today
         unique_id: google_pollen_home_today
@@ -446,7 +446,7 @@ template:
       src: sensor.google_pollen_rv
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json -}}
+        {{- build_ctx(src) | from_json(default={}) -}}
     sensor:
       - name: Google Pollen RV Today
         unique_id: google_pollen_rv_today

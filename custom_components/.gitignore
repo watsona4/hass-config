@@ -49,3 +49,6 @@ victorsmartkill/**
 
 zwift/**
 !zwift/.gitkeep
+
+pyscript/**
+!pyscript/.gitkeep

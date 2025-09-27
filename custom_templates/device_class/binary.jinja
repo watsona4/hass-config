@@ -517,7 +517,7 @@
 
 {% macro _pick_row(app, options) %}
     {%- set rows = _resolve_levels(app, options) | from_json -%}
-    {%- set flag = _state_to_flag(options)|bool(none) -%}
+    {%- set flag = _state_to_flag(options)|bool(false) -%}
     {%- if flag is none -%}
         {{- rows[0] | tojson -}}  {# unavailable row #}
     {%- else -%}
@@ -531,32 +531,32 @@
     {%- if app == 'alarm' and options.summary is defined -%}
         {{- states(options.summary) | default('Unknown', true) -}}
     {%- else -%}
-        {{- (_pick_row(app, options) | from_json).default_desc -}}
+        {{- (_pick_row(app, options) | from_json).get('default_desc', 'Error: <unknown>') -}}
     {%- endif -%}
 {% endmacro %}
 
 {% macro get_short_desc(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).short_desc -}}
+    {{- (_pick_row(app, options) | from_json).get('short_desc', 'Error: <unknown>') -}}
 {% endmacro %}
 
 {% macro get_long_desc(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).long_desc -}}
+    {{- (_pick_row(app, options) | from_json).get('long_desc', 'Error: <unknown>') -}}
 {% endmacro %}
 
 {% macro get_full_desc(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).full_desc -}}
+    {{- (_pick_row(app, options) | from_json).get('full_desc', 'Error: <unknown>') -}}
 {% endmacro %}
 
 {% macro get_icon(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).icon -}}
+    {{- (_pick_row(app, options) | from_json).get('icon', 'mdi:help-circle') -}}
 {% endmacro %}
 
 {% macro get_color(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).color -}}
+    {{- (_pick_row(app, options) | from_json).get('color', 'red') -}}
 {% endmacro %}
 
 {% macro get_badge(value, app, options) %}
-    {{- (_pick_row(app, options) | from_json).badge | default('', true) -}}
+    {{- (_pick_row(app, options) | from_json).get('badge', '') -}}
 {% endmacro %}
 
 {% macro get_name(value, app, options) %}

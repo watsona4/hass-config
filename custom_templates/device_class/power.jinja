@@ -134,6 +134,89 @@
             "full_desc":">40 W per core; may indicate overvoltage or runaway load."
         }
     ],
+    "mains": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "N/A",
+            "long_desc": "Mains power unavailable",
+            "icon": "mdi:close-circle",
+            "color": "disabled",
+            "full_desc": "No reading from mains power meter."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "No draw",
+            "icon": "mdi:flash-off",
+            "color": "#9ca3af",
+            "full_desc": "Zero consumption at mains."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Very Low",
+            "short_desc": "V Low",
+            "long_desc": "Very low house load",
+            "icon": "mdi:home-lightning-bolt-outline",
+            "color": "#22c55e",
+            "full_desc": "Typical overnight idle (<100–500 W)."
+        },
+        {
+            "min_value": 500,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low load",
+            "icon": "mdi:home-lightning-bolt-outline",
+            "color": "#84cc16",
+            "full_desc": "Few appliances running (0.5–1.5 kW)."
+        },
+        {
+            "min_value": 1500,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate load",
+            "icon": "mdi:flash",
+            "color": "#facc15",
+            "full_desc": "Daytime usage or HVAC cycling (1.5–3 kW)."
+        },
+        {
+            "min_value": 3000,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High load",
+            "icon": "mdi:flash",
+            "color": "#f59e0b",
+            "full_desc": "Heating/cooling and multiple appliances (3–6 kW)."
+        },
+        {
+            "min_value": 6000,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very high load",
+            "icon": "mdi:fire",
+            "color": "#ef4444",
+            "full_desc": "Peak usage periods, EV charging or heavy HVAC (6–10 kW)."
+        },
+        {
+            "min_value": 10000,
+            "default_desc": "Extreme",
+            "short_desc": "Extreme",
+            "long_desc": "Extreme draw",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Unusually high for a residence (>10 kW)."
+        },
+        {
+            "min_value": 15000,
+            "default_desc": "Massive",
+            "short_desc": "Massive",
+            "long_desc": "Massive mains load",
+            "icon": "mdi:alert",
+            "color": "#7c3aed",
+            "full_desc": "Check immediately; sustained >15 kW may indicate faults or EV fast charging."
+        }
+    ],
 } %}
 
 {% macro get_dc_context() %}

@@ -89,10 +89,10 @@ weather:
     wind_speed_unit: "mph"
     forecast_daily_template: >
       {%- from 'metrics/weather/forecasts.jinja' import forecast_daily -%}
-      {{- forecast_daily('sensor.openmeteo_nearby') | from_json -}}
+      {{- forecast_daily('sensor.openmeteo_nearby') | from_json(default={}) -}}
     forecast_hourly_template: >
       {%- from 'metrics/weather/forecasts.jinja' import forecast_hourly -%}
-      {{- forecast_hourly('sensor.openmeteo_nearby') | from_json -}}
+      {{- forecast_hourly('sensor.openmeteo_nearby') | from_json(default={}) -}}
 
 template:
 
@@ -310,7 +310,7 @@ template:
         attributes:
           data: >-
             {%- from 'metrics/uv/protection_window.jinja' import uv_window -%}
-            {{- uv_window('sensor.openmeteo_nearby', 3.5) | from_json -}}
+            {{- uv_window('sensor.openmeteo_nearby', 3.5) | from_json(default={}) -}}
 
   - binary_sensor:
       - name: Nearby UV Protection
@@ -343,7 +343,7 @@ template:
         attributes:
           data: >-
             {%- from 'metrics/uv/exposure_st.jinja' import uv_safe_exposure_multi -%}
-            {{- uv_safe_exposure_multi('sensor.openmeteo_nearby') | from_json -}}
+            {{- uv_safe_exposure_multi('sensor.openmeteo_nearby') | from_json(default={}) -}}
 
   - sensor:
       - name: Nearby Safe Exposure End ST1

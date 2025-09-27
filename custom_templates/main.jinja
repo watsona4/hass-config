@@ -32,7 +32,7 @@
         - binary class uses boolean of the raw_state
         - others use float(none), preserving None for unavailable
     -#}
-    {%- set value = (raw_state|bool) if ns.device_class == 'binary' else (raw_state|float(none)) -%}
+    {%- set value = (raw_state|bool(false)) if ns.device_class == 'binary' else (raw_state|float(none)) -%}
 
     {#- Meta & units -#}
     {%- set friendly_name = (

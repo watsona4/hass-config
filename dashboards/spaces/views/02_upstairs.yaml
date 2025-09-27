@@ -1,68 +1,1418 @@
 title: Upstairs
 type: masonry
-
-ae_base: &ae_base
-  type: custom:auto-entities
-  card:
-    type: custom:stack-in-card
-    mode: vertical
-    keep:
-      background: true
-      box_shadow: true
-      border_radius: true
-    card_mod:
-      style: |
-        ha-card {
-          border-radius: 12px;
-          background: var(--card-background-color);
-          box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2));
-          padding: 8px;
-        }
-  card_param: cards
-
 cards:
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('front_hallway') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('study') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('guest_bedroom') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('master_bedroom') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('master_bathroom') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('back_hallway') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('eleanor_s_room') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('michael_s_room') | from_json -}}
-  - <<: *ae_base
-    filter:
-      template: >-
-        {%- from 'macros/area_cards.jinja' import area_cards -%}
-        {{- area_cards('kids_bathroom') | from_json -}}
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: front_hallway
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.nest_protect_upstairs_co_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''carbon_monoxide'') }}: {{ get_short_desc(entity, app=''carbon_monoxide'')
+        }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''carbon_monoxide'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''carbon_monoxide'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_upstairs_heat_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_upstairs_smoke_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''smoke'') }}: {{ get_short_desc(entity, app=''smoke'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''smoke'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''smoke'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.front_hallway_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.front_hallway_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.front_hallway_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: study
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.hot_in_study
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Comfort & Climate
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_thermometer_temperature
+      - app: ambient
+      - &id001
+        layout: vertical
+      - &id002
+        multiline_secondary: false
+      - &id003
+        options: "vert_delim= \u2022 "
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_thermometer_humidity
+      - app: indoor
+      - *id001
+      - *id002
+      - *id003
+    - type: custom:mushroom-climate-card
+      entity: climate.study_space_heater
+      tap_action:
+        action: more-info
+      layout: vertical
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Switches & Outlets
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.study_space_heater_outlet
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Lighting
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.study_lamp
+      tap_action:
+        action: more-info
+      layout: vertical
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Power & Energy
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.none_4_1min
+      - app: default
+      - width: narrow
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_space_heater_outlet_power
+      - app: default
+      - width: narrow
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.usb_current_monitor_ina219_power
+      - app: default
+      - width: narrow
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - *id001
+      - *id002
+      - *id003
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.study_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.study_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.study_west_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Audio & Video
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-media-player-card
+      entity: media_player.study
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.study_light_off
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.teams_meeting
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.upstairs_duct_fan
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Climate Trends (24 hours)
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    apex_config:
+      yaxis:
+      - id: temp
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: "Temperature (\xB0F)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: hum
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: Humidity (%)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.study_thermometer_temperature
+      yaxis_id: temp
+      transform: return x;
+    - entity: sensor.study_thermometer_humidity
+      yaxis_id: hum
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.study_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: guest_bedroom
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.nest_protect_guest_room_co_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''carbon_monoxide'') }}: {{ get_short_desc(entity, app=''carbon_monoxide'')
+        }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''carbon_monoxide'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''carbon_monoxide'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_guest_room_heat_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_guest_room_smoke_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''smoke'') }}: {{ get_short_desc(entity, app=''smoke'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''smoke'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''smoke'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Switches & Outlets
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.guest_bedroom_lamp_socket_1
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.guest_bedroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_south_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.guest_bedroom_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.guest_bedroom_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: master_bedroom
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bedroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bedroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bedroom_right_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.master_bedroom_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.master_bedroom_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: master_bathroom
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.master_bathroom_presence_presence_information
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''occupancy'') }}: {{ get_short_desc(entity, app=''occupancy'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''occupancy'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''occupancy'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Comfort & Climate
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_presence_living_room_temperature
+      - app: ambient
+      - &id004
+        layout: vertical
+      - &id005
+        multiline_secondary: false
+      - &id006
+        options: "vert_delim= \u2022 "
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_presence_living_room_humidity
+      - app: indoor
+      - *id004
+      - *id005
+      - *id006
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - *id004
+      - *id005
+      - *id006
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bathroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bathroom_right_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.master_bathroom_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Climate Trends (24 hours)
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    apex_config:
+      yaxis:
+      - id: temp
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: "Temperature (\xB0F)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: hum
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: Humidity (%)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.master_bathroom_presence_living_room_temperature
+      yaxis_id: temp
+      transform: return x;
+    - entity: sensor.master_bathroom_presence_living_room_humidity
+      yaxis_id: hum
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.master_bathroom_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: back_hallway
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.nest_protect_back_hallway_co_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''carbon_monoxide'') }}: {{ get_short_desc(entity, app=''carbon_monoxide'')
+        }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''carbon_monoxide'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''carbon_monoxide'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_back_hallway_heat_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_back_hallway_smoke_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''smoke'') }}: {{ get_short_desc(entity, app=''smoke'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''smoke'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''smoke'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Comfort & Climate
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.icomfort_s30_8655fc_current_temperature
+      - app: ambient
+      - &id007
+        layout: vertical
+      - &id008
+        multiline_secondary: false
+      - &id009
+        options: "vert_delim= \u2022 "
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.upstairs_temperature
+      - app: ambient
+      - *id007
+      - *id008
+      - *id009
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.icomfort_s30_8655fc_current_humidity
+      - app: indoor
+      - *id007
+      - *id008
+      - *id009
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.upstairs_humidity
+      - app: indoor
+      - *id007
+      - *id008
+      - *id009
+    - type: custom:mushroom-climate-card
+      entity: climate.icomfort_s30_8655fc_thermostat
+      tap_action:
+        action: more-info
+      layout: vertical
+    - type: custom:mushroom-climate-card
+      entity: climate.upstairs_thermostat
+      tap_action:
+        action: more-info
+      layout: vertical
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Power & Energy
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.none_7_1min
+      - app: default
+      - width: narrow
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.none_8_1min
+      - app: default
+      - width: narrow
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.none_14_1min
+      - app: default
+      - width: narrow
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.back_hallway_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - *id007
+      - *id008
+      - *id009
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.back_hallway_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Climate Trends (24 hours)
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    apex_config:
+      yaxis:
+      - id: temp
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: "Temperature (\xB0F)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: hum
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: Humidity (%)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.upstairs_temperature
+      yaxis_id: temp
+      transform: return x;
+    - entity: sensor.icomfort_s30_8655fc_current_temperature
+      yaxis_id: temp
+      transform: return x;
+    - entity: sensor.upstairs_humidity
+      yaxis_id: hum
+    - entity: sensor.icomfort_s30_8655fc_current_humidity
+      yaxis_id: hum
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.back_hallway_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: eleanor_s_room
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_eleanor_co_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''carbon_monoxide'') }}: {{ get_short_desc(entity, app=''carbon_monoxide'')
+        }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''carbon_monoxide'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''carbon_monoxide'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_eleanor_heat_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.eleanor_presence_presence_information
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''occupancy'') }}: {{ get_short_desc(entity, app=''occupancy'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''occupancy'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''occupancy'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_eleanor_smoke_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''smoke'') }}: {{ get_short_desc(entity, app=''smoke'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''smoke'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''smoke'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.eleanor_s_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.eleanor_room_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.eleanor_s_room_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: michael_s_room
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_michael_co_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''carbon_monoxide'') }}: {{ get_short_desc(entity, app=''carbon_monoxide'')
+        }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''carbon_monoxide'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''carbon_monoxide'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_michael_heat_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''heat'') }}: {{ get_short_desc(entity, app=''heat'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''heat'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''heat'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.michael_presence_presence_information
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''occupancy'') }}: {{ get_short_desc(entity, app=''occupancy'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''occupancy'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''occupancy'') }}'
+      tap_action:
+        action: more-info
+    - type: template
+      entity: binary_sensor.nest_protect_kids_room_michael_smoke_status
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''smoke'') }}: {{ get_short_desc(entity, app=''smoke'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''smoke'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''smoke'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.michael_s_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Shades & Covers
+  - type: vertical-stack
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.michael_room_window
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.michael_room_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.michael_s_room_energy_today
+      yaxis_id: energy
+      transform: return x;
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: area
+    area: kids_bathroom
+    features:
+    - type: area-controls
+      controls:
+      - light
+      - switch
+    alert_classes:
+    - motion
+    - moisture
+    - problem
+    sensor_classes:
+    - temperature
+    - humidity
+    - power
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: template
+      entity: binary_sensor.kids_bathroom_presence_presence_information
+      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
+        app=''occupancy'') }}: {{ get_short_desc(entity, app=''occupancy'') }}'
+      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''occupancy'')
+        }}'
+      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
+        app=''occupancy'') }}'
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Comfort & Climate
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_presence_living_room_temperature
+      - app: ambient
+      - &id010
+        layout: vertical
+      - &id011
+        multiline_secondary: false
+      - &id012
+        options: "vert_delim= \u2022 "
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_presence_living_room_humidity
+      - app: indoor
+      - *id010
+      - *id011
+      - *id012
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Meters
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+      - *id010
+      - *id011
+      - *id012
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Automations & Scripts
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.kids_bathroom_window_button
+      tap_action:
+        action: more-info
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Climate Trends (24 hours)
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    apex_config:
+      yaxis:
+      - id: temp
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: "Temperature (\xB0F)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: hum
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: Humidity (%)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.kids_bathroom_presence_living_room_temperature
+      yaxis_id: temp
+      transform: return x;
+    - entity: sensor.kids_bathroom_presence_living_room_humidity
+      yaxis_id: hum
+  - type: custom:mushroom-title-card
+    title: ''
+    subtitle: Utility Trends (7 days)
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    apex_config:
+      yaxis:
+      - id: energy
+        opposite: false
+        forceNiceScale: true
+        title:
+          text: Energy (kWh)
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      - id: gas
+        opposite: true
+        forceNiceScale: true
+        title:
+          text: "Gas (ft\xB3)"
+        labels:
+          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+      tooltip:
+        shared: true
+        y:
+          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
+    series:
+    - entity: sensor.kids_bathroom_energy_today
+      yaxis_id: energy
+      transform: return x;
