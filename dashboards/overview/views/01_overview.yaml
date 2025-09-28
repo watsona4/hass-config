@@ -220,21 +220,19 @@ sections:
               - entity: sensor.nearby_uv_index
               - name: UV Index
               - app: uv_index
-              - options: uom=
+              - options: "uom="
 
           # Wind and Precipitation
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: sensor.nearby_wind_speed
-              - options: >-
-                  direction=sensor.nearby_wind_direction;
-                  gusts=sensor.nearby_wind_gust
+              - options: "direction=sensor.nearby_wind_direction;gusts=sensor.nearby_wind_gust;show_deg=false"
           - type: custom:decluttering-card
             template: template_card
             variables:
               - entity: sensor.nearby_today_precip_sum
-              - options: prob=sensor.nearby_today_precip_prob_max
+              - options: "prob=sensor.nearby_today_precip_prob_max"
 
           # Air Quality and Dew Point
           - type: custom:decluttering-card

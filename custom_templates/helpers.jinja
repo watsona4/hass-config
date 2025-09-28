@@ -211,16 +211,16 @@
 {% macro parse_options_kv(s) %}
     {%- set raw = (s | string) -%}
     {%- if not raw -%}
-        {{- {} | tojson -}}
+        {{ {} | tojson }}
     {%- else -%}
         {%- set ns = namespace(d={}, val=none) -%}
         {%- for pair in raw.split(';') if pair | trim -%}
-            {%- if '=' not in pair -%}
-                {%- continue -%}
-            {%- endif -%}
+            {%- if '=' not in pair -%}{% continue %}{%- endif -%}
             {%- set k, v = pair.split('=', 1) -%}
+            {%- set k = k | trim -%}
+            {%- set v = v | trim -%}
 
-            {#- list syntax: (a,b,c) -#}
+            {# list syntax: (a,b,c) #}
             {%- if v.startswith('(') and v.endswith(')') -%}
                 {%- set ns2 = namespace(items=[]) -%}
                 {%- for item in v[1:-1].split(',') -%}
@@ -230,19 +230,20 @@
                 {%- endfor -%}
                 {%- set ns.val = ns2.items -%}
 
-            {#- booleans and null -#}
+            {# booleans and null #}
             {%- elif v | lower in ['true','false'] -%}
                 {%- set ns.val = (v | lower == 'true') -%}
             {%- elif v | lower in ['null','none','~'] -%}
                 {%- set ns.val = none -%}
 
-            {#- numbers (int or float), else string -#}
+            {# numbers (int or float), else string #}
             {%- else -%}
                 {%- set vv = v.strip('"').strip("'") -%}
-                {%- if vv | replace('_','') | regex_match('^-?[0-9]+$') -%}
-                    {%- set ns.val = vv | int(none) -%}
-                {%- elif vv | regex_match('^-?[0-9]*\\.[0-9]+$') -%}
-                    {%- set ns.val = vv | float(none) -%}
+                {%- set vv_clean = vv | replace('_','') -%}
+                {%- if vv_clean | regex_match('^-?[0-9]+$') -%}
+                    {%- set ns.val = vv_clean | int(0) -%}
+                {%- elif vv_clean | regex_match('^-?[0-9]*\\.[0-9]+$') -%}
+                    {%- set ns.val = vv_clean | float(0) -%}
                 {%- else -%}
                     {%- set ns.val = vv -%}
                 {%- endif -%}
@@ -250,6 +251,6 @@
 
             {%- set ns.d = ns.d | combine({k: ns.val}) -%}
         {%- endfor -%}
-        {{- ns.d | tojson -}}
+        {{ ns.d | tojson }}
     {%- endif -%}
 {% endmacro %}
