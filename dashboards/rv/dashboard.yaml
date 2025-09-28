@@ -2,4 +2,4 @@
 # Description: Main RV dashboard configuration
 
 title: RV
-views: !include_dir_list dashboards/rv/views
+views: !include_dir_list views
