@@ -653,13 +653,26 @@
     - binary_sensor.evening
     to: 'on'
     trigger: state
-  conditions: []
+  - trigger: homeassistant
+    event: start
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.evening
+    state: 'on'
   actions:
   - parallel:
     - sequence:
-      - wait_template: '{{ not (states(''binary_sensor.everything_presence_one_6dbad0_occupancy'')|bool)
-          and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
-          > 900 }}'
+      - wait_template: >-
+          {% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy') %}
+            {{
+              not (states('binary_sensor.everything_presence_one_6dbad0_occupancy') | bool)
+              and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds() > 900
+            }}
+          {% else %}
+            false
+          {% endif %}
+        timeout: 00:30:00
+        continue_on_timeout: true
       - target:
           entity_id:
           - switch.parlor_table_lamp
@@ -1250,33 +1263,6 @@
   mode: single
   trace:
     stored_traces: 100
-- id: '1699563020750'
-  alias: Living Room Automation
-  description: ''
-  triggers:
-  - seconds: /15
-    enabled: true
-    trigger: time_pattern
-  conditions:
-  - condition: state
-    entity_id: binary_sensor.daytime
-    state: 'on'
-  actions:
-  - if:
-    - condition: state
-      entity_id: light.living_room_light
-      state: 'off'
-    then:
-    - action: light.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: light.living_room_light
-  - target:
-      entity_id: script.living_room_lights
-    data: {}
-    action: script.turn_on
-  mode: restart
 - id: '1701214827631'
   alias: Thermostats
   description: ''
@@ -2335,89 +2321,6 @@
     data: {}
     target:
       entity_id: timer.gym_event_loop_timer
-  mode: single
-  trace:
-    stored_traces: 100
-- id: '1710268340644'
-  alias: Lights Out
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.everything_presence_one_6dbad0_occupancy
-    to: 'on'
-  - trigger: state
-    entity_id:
-    - binary_sensor.everything_presence_one_6dbad0_occupancy
-    to: 'off'
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-  - entity_id:
-    - binary_sensor.daytime
-    - binary_sensor.evening
-    - input_boolean.someone_is_home
-    trigger: state
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.someone_is_home
-        state: 'off'
-      sequence:
-      - action: light.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id:
-          - light.living_room_light
-          - light.dining_room_light
-    - conditions:
-      - condition: state
-        entity_id: schedule.daytime
-        state: 'off'
-      - condition: state
-        entity_id: input_boolean.daytime_override
-        state: 'off'
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: binary_sensor.everything_presence_one_6dbad0_occupancy
-          state: 'off'
-          for:
-            hours: 0
-            minutes: 5
-            seconds: 0
-        - condition: state
-          entity_id: binary_sensor.evening
-          state: 'off'
-      sequence:
-      - action: light.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id:
-          - light.living_room_light
-          - light.dining_room_light
-    - conditions:
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: light.living_room_light
-          state: 'off'
-        - condition: state
-          entity_id: light.dining_room_light
-          state: 'off'
-      sequence:
-      - action: light.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id:
-          - light.living_room_light
-          - light.dining_room_light
   mode: single
   trace:
     stored_traces: 100

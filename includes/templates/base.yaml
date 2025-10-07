@@ -461,33 +461,6 @@
       state: >-
         {{ this.state if val is none else val }}
 
-# --------------------------------
-# Living Room Brightness (%)
-# --------------------------------
-- trigger:
-    - platform: state
-      entity_id: light.living_room_light
-    - platform: time_pattern
-      minutes: "/5"
-  variables:
-    src: light.living_room_light
-    keep_sec: 1800
-    age_sec: >-
-      {% set s = states[src] %}
-      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
-    b: "{{ state_attr(src, 'brightness') }}"
-    pct: >-
-      {{ (b / 255 * 100) if b is not none else none }}
-  sensor:
-    - name: Living Room Brightness
-      unique_id: living_room_brightness
-      unit_of_measurement: "%"
-      state_class: measurement
-      availability: >-
-        {{ (b is not none) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
-      state: >-
-        {{ this.state if pct is none else (pct | round(0)) }}
-
 # ===============================
 # Zwift summaries (non-triggered)
 # ===============================

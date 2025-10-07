@@ -356,51 +356,6 @@ turn_off_lights:
               }}'
   mode: restart
   icon: mdi:lightbulb-off-outline
-living_room_lights:
-  alias: Living Room Lights
-  description: ''
-  sequence:
-  - variables:
-      target: '{% set weekday = now().strftime("%w")|int  %} {% set hour = now().strftime("%H")|int  %}
-        {% set minute = now().strftime("%M")|int  %} {% set input = states(''input_number.living_room_brightness'')|float(0)
-        %} {{ 1000 if weekday == 4 and hour == 16 and minute <= 30 else input }}'
-      illuminance_target: '{{ target/2 if is_state(''binary_sensor.living_room_closed_tv'',''on'')
-        else target }}'
-      max_illuminance: '{{ target }}'
-      max_brightness: 50
-      illuminance_margin: '{{ 0.05*illuminance_target }}'
-      brightness_margin: '{{ (illuminance_margin*max_brightness/max_illuminance) }}'
-      cur_illuminance: '{{ states(''sensor.living_room_illuminance_state'')|float(0)
-        }}'
-      cur_brightness: '{{ states(''sensor.living_room_brightness'')|float(0) }}'
-      distance_to_target: '{{ illuminance_target - cur_illuminance }}'
-      illuminance_step: '{{ distance_to_target/2 if (distance_to_target|abs) > illuminance_margin
-        else 0}}'
-      brightness_step: '{{ (illuminance_step*max_brightness/max_illuminance) }}'
-      brightness: '{{ max(min(cur_brightness + brightness_step, 100), 0) }}'
-      brightness_dr: '{{ [[0.004*brightness**2+0.4*brightness+20,100]|min,0]|max }}'
-      transition: '{{ 15 if brightness != cur_brightness else 0 }}'
-  - if:
-    - condition: template
-      value_template: '{{ brightness == cur_brightness }}'
-    then:
-    - stop: No change in brightness
-  - data:
-      brightness_pct: '{{ brightness|int if brightness!=0 else 1 }}'
-      transition: '{{transition}}'
-    target:
-      entity_id: light.living_room_light
-    action: light.turn_on
-  - data:
-      brightness_pct: '{{ brightness_dr|int if brightness_dr>20 else 1 }}'
-      transition: '{{transition}}'
-    target:
-      entity_id:
-      - light.dining_room_light
-    action: light.turn_on
-  mode: restart
-  trace:
-    stored_traces: 1000
 announce_door:
   alias: Announce Door
   fields:
@@ -609,11 +564,17 @@ turn_off_interior_lights:
   sequence:
   - parallel:
     - sequence:
-      - wait_template: '{{ not (states(''binary_sensor.everything_presence_one_6dbad0_occupancy'')|bool)
-          and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
-          > 900 }}'
-        timeout:
-          minutes: 5
+      - wait_template: >-
+          {% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy') %}
+            {{
+              not (states('binary_sensor.everything_presence_one_6dbad0_occupancy') | bool)
+              and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds() > 900
+            }}
+          {% else %}
+            false
+          {% endif %}
+        timeout: "00:30:00"
+        continue_on_timeout: true
       - parallel:
         - repeat:
             sequence:
@@ -742,28 +703,6 @@ turn_on_interior_lights:
             - switch.guest_bedroom_lamp_socket_1
           data: {}
           action: switch.turn_on
-    - if:
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: light.living_room_light
-          state: 'off'
-        - condition: state
-          entity_id: light.dining_room_light
-          state: 'off'
-      then:
-      - action: light.turn_on
-        target:
-          entity_id:
-          - light.living_room_light
-          - light.dining_room_light
-        data:
-          brightness_pct: 1
-      - action: script.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: script.living_room_lights
   mode: single
   icon: mdi:lightbulb-on-outline
   description: ''
