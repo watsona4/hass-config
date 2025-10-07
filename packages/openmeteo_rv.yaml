@@ -36,7 +36,7 @@ sensor:
         {{- rv_alt() -}}
       timezone: auto
       current: apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m
-      daily: precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,winddirection_10m_dominant,windspeed_10m_max
+      daily: precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max
       hourly: apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m
       temperature_unit: fahrenheit
       wind_speed_unit: mph
@@ -333,6 +333,12 @@ template:
           duration: >-
             {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
             {{- timedelta(minutes=window.get('duration_min') | int(0)) -}}
+          active: >-
+            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {{- window.get('active') | bool(none) -}}
+          ever_above: >-
+            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {{- window.get('ever_above') | bool(none) -}}
 
   - sensor:
       - name: RV UV Exposure JSON

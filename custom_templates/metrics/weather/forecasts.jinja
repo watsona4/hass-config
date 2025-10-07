@@ -23,9 +23,9 @@
     {%- set ps = d.get('precipitation_sum', []) -%}
     {%- set tmax = d.get('temperature_2m_max', []) -%}
     {%- set tmin = d.get('temperature_2m_min', []) -%}
-    {%- set wdir = d.get('winddirection_10m_dominant', []) -%}
+    {%- set wdir = d.get('wind_direction_10m_dominant', []) -%}
     {%- set wg = d.get('wind_gusts_10m_max', []) -%}
-    {%- set wspd = d.get('windspeed_10m_max', []) -%}
+    {%- set wspd = d.get('wind_speed_10m_max', []) -%}
     {%- for i in range(tt|length) -%}
         {%- set dt = (tt[i] | as_datetime | as_local) -%}
         {%- set entry = {
