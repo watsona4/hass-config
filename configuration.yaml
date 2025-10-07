@@ -39,6 +39,8 @@ recorder:
   auto_purge: true
   commit_interval: 3
   exclude:
+    entities:
+      - device_tracker.rv_gps
     entity_globs:
       - sensor.google_pollen_*
       - sensor.openmeteo_*
