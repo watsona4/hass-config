@@ -74,8 +74,6 @@ cards:
           Dose **{{ states('input_number.zep_weekly_dose_mg') }} mg**.
           Projected peak **{{ states('sensor.zep_projected_peak_mg') }}
           mg**.  
-  - type: vertical-stack
-    cards:
       - type: horizontal-stack
         cards:
           - type: button
@@ -100,46 +98,152 @@ cards:
               service: script.zep_snooze_hours
               data:
                 hours: 24
+  - type: vertical-stack
+    cards:
       - type: entities
         title: Dosing Inputs
         entities:
           - entity: input_number.zep_desired_peak_mg
           - entity: input_number.zep_desired_dose_mg
-            icon: mdi:pill
+          - entity: input_select.zep_eval_mode
+          - entity: input_number.zep_band_min_mg
+          - entity: input_number.zep_band_max_mg
+      - type: custom:flex-table-card
+        title: ZepBound Peak/Trough
+        sort_by: dose
+        entities:
+          - sensor.zep_band_plan
+        columns:
+          - name: Dose
+            data: per_dose.dose
+            align: center
+          - name: Peak (mg)
+            data: per_dose.peak
+            align: right
+            modify: "x==null ? '—' : Number(x).toFixed(2)"
+          - name: Trough (mg)
+            data: per_dose.trough
+            align: right
+            modify: "x==null ? '—' : Number(x).toFixed(2)"
+          - name: Schedule
+            data: per_dose.T_h
+            align: center
+            modify: >
+              x==null ? "—" : (Math.floor(Number(x)/24) + " days, " +
+              (Number(x)%24).toFixed(0) + " hrs")
+          - name: Valid
+            data: per_dose.valid
+            align: center
+        row_style: |
+          (row.valid===false) ? "opacity:0.6" : ""
+        css:
+          thead: "background-color: rgb(199,200,202);"
+          tbody tr:has(.doseflag.ok): "background-color: rgba(76, 175, 80, 0.14); color: var(--primary-text-color);"
+          tbody tr:has(.doseflag.bad): "background-color: rgba(244, 67, 54, 0.12); color: var(--primary-text-color);"
+          th:last-child: display:none;
+          td:last-child: display:none;
   - type: custom:config-template-card
     entities:
-      - sensor.zep_target_residual_mg
+      - sensor.zep_residual_mg
+      - sensor.zep_current_plan
+      - sensor.zep_next_plan
+      - input_number.zep_band_min_mg
+      - input_number.zep_band_max_mg
     card:
       type: custom:apexcharts-card
       header:
+        title: Residual vs Band — target & next injection
         show: true
-        title: Body dosage over time
         show_states: true
         colorize_states: true
-      graph_span: 21d
+      graph_span: 90d
+      span:
+        end: day
+        offset: +30d
       now:
         show: true
         color: "#aaaaaa"
-      apex_config:
-        yaxis:
-          decimalsInFloat: 2
+      series:
+        - entity: sensor.zep_residual_mg
+          name: Current Residual (mg)
+          type: line
+          yaxis_id: residual
+          extend_to: false
+          stroke_width: 2
+          color: "#1f77b4"
+          show:
+            in_legend: false
+        - entity: sensor.zep_residual_projection
+          name: Projected Residual
+          type: line
+          yaxis_id: residual
+          extend_to: false
+          show:
+            in_header: false
+            in_legend: false
+          stroke_width: 2
+          opacity: 0.35
+          data_generator: |
+            const s = entity?.attributes?.series ?? [];
+            return s.map(p => [new Date(p.t).getTime(), Number(p.y)]);
+      yaxis:
+        - id: residual
           min: 0
+          max: 15
+          decimals: 0
+          apex_config:
+            labels:
+              style:
+                fontSize: 14px
+            title:
+              text: Residual (mg)
+              style:
+                fontSize: 16px
+      apex_config:
+        xaxis:
+          type: datetime
+          labels:
+            datetimeUTC: false
+            style:
+              fontSize: 14px
+        markers:
+          size:
+            - 0
+          strokeWidth: 0
         annotations:
-          yaxis:
-            - y: ${ Number(states['sensor.zep_target_residual_mg'].state) }
-              borderColor: "#888888"
+          xaxis:
+            - x: ${ states['sensor.zep_current_plan_epoch_ms']?.state ?? Date.now() }
+              borderColor: "#999999"
+              strokeDashArray: 4
               label:
-                text: Target Residual
+                text: Next injection
+          yaxis:
+            - "y": ${ Number(states['input_number.zep_band_max_mg']?.state ?? 0) }
+              y2: ${ Number(states['input_number.zep_band_min_mg']?.state ?? 0) }
+              borderColor: rgba(76,175,80,0.25)
+              fillColor: rgba(76,175,80,0.10)
+              label:
+                text: Target band
+                style:
+                  background: rgba(76,175,80,0.7)
+                  color: "#fff"
+            - "y": ${ Number(states['sensor.zep_current_plan']?.attributes?.target ?? 0) }
+              borderColor: "#1f77b4"
+              strokeDashArray: 2
+              label:
+                text: Target (T_eff)
                 position: left
                 textAnchor: start
                 style:
-                  color: "#000"
-                  background: "#eeeeee"
-      series:
-        - entity: sensor.zep_residual_mg
-          name: Residual
-          type: line
-          extend_to: false
-          group_by:
-            duration: 1h
-            func: last
+                  background: "#1f77b4"
+                  color: "#fff"
+            - "y": ${ Number(states['sensor.zep_next_plan']?.attributes?.peak ?? 0) }
+              borderColor: "#e67e22"
+              strokeDashArray: 2
+              label:
+                text: Next peak (plan)
+                position: left
+                textAnchor: start
+                style:
+                  background: "#e67e22"
+                  color: "#fff"

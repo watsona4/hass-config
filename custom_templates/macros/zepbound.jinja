@@ -141,3 +141,130 @@
             } | tojson -}}
     {%- endif -%}
 {%- endmacro %}
+
+{# --- Steady-state helpers for periodic dosing every T hours --- #}
+
+{% macro _ss_cycle(resid_prev, dose, ke, ka, T_h) -%}
+  {{ _amount_at(T_h, resid_prev, dose, ke, ka) }}
+{%- endmacro %}
+
+{# --- Steady-state eval (closed form) --- #}
+{% macro zep_ss_eval(dose, T_h, hl_days, hl_abs_h) -%}
+  {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+  {%- set ns = namespace(
+        ke = parts[0] | float,
+        ka = parts[1] | float,
+        d  = dose | float,
+        T  = T_h | float
+      ) -%}
+  {%- set a    = _exp(-ns.ke * ns.T) | float -%}
+  {%- set term = (_exp(-ns.ke * ns.T) | float) - (_exp(-ns.ka * ns.T) | float) -%}
+  {%- set b    = ns.d * (ns.ka / (ns.ka - ns.ke)) * term -%}
+  {%- set resid = (b / (1 - a)) | float -%}
+  {%- set tau_p = (ns.ka > ns.ke) and ((ns.ka/ns.ke) | log) / (ns.ka - ns.ke) or 0.0 -%}
+  {%- set peak  = _amount_at(tau_p, resid, ns.d, ns.ke, ns.ka) | float -%}
+  {{ dict(trough=resid, peak=peak) | tojson }}
+{%- endmacro %}
+
+{# --- Interval finder with bisection; ok(T) returns 1/0, not "True"/"False" --- #}
+{% macro zep_ss_find_interval(dose, min_resid, max_resid, hl_days, hl_abs_h) -%}
+  {%- set weekly_h = 168.0 -%}
+  {%- set T_min = 24.0 -%}
+  {%- set T_max = 336.0 -%}
+  {%- set minv = min_resid | float -%}
+  {%- set maxv = max_resid | float -%}
+
+  {%- macro ok(T) -%}
+    {%- set s = zep_ss_eval(dose, T, hl_days, hl_abs_h) | from_json -%}
+    {{ 1 if (s.trough | float >= minv and s.peak | float <= maxv) else 0 }}
+  {%- endmacro %}
+
+  {# prefer exactly weekly #}
+  {%- set s_week = zep_ss_eval(dose, weekly_h, hl_days, hl_abs_h) | from_json -%}
+  {%- if (s_week.trough | float) >= minv and (s_week.peak | float) <= maxv -%}
+    {{ dict(T_h=weekly_h, trough=s_week.trough, peak=s_week.peak, weekly_ok=True) | tojson }}
+  {%- else -%}
+    {# search >= weekly #}
+    {%- set ns = namespace(lo=weekly_h, hi=T_max, hit=None) -%}
+    {%- if ok(ns.hi) | int == 1 -%}
+      {%- for _ in range(0, 22) -%}
+        {%- set mid = (ns.lo + ns.hi) / 2 -%}
+        {%- if ok(mid) | int == 1 -%}
+          {%- set ns.hi = mid -%}
+        {%- else -%}
+          {%- set ns.lo = mid -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set s1 = zep_ss_eval(dose, ns.hi, hl_days, hl_abs_h) | from_json -%}
+      {%- set ns.hit = dict(T_h=ns.hi, trough=s1.trough, peak=s1.peak, weekly_ok=True) -%}
+    {%- endif -%}
+
+    {%- if ns.hit is not none -%}
+      {{ ns.hit | tojson }}
+    {%- else -%}
+      {# search [24h, weekly) #}
+      {%- set ns2 = namespace(lo=T_min, hi=weekly_h, hit=None) -%}
+      {%- if ok(ns2.hi) | int == 1 -%}
+        {%- for _ in range(0, 22) -%}
+          {%- set mid2 = (ns2.lo + ns2.hi) / 2 -%}
+          {%- if ok(mid2) | int == 1 -%}
+            {%- set ns2.hi = mid2 -%}
+          {%- else -%}
+            {%- set ns2.lo = mid2 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- set s2 = zep_ss_eval(dose, ns2.hi, hl_days, hl_abs_h) | from_json -%}
+        {%- set ns2.hit = dict(T_h=ns2.hi, trough=s2.trough, peak=s2.peak, weekly_ok=False) -%}
+      {%- endif -%}
+      {{ (ns2.hit or dict(T_h=None, trough=None, peak=None, weekly_ok=False)) | tojson }}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{# --- Utilities for UI / sensors --- #}
+
+{# Convert an ISO timestamp (or entity state string) to epoch ms, or 'unknown' #}
+{% macro zep_epoch_ms(ts) -%}
+  {%- set dt = ts | as_datetime(default=none) -%}
+  {{ (as_timestamp(dt) * 1000) | int if dt is not none else 'unknown' }}
+{%- endmacro %}
+
+{# Build a forward projection series of residuals (no new injections)
+   Returns JSON: [{"t":"<ISO>", "y": <mg>}, ...]
+   Args:
+     - t0_iso: last injection time
+     - resid_prev: last residual at t0 just before dose (mg)
+     - dose: last/weekly dose (mg)
+     - hl_days: elimination half-life (days)
+     - hl_abs_h: absorption half-life (hours)
+     - horizon_days (default 30)
+     - step_hours (default 6)
+     - start_iso (optional): start time for projection; defaults to now()
+ #}
+{% macro zep_residual_projection(t0_iso, resid_prev, dose, hl_days, hl_abs_h,
+                                 horizon_days=30, step_hours=6, start_iso=None) -%}
+  {%- set t0 = as_timestamp(t0_iso) -%}
+  {%- if t0 is none -%}
+    []
+  {%- else -%}
+    {%- set parts = _rates(hl_days, hl_abs_h).split(',') -%}
+    {%- set ke = parts[0] | float -%}
+    {%- set ka = parts[1] | float -%}
+    {%- set resid0 = resid_prev | float(0) -%}
+    {%- set d = dose | float(0) -%}
+    {%- set start = (start_iso is not none) and (as_timestamp(start_iso)) or as_timestamp(now()) -%}
+    {%- set horizon_h = (horizon_days | int) * 24 -%}
+    {%- set step_h = (step_hours | int) if (step_hours | int) > 0 else 6 -%}
+    {%- set ns = namespace(out=[]) -%}
+    {%- for h in range(0, horizon_h + 1, step_h) -%}
+      {%- set t = start + h * 3600 -%}
+      {%- set dt_h = (t - t0) / 3600.0 -%}
+      {%- set y = 0 -%}
+      {%- if dt_h >= 0 -%}
+        {%- set y = _amount_at(dt_h, resid0, d, ke, ka) | float -%}
+      {%- endif -%}
+      {%- set ns.out = ns.out + [ dict(t=(as_datetime(t) | as_local).isoformat(), y=(y | round(3))) ] -%}
+    {%- endfor -%}
+    {{ ns.out | tojson }}
+  {%- endif -%}
+{%- endmacro %}
