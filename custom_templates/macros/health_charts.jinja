@@ -1,0 +1,555 @@
+
+{# --- Threshold maps (optional helper like BP macro) --- #}
+{% set rhr_colors = [
+  {"value": 50,  "color": "#7CB342"},
+  {"value": 60,  "color": "#FDD835"},
+  {"value": 75,  "color": "#EF6C00"},
+  {"value": 90,  "color": "#C62828"},
+  {"value": 9999,"color": "#B71C1C"},
+] %}
+{% set hrv_colors = [
+  {"value": 40,  "color": "#C62828"},
+  {"value": 50,  "color": "#FFB300"},
+  {"value": 70,  "color": "#7CB342"},
+  {"value": 100, "color": "#43A047"},
+  {"value": 9999,"color": "#1B5E20"},
+] %}
+{% set pp_colors = [
+  {"value": 60, "color": "#B71C1C"},
+  {"value": 70, "color": "#EF6C00"},
+  {"value": 100, "color": "#42A5F5"},
+  {"value": 110, "color": "#1E88E5"},
+  {"value": 9999, "color": "#C62828"},
+] %}
+{% set map_colors = [
+  {"value": 30, "color": "#0288D1"},
+  {"value": 50, "color": "#7CB342"},
+  {"value": 60, "color": "#FDD835"},
+  {"value": 80, "color": "#6A1B9A"},
+  {"value": 9999, "color": "#4A148C"},
+] %}
+
+{% macro get_color(value, colormap) %}
+  {%- for e in colormap -%}
+    {%- if value < e.value -%}
+      {{- e.color -}}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+{% endmacro %}
+
+{% macro generate_bp_chart() %}
+    {% set series_entry = {
+    'type': 'line',
+    'group_by': { 'duration': '1d', 'func': 'last' },
+    } %}
+
+    {% set series = [
+    series_entry | combine({
+    'entity': 'sensor.pixel_9_pro_xl_systolic_blood_pressure',
+    'name': 'Systolic BP',
+    'yaxis_id': 'bp',
+    }), series_entry | combine({
+    'entity': 'sensor.pixel_9_pro_xl_diastolic_blood_pressure',
+    'name': 'Diastolic BP',
+    'yaxis_id': 'bp',
+    }), series_entry | combine({
+    'entity': 'sensor.health_pulse_pressure',
+    'name': 'Pulse Pressure',
+    'yaxis_id': 'pp',
+    'color_threshold': pp_colors,
+    }), series_entry | combine({
+    'entity': 'sensor.health_mean_arterial_pressure',
+    'name': 'Mean Arterial Pressure',
+    'yaxis_id': 'map',
+    'color_threshold': map_colors,
+    })] %}
+
+    {% set yaxis = [{
+    'id': 'bp',
+    'min': 50,
+    'max': 200,
+    'decimals': 0,
+    'apex_config': { 'title': { 'text': 'Blood Pressure (mmHg)' } },
+    }, {
+    'id': 'pp',
+    'min': 20,
+    'max': 100,
+    'opposite': true,
+    'decimals': 0,
+    'apex_config': {
+        'tickAmount': 8,
+        'title': { 'text': 'Pulse Pressure (mmHg)' },
+        'labels': { 'style': { 'colors': [
+        'rgb(2,136,209)', 'rgb(124,179,66)', 'rgb(124,179,66)', 'rgb(253,216,53)', 'rgb(106,27,154)',
+        'rgb(106,27,154)', 'rgb(74,20,140)', 'rgb(74,20,140)', 'rgb(74,20,140)'] } },
+    },
+    }, {
+    'id': 'map',
+    'min': 50,
+    'max': 120,
+    'opposite': true,
+    'decimals': 0,
+    'apex_config': {
+        'tickAmount': 7,
+        'title': { 'text': 'Mean Arterial Pressure (mmHg)' },
+        'labels': { 'style': { 'colors': [
+        'rgb(183,28,28)', 'rgb(239,108,0)', 'rgb(66,165,245)', 'rgb(66,165,245)',
+        'rgb(66,165,245)','rgb(30,136,229)', 'rgb(198,40,40)', 'rgb(198,40,40)'] } },
+    },
+    }] %}
+
+    {% set yaxis_ann = [{
+    'y': 0,
+    'y2': 80,
+    'yAxisIndex': 0,
+    'fillColor': 'rgba(124,179,66,0.5)',
+    'label': {
+        'text': 'Diastolic Normal <80',
+        'position': 'left',
+        'textAnchor': 'start',
+        'style': { 'background': '#7CB342', 'color': '#fff' },
+    },
+    }, {
+    'y': 80,
+    'y2': 90,
+    'yAxisIndex': 0,
+    'fillColor': 'rgba(239,108,0,0.5)',
+    'label': {
+        'text': 'Diastolic Stage 1 80–89',
+        'position': 'left',
+        'textAnchor': 'start',
+        'style': { 'background': '#EF6C00', 'color': '#fff' },
+    },
+    }, {
+    'y': 90,
+    'y2': 120,
+    'yAxisIndex': 0,
+    'fillColor': 'rgba(198,40,40,0.5)',
+    'label': {
+        'text': 'Diastolic Stage 2 ≥90',
+        'position': 'left',
+        'textAnchor': 'start',
+        'style': { 'background': '#C62828', 'color': '#fff' },
+    },
+    }, {
+    'y': 120,
+    'yAxisIndex': 0,
+    'borderColor': '#FDD835',
+    'borderWidth': 2,
+    'strokeDashArray': 6,
+    'label': {
+        'text': 'Systolic Elevated 120–129',
+        'position': 'center',
+        'textAnchor': 'start',
+        'style': { 'background': '#FDD835', 'color': '#fff' },
+    },
+    }, {
+    'y': 130,
+    'yAxisIndex': 0,
+    'borderColor': '#EF6C00',
+    'borderWidth': 2,
+    'strokeDashArray': 6,
+    'label': {
+        'text': 'Systolic Stage 1 130–139',
+        'position': 'center',
+        'textAnchor': 'start',
+        'style': { 'background': '#EF6C00', 'color': '#fff' },
+    },
+    }, {
+    'y': 140,
+    'yAxisIndex': 0,
+    'borderColor': '#C62828',
+    'borderWidth': 2,
+    'strokeDashArray': 6,
+    'label': {
+        'text': 'Systolic Stage 2 140–179',
+        'position': 'center',
+        'textAnchor': 'start',
+        'style': { 'background': '#C62828', 'color': '#fff' },
+    },
+    }, {
+    'y': 180,
+    'yAxisIndex': 0,
+    'borderColor': '#B71C1C',
+    'borderWidth': 2,
+    'strokeDashArray': 6,
+    'label': {
+        'text': 'Systolic Crisis ≥180',
+        'position': 'center',
+        'textAnchor': 'start',
+        'style': { 'background': '#B71C1C', 'color': '#fff' },
+    },
+    }] %}
+
+    {% set x_point = ((now().date() - timedelta(days=2)) | as_timestamp * 1000) | int %}
+
+    {% set points_entry = {
+    'x': x_point,
+    'marker': { 'size': 0 },
+    'label': {
+        'borderColor': 'transparent',
+        'offsetY': 0,
+    },
+    } %}
+
+    {% set sys_old = states('sensor.systolic_yesterday') | float(0) %}
+    {% set dia_old = states('sensor.diastolic_yesterday') | float(0) %}
+    {% set pp_old = states('sensor.pp_yesterday') | float(0) %}
+    {% set map_old = states('sensor.map_yesterday') | float(0) %}
+
+    {% set points_ann = [points_entry | combine({
+    'y': sys_old,
+    'yAxisIndex': 0,
+    'seriesIndex': 0,
+    'label': {
+        'text': 'Sys',
+    },
+    }, recursive=true), points_entry | combine({
+    'y': dia_old,
+    'yAxisIndex': 0,
+    'seriesIndex': 1,
+    'label': {
+        'text': 'Dia',
+    },
+    }, recursive=true), points_entry | combine({
+    'y': pp_old,
+    'yAxisIndex': 2,
+    'seriesIndex': 2,
+    'label': {
+        'text': 'PP',
+        'style': { 'color': get_color(pp_old, pp_colors) },
+    },
+    }, recursive=true), points_entry | combine({
+    'y': map_old,
+    'yAxisIndex': 3,
+    'seriesIndex': 3,
+    'label': {
+        'text': 'MAP',
+        'style': { 'color': get_color(map_old, map_colors) },
+    },
+    }, recursive=true)] %}
+
+    {{ {
+    'type': 'custom:apexcharts-card',
+    'experimental': { 'color_threshold': true },
+    'header': {
+        'title': 'Blood Pressure Metrics',
+        'show': true,
+        'show_states': true,
+        'colorize_states': true,
+    },
+    'graph_span': '30d',
+    'series': series,
+    'yaxis': yaxis,
+    'apex_config': {
+        'tooltip': { 'shared': true },
+        'annotations': { 'points': points_ann, 'yaxis': yaxis_ann },
+    },
+    } | tojson }}
+{% endmacro %}
+
+{%- macro generate_hr_chart() -%}
+
+  {# Shared series template #}
+  {%- set series_entry = {
+    'type': 'line',
+    'group_by': { 'duration': '1d', 'func': 'last' },
+  } -%}
+
+  {# Series list #}
+  {%- set series = [
+    series_entry | combine({
+      'entity': 'sensor.pixel_9_pro_xl_resting_heart_rate',
+      'name': 'Resting HR',
+      'yaxis_id': 'hr',
+      'color_threshold': rhr_colors
+    }),
+    series_entry | combine({
+      'entity': 'sensor.pixel_9_pro_xl_heart_rate_variability',
+      'name': 'HR Variability',
+      'yaxis_id': 'hrv',
+      'color_threshold': hrv_colors
+    }),
+    series_entry | combine({
+      'entity': 'sensor.resting_hr_7d_avg',
+      'name': 'RHR 7d Avg',
+      'yaxis_id': 'hr',
+      'opacity': 0.5
+    }),
+    series_entry | combine({
+      'entity': 'sensor.hrv_7d_avg',
+      'name': 'HRV 7d Avg',
+      'yaxis_id': 'hrv',
+      'opacity': 0.5
+    }),
+    series_entry | combine({
+      'entity': 'sensor.pixel_9_pro_xl_heart_rate',
+      'name': 'HR Daily Avg',
+      'yaxis_id': 'hr',
+      'opacity': 0.5,
+      'statistics': { 'type': 'mean', 'period': 'week', 'align': 'end' },
+    }),
+  ] -%}
+
+  {# Y-axes #}
+  {%- set yaxis = [
+    {
+      'id': 'hr',
+      'min': 30,
+      'max': 70,
+      'decimals': 0,
+      'apex_config': { 'title': { 'text': 'Heart Rate (bpm)' } }
+    },
+    {
+      'id': 'hrv',
+      'min': 20,
+      'max': 100,
+      'decimals': 0,
+      'opposite': true,
+      'apex_config': { 'title': { 'text': 'Heart Rate Variability (ms)' } }
+    }
+  ] -%}
+
+  {# RHR shaded bands and HRV dashed guides (right-side labels) #}
+  {%- set yaxis_ann = [
+    {
+      'y': 0, 'y2': 50, 'yAxisIndex': 0,
+      'fillColor': 'rgba(124,179,66,0.5)',
+      'label': {
+        'text': 'Athlete ≤50',
+        'position': 'left', 'textAnchor': 'start',
+        'style': { 'background': '#7CB342', 'color': '#fff' }
+      }
+    },
+    {
+      'y': 50, 'y2': 60, 'yAxisIndex': 0,
+      'fillColor': 'rgba(253,216,53,0.5)',
+      'label': {
+        'text': 'Normal ≤60',
+        'position': 'left', 'textAnchor': 'start',
+        'style': { 'background': '#FDD835', 'color': '#000' }
+      }
+    },
+    {
+      'y': 60, 'y2': 75, 'yAxisIndex': 0,
+      'fillColor': 'rgba(239,108,0,0.5)',
+      'label': {
+        'text': 'Elevated 61–75',
+        'position': 'left', 'textAnchor': 'start',
+        'style': { 'background': '#EF6C00', 'color': '#fff' }
+      }
+    },
+    {
+      'y': 75, 'y2': 200, 'yAxisIndex': 0,
+      'fillColor': 'rgba(198,40,40,0.5)',
+      'label': {
+        'text': 'High ≥76',
+        'position': 'left', 'textAnchor': 'start',
+        'style': { 'background': '#C62828', 'color': '#fff' }
+      }
+    },
+
+    { 'y': 40, 'yAxisIndex': 1, 'borderColor': '#C62828', 'borderWidth': 2, 'strokeDashArray': 6,
+      'label': { 'text': 'HRV 40 ms (Low)', 'position': 'right', 'textAnchor': 'end',
+                 'style': { 'background': '#C62828', 'color': '#fff' } } },
+    { 'y': 50, 'yAxisIndex': 1, 'borderColor': '#FFB300', 'borderWidth': 2, 'strokeDashArray': 6,
+      'label': { 'text': '50 ms (Lower Healthy)', 'position': 'right', 'textAnchor': 'end',
+                 'style': { 'background': '#FFB300', 'color': '#000' } } },
+    { 'y': 70, 'yAxisIndex': 1, 'borderColor': '#7CB342', 'borderWidth': 2, 'strokeDashArray': 6,
+      'label': { 'text': '70 ms (Good)', 'position': 'right', 'textAnchor': 'end',
+                 'style': { 'background': '#7CB342', 'color': '#fff' } } },
+    { 'y': 90, 'yAxisIndex': 1, 'borderColor': '#43A047', 'borderWidth': 2, 'strokeDashArray': 6,
+      'label': { 'text': '90 ms (Strong)', 'position': 'right', 'textAnchor': 'end',
+                 'style': { 'background': '#43A047', 'color': '#fff' } } }
+  ] -%}
+
+  {# Point labels at two days ago midnight, like your BP macro #}
+  {%- set x_point = ((now().date() - timedelta(days=2)) | as_timestamp * 1000) | int -%}
+  {%- set rhr_y = states('sensor.resting_hr_yesterday') | float(0) -%}
+  {%- set hrv_y = states('sensor.hrv_yesterday') | float(0) -%}
+  {%- set hr_y = states('sensor.hr_yesterday') | float(0) -%}
+
+  {%- set points_entry = {
+    'x': x_point,
+    'marker': { 'size': 0 },
+    'label': { 'borderColor': 'transparent', 'offsetY': 0 }
+  } -%}
+
+  {%- set points_ann = [
+    points_entry | combine({
+      'y': rhr_y, 'yAxisIndex': 0, 'seriesIndex': 0,
+      'label': { 'text': 'RHR' }
+    }, recursive=true),
+    points_entry | combine({
+      'y': hrv_y, 'yAxisIndex': 1, 'seriesIndex': 1,
+      'label': { 'text': 'HRV', 'style': { 'color': get_color(hrv_y, hrv_colors) } }
+    }, recursive=true),
+  ] -%}
+
+  {{ {
+    'type': 'custom:apexcharts-card',
+    'experimental': { 'color_threshold': true },
+    'grid_options': { 'columns': 'full' },
+    'header': {
+      'title': 'Resting Heart Rate & HRV (30 days)',
+      'show': true, 'show_states': true, 'colorize_states': true
+    },
+    'graph_span': '30d',
+    'series': series,
+    'yaxis': yaxis,
+    'apex_config': {
+      'tooltip': { 'shared': true },
+      'annotations': { 'points': points_ann, 'yaxis': yaxis_ann }
+    }
+  } | tojson }}
+{%- endmacro %}
+
+{%- macro generate_micro_trends(
+      rhr_entity='sensor.pixel_9_pro_xl_resting_heart_rate',
+      hrv_entity='sensor.pixel_9_pro_xl_heart_rate_variability',
+      resp_entity='sensor.pixel_9_pro_xl_respiratory_rate'
+) -%}
+  {# Timestamps and current values for annotation labels #}
+  {%- set now_ms = ((now() - timedelta(days=2)) | as_timestamp * 1000) | int -%}
+  {%- set rhr = states(rhr_entity) | float(0) -%}
+  {%- set hrv = states(hrv_entity) | float(0) -%}
+  {%- set resp = states(resp_entity) | float(0) -%}
+
+  {# Shared series template #}
+  {%- set s_entry = {
+    'type': 'line',
+    'group_by': { 'duration': '1d', 'func': 'last' }
+  } -%}
+
+  {%- set series = [
+    s_entry | combine({
+      'entity': rhr_entity,
+      'name': 'Resting HR',
+    }),
+    s_entry | combine({
+      'entity': hrv_entity,
+      'name': 'HR Variability'
+    }),
+    s_entry | combine({
+      'entity': resp_entity,
+      'name': 'Respiratory Rate'
+    })
+  ] -%}
+
+  {%- set points = [
+    {
+      'x': now_ms, 'y': rhr,
+      'marker': { 'size': 0 },
+      'label': {
+        'text': 'Resting HR',
+        'textAnchor': 'end',
+        'borderColor': 'transparent',
+        'style': {
+          'background': 'transparent',
+        },
+      }
+    },
+    {
+      'x': now_ms, 'y': hrv,
+      'marker': { 'size': 0 },
+      'label': {
+        'text': 'HR Variability',
+        'textAnchor': 'end',
+        'borderColor': 'transparent',
+        'style': {
+          'background': 'transparent',
+        },
+      }
+    },
+    {
+      'x': now_ms, 'y': resp,
+      'marker': { 'size': 0 },
+      'label': {
+        'text': 'Respiratory Rate',
+        'textAnchor': 'end',
+        'borderColor': 'transparent',
+        'style': {
+          'background': 'transparent',
+        },
+      }
+    }
+  ] -%}
+
+  {{ {
+    'type': 'custom:apexcharts-card',
+    'header': { 'title': 'Micro Trends (14d)', 'show': true },
+    'graph_span': '14d',
+    'apex_config': {
+      'chart': { 'sparkline': { 'enabled': true } },
+      'legend': { 'show': false },
+      'annotations': {
+        'position': 'front',
+        'points': points
+      }
+    },
+    'series': series
+  } | tojson }}
+{%- endmacro -%}
+
+{# ===========================
+   Plotly horizontal bar chart
+   BP Time in Range (30 days)
+   =========================== #}
+
+{%- macro clamp_pct(x) -%}
+  {{ ([ ([x|float, 0]|max), 100 ] | min) }}
+{%- endmacro %}
+
+{%- macro generate_bp_time_in_range_plotly(
+      n='sensor.bp_time_normal_30d',
+      e='sensor.bp_time_elevated_30d',
+      s1='sensor.bp_time_stage_1_30d',
+      s2='sensor.bp_time_stage_2_30d',
+      title='BP Time in Range (30 d)'
+) -%}
+
+  {# --- Pull and clamp values --- #}
+  {% set N  = clamp_pct(states(n))  %}
+  {% set E  = clamp_pct(states(e))  %}
+  {% set S1 = clamp_pct(states(s1)) %}
+  {% set S2 = clamp_pct(states(s2)) %}
+
+  {{ {
+    'type': 'custom:plotly-graph',
+    'title': title,
+    'defaults': { 'type': 'bar' },
+    'traces': [{
+      'name': 'Percent of time',
+      'orientation': 'h',
+      'x': [ N, E, S1, S2 ],
+      'y': [ 'Normal', 'Elevated', 'Stage 1+', 'Stage 2+' ],
+      'marker': {
+        'color': [ '#7CB342', '#FDD835', '#EF6C00', '#C62828' ]
+      },
+      'text': [
+        (N | round(0)) ~ '%',
+        (E | round(0)) ~ '%',
+        (S1 | round(0)) ~ '%',
+        (S2 | round(0)) ~ '%'
+      ],
+      'textposition': 'outside',
+      'cliponaxis': False
+    }],
+    'layout': {
+      'xaxis': {
+        'range': [0, 100],
+        'ticksuffix': '%',
+        'fixedrange': True,
+        'title': ''
+      },
+      'yaxis': { 'automargin': True, 'title': '' },
+      'margin': { 'l': 120, 'r': 20, 't': 30, 'b': 20 },
+      'showlegend': False,
+      'barmode': 'group',
+      'hovermode': 'closest',
+      'paper_bgcolor': 'rgba(0,0,0,0)',
+      'plot_bgcolor': 'rgba(0,0,0,0)'
+    }
+  } | tojson }}
+{%- endmacro %}

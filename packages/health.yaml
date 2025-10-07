@@ -1,0 +1,569 @@
+# ================================
+# Health data: sensors + helpers
+# File: packages/health.yaml
+# ================================
+
+homeassistant:
+  customize:
+    input_number.health_height_cm:
+      icon: "mdi:ruler"
+
+# --------------------------------
+# Helpers you can tweak in UI later
+# --------------------------------
+input_number:
+  health_height_cm:
+    name: Height
+    min: 120
+    max: 220
+    step: 0.5
+    unit_of_measurement: "cm"
+    mode: box
+    icon: "mdi:ruler"
+
+template:
+  - sensor:
+
+      - name: "Health BMI"
+        unique_id: dabbc428-ffea-4dc3-a25d-c320636cdfd5
+        icon: mdi:scale-bathroom
+        unit_of_measurement: "kg/m²"
+        state_class: measurement
+        state: >-
+          {% set w = states('sensor.pixel_9_pro_xl_weight') | float(0) * 0.453592 %}
+          {% set h_cm = states('input_number.health_height_cm') | float(none) %}
+          {% set h_m = iif(h_cm | is_number, h_cm / 100.0, float(none)) %}
+          {% if w | is_number and h_m | is_number and h_m > 0 %}
+            {{ (w / (h_m * h_m)) | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+        availability: "{{ has_value('input_number.health_height_cm') }}"
+
+      - name: "Health BP Combined"
+        unique_id: 69f907c0-d407-4042-9059-aedb5d7742e1
+        icon: mdi:heart-pulse
+        state: >-
+          {% set s = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | int(0) %}
+          {% set d = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | int(0) %}
+          {% if s > 0 and d > 0 %}
+            {{ s ~ '/' ~ d }}
+          {% else %}
+            unknown
+          {% endif %}
+        attributes:
+          systolic: "{{ states('sensor.pixel_9_pro_xl_systolic_blood_pressure') }}"
+          diastolic: "{{ states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') }}"
+
+      - name: "Health BP Category"
+        unique_id: 6ee07e10-8966-47bb-bdbc-7d60b3d0580b
+        icon: mdi:heart-pulse
+        state: >-
+          {% set s = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | int(0) %}
+          {% set d = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | int(0) %}
+          {% if s == 0 or d == 0 %}
+            unknown
+          {% elif s < 120 and d < 80 %}
+            Normal
+          {% elif 120 <= s < 130 and d < 80 %}
+            Elevated
+          {% elif (130 <= s < 140) or (80 <= d < 90) %}
+            High Stage 1
+          {% elif (140 <= s) or (90 <= d) %}
+            High Stage 2
+          {% elif s > 180 or d > 120 %}
+            Hypertensive Crisis
+          {% else %}
+            Unknown
+          {% endif %}
+        attributes:
+          systolic: "{{ states('sensor.pixel_9_pro_xl_systolic_blood_pressure') }}"
+          diastolic: "{{ states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') }}"
+
+      # Pulse Pressure = Systolic - Diastolic
+      - name: "Health Pulse Pressure"
+        unique_id: 5ace85be-c469-432a-8c53-c69e6d5a1af0
+        unit_of_measurement: "mmHg"
+        state_class: measurement
+        state: >-
+          {% set sys = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | float(0) %}
+          {% set dia = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | float(0) %}
+          {% if sys > 0 and dia > 0 %}
+            {{ (sys - dia) | round(0) }}
+          {% else %}
+            unknown
+          {% endif %}
+        attributes:
+          systolic: "{{ states('sensor.pixel_9_pro_xl_systolic_blood_pressure') }}"
+          diastolic: "{{ states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') }}"
+
+      # Mean Arterial Pressure (MAP) = (SBP + 2*DBP)/3
+      - name: "Health Mean Arterial Pressure"
+        unique_id: ba804400-32b4-4320-8d55-bc71c5e16a0a
+        unit_of_measurement: "mmHg"
+        state_class: measurement
+        state: >-
+          {% set sys = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | float(0) %}
+          {% set dia = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | float(0) %}
+          {% if sys > 0 and dia > 0 %}
+            {{ ((sys + 2 * dia) / 3) | round(0) }}
+          {% else %}
+            unknown
+          {% endif %}
+        attributes:
+          systolic: "{{ states('sensor.pixel_9_pro_xl_systolic_blood_pressure') }}"
+          diastolic: "{{ states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') }}"
+
+      # Z-score against the 7d mean/std for quick anomaly detection
+      - name: "Respiratory Rate z-score"
+        unique_id: 264969fd-3914-465d-b96a-cd287e4efd1d
+        unit_of_measurement: ""
+        icon: mdi:chart-line
+        availability: "{{ has_value('sensor.respiratory_rate_7d_std') }}"
+        state_class: measurement
+        state: >-
+          {% set rr = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(0) %}
+          {% set mean = states('sensor.respiratory_rate_7d_avg') | float(0) %}
+          {% set std = states('sensor.respiratory_rate_7d_std') | float(0) %}
+          {% if rr > 0 and std > 0 %}
+            {{ ((rr - mean) / std) | round(2) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+      # Categorical label
+      - name: "Respiratory Rate Category"
+        unique_id: 75a2bdc2-7c17-452d-8c38-bef27385f5e1
+        state: >-
+          {% set rr = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(0) %}
+          {% if rr == 0 %}
+            unknown
+          {% elif rr < 10 %} 
+            Low
+          {% elif rr <= 20 %} 
+            Normal
+          {% elif rr <= 24 %} 
+            Elevated
+          {% else %} 
+            High 
+          {% endif %}
+        icon: >-
+          {% set s = states('sensor.respiratory_rate_category') %}
+          {% if s == 'Low' %} 
+            mdi:arrow-down-bold
+          {% elif s == 'Normal' %} 
+            mdi:check
+          {% elif s == 'Elevated' %} 
+            mdi:arrow-up-bold
+          {% elif s == 'High' %} 
+            mdi:alert
+          {% else %} 
+            mdi:help-circle-outline 
+          {% endif %}
+
+      - name: "Recovery Status"
+        unique_id: 6a4b3a5e-358c-4eb2-85fd-01bce39e1f49
+        state: >-
+          {% set hrv = states('sensor.pixel_9_pro_xl_heart_rate_variability') | float(0) %}
+          {% set rhr = states('sensor.pixel_9_pro_xl_resting_heart_rate') | float(0) %}
+          {% set rr  = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(0) %}
+          {% if hrv > 0 and rhr > 0 and rr > 0 %}
+            {% if hrv >= 60 and rhr <= 65 and rr <= 20 %}
+              Good
+            {% elif hrv >= 45 and rhr <= 75 and rr <= 22 %}
+              OK
+            {% else %}
+              Strained
+            {% endif %}
+          {% else %} 
+            unknown 
+          {% endif %}
+        icon: >-
+          {% set s = states('sensor.recovery_status') %}
+          {% if s == 'Good' %} 
+            mdi:heart
+          {% elif s == 'OK' %} 
+            mdi:heart-half-full
+          {% elif s == 'Strained' %} 
+            mdi:heart-broken
+          {% else %} 
+            mdi:heart-outline 
+          {% endif %}
+
+      # --- BP stage as a number (AHA/ACC) for logic/chart coloring ---
+      - name: "BP Stage (Numeric)"
+        unique_id: 7625b9e4-7fbd-4876-bf90-bc700393bb6a
+        icon: mdi:numeric
+        state: >-
+          {% set s = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | int(0) %}
+          {% set d = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | int(0) %}
+          {% if s == 0 or d == 0 %}
+            unknown
+          {% elif s < 120 and d < 80 %}
+            0
+          {% elif 120 <= s < 130 and d < 80 %} 
+            1
+          {% elif (130 <= s < 140) or (80 <= d < 90) %} 
+            2
+          {% elif (140 <= s) or (90 <= d) %} 
+            3
+          {% elif s >= 180 or d >= 120 %} 
+            4
+          {% else %} 
+            unknown 
+          {% endif %}
+
+      # --- Hypertension phenotype flags ---
+      - name: "BP Phenotype"
+        unique_id: ae33d38c-0678-4d44-a1a7-dee7392e403b
+        icon: mdi:heart-pulse
+        state: >-
+          {% set s = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | int(0) %}
+          {% set d = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | int(0) %}
+          {% if s == 0 or d == 0 %} 
+            unknown
+          {% elif s >= 130 and d < 80 %} 
+            ISH
+          {% elif s < 130 and d >= 80 %} 
+            IDH
+          {% elif s >= 130 and d >= 80 %} 
+            SDH
+          {% else %} 
+            None 
+          {% endif %}
+
+      # --- Pulse Pressure Category ---
+      - name: "Pulse Pressure Category"
+        unique_id: 605c33ce-106a-4f3b-ba49-497d396a9ffb
+        icon: mdi:arrow-expand-vertical
+        state: >-
+          {% set pp = states('sensor.health_pulse_pressure') | float(0) %}
+          {% if pp == 0 %} 
+            unknown
+          {% elif pp < 30 %} 
+            Low
+          {% elif pp < 50 %} 
+            Typical
+          {% elif pp < 60 %} 
+            Watch
+          {% elif pp < 80 %} 
+            Elevated
+          {% else %} 
+            Very High 
+          {% endif %}
+
+      # --- MAP Category ---
+      - name: "MAP Category"
+        unique_id: e4a0b434-d754-47e1-93d5-b9a07a61c001
+        icon: mdi:chart-bell-curve
+        state: >-
+          {% set map = states('sensor.health_mean_arterial_pressure') | float(0) %}
+          {% if map==0 %} 
+            unknown
+          {% elif map < 60 %} 
+            Low
+          {% elif map < 70 %} 
+            Borderline Low
+          {% elif map <= 100 %} 
+            Normal
+          {% elif map <= 110 %} 
+            High
+          {% else %} 
+            Very High 
+          {% endif %}
+
+      # --- Simple composite score (0–100): higher is better ---
+      - name: "Recovery Score"
+        unique_id: ca96ee6a-ccdd-4c7a-9caa-89676ab9b425
+        icon: mdi:heart
+        unit_of_measurement: score
+        state_class: measurement
+        state: >-
+          {# Normalize HRV, RHR, RR into 0..100 bands and average #}
+          {% set s = namespace(
+            hrv = states('sensor.pixel_9_pro_xl_heart_rate_variability') | float(none),
+            rhr = states('sensor.pixel_9_pro_xl_resting_heart_rate') | float(none),
+            rr = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(none)
+          ) %}
+
+          {% if s.hrv is number and s.rhr is number and s.rr is number %}
+
+            {# Scale to 0..100, then clamp with list-based min/max #}
+            {% set hrv_s = ((s.hrv - 40) / (90 - 40) * 100) %}
+            {% set hrv_s = [[hrv_s, 0] | max, 100] | min %}
+
+            {% set rhr_s = ((80 - s.rhr) / (80 - 55) * 100) %}
+            {% set rhr_s = [[rhr_s, 0] | max, 100] | min %}
+
+            {% set rr_s  = ((24 - s.rr) / (24 - 12) * 100) %}
+            {% set rr_s  = [[rr_s, 0]  | max, 100] | min %}
+
+            {{ ((hrv_s + rhr_s + rr_s) / 3) | round(0) }}
+
+          {% else %}
+            unknown
+          {% endif %}
+        attributes:
+          hrv: "{{ states('sensor.pixel_9_pro_xl_heart_rate_variability') }}"
+          rhr: "{{ states('sensor.pixel_9_pro_xl_resting_heart_rate') }}"
+          rr: "{{ states('sensor.pixel_9_pro_xl_respiratory_rate') }}"
+
+  # --------------------------------
+  # Simple alerts
+  # --------------------------------
+  - binary_sensor:
+      - name: "Health BP High Alert"
+        unique_id: abc6ae23-4de9-4d7c-a92d-34959e170ac5
+        device_class: problem
+        state: >
+          {% set cat = states('sensor.health_bp_category') %}
+          {{ cat in ['High Stage 1', 'High Stage 2', 'Hypertensive Crisis'] }}
+      - name: "Health Resting HR High"
+        unique_id: a916368e-6d5b-486f-8188-ee3d3a4078c6
+        device_class: problem
+        state: >
+          {% set r = states('sensor.pixel_9_pro_xl_resting_heart_rate') | int(0) %}
+          {{ r >= 90 }}
+      - name: "Respiratory Rate Alert"
+        unique_id: 5ab0bcd8-2509-47c0-8627-8f7f67a2b894
+        device_class: problem
+        state: >-
+          {% set rr = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(0) %}
+          {% set z = states('sensor.respiratory_rate_z_score') | float(0) %}
+          {{ rr > 24 or z >= 2.0 }}
+      - name: "BP Crisis Alert"
+        unique_id: d5b2a2f3-67f2-472e-9484-986d955547d7
+        device_class: problem
+        state: >-
+          {% set stage = states('sensor.bp_stage_numeric') %}
+          {{ stage in ['4', 4] }}
+      - name: "PP Elevated Alert"
+        unique_id: 46dd8977-80bb-4f7d-9f4d-bc73932b061c
+        device_class: problem
+        state: "{{ states('sensor.pulse_pressure_category') in ['Elevated', 'Very High'] }}"
+      - name: "MAP Out-of-Range Alert"
+        unique_id: 3bf30b79-4f75-4aed-8466-c361a09968cf
+        device_class: problem
+        state: "{{ states('sensor.map_category') in ['Low', 'Borderline Low', 'High', 'Very High'] }}"
+      - name: "BP Phenotype Present"
+        unique_id: 10b45026-577e-4735-ade2-c5c1762deebf
+        device_class: problem
+        state: "{{ states('sensor.bp_phenotype') in ['ISH', 'IDH', 'SDH'] }}"
+
+  - sensor:
+      - name: "BP % Normal (30d)"
+        unique_id: c9e2c404-b080-47ba-8ad4-2d9329565f2d
+        unit_of_measurement: '%'
+        state: >
+          {% set hrs = states('sensor.bp_time_normal_30d') | float(0) %}
+          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+      - name: "BP % Elevated (30d)"
+        unique_id: 5ce798c8-d3cf-4cf1-b5c2-af4a5d588736
+        unit_of_measurement: '%'
+        state: >
+          {% set hrs = states('sensor.bp_time_elevated_30d') | float(0) %}
+          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+      - name: "BP % Stage 1+ (30d)"
+        unique_id: 5041d13b-2334-4da6-82c4-39ae29eff576
+        unit_of_measurement: '%'
+        state: >
+          {% set hrs = states('sensor.bp_time_stage_1_30d') | float(0) %}
+          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+      - name: "BP % Stage 2+ (30d)"
+        unique_id: a16efc38-ff5e-4130-9c84-df6c57341556
+        unit_of_measurement: '%'
+        state: >
+          {% set hrs = states('sensor.bp_time_stage_2_30d') | float(0) %}
+          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+
+  - trigger:
+      - platform: time
+        at: "00:00:05"
+    sensor:
+      - name: "Systolic Yesterday"
+        state: "{{ states('sensor.systolic_yesterday_stats') }}"
+      - name: "Diastolic Yesterday"
+        state: "{{ states('sensor.diastolic_yesterday_stats') }}"
+      - name: "PP Yesterday"
+        state: "{{ states('sensor.pp_yesterday_stats') }}"
+      - name: "MAP Yesterday"
+        state: "{{ states('sensor.map_yesterday_stats') }}"
+      - name: "Resting HR Yesterday"
+        state: "{{ states('sensor.resting_hr_yesterday_stats') }}"
+      - name: "HRV Yesterday"
+        state: "{{ states('sensor.hrv_yesterday_stats') }}"
+      - name: "HR Yesterday"
+        state: "{{ states('sensor.hr_daily_avg') }}"
+
+# --------------------------------
+# 7-day rolling averages
+# --------------------------------
+sensor:
+  - platform: statistics
+    name: "HR Daily Avg"
+    unique_id: 4cafa403-cafd-4d80-8d4c-f0c9d4d8cc1c
+    entity_id: sensor.pixel_9_pro_xl_heart_rate
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "Resting HR 7d Avg"
+    unique_id: 93076d77-8c13-41d2-83b3-c3c2e6ea35e5
+    entity_id: sensor.pixel_9_pro_xl_resting_heart_rate
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "HRV 7d Avg"
+    unique_id: 61c51885-66ef-4f5e-ba45-8b73ce83d18f
+    entity_id: sensor.pixel_9_pro_xl_heart_rate_variability
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "BP Systolic 7d Avg"
+    unique_id: a357d67e-712c-4780-af2a-d607d26706fe
+    entity_id: sensor.pixel_9_pro_xl_systolic_blood_pressure
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "BP Diastolic 7d Avg"
+    unique_id: a80ab49b-f523-4fe8-8385-e7f305ac5b7d
+    entity_id: sensor.pixel_9_pro_xl_diastolic_blood_pressure
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "Pulse Pressure 7d Avg"
+    unique_id: becf2fdb-03d9-42a6-8b44-f03a6f08dae6
+    entity_id: sensor.health_pulse_pressure
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "MAP 7d Avg"
+    unique_id: cdcba940-e5c6-459d-b1eb-ecbc565431a4
+    entity_id: sensor.health_mean_arterial_pressure
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "Respiratory Rate 7d Avg"
+    unique_id: 0db854cb-c670-46d5-bb40-391fa91baa00
+    entity_id: sensor.pixel_9_pro_xl_respiratory_rate
+    state_characteristic: mean
+    max_age:
+      days: 7
+  - platform: statistics
+    name: "Respiratory Rate 7d StdDev"
+    unique_id: 882fc8a0-baae-4e56-8671-f858da1f5ae9
+    entity_id: sensor.pixel_9_pro_xl_respiratory_rate
+    state_characteristic: standard_deviation
+    max_age:
+      days: 7
+  - platform: history_stats
+    name: "BP Time Normal (30d)"
+    unique_id: 03fe09e9-4840-441e-a244-30e767c451c1
+    entity_id: sensor.health_bp_category
+    state: "Normal"
+    type: time
+    duration:
+      days: 30
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: "BP Time Elevated (30d)"
+    unique_id: 820bac91-baec-4667-8eea-9a0839206ec2
+    entity_id: sensor.health_bp_category
+    state: "Elevated"
+    type: time
+    duration:
+      days: 30
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: "BP Time Stage 1+ (30d)"
+    unique_id: c03a01d6-7057-47ff-a7aa-8c579d0bdf4a
+    entity_id: sensor.health_bp_category
+    state: "High Stage 1"
+    type: time
+    duration:
+      days: 30
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: "BP Time Stage 2+ (30d)"
+    unique_id: a526b45b-f96f-49d7-ae5e-b220b025ae0f
+    entity_id: sensor.health_bp_category
+    state: "High Stage 2"
+    type: time
+    duration:
+      days: 30
+    end: "{{ now() }}"
+  - platform: statistics
+    name: "Systolic Yesterday Stats"
+    entity_id: sensor.pixel_9_pro_xl_systolic_blood_pressure
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "Diastolic Yesterday Stats"
+    entity_id: sensor.pixel_9_pro_xl_diastolic_blood_pressure
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "PP Yesterday Stats"
+    entity_id: sensor.health_pulse_pressure
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "MAP Yesterday Stats"
+    entity_id: sensor.health_mean_arterial_pressure
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "Resting HR Yesterday Stats"
+    entity_id: sensor.pixel_9_pro_xl_resting_heart_rate
+    state_characteristic: mean
+    max_age:
+      days: 1
+  - platform: statistics
+    name: "HRV Yesterday Stats"
+    entity_id: sensor.pixel_9_pro_xl_heart_rate_variability
+    state_characteristic: mean
+    max_age:
+      days: 1
+
+binary_sensor:
+  - platform: trend
+    sensors:
+
+      rhr_rising:
+        friendly_name: "Trend RHR Rising"
+        unique_id: 6d1c2622-e081-4afd-82f2-f6f45a735bbf
+        entity_id: sensor.pixel_9_pro_xl_resting_heart_rate
+        sample_duration: 172800        # 48h window
+        min_gradient: 0.00002          # ≈ +1.7 bpm/day  (1.7 / 86400)
+
+      hrv_falling:
+        friendly_name: "Trend HRV Falling"
+        unique_id: 0eaefbec-3314-4315-bdc5-a255f2cc6df5
+        entity_id: sensor.pixel_9_pro_xl_heart_rate_variability
+        sample_duration: 172800
+        min_gradient: 0.000023         # ≈ -2.0 ms/day magnitude
+        invert: true                   # 'on' when decreasing faster than threshold
+
+      sbp_rising:
+        friendly_name: "Trend SBP Rising"
+        unique_id: 1277f50f-4cb6-411a-9901-25f77d24fc3a
+        entity_id: sensor.pixel_9_pro_xl_systolic_blood_pressure
+        sample_duration: 259200        # 72h
+        min_gradient: 0.000035         # ≈ +3.0 mmHg/day
+
+      dbp_rising:
+        friendly_name: "Trend DBP Rising"
+        unique_id: 351c374e-2851-4abb-b7dc-f908fa1ed293
+        entity_id: sensor.pixel_9_pro_xl_diastolic_blood_pressure
+        sample_duration: 259200
+        min_gradient: 0.000029         # ≈ +2.5 mmHg/day
