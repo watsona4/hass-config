@@ -42,6 +42,10 @@ recorder:
     entities:
       - device_tracker.rv_gps
     entity_globs:
+      - sensor.*_weight_projection
+      - sensor.*_bodyfat_projection
+      - sensor.*_weight_events
+      - sensor.*_bodyfat_events
       - sensor.google_pollen_*
       - sensor.openmeteo_*
       - sensor.pollen_species_list_*_today
@@ -85,6 +89,8 @@ lovelace:
     - url: /local/community/lovelace-card-mod/card-mod.js
       type: module
     - url: /local/community/stack-in-card/stack-in-card.js
+      type: module
+    - url: /local/community/flex-table-card/flex-table-card.js
       type: module
   dashboards:
     lovelace-environment:
