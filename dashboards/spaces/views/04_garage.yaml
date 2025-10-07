@@ -110,6 +110,12 @@ cards:
       - entity: sensor.minisplit_power_clamp_power_b
       - app: default
       - width: narrow
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.minisplits_total_power
+      - app: default
+      - width: narrow
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Utility Meters
