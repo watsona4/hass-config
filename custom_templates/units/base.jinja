@@ -12,7 +12,13 @@
     },
     'time': {
         'base': 's',
-        'map': { 'min': 60, 'h': 3600, 'd': 86400 }
+        'map': { 'min': 60, 'h': 3600, 'd': 86400, 'wk': 604800, 'yr': 31556952 }
+    },
+    'mass': {
+        'base': 'kg',
+        'map': { 'µg': 1e-9, 'mg': 1e-6, 'g': 0.001, 'kg': 1, 't': 1000,
+            'oz': 0.028349523125, 'lb': 0.45359237, 'st': 6.35029318,
+        }
     },
     'power': {
         'base': 'W',
@@ -216,7 +222,7 @@
     {%- set fu = normalize_unit(from_unit|string) -%}
     {%- set tu = normalize_unit(to_unit|string) -%}
     {%- if fu == tu -%}
-        {{- {'value': value|float(0), 'unit': tu} | tojson -}}
+        {{- {'value': value|float(0) , 'unit': tu} | tojson -}}
     {%- else -%}
         {%- set fp = split_compound_unit(fu) | from_json -%}
         {%- set tp = split_compound_unit(tu) | from_json -%}
@@ -292,12 +298,16 @@
         {%- set s = basev.value|float(none) -%}
         {%- set sign = '-' if s < 0 else '' -%}
         {%- set a = (0 - s) if s < 0 else s -%}
-        {%- if a >= 1 -%}
+        {%- if a >= 30 * 86400 -%} {# >= 30 days → simplify to days #}
+            {{- sig_format(a / 86400) ~ ' days' -}}
+        {%- elif a >= 1 -%}
             {{- sign ~ (timedelta(seconds=(a|round(0) |int(none)))|string) -}}
-        {%- elif a >= 0.001 -%}
-            {{- sign ~ ((a*1000)|round(0) |int(none)) ~ ' ms' -}}
         {%- else -%}
-            {{- sign ~ ((a*1000000)|round(0) |int(none)) ~ ' µs' -}}
+            {# sub-second: use SI prefixes on seconds via autoscale_prefix #}
+            {%- set scaled = autoscale_prefix(a, 'SI', 1000) | from_json -%}
+            {%- set val = scaled.value | float(0) -%}
+            {%- set pref = scaled.prefix -%}
+            {{- sign ~ sig_format(val) ~ ' ' ~ pref ~ 's' -}}
         {%- endif -%}
     {%- endif -%}
 {%- endmacro %}
@@ -365,4 +375,8 @@
 
 {% macro u_humanize_entity(entity_id) -%}
     {{- u_humanize_value(states(entity_id) , state_attr(entity_id, 'unit_of_measurement')) -}}
+{%- endmacro %}
+
+{% macro u_humanize_attr(entity_id, attr, unit) -%}
+    {{- u_humanize_value(state_attr(entity_id, attr) , unit) -}}
 {%- endmacro %}
