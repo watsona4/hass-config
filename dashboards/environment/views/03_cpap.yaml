@@ -121,9 +121,24 @@ sections:
               end: day
             apex_config:
               yaxis:
-                min: 0
-                title:
-                  text: hours
+                - id: usage
+                  min: 0
+                  forceNiceScale: true
+                  title:
+                    text: hours
+                  labels:
+                    formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+                - id: score
+                  min: 0
+                  max: 100
+                  forceNiceScale: true
+                  opposite: true
+                  title:
+                    text: myAir Score
+                  labels:
+                    formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+              tooltip:
+                shared: true
               annotations:
                 yaxis:
                   - 'y': 6
@@ -136,12 +151,23 @@ sections:
               - entity: sensor.cpap_usage_minutes
                 name: Hours used
                 type: column
+                yaxis_id: usage
                 group_by:
                   duration: 1d
                   func: last
                 transform: return x / 60;
                 show:
                   extremas: true
+              - entity: sensor.cpap_total_myair_score
+                name: myAir Score
+                type: line
+                yaxis_id: score
+                group_by:
+                  duration: 1d
+                  func: last
+                show:
+                  extremas: true
+                stroke_width: 3
   - type: grid
     cards:
       - type: vertical-stack
@@ -262,9 +288,24 @@ sections:
               end: day
             apex_config:
               yaxis:
-                min: 0
-                title:
-                  text: hours
+                - id: usage
+                  min: 0
+                  forceNiceScale: true
+                  title:
+                    text: hours
+                  labels:
+                    formatter: EVAL:function(val) { return Number(val).toFixed(1); }
+                - id: score
+                  min: 0
+                  max: 100
+                  forceNiceScale: true
+                  opposite: true
+                  title:
+                    text: myAir Score
+                  labels:
+                    formatter: EVAL:function(val) { return Number(val).toFixed(0); }
+              tooltip:
+                shared: true
               annotations:
                 yaxis:
                   - 'y': 6
@@ -277,9 +318,20 @@ sections:
               - entity: sensor.ashley_cpap_usage_minutes
                 name: Hours used
                 type: column
+                yaxis_id: usage
                 group_by:
                   duration: 1d
                   func: last
                 transform: return x / 60;
                 show:
                   extremas: true
+              - entity: sensor.ashley_cpap_total_myair_score
+                name: myAir Score
+                type: line
+                yaxis_id: score
+                group_by:
+                  duration: 1d
+                  func: last
+                show:
+                  extremas: true
+                stroke_width: 3
