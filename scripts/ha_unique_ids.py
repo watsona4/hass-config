@@ -172,6 +172,8 @@ def main():
 
     yaml = YAML(typ="rt")
     yaml.preserve_quotes = True
+    yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.width = 4096  # avoid line wrapping
 
     try:
         docs = list(yaml.load_all(text))
