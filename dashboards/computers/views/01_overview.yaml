@@ -112,3 +112,23 @@ sections:
           - i_services_display: binary_sensor.opnsense_display_services
           - i_services_glob: binary_sensor.opnsense*_service_*
           - i_containers_display: binary_sensor.opnsense_display_containers
+      - type: custom:decluttering-card
+        template: machine_summary
+        variables:
+          - i_name: RaspberryPi
+          - i_uptime: sensor.raspberrypi4_uptime_s
+          - i_cpu_pct: sensor.raspberrypi4_cpu_utilization
+          - i_load1: sensor.raspberrypi4_cpu_load_1m
+          - i_mem_pct: sensor.raspberrypi4_memory_percent
+          - i_mem_used: sensor.raspberrypi4_memory_used
+          - i_disk_pct: sensor.raspberrypi4_fs_percent
+          - i_disk_free: sensor.raspberrypi4_fs_free
+          - i_temp: sensor.raspberrypi4_cpu_temp_cpu_thermal_0
+          - i_gpu_pct: sensor.raspberrypi4_gpu_utilization
+          - i_tpu_temp: sensor.raspberrypi4_coral_apex_0_temp
+          - i_updates: sensor.raspberrypi4_updates_pending
+          - i_status: sensor.raspberrypi4_overall_status_summary
+          - i_alerts_any: binary_sensor.raspberrypi4_status_alarm
+          - i_services_display: binary_sensor.raspberrypi4_display_services
+          - i_services_glob: binary_sensor.raspberrypi4*_service_*
+          - i_containers_display: binary_sensor.raspberrypi4_display_containers

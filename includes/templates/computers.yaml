@@ -15,6 +15,10 @@
       device_class: problem
       availability: "{{ has_value('binary_sensor.opnsense_overall_status_ok') }}"
       state: "{{ is_state('binary_sensor.opnsense_overall_status_ok','off') }}"
+    - name: RaspberryPi Status Alarm
+      device_class: problem
+      availability: "{{ has_value('binary_sensor.raspberrypi4_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.raspberrypi4_overall_status_ok','off') }}"
 
 - binary_sensor:
     - name: Laptop Display Containers
@@ -26,6 +30,8 @@
         {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.frigate.*_container_.*$") %}
         {{ entities | selectattr('state','eq','off') | list | count > 0 }}
     - name: OPNSense Display Containers
+      state: "{{ false }}"
+    - name: RaspberryPi Display Containers
       state: "{{ false }}"
 
 - binary_sensor:
@@ -44,6 +50,10 @@
     - name: OPNSense Display Services
       state: >
         {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.opnsense.*_service_.*$") %}
+        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
+    - name: RaspberryPi Display Services
+      state: >
+        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.raspberrypi4.*_service_.*$") %}
         {{ entities | selectattr('state','eq','off') | list | count > 0 }}
 
 - sensor:
@@ -86,6 +96,12 @@
     - name: OPNSense ada0 Data Rate
       availability: "{{ has_value('sensor.opnsense_disk_ada0_read_rate') or has_value('sensor.opnsense_disk_ada0_write_rate') }}"
       state: "{{ states('sensor.opnsense_disk_ada0_read_rate')|float(0) + states('sensor.opnsense_disk_ada0_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: RaspberryPi mmcblk0 Data Rate
+      availability: "{{ has_value('sensor.raspberrypi4_disk_mmcblk0_read_rate') or has_value('sensor.raspberrypi4_disk_mmcblk0_write_rate') }}"
+      state: "{{ states('sensor.raspberrypi4_disk_mmcblk0_read_rate')|float(0) + states('sensor.raspberrypi4_disk_mmcblk0_write_rate')|float(0) }}"
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement
