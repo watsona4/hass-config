@@ -287,6 +287,9 @@
     trigger: state
     from: 'off'
     to: 'on'
+  - trigger: time_pattern
+    minutes: /1
+    id: Refresh
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -295,7 +298,9 @@
   - choose:
     - conditions:
       - condition: trigger
-        id: Front Hallway
+        id:
+        - Front Hallway
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -314,9 +319,12 @@
             - cover.front_hallway_window
             action: Open
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Study South
+        id:
+        - Study South
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -347,10 +355,12 @@
             switches:
             - binary_sensor.study_south_closed_brightness
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
         id:
         - Study West
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -379,9 +389,12 @@
             switches:
             - binary_sensor.study_west_closed_brightness
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Guest South
+        id:
+        - Guest South
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -405,9 +418,12 @@
             - binary_sensor.guest_bedroom_closed_button
             action: Open
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: West
+        id:
+        - West
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2530,6 +2546,9 @@
     trigger: state
     from: 'on'
     to: 'off'
+  - trigger: time_pattern
+    id: Refresh
+    minutes: /1
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -2538,7 +2557,9 @@
   - choose:
     - conditions:
       - condition: trigger
-        id: Breakfast Room
+        id:
+        - Breakfast Room
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2560,9 +2581,12 @@
             - binary_sensor.west_windows_closed_temperature
             - binary_sensor.breakfast_room_closed_button
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Kitchen
+        id:
+        - Kitchen
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2583,9 +2607,12 @@
             - cover.kitchen_right_window
             action: Open
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Living Room
+        id:
+        - Living Room
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2612,9 +2639,12 @@
             - binary_sensor.living_room_closed_tv
             - binary_sensor.living_room_closed_button
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Study South
+        id:
+        - Study South
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2647,9 +2677,12 @@
             switches:
             - binary_sensor.study_south_closed_temperature
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Study West
+        id:
+        - Study West
+        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2681,9 +2714,12 @@
             - binary_sensor.west_windows_closed_temperature
             - binary_sensor.study_west_closed_temperature
           action: script.window_position
+  - choose:
     - conditions:
       - condition: trigger
-        id: Laundry Room
+        id:
+        - Laundry Room
+        - Refresh
       sequence:
       - if:
         - condition: state
