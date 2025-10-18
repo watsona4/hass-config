@@ -14,6 +14,9 @@ frigate/**
 hacs/**
 !hacs/.gitkeep
 
+ha_strava/**
+!ha_strava/.gitkeep
+
 icloud3/**
 !icloud3/.gitkeep
 
@@ -37,6 +40,9 @@ nws_alerts/**
 
 resmed_myair/**
 !resmed_myair/.gitkeep
+
+spook/**
+!spook/.gitkeep
 
 tplink_deco/**
 !tplink_deco/.gitkeep
