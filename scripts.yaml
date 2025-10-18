@@ -80,9 +80,9 @@ open_all_windows:
           action: script.window_position
     - data:
         switches:
-        - binary_sensor.guest_bedroom_presence_presence_sensor_1
         - binary_sensor.guest_south_closed_temperature
         - binary_sensor.guest_bedroom_closed_button
+        - binary_sensor.guest_bedroom_closed_presence
         action: Open
         entities:
         - cover.guest_bedroom_south_window
@@ -98,9 +98,9 @@ open_all_windows:
       action: script.window_position
     - data:
         switches:
-        - binary_sensor.guest_bedroom_presence_presence_sensor_1
         - binary_sensor.west_windows_closed_temperature
         - binary_sensor.guest_bedroom_closed_button
+        - binary_sensor.guest_bedroom_closed_presence
         action: Open
         entities:
         - cover.guest_bedroom_left_window
@@ -565,16 +565,11 @@ turn_off_interior_lights:
   sequence:
   - parallel:
     - sequence:
-      - wait_template: >-
-          {% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy') %}
-            {{
-              not (states('binary_sensor.everything_presence_one_6dbad0_occupancy') | bool)
-              and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds() > 900
-            }}
-          {% else %}
-            false
-          {% endif %}
-        timeout: "00:30:00"
+      - wait_template: "{% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy')
+          %}\n  {{\n    not (states('binary_sensor.everything_presence_one_6dbad0_occupancy')
+          | bool)\n    and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
+          > 900\n  }}\n{% else %}\n  false\n{% endif %}"
+        timeout: 00:30:00
         continue_on_timeout: true
       - parallel:
         - repeat:
