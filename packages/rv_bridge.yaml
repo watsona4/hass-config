@@ -58,33 +58,37 @@ mqtt:
       # =========================
     - name: "RV Inside Temperature"
       unique_id: 74e99972-b0e2-477c-b2e0-72fded3efc82
-      state_topic: site/rv/statestream/sensor/hub_2_b898_temperature/state
+      state_topic: site/rv/statestream/sensor/zone_0_temperature/state
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Outside Temperature"
       unique_id: e32c829a-b0aa-49a3-87b4-b38dda4ce843
       state_topic: site/rv/statestream/weather/openmeteo_weather/temperature
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Outside Humidity"
       unique_id: 5452b491-f53e-417f-9c3e-0eb76f8b2ecb
       state_topic: site/rv/statestream/weather/openmeteo_weather/humidity
       unit_of_measurement: "%"
       device_class: humidity
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Wind Speed"
       unique_id: 64459b7c-2eba-44f6-8c8c-9c6017ac32f9
       state_topic: site/rv/statestream/weather/openmeteo_weather/wind_speed
       unit_of_measurement: mph
       device_class: wind_speed
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Rain Rate"
       unique_id: b6f8c9e8-c181-45dc-9e8e-922af1967460
       state_topic: site/rv/statestream/sensor/openmeteo/hourly
       unit_of_measurement: in/h
-      value_template: "{{ value_json.precipitation[0] | float(0) }}"
+      value_template: "{{ value_json.precipitation[0] | float(default=none) }}"
       device_class: precipitation_intensity
 
     - name: "RV Barometric Pressure"
@@ -92,6 +96,7 @@ mqtt:
       state_topic: site/rv/statestream/weather/openmeteo_weather/pressure
       unit_of_measurement: inHg
       device_class: atmospheric_pressure
+      value_template: "{{ value | float(default=none) }}"
 
       # =========================
       # TANKS / WATER / PROPANE
@@ -119,18 +124,21 @@ mqtt:
       state_topic: site/rv/statestream/sensor/propane_tank_1_level/state
       unit_of_measurement: "%"
       icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Propane Right"
       unique_id: eaa90a2c-ebaf-4334-9f78-fa7d16e1908d
       state_topic: site/rv/statestream/sensor/propane_tank_2_level/state
       unit_of_measurement: "%"
       icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Propane Pct"
       unique_id: 4f3e2f0c-1d1e-4c3a-8e2b-1f0e6f3c5bc4
       state_topic: site/rv/statestream/sensor/propane_total_level/state
       unit_of_measurement: "%"
       icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
 
     - name: "RV Water Heater Temp"
       unique_id: 08dff440-94f3-4ab9-aec4-7faffb99a5bb
@@ -171,21 +179,25 @@ mqtt:
       state_topic: site/rv/statestream/sensor/rv_tire_fl_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
     - name: "RV Tire FR Temp"
       unique_id: c000f65d-51ec-4511-a28f-28673f555744
       state_topic: site/rv/statestream/sensor/rv_tire_fr_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
     - name: "RV Tire RL Temp"
       unique_id: f902296d-2bb2-4fc1-ab22-d33690f50f05
       state_topic: site/rv/statestream/sensor/rv_tire_rl_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
     - name: "RV Tire RR Temp"
       unique_id: 8f3dbdda-06c7-4739-806e-778873398122
       state_topic: site/rv/statestream/sensor/rv_tire_rr_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
 
       # =========================
       # LOCATION / GPS
@@ -202,36 +214,36 @@ mqtt:
     - name: "RV Inverter Enabled"
       unique_id: fe8fb1dc-6f62-4a01-bdd5-a4a6debb9080
       state_topic: site/rv/statestream/binary_sensor/rv_inverter_likely/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: power
 
     - name: "RV Charger Enabled"
-      unique_id: 97a62802-19f8-4d69-bf99-ff0a08839438
+      unique_id: d4cbbd37-01d9-489f-be5f-0d26158109ae
       state_topic: site/rv/statestream/binary_sensor/rv_charger_enabled/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: power
 
     - name: "RV Shore Power"
       unique_id: 97a62802-19f8-4d69-bf99-ff0a08839438
       state_topic: site/rv/statestream/binary_sensor/rv_shore_power_likely/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: power
 
     - name: "RV Water Pump"
       unique_id: 55397537-f551-4fec-aa51-1f9cb34d8806
       state_topic: site/rv/statestream/switch/rv_water_pump/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: running
 
     - name: "RV Water Heater"
       unique_id: d39ae4f9-fe3a-477d-8fc4-63ea656c2f80
       state_topic: site/rv/statestream/switch/rv_water_heater/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: power
 
       # =========================
@@ -240,24 +252,24 @@ mqtt:
     - name: "RV Light Living"
       unique_id: b51e9b06-83c5-4f0b-81b5-ef0f65452458
       state_topic: site/rv/statestream/light/rv_living_room/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       icon: mdi:lightbulb
       device_class: light
 
     - name: "RV Light Kitchen"
       unique_id: b60a3ce7-f5bc-40ae-a85c-aebf4e1b7ca6
       state_topic: site/rv/statestream/light/rv_kitchen/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       icon: mdi:lightbulb
       device_class: light
 
     - name: "RV Light Bedroom"
       unique_id: 6312b4f8-6453-444c-b027-69a10b0bbb9c
       state_topic: site/rv/statestream/light/rv_bedroom/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       icon: mdi:lightbulb
       device_class: light
 
@@ -267,29 +279,29 @@ mqtt:
     - name: "RV Smoke Alarm"
       unique_id: 23082ac4-561b-4949-8232-18b75f1d59da
       state_topic: site/rv/statestream/binary_sensor/rv_smoke_alarm/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: smoke
 
     - name: "RV CO Alarm"
       unique_id: c4fd8826-11a3-4886-a9dc-9f75f8ebfb05
       state_topic: site/rv/statestream/binary_sensor/rv_co_alarm/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: carbon_monoxide
 
     - name: "RV Propane Leak"
       unique_id: dcced746-cf0a-4fc2-93ed-c226cf61d019
       state_topic: site/rv/statestream/binary_sensor/rv_propane_leak/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: gas
 
     - name: "RV Door Open"
       unique_id: 6f62a200-516d-4d97-845a-361e08363d21
       state_topic: site/rv/statestream/binary_sensor/rv_door_open/state
-      payload_on: on
-      payload_off: off
+      payload_on: "on"
+      payload_off: "off"
       device_class: door
 
   select:
@@ -302,8 +314,9 @@ mqtt:
       command_topic: site/rv/cmd/select/rv_water_heater_mode/set
       icon: mdi:water-boiler
       options:
-        - off
-        - on
+        - "off"
+        - "on"
+        - "auto"
 
   device_tracker:
     # =========================
