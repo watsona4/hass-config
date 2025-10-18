@@ -131,55 +131,54 @@ template:
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
         {{- build_ctx(src) | from_json(default={}) -}}
+      d0: >-
+        {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
+        {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
+      types: >-
+        {{ (d0.get('pollenTypeInfo') or []) }}
+      ranked: >-
+        {{ (types
+            | selectattr('indexInfo','defined')
+            | sort(attribute='indexInfo.value', reverse=true)
+            | list) }}
+      top: >-
+        {{ (ranked[0] if ranked | count > 0 else {}) }}
     sensor:
       - name: Google Pollen Nearby Today
         unique_id: google_pollen_nearby_today
         icon: mdi:flower-pollen
         availability: "{{- has_value(src) and ((ctx.di | count) > 0) -}}"
         state: >-
-          {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-          {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
             {%- set dt = d0.get('date') or {} -%}
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('value') -}}
+            {{- (top.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
+            {{- (top.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
+            {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
             {%- set b = (c.get('blue') or 0) * 255 -%}
-            {{- '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) -}}
+            {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
           grass_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           tree_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           weed_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           recommendations: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set types = d0.get('pollenTypeInfo') or [] -%}
-            {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) -%}
-            {%- set dom = (ranked | first) or {} -%}
-            {{- (dom.get('healthRecommendations') or []) | unique | list -}}
+            {%- if ranked | count > 0 -%}
+              {{ (ranked[0].get('healthRecommendations') or []) | unique | list }}
+            {%- else -%}
+              {{ [] }}
+            {%- endif -%}
 
       - name: Pollen Species Nearby Today
         unique_id: pollen_species_nearby_today
@@ -197,53 +196,59 @@ template:
       - name: Pollen Forecast Nearby Day 0
         unique_id: pollen_forecast_nearby_day_0
         icon: mdi:calendar-today
-        availability: "{{- ((ctx.days | count) > 0) and ((ctx.days[0] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[0] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 0 and (ctx.days[0].get('exists') if (ctx.days | count) > 0 else false) }}
+        state: >-
+          {{ (ctx.days[0].get('state') if (ctx.days | count) > 0 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[0] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[0] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[0] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[0] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[0] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[0] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[0] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[0] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[0] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[0] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[0].get('date') if (ctx.days | count) > 0 else none) -}}"
+          dominant_type: "{{- (ctx.days[0].get('dominant_type') if (ctx.days | count) > 0 else none) -}}"
+          dominant_value: "{{- (ctx.days[0].get('dominant_value') if (ctx.days | count) > 0 else none) -}}"
+          dominant_category: "{{- (ctx.days[0].get('dominant_category') if (ctx.days | count) > 0 else none) -}}"
+          dominant_hex: "{{- (ctx.days[0].get('dominant_hex') if (ctx.days | count) > 0 else none) -}}"
+          species_name: "{{- (ctx.days[0].get('species_name') if (ctx.days | count) > 0 else none) -}}"
+          species_value: "{{- (ctx.days[0].get('species_value') if (ctx.days | count) > 0 else none) -}}"
+          species_category: "{{- (ctx.days[0].get('species_category') if (ctx.days | count) > 0 else none) -}}"
+          species_type: "{{- (ctx.days[0].get('species_type') if (ctx.days | count) > 0 else none) -}}"
+          species_picture: "{{- (ctx.days[0].get('species_picture') if (ctx.days | count) > 0 else none) -}}"
 
       - name: Pollen Forecast Nearby Day 1
         unique_id: pollen_forecast_nearby_day_1
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 1) and ((ctx.days[1] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[1] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 1 and (ctx.days[1].get('exists') if (ctx.days | count) > 1 else false) }}
+        state: >-
+          {{ (ctx.days[1].get('state') if (ctx.days | count) > 1 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[1] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[1] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[1] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[1] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[1] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[1] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[1] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[1] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[1] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[1] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[1].get('date') if (ctx.days | count) > 1 else none) -}}"
+          dominant_type: "{{- (ctx.days[1].get('dominant_type') if (ctx.days | count) > 1 else none) -}}"
+          dominant_value: "{{- (ctx.days[1].get('dominant_value') if (ctx.days | count) > 1 else none) -}}"
+          dominant_category: "{{- (ctx.days[1].get('dominant_category') if (ctx.days | count) > 1 else none) -}}"
+          dominant_hex: "{{- (ctx.days[1].get('dominant_hex') if (ctx.days | count) > 1 else none) -}}"
+          species_name: "{{- (ctx.days[1].get('species_name') if (ctx.days | count) > 1 else none) -}}"
+          species_value: "{{- (ctx.days[1].get('species_value') if (ctx.days | count) > 1 else none) -}}"
+          species_category: "{{- (ctx.days[1].get('species_category') if (ctx.days | count) > 1 else none) -}}"
+          species_type: "{{- (ctx.days[1].get('species_type') if (ctx.days | count) > 1 else none) -}}"
+          species_picture: "{{- (ctx.days[1].get('species_picture') if (ctx.days | count) > 1 else none) -}}"
 
       - name: Pollen Forecast Nearby Day 2
         unique_id: pollen_forecast_nearby_day_2
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 2) and ((ctx.days[2] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[2] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 2 and (ctx.days[2].get('exists') if (ctx.days | count) > 2 else false) }}
+        state: >-
+          {{ (ctx.days[2].get('state') if (ctx.days | count) > 2 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[2] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[2] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[2] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[2] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[2] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[2] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[2] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[2] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[2] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[2] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[2].get('date') if (ctx.days | count) > 2 else none) -}}"
+          dominant_type: "{{- (ctx.days[2].get('dominant_type') if (ctx.days | count) > 2 else none) -}}"
+          dominant_value: "{{- (ctx.days[2].get('dominant_value') if (ctx.days | count) > 2 else none) -}}"
+          dominant_category: "{{- (ctx.days[2].get('dominant_category') if (ctx.days | count) > 2 else none) -}}"
+          dominant_hex: "{{- (ctx.days[2].get('dominant_hex') if (ctx.days | count) > 2 else none) -}}"
+          species_name: "{{- (ctx.days[2].get('species_name') if (ctx.days | count) > 2 else none) -}}"
+          species_value: "{{- (ctx.days[2].get('species_value') if (ctx.days | count) > 2 else none) -}}"
+          species_category: "{{- (ctx.days[2].get('species_category') if (ctx.days | count) > 2 else none) -}}"
+          species_type: "{{- (ctx.days[2].get('species_type') if (ctx.days | count) > 2 else none) -}}"
+          species_picture: "{{- (ctx.days[2].get('species_picture') if (ctx.days | count) > 2 else none) -}}"
 
       - name: Pollen Species List Nearby Today
         unique_id: pollen_species_list_nearby_today
@@ -251,7 +256,7 @@ template:
         state: "{{- (ctx.di | count) > 0 -}}"
         attributes:
           species: >-
-            {%- set plants = ctx.d.get('plantInfo') or [] -%}
+            {%- set plants = (ctx.d or {}).get('plantInfo') or [] -%}
             {%- set ns = namespace(out=[]) -%}
             {%- for p in plants -%}
               {%- set desc = p.get('plantDescription') or {} -%}
@@ -271,14 +276,17 @@ template:
       - name: Pollen Peak Index Nearby Today
         unique_id: pollen_peak_index_nearby_today
         icon: mdi:meter-gas
-        availability: "{{- has_value(src) and (((ctx.d.get('pollenTypeInfo') or []) | count) > 0) -}}"
+        availability: "{{- has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) -}}"
         state: >-
-          {%- set types = ctx.d.get('pollenTypeInfo') or [] -%}
-          {%- if (types | count) == 0 -%}
-            {{- none -}}
-          {%- else -%} 
-            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
-          {%- endif -%}
+          {%- set types = (ctx.d or {}).get('pollenTypeInfo') or [] -%}
+          {%- set vals = (
+                types
+                | selectattr('indexInfo','defined')
+                | selectattr('indexInfo.value','defined')
+                | map(attribute='indexInfo.value')
+                | list
+            ) -%}
+          {{ (vals|max) if (vals|count) > 0 else none }}
 
   # ================= HOME =================
   - trigger:
@@ -289,55 +297,54 @@ template:
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
         {{- build_ctx(src) | from_json(default={}) -}}
+      d0: >-
+        {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
+        {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
+      types: >-
+        {{ (d0.get('pollenTypeInfo') or []) }}
+      ranked: >-
+        {{ (types
+            | selectattr('indexInfo','defined')
+            | sort(attribute='indexInfo.value', reverse=true)
+            | list) }}
+      top: >-
+        {{ (ranked[0] if ranked | count > 0 else {}) }}
     sensor:
       - name: Google Pollen Home Today
         unique_id: google_pollen_home_today
         icon: mdi:flower-pollen
         availability: "{{- has_value(src) and ((ctx.di | count) > 0) -}}"
         state: >-
-          {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-          {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
             {%- set dt = d0.get('date') or {} -%}
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('value') -}}
+            {{- (top.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
+            {{- (top.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
+            {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
             {%- set b = (c.get('blue') or 0) * 255 -%}
-            {{- '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) -}}
+            {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
           grass_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           tree_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           weed_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           recommendations: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set types = d0.get('pollenTypeInfo') or [] -%}
-            {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) -%}
-            {%- set dom = (ranked | first) or {} -%}
-            {{- (dom.get('healthRecommendations') or []) | unique | list -}}
+            {%- if ranked | count > 0 -%}
+              {{ (ranked[0].get('healthRecommendations') or []) | unique | list }}
+            {%- else -%}
+              {{ [] }}
+            {%- endif -%}
 
       - name: Pollen Species Home Today
         unique_id: pollen_species_home_today
@@ -355,53 +362,59 @@ template:
       - name: Pollen Forecast Home Day 0
         unique_id: pollen_forecast_home_day_0
         icon: mdi:calendar-today
-        availability: "{{- ((ctx.days | count) > 0) and ((ctx.days[0] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[0] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 0 and (ctx.days[0].get('exists') if (ctx.days | count) > 0 else false) }}
+        state: >-
+          {{ (ctx.days[0].get('state') if (ctx.days | count) > 0 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[0] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[0] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[0] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[0] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[0] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[0] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[0] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[0] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[0] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[0] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[0].get('date') if (ctx.days | count) > 0 else none) -}}"
+          dominant_type: "{{- (ctx.days[0].get('dominant_type') if (ctx.days | count) > 0 else none) -}}"
+          dominant_value: "{{- (ctx.days[0].get('dominant_value') if (ctx.days | count) > 0 else none) -}}"
+          dominant_category: "{{- (ctx.days[0].get('dominant_category') if (ctx.days | count) > 0 else none) -}}"
+          dominant_hex: "{{- (ctx.days[0].get('dominant_hex') if (ctx.days | count) > 0 else none) -}}"
+          species_name: "{{- (ctx.days[0].get('species_name') if (ctx.days | count) > 0 else none) -}}"
+          species_value: "{{- (ctx.days[0].get('species_value') if (ctx.days | count) > 0 else none) -}}"
+          species_category: "{{- (ctx.days[0].get('species_category') if (ctx.days | count) > 0 else none) -}}"
+          species_type: "{{- (ctx.days[0].get('species_type') if (ctx.days | count) > 0 else none) -}}"
+          species_picture: "{{- (ctx.days[0].get('species_picture') if (ctx.days | count) > 0 else none) -}}"
 
       - name: Pollen Forecast Home Day 1
         unique_id: pollen_forecast_home_day_1
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 1) and ((ctx.days[1] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[1] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 1 and (ctx.days[1].get('exists') if (ctx.days | count) > 1 else false) }}
+        state: >-
+          {{ (ctx.days[1].get('state') if (ctx.days | count) > 1 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[1] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[1] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[1] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[1] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[1] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[1] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[1] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[1] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[1] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[1] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[1].get('date') if (ctx.days | count) > 1 else none) -}}"
+          dominant_type: "{{- (ctx.days[1].get('dominant_type') if (ctx.days | count) > 1 else none) -}}"
+          dominant_value: "{{- (ctx.days[1].get('dominant_value') if (ctx.days | count) > 1 else none) -}}"
+          dominant_category: "{{- (ctx.days[1].get('dominant_category') if (ctx.days | count) > 1 else none) -}}"
+          dominant_hex: "{{- (ctx.days[1].get('dominant_hex') if (ctx.days | count) > 1 else none) -}}"
+          species_name: "{{- (ctx.days[1].get('species_name') if (ctx.days | count) > 1 else none) -}}"
+          species_value: "{{- (ctx.days[1].get('species_value') if (ctx.days | count) > 1 else none) -}}"
+          species_category: "{{- (ctx.days[1].get('species_category') if (ctx.days | count) > 1 else none) -}}"
+          species_type: "{{- (ctx.days[1].get('species_type') if (ctx.days | count) > 1 else none) -}}"
+          species_picture: "{{- (ctx.days[1].get('species_picture') if (ctx.days | count) > 1 else none) -}}"
 
       - name: Pollen Forecast Home Day 2
         unique_id: pollen_forecast_home_day_2
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 2) and ((ctx.days[2] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[2] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 2 and (ctx.days[2].get('exists') if (ctx.days | count) > 2 else false) }}
+        state: >-
+          {{ (ctx.days[2].get('state') if (ctx.days | count) > 2 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[2] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[2] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[2] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[2] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[2] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[2] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[2] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[2] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[2] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[2] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[2].get('date') if (ctx.days | count) > 2 else none) -}}"
+          dominant_type: "{{- (ctx.days[2].get('dominant_type') if (ctx.days | count) > 2 else none) -}}"
+          dominant_value: "{{- (ctx.days[2].get('dominant_value') if (ctx.days | count) > 2 else none) -}}"
+          dominant_category: "{{- (ctx.days[2].get('dominant_category') if (ctx.days | count) > 2 else none) -}}"
+          dominant_hex: "{{- (ctx.days[2].get('dominant_hex') if (ctx.days | count) > 2 else none) -}}"
+          species_name: "{{- (ctx.days[2].get('species_name') if (ctx.days | count) > 2 else none) -}}"
+          species_value: "{{- (ctx.days[2].get('species_value') if (ctx.days | count) > 2 else none) -}}"
+          species_category: "{{- (ctx.days[2].get('species_category') if (ctx.days | count) > 2 else none) -}}"
+          species_type: "{{- (ctx.days[2].get('species_type') if (ctx.days | count) > 2 else none) -}}"
+          species_picture: "{{- (ctx.days[2].get('species_picture') if (ctx.days | count) > 2 else none) -}}"
 
       - name: Pollen Species List Home Today
         unique_id: pollen_species_list_home_today
@@ -409,7 +422,7 @@ template:
         state: "{{- (ctx.di | count) > 0 -}}"
         attributes:
           species: >-
-            {%- set plants = ctx.d.get('plantInfo') or [] -%}
+            {%- set plants = (ctx.d or {}).get('plantInfo') or [] -%}
             {%- set ns = namespace(out=[]) -%}
             {%- for p in plants -%}
               {%- set desc = p.get('plantDescription') or {} -%}
@@ -429,14 +442,17 @@ template:
       - name: Pollen Peak Index Home Today
         unique_id: pollen_peak_index_home_today
         icon: mdi:meter-gas
-        availability: "{{- has_value(src) and (((ctx.d.get('pollenTypeInfo') or []) | count) > 0) -}}"
+        availability: "{{- has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) -}}"
         state: >-
-          {%- set types = ctx.d.get('pollenTypeInfo') or [] -%}
-          {%- if (types | count) == 0 -%}
-            {{- none -}}
-          {%- else -%}
-            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
-          {%- endif -%}
+          {%- set types = (ctx.d or {}).get('pollenTypeInfo') or [] -%}
+          {%- set vals = (
+                types
+                | selectattr('indexInfo','defined')
+                | selectattr('indexInfo.value','defined')
+                | map(attribute='indexInfo.value')
+                | list
+            ) -%}
+          {{ (vals|max) if (vals|count) > 0 else none }}
 
   # ================= RV =================
   - trigger:
@@ -447,55 +463,54 @@ template:
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
         {{- build_ctx(src) | from_json(default={}) -}}
+      d0: >-
+        {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
+        {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
+      types: >-
+        {{ (d0.get('pollenTypeInfo') or []) }}
+      ranked: >-
+        {{ (types
+            | selectattr('indexInfo','defined')
+            | sort(attribute='indexInfo.value', reverse=true)
+            | list) }}
+      top: >-
+        {{ (ranked[0] if ranked | count > 0 else {}) }}
     sensor:
       - name: Google Pollen RV Today
         unique_id: google_pollen_rv_today
         icon: mdi:flower-pollen
         availability: "{{- has_value(src) and ((ctx.di | count) > 0) -}}"
         state: >-
-          {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-          {%- set types = d0.get('pollenTypeInfo') or [] -%}
-          {%- set top = (types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
           {{- top.get('displayName') or top.get('code') or 'unknown' -}}
         attributes:
           date: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
             {%- set dt = d0.get('date') or {} -%}
             {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
           dominant_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('value') -}}
+            {{- (top.get('indexInfo') or {}).get('value') -}}
           dominant_category: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {{- (t.get('indexInfo') or {}).get('category') or 'unknown' -}}
+            {{- (top.get('indexInfo') or {}).get('category') or 'unknown' -}}
           dominant_hex: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set t = ((d0.get('pollenTypeInfo') or []) | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) | first) or {} -%}
-            {%- set c = (t.get('indexInfo') or {}).get('color') or {} -%}
+            {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
             {%- set r = (c.get('red') or 0) * 255 -%}
             {%- set g = (c.get('green') or 0) * 255 -%}
             {%- set b = (c.get('blue') or 0) * 255 -%}
-            {{- '#%02X%02X%02X'|format(r|round(0)|int, g|round(0)|int, b|round(0)|int) -}}
+            {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
           grass_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','GRASS') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           tree_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','TREE') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           weed_value: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set x = (((d0.get('pollenTypeInfo') or []) | selectattr('code','eq','WEED') | list | first) or {}) -%}
-            {{- (x.get('indexInfo') or {}).get('value') -}}
+            {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
+            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (xlist|count>0) else none -}}
           recommendations: >-
-            {%- set d0 = (ctx.di[0] if ctx.di is sequence and (ctx.di | count) > 0 else {}) -%}
-            {%- set types = d0.get('pollenTypeInfo') or [] -%}
-            {%- set ranked = types | selectattr('indexInfo','defined') | sort(attribute='indexInfo.value', reverse=true) -%}
-            {%- set dom = (ranked | first) or {} -%}
-            {{- (dom.get('healthRecommendations') or []) | unique | list -}}
+            {%- if ranked | count > 0 -%}
+              {{ (ranked[0].get('healthRecommendations') or []) | unique | list }}
+            {%- else -%}
+              {{ [] }}
+            {%- endif -%}
 
       - name: Pollen Species RV Today
         unique_id: pollen_species_rv_today
@@ -513,53 +528,59 @@ template:
       - name: Pollen Forecast RV Day 0
         unique_id: pollen_forecast_rv_day_0
         icon: mdi:calendar-today
-        availability: "{{- ((ctx.days | count) > 0) and ((ctx.days[0] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[0] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 0 and (ctx.days[0].get('exists') if (ctx.days | count) > 0 else false) }}
+        state: >-
+          {{ (ctx.days[0].get('state') if (ctx.days | count) > 0 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[0] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[0] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[0] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[0] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[0] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[0] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[0] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[0] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[0] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[0] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[0].get('date') if (ctx.days | count) > 0 else none) -}}"
+          dominant_type: "{{- (ctx.days[0].get('dominant_type') if (ctx.days | count) > 0 else none) -}}"
+          dominant_value: "{{- (ctx.days[0].get('dominant_value') if (ctx.days | count) > 0 else none) -}}"
+          dominant_category: "{{- (ctx.days[0].get('dominant_category') if (ctx.days | count) > 0 else none) -}}"
+          dominant_hex: "{{- (ctx.days[0].get('dominant_hex') if (ctx.days | count) > 0 else none) -}}"
+          species_name: "{{- (ctx.days[0].get('species_name') if (ctx.days | count) > 0 else none) -}}"
+          species_value: "{{- (ctx.days[0].get('species_value') if (ctx.days | count) > 0 else none) -}}"
+          species_category: "{{- (ctx.days[0].get('species_category') if (ctx.days | count) > 0 else none) -}}"
+          species_type: "{{- (ctx.days[0].get('species_type') if (ctx.days | count) > 0 else none) -}}"
+          species_picture: "{{- (ctx.days[0].get('species_picture') if (ctx.days | count) > 0 else none) -}}"
 
       - name: Pollen Forecast RV Day 1
         unique_id: pollen_forecast_rv_day_1
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 1) and ((ctx.days[1] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[1] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 1 and (ctx.days[1].get('exists') if (ctx.days | count) > 1 else false) }}
+        state: >-
+          {{ (ctx.days[1].get('state') if (ctx.days | count) > 1 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[1] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[1] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[1] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[1] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[1] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[1] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[1] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[1] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[1] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[1] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[1].get('date') if (ctx.days | count) > 1 else none) -}}"
+          dominant_type: "{{- (ctx.days[1].get('dominant_type') if (ctx.days | count) > 1 else none) -}}"
+          dominant_value: "{{- (ctx.days[1].get('dominant_value') if (ctx.days | count) > 1 else none) -}}"
+          dominant_category: "{{- (ctx.days[1].get('dominant_category') if (ctx.days | count) > 1 else none) -}}"
+          dominant_hex: "{{- (ctx.days[1].get('dominant_hex') if (ctx.days | count) > 1 else none) -}}"
+          species_name: "{{- (ctx.days[1].get('species_name') if (ctx.days | count) > 1 else none) -}}"
+          species_value: "{{- (ctx.days[1].get('species_value') if (ctx.days | count) > 1 else none) -}}"
+          species_category: "{{- (ctx.days[1].get('species_category') if (ctx.days | count) > 1 else none) -}}"
+          species_type: "{{- (ctx.days[1].get('species_type') if (ctx.days | count) > 1 else none) -}}"
+          species_picture: "{{- (ctx.days[1].get('species_picture') if (ctx.days | count) > 1 else none) -}}"
 
       - name: Pollen Forecast RV Day 2
         unique_id: pollen_forecast_rv_day_2
         icon: mdi:calendar
-        availability: "{{- ((ctx.days | count) > 2) and ((ctx.days[2] | default({})).get('exists')) -}}"
-        state: "{{- (ctx.days[2] | default({})).get('state') or 'unknown' -}}"
+        availability: >-
+          {{ (ctx.days | count) > 2 and (ctx.days[2].get('exists') if (ctx.days | count) > 2 else false) }}
+        state: >-
+          {{ (ctx.days[2].get('state') if (ctx.days | count) > 2 else none) or 'unknown' }}
         attributes:
-          date: "{{- (ctx.days[2] | default({})).get('date') -}}"
-          dominant_type: "{{- (ctx.days[2] | default({})).get('dominant_type') -}}"
-          dominant_value: "{{- (ctx.days[2] | default({})).get('dominant_value') -}}"
-          dominant_category: "{{- (ctx.days[2] | default({})).get('dominant_category') -}}"
-          dominant_hex: "{{- (ctx.days[2] | default({})).get('dominant_hex') -}}"
-          species_name: "{{- (ctx.days[2] | default({})).get('species_name') -}}"
-          species_value: "{{- (ctx.days[2] | default({})).get('species_value') -}}"
-          species_category: "{{- (ctx.days[2] | default({})).get('species_category') -}}"
-          species_type: "{{- (ctx.days[2] | default({})).get('species_type') -}}"
-          species_picture: "{{- (ctx.days[2] | default({})).get('species_picture') -}}"
+          date: "{{- (ctx.days[2].get('date') if (ctx.days | count) > 2 else none) -}}"
+          dominant_type: "{{- (ctx.days[2].get('dominant_type') if (ctx.days | count) > 2 else none) -}}"
+          dominant_value: "{{- (ctx.days[2].get('dominant_value') if (ctx.days | count) > 2 else none) -}}"
+          dominant_category: "{{- (ctx.days[2].get('dominant_category') if (ctx.days | count) > 2 else none) -}}"
+          dominant_hex: "{{- (ctx.days[2].get('dominant_hex') if (ctx.days | count) > 2 else none) -}}"
+          species_name: "{{- (ctx.days[2].get('species_name') if (ctx.days | count) > 2 else none) -}}"
+          species_value: "{{- (ctx.days[2].get('species_value') if (ctx.days | count) > 2 else none) -}}"
+          species_category: "{{- (ctx.days[2].get('species_category') if (ctx.days | count) > 2 else none) -}}"
+          species_type: "{{- (ctx.days[2].get('species_type') if (ctx.days | count) > 2 else none) -}}"
+          species_picture: "{{- (ctx.days[2].get('species_picture') if (ctx.days | count) > 2 else none) -}}"
 
       - name: Pollen Species List RV Today
         unique_id: pollen_species_list_rv_today
@@ -567,7 +588,7 @@ template:
         state: "{{- (ctx.di | count) > 0 -}}"
         attributes:
           species: >-
-            {%- set plants = ctx.d.get('plantInfo') or [] -%}
+            {%- set plants = (ctx.d or {}).get('plantInfo') or [] -%}
             {%- set ns = namespace(out=[]) -%}
             {%- for p in plants -%}
               {%- set desc = p.get('plantDescription') or {} -%}
@@ -587,11 +608,14 @@ template:
       - name: Pollen Peak Index RV Today
         unique_id: pollen_peak_index_rv_today
         icon: mdi:meter-gas
-        availability: "{{- has_value(src) and (((ctx.d.get('pollenTypeInfo') or []) | count) > 0) -}}"
+        availability: "{{- has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) -}}"
         state: >-
-          {%- set types = ctx.d.get('pollenTypeInfo') or [] -%}
-          {%- if (types | count) == 0 -%}
-            {{- none -}}
-          {%- else -%}
-            {{- (types | selectattr('indexInfo','defined') | map(attribute='indexInfo.value') | list | max) -}}
-          {%- endif -%}
+          {%- set types = (ctx.d or {}).get('pollenTypeInfo') or [] -%}
+          {%- set vals = (
+                types
+                | selectattr('indexInfo','defined')
+                | selectattr('indexInfo.value','defined')
+                | map(attribute='indexInfo.value')
+                | list
+            ) -%}
+          {{ (vals|max) if (vals|count) > 0 else none }}
