@@ -4889,14 +4889,9 @@
       - condition: numeric_state
         entity_id: sensor.light_sensor_illuminance
         below: 300
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: binary_sensor.daytime
-          state: 'on'
-        - condition: state
-          entity_id: binary_sensor.evening
-          state: 'on'
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'on'
       sequence:
       - metadata: {}
         data: {}
@@ -4906,16 +4901,22 @@
     - conditions:
       - condition: numeric_state
         entity_id: sensor.light_sensor_illuminance
-        above: 300
+        below: 300
       - condition: state
-        entity_id: binary_sensor.daytime
+        entity_id: binary_sensor.evening
         state: 'on'
       sequence:
       - metadata: {}
         data: {}
         target:
-          entity_id: script.turn_off_interior_lights
+          entity_id: script.turn_on_interior_lights
         action: script.turn_on
+      - action: automation.trigger
+        metadata: {}
+        data:
+          skip_condition: true
+        target:
+          entity_id: automation.study_light_off
     - conditions:
       - condition: numeric_state
         entity_id: sensor.light_sensor_illuminance
@@ -4926,6 +4927,19 @@
       - condition: state
         entity_id: binary_sensor.evening
         state: 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        target:
+          entity_id: script.turn_off_interior_lights
+        action: script.turn_on
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.light_sensor_illuminance
+        above: 300
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'on'
       sequence:
       - metadata: {}
         data: {}
