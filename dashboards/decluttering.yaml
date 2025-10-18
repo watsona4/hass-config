@@ -243,7 +243,7 @@ machine_summary:
                 icon_color: |
                   {{- 'green' if is_state(entity,'on') else 'red' -}}
                 content: >
-                  {%- set s = state_attr(entity,'friendly_name') -%}
+                  {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                   {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                 tap_action: none
           exclude: []
@@ -272,7 +272,7 @@ machine_summary:
                 icon_color: |
                   {{- 'green' if is_state(entity,'on') else 'red' -}}
                 content: >
-                  {%- set s = state_attr(entity,'friendly_name') -%}
+                  {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                   {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
                 tap_action: none
           exclude: []

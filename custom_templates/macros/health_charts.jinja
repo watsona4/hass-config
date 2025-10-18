@@ -498,7 +498,7 @@
    =========================== #}
 
 {%- macro clamp_pct(x) -%}
-  {{ ([ ([x|float, 0]|max), 100 ] | min) }}
+  {{ ([ ([x|float(0), 0]|max), 100 ] | min) }}
 {%- endmacro %}
 
 {%- macro generate_bp_time_in_range_plotly(

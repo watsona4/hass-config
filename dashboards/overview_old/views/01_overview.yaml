@@ -127,7 +127,7 @@ sections:
               {{ color(states(entity)) }}
             badge_icon: >-
               {% set u = states(entity)|float(0)|round(0) %} mdi:numeric-{{
-              u|int if u<10 else '9-plus' }}-circle
+              u|int(0) if u<10 else '9-plus' }}-circle
             tap_action:
               action: more-info
             badge_color: |-
@@ -144,7 +144,7 @@ sections:
               cur.get('wind_gusts_10m') %} {% set deg =
               cur.get('wind_direction_10m') %} {% set dirs =
               ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW']
-              %} {% set dirtxt = (dirs[((deg|float(0)+11.25)/22.5)|int %
+              %} {% set dirtxt = (dirs[((deg|float(0)+11.25)/22.5)|int(0) %
               16]) if deg is not none else '—' %} {{ dirtxt }} {{
               spd|round(0) if spd is number else '—' }} {{
               state_attr(entity,'current_units') and
@@ -161,7 +161,7 @@ sections:
             badge_icon: >-
               {% set cur = state_attr(entity,'current') or {} %} {% set spd
               = cur.get('wind_speed_10m')|float(0) %} {% set bft =
-              (((spd/2.237)/ 0.836)**(2/3))|round(0)|int %} mdi:numeric-{{
+              (((spd/2.237)/ 0.836)**(2/3))|round(0)|int(0) %} mdi:numeric-{{
               bft if bft<10 else '9-plus' }}-circle
             badge_color: >-
               {% set spd = (state_attr(entity,'current') or

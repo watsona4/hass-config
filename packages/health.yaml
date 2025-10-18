@@ -30,11 +30,10 @@ template:
         unit_of_measurement: "kg/m²"
         state_class: measurement
         state: >-
-          {% set w = states('sensor.pixel_9_pro_xl_weight') | float(0) * 0.453592 %}
-          {% set h_cm = states('input_number.health_height_cm') | float(none) %}
-          {% set h_m = iif(h_cm | is_number, h_cm / 100.0, float(none)) %}
-          {% if w | is_number and h_m | is_number and h_m > 0 %}
-            {{ (w / (h_m * h_m)) | round(1) }}
+          {% set w = states('sensor.pixel_9_pro_xl_weight')|float(0) * 0.453592 %}
+          {% set h_cm = states('input_number.health_height_cm')|float(0) %}
+          {% if h_cm > 0 %}
+            {{ (w / ((h_cm/100)**2))|round(1) }}
           {% else %}
             unknown
           {% endif %}

@@ -641,7 +641,7 @@ script:
         target:
           entity_id: input_datetime.zep_snooze_until
         data:
-          datetime: "{{ (now() + timedelta(hours=(hours|int))).isoformat() }}"
+          datetime: "{{ (now() + timedelta(hours=(hours|int(0)))).isoformat() }}"
 
 ###############################################################################
 # AUTOMATIONS

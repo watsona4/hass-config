@@ -2,8 +2,8 @@
 {#-  -------------------- Heat Index calculation -------------------- -#}
 {#- Returns Heat Index in °F using NOAA Rothfusz regression with adjustments -#}
 {% macro hi_f(t_f, rh_pct) %}
-    {%- set T = t_f|float -%}
-    {%- set RH = rh_pct|float -%}
+    {%- set T = t_f|float(0) -%}
+    {%- set RH = rh_pct|float(0) -%}
     {%- set RH = 0 if RH < 0 else (100 if RH > 100 else RH) -%}
 
     {#- Simple approximation for T < 80°F -#}
@@ -42,7 +42,7 @@
 {#- Wrapper that returns Heat Index in requested unit.
    Assume input temperature unit is Fahrenheit by default. -#}
 {% macro hi(t, rh_pct, unit='f') %}
-    {%- set Tf = convert_temp(t, unit, 'f')|float -%}
-    {%- set hif = hi_f(Tf, rh_pct)|float -%}
+    {%- set Tf = convert_temp(t, unit, 'f')|float(0) -%}
+    {%- set hif = hi_f(Tf, rh_pct)|float(0) -%}
     {{- convert_temp(hif, 'f', unit) -}}
 {% endmacro %}

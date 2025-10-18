@@ -690,15 +690,10 @@
   actions:
   - parallel:
     - sequence:
-      - wait_template: >-
-          {% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy') %}
-            {{
-              not (states('binary_sensor.everything_presence_one_6dbad0_occupancy') | bool)
-              and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds() > 900
-            }}
-          {% else %}
-            false
-          {% endif %}
+      - wait_template: "{% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy')
+          %}\n  {{\n    not (states('binary_sensor.everything_presence_one_6dbad0_occupancy')
+          | bool)\n    and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
+          > 900\n  }}\n{% else %}\n  false\n{% endif %}"
         timeout: 00:30:00
         continue_on_timeout: true
       - target:
@@ -820,13 +815,13 @@
         set ns.data = ns.data + [entry] %}\n  {% endif %}\n{% endfor %} {{ ns.data
         }}"
       drops_time: "{% set ns = namespace(drops_time=None) %} {% if states(\"sensor.outside_temperature_state\")
-        | float >= 40 %}\n  {% for entry in forecast %}\n    {% if ns.drops_time is
-        none and entry[\"temperature\"] | float < 40 %}\n      {% set ns.drops_time
+        | float(0) >= 40 %}\n  {% for entry in forecast %}\n    {% if ns.drops_time
+        is none and entry[\"temperature\"] | float(0) < 40 %}\n      {% set ns.drops_time
         = entry[\"datetime\"] %}\n    {% endif %}\n  {% endfor %}\n{% endif %} {{
         \"nil\" if ns.drops_time is none else ns.drops_time | as_datetime | as_local
         }}"
       min_temp: '{{ forecast | map(attribute=''temperature'') | map(''float'') | min
-        | int }}'
+        | int(0) }}'
       title: "{% set hours = \"nil\" if drops_time == \"nil\" else drops_time | as_datetime
         - now() %} {% if min_temp < 40 and (drops_time == \"nil\" or hours < timedelta(hours=2)
         or drops_time | as_datetime > today_at(\"20:30\") and drops_time | as_datetime
@@ -1335,7 +1330,7 @@
   - entity_id:
     - sensor.upstairs_temperature
     above: 1
-    value_template: '{{ state.state|float - states(''input_number.downstairs_temperature'')|float
+    value_template: '{{ state.state|float(0) - states(''input_number.downstairs_temperature'')|float(0)
       }}'
     trigger: numeric_state
     id: Target
@@ -1357,13 +1352,13 @@
   - variables:
       furnace_temp: '{{ states(''input_number.furnace_temperature'') if not is_state(''input_boolean.wood_stove'',
         ''on'') else 63 }}'
-      downstairs: "{% set temp = states('input_number.downstairs_temperature')|float
-        %} {% set upstairs_temp = state_attr('climate.upstairs_thermostat', 'current_temperature')|float
+      downstairs: "{% set temp = states('input_number.downstairs_temperature')|float(72)
+        %} {% set upstairs_temp = state_attr('climate.upstairs_thermostat', 'current_temperature')|float(temp+1)
         %} {% set upstairs_action = state_attr('climate.upstairs_thermostat', 'hvac_action')
         %} {% if upstairs_temp > temp + 1 and upstairs_action == 'cooling' %}\n  {{
         temp - 1 }}\n{% else %}\n  {{ [temp, furnace_temp + 3]|max }}\n{% endif %}"
-      upstairs: '{{ downstairs|float + 1}}'
-      study_heater: '{% set weekday = now().strftime("%w")|int  %} {{ 68 if weekday
+      upstairs: '{{ downstairs|float(0) + 1}}'
+      study_heater: '{% set weekday = now().strftime("%w")|int(0)  %} {{ 68 if weekday
         >= 1 and weekday <= 5 else 65 }}'
   - if:
     - condition: or
@@ -1478,7 +1473,7 @@
         - condition: numeric_state
           entity_id: sensor.downstairs_thermostat_current_temperature
           above: 0
-          value_template: '{{ state.state|float - downstairs|float }}'
+          value_template: '{{ state.state|float(0) - downstairs|float(0) }}'
         then:
         - if:
           - condition: state
@@ -1512,7 +1507,7 @@
         - condition: numeric_state
           entity_id: sensor.upstairs_temperature
           above: 0
-          value_template: '{{ state.state|float - upstairs|float }}'
+          value_template: '{{ state.state|float(0) - upstairs|float(0) }}'
         - condition: device
           device_id: 3802c1cf1c5fe18ef641b5993b0475e0
           domain: climate
@@ -1529,7 +1524,7 @@
         - condition: numeric_state
           entity_id: sensor.study_thermometer_temperature
           above: 0
-          value_template: '{{ state.state|float - furnace_temp|float }}'
+          value_template: '{{ state.state|float(0) - furnace_temp|float(0) }}'
         - condition: state
           entity_id: climate.study_space_heater
           state: 'off'
@@ -1543,11 +1538,11 @@
         - condition: numeric_state
           entity_id: sensor.downstairs_thermostat_current_temperature
           below: 0
-          value_template: '{{ state.state|float - downstairs|float }}'
+          value_template: '{{ state.state|float(0) - downstairs|float(0) }}'
         - condition: numeric_state
           entity_id: sensor.upstairs_temperature
           below: 0
-          value_template: '{{ state.state|float - upstairs|float }}'
+          value_template: '{{ state.state|float(0) - upstairs|float(0) }}'
         then:
         - data: {}
           target:
@@ -3551,7 +3546,7 @@
     - service: climate.set_temperature
       metadata: {}
       data:
-        temperature: '{{ 95 - days|float*5/7 }}'
+        temperature: '{{ 95 - days|float(0)*5/7 }}'
       target:
         entity_id: climate.chicken_heat_lamp
     else:
@@ -4023,7 +4018,7 @@
         data:
           image: https://hass.battenkillwoodworks.com/api/frigate/notifications/{{trigger.payload_json["after"]["id"]}}/thumbnail.jpg?format=android
           tag: '{{trigger.payload_json[''after''][''id'']}}'
-          when: '{{trigger.payload_json[''after''][''start_time'']|int}}'
+          when: '{{trigger.payload_json[''after''][''start_time'']|int(0)}}'
           data:
             clickAction: https://hass.battenkillwoodworks.com/api/frigate/notifications/{{trigger.payload_json["after"]["id"]}}/thumbnail.jpg?format=android
       action: notify.mobile_app_pixel_9_pro_xl
@@ -4033,7 +4028,7 @@
         data:
           image: https://hass.battenkillwoodworks.com/api/frigate/notifications/{{trigger.payload_json["after"]["id"]}}/thumbnail.jpg
           tag: '{{trigger.payload_json[''after''][''id'']}}'
-          when: '{{trigger.payload_json[''after''][''start_time'']|int}}'
+          when: '{{trigger.payload_json[''after''][''start_time'']|int(0)}}'
           entity_id: camera.{{trigger.payload_json["after"]["camera"] | replace("-","_")
             | lower}}
           data:
@@ -4045,7 +4040,7 @@
         data:
           image: https://hass.battenkillwoodworks.com/api/frigate/notifications/{{trigger.payload_json["after"]["id"]}}/thumbnail.jpg
           tag: '{{trigger.payload_json[''after''][''id'']}}'
-          when: '{{trigger.payload_json[''after''][''start_time'']|int}}'
+          when: '{{trigger.payload_json[''after''][''start_time'']|int(0)}}'
           entity_id: camera.{{trigger.payload_json["after"]["camera"] | replace("-","_")
             | lower}}
           data:
@@ -4599,7 +4594,7 @@
       - target:
           entity_id: input_number.downstairs_temperature
         data:
-          value: '{{ states(''input_number.a_c_target'')|int + 1 }}'
+          value: '{{ states(''input_number.a_c_target'')|int(0) + 1 }}'
         action: input_number.set_value
   mode: single
 - id: '1723291193109'

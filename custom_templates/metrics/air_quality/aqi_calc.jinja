@@ -19,12 +19,12 @@
     {%- set ns = namespace(vals=[]) -%}
 
     {%- if pm25 is not none -%}
-      {%- set sub = _calculate_subindex(pm25|float, pm25_breakpoints, aqi_breakpoints) | float(0) -%}
+      {%- set sub = _calculate_subindex(pm25|float(0), pm25_breakpoints, aqi_breakpoints) | float(0) -%}
       {%- set ns.vals = ns.vals + [ sub ] -%}
     {%- endif -%}
 
     {%- if pm10 is not none -%}
-      {%- set sub = _calculate_subindex(pm10|float, pm10_breakpoints, aqi_breakpoints) | float(0) -%}
+      {%- set sub = _calculate_subindex(pm10|float(0), pm10_breakpoints, aqi_breakpoints) | float(0) -%}
       {%- set ns.vals = ns.vals + [ sub ] -%}
     {%- endif -%}
 

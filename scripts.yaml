@@ -881,10 +881,10 @@ timer_add_time:
       remaining_sec: "{% if is_state(e,'active') %}\n  {% set fin = state_attr(e,'finishes_at')
         %}\n  {% if fin %}\n    {{ (as_timestamp(fin) - as_timestamp(now())) | round(0)
         }}\n  {% else %}\n    {% set r = state_attr(e,'remaining') | default('0:00:00')
-        %}\n    {% set p = r.split(':') %}\n    {{ (p[0]|int)*3600 + (p[1]|int)*60
-        + (p[2].split('.')[0]|int) }}\n  {% endif %}\n{% elif is_state(e,'paused')
+        %}\n    {% set p = r.split(':') %}\n    {{ (p[0]|int(0))*3600 + (p[1]|int(0))*60
+        + (p[2].split('.')[0]|int(0)) }}\n  {% endif %}\n{% elif is_state(e,'paused')
         %}\n  {% set r = state_attr(e,'remaining') | default('0:00:00') %}\n  {% set
-        p = r.split(':') %}\n  {{ (p[0]|int)*3600 + (p[1]|int)*60 + (p[2].split('.')[0]|int)
+        p = r.split(':') %}\n  {{ (p[0]|int(0))*3600 + (p[1]|int(0))*60 + (p[2].split('.')[0]|int(0))
         }}\n{% else %}\n  0\n{% endif %}"
       new_total: '{{ [remaining_sec + add_sec, 0] | max | int }}'
   - condition: template

@@ -120,25 +120,25 @@ mqtt:
     - name: "Aaron Weight Annotations"
       unique_id: ee990f47-6ce8-4436-8093-8ecb780f02f9
       state_topic: site/home/devices/weight_sync/weight/annotations
-      value_template: "{{ value_json.count }}"
+      value_template: "{{ value_json.get('count', 0) }}"
       json_attributes_topic: site/home/devices/weight_sync/weight/annotations
 
     - name: "Ashley Weight Annotations"
       unique_id: 4e6dabd2-bbd0-4e7b-85c8-27360afb7b08
       state_topic: site/home/devices/weight_sync/ashley/weight/annotations
-      value_template: "{{ value_json.count }}"
+      value_template: "{{ value_json.get('count', 0) }}"
       json_attributes_topic: site/home/devices/weight_sync/ashley/weight/annotations
 
     - name: "Aaron Milestones"
       unique_id: 0e496e10-e650-43a4-94ce-fddec5eccc2c
       state_topic: site/home/devices/weight_sync/milestones
-      value_template: "{{ value_json.count }}"
+      value_template: "{{ value_json.get('count', 0) }}"
       json_attributes_topic: site/home/devices/weight_sync/milestones
 
     - name: "Ashley Milestones"
       unique_id: 251fc718-543d-4f2e-8b43-6407709420e1
       state_topic: site/home/devices/weight_sync/ashley/milestones
-      value_template: "{{ value_json.count }}"
+      value_template: "{{ value_json.get('count', 0) }}"
       json_attributes_topic: site/home/devices/weight_sync/ashley/milestones
 
 template:
@@ -175,8 +175,8 @@ template:
             {% for k, v in w.items() if k != '_meta' %}
               {% if v is mapping and v.days is not none and v.date %}
                 {% set ns.items = ns.items + [{
-                  'weight': k|float,
-                  'days': v.days|float,
+                  'weight': k|float(0),
+                  'days': v.days|float(0),
                   'date': v.date|string
                 }] %}
               {% endif %}
@@ -195,7 +195,7 @@ template:
                 {% set pct = (k|string).rstrip('%')|float(0) %}
                 {% set ns.items = ns.items + [{
                   'body_fat': pct,
-                  'days': v.days|float,
+                  'days': v.days|float(0),
                   'date': v.date|string
                 }] %}
               {% endif %}
@@ -212,8 +212,8 @@ template:
             {% for k, v in w.items() if k != '_meta' %}
               {% if v is mapping and v.days is not none and v.date %}
                 {% set ns.items = ns.items + [{
-                  'weight': k|float,
-                  'days': v.days|float,
+                  'weight': k|float(0),
+                  'days': v.days|float(0),
                   'date': v.date|string
                 }] %}
               {% endif %}

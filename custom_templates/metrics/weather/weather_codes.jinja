@@ -35,7 +35,7 @@
 
 {# -------------------- Core: condition icon (HA weather icon names) -------------------- #}
 {%- macro condition(code, is_day=true) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_CLEAR -%}
         {{ 'sunny' if is_day else 'clear-night' }}
     {%- elif c in G_PARTLY -%}partlycloudy
@@ -58,7 +58,7 @@
 
 {# Material Design Icons equivalent (mdi:*). Useful for non-weather entities. #}
 {%- macro condition_mdi(code, is_day=true) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_CLEAR -%}
         {{ 'mdi:weather-sunny' if is_day else 'mdi:weather-night' }}
     {%- elif c in G_PARTLY -%}'mdi:weather-partly-cloudy'
@@ -81,7 +81,7 @@
 
 {# Human-readable condition name #}
 {%- macro condition_name(code) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_CLEAR -%}Clear
     {%- elif c in G_PARTLY -%}Partly Cloudy
     {%- elif c in G_OVERCAST -%}Overcast
@@ -110,7 +110,7 @@
 
 {# Precipitation type #}
 {%- macro precip_type(code) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_DRIZZLE_L + G_DRIZZLE_M + G_DRIZZLE_H + G_RAIN_L + G_RAIN_M + G_RAIN_H + G_SHOWER_L + G_SHOWER_M + G_SHOWER_V -%}rain
     {%- elif c in G_FDRIZZLE_L + G_FDRIZZLE_H + G_FRAIN_L + G_FRAIN_H -%}freezing_rain
     {%- elif c in G_SNOW_L + G_SNOW_M + G_SNOW_H + G_SNOW_GRAINS + G_SNOW_L + G_SNOW_H -%}snow
@@ -122,7 +122,7 @@
 
 {# Precipitation intensity #}
 {%- macro precip_intensity(code) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_DRIZZLE_L + G_RAIN_L + G_SNOW_L + G_SHOWER_L -%}light
     {%- elif c in G_DRIZZLE_M + G_RAIN_M + G_SNOW_M + G_SHOWER_M -%}moderate
     {%- elif c in G_DRIZZLE_H + G_RAIN_H + G_SNOW_H -%}heavy
@@ -134,7 +134,7 @@
 
 {# Simple hazard level 1..5 and helpers. Focus on icing and convection. #}
 {%- macro hazard_level(code) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_TSTORM -%}5
     {%- elif c in G_FRAIN_H + G_FDRIZZLE_H -%}4
     {%- elif c in G_RAIN_H + G_SNOW_H + G_SHOWER_V -%}3
@@ -153,16 +153,16 @@
 {%- endmacro %}
 
 {%- macro is_thunderstorm(code) -%}
-    {{ code|int in G_TSTORM }}
+    {{ code|int(0) in G_TSTORM }}
 {%- endmacro %}
 
 {%- macro is_fog(code) -%}
-    {{ code|int in G_FOG }}
+    {{ code|int(0) in G_FOG }}
 {%- endmacro %}
 
 {# Color suggestions for chips/badges #}
 {%- macro condition_color(code) -%}
-    {%- set c = code|int -%}
+    {%- set c = code|int(0) -%}
     {%- if c in G_CLEAR -%}#10b981
     {%- elif c in G_PARTLY -%}#84cc16
     {%- elif c in G_OVERCAST -%}#9ca3af

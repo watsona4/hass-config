@@ -817,7 +817,7 @@
                       and ((lat|float(none)) is not none)
                       and ((lon|float(none)) is not none)
                       and ((acc|float(none)) is not none)
-                      and ((lat|float) != 0 or (lon|float) != 0) -%}
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
       {%- set acc_f = acc | float(9999) -%}
       {%- set score = (
             (50 if valid else 0) +
@@ -837,7 +837,7 @@
                       and ((lat|float(none)) is not none)
                       and ((lon|float(none)) is not none)
                       and ((acc|float(none)) is not none)
-                      and ((lat|float) != 0 or (lon|float) != 0) -%}
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
       {%- set acc_f = acc | float(9999) -%}
       {%- set score = (
             (50 if valid else 0) +

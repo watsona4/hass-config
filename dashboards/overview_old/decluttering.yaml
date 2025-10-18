@@ -103,12 +103,12 @@ data_rate_card:
       - entity: '[[entity]]'
       - icon: '[[icon]]'
       - icon_color_spec: >-
-          {% set m = '[[max_speed]]'|float %}{% if v > 0.8*m %}green{% elif v
+          {% set m = '[[max_speed]]'|float(0) %}{% if v > 0.8*m %}green{% elif v
           > 0.5*m %}yellow{% elif v > 0.2*m %}orange{% elif v > 0.05*m %}red{%
           else %}grey{% endif %}
       - primary: '[[primary]]'
       - secondary_state: >-
-          {% set m = '[[max_speed]]'|float %} {% if v > 0.8*m %}Excellent{%
+          {% set m = '[[max_speed]]'|float(0) %} {% if v > 0.8*m %}Excellent{%
           elif v > 0.5*m %}Good{% elif v > 0.2*m %}Fair{% elif v > 0.05*m
           %}Poor{% else %}Offline{% endif %}
       - multiline_secondary: true
