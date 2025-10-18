@@ -13,9 +13,9 @@ UUID_RE = re.compile(
 
 # list-style containers (lists of entity dicts)
 LIST_CONTAINERS = {
-    "sensor","binary_sensor","switch","light","number","select","button","text",
-    "alarm_control_panel","device_tracker","cover","climate","fan","humidifier",
-    "media_player","water_heater","lock","valve","update","camera"
+    "sensor", "binary_sensor", "switch", "light", "number", "select", "button", "text",
+    "alarm_control_panel", "device_tracker", "cover", "climate", "fan", "humidifier",
+    "media_player", "water_heater", "lock", "valve", "update", "camera"
     # NOTE: do NOT include "template" here; it's a wrapper
 }
 
@@ -26,8 +26,13 @@ DICT_CONTAINERS = {
 
 # keys that make a dict "look like" an entity config
 ENTITY_HINT_KEYS = {
-    "name","state","platform","unique_id","device_class","state_class","unit_of_measurement",
-    "value_template","command_topic","state_topic"
+    "name", "state", "platform", "unique_id", "device_class", "state_class", "unit_of_measurement",
+    "value_template", "command_topic", "state_topic"
+}
+
+# Platforms that do not support unique_id
+PLATFORMS_WITHOUT_UNIQUE_ID = {
+    "derivative"  # You can add other platforms here that do not support unique_id
 }
 
 def is_uuid(val: Any) -> bool:
@@ -105,12 +110,18 @@ def order_unique_id(ent: CommentedMap, dict_container: bool = False) -> None:
 
 def ensure_unique_id_on_entity(ent: CommentedMap, used: Set[str], force: bool,
                                dict_container: bool = False) -> None:
+    platform = ent.get("platform", "")
+    
+    # Skip entities for platforms that don't support unique_id
+    if platform in PLATFORMS_WITHOUT_UNIQUE_ID:
+        return
+
     if "unique_id" in ent:
         if force or not is_uuid(ent["unique_id"]):
             ent["unique_id"] = new_uuid(used)
         else:
             ent["unique_id"] = str(ent["unique_id"])
-    else:
+    elif "default_entity_id" not in ent:
         ent["unique_id"] = new_uuid(used)
 
     for k in list(ent.keys()):

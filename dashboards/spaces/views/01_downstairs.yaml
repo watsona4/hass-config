@@ -33,16 +33,6 @@ cards:
     alignment: center
     chips:
     - type: template
-      entity: binary_sensor.gas_stove_heating_state
-      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
-        app=''running'') }}: {{ get_short_desc(entity, app=''running'') }}'
-      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''running'')
-        }}'
-      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
-        app=''running'') }}'
-      tap_action:
-        action: more-info
-    - type: template
       entity: binary_sensor.humidifier_low_water
       content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
         app=''problem'') }}: {{ get_short_desc(entity, app=''problem'') }}'
@@ -157,15 +147,6 @@ cards:
       - *id001
       - *id002
       - *id003
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.parlor_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id001
-      - *id002
-      - *id003
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Audio & Video
@@ -257,12 +238,9 @@ cards:
         y:
           formatter: EVAL:function(val) { return Number(val).toFixed(2); }
     series:
-    - entity: sensor.parlor_energy_today
-      yaxis_id: energy
-      transform: return x;
     - entity: sensor.gas_stove_gas_today
       yaxis_id: gas
-      transform: return x;
+      transform: return x/100;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -436,22 +414,6 @@ cards:
       - width: narrow
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.living_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id004
-      - *id005
-      - *id006
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -541,35 +503,6 @@ cards:
       transform: return x;
     - entity: sensor.living_room_presence_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.living_room_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -598,19 +531,6 @@ cards:
     - power
     tap_action:
       action: more-info
-  - type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-    - type: template
-      entity: binary_sensor.furnace_heating_state
-      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
-        app=''running'') }}: {{ get_short_desc(entity, app=''running'') }}'
-      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''running'')
-        }}'
-      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
-        app=''running'') }}'
-      tap_action:
-        action: more-info
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Comfort & Climate
@@ -694,15 +614,6 @@ cards:
       - *id007
       - *id008
       - *id009
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.dining_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id007
-      - *id008
-      - *id009
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Climate Trends (24 hours)
@@ -760,12 +671,9 @@ cards:
         y:
           formatter: EVAL:function(val) { return Number(val).toFixed(2); }
     series:
-    - entity: sensor.dining_room_energy_today
-      yaxis_id: energy
-      transform: return x;
     - entity: sensor.furnace_gas_today
       yaxis_id: gas
-      transform: return x;
+      transform: return x/100;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -796,22 +704,6 @@ cards:
       action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.breakfast_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -830,35 +722,6 @@ cards:
       entity: automation.breakfast_room_window_button
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.breakfast_room_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -912,12 +775,9 @@ cards:
       variables:
       - entity: sensor.kitchen_door_device_temperature
       - app: ambient
-      - &id010
-        layout: vertical
-      - &id011
-        multiline_secondary: false
-      - &id012
-        options: "vert_delim= \u2022 "
+      - layout: vertical
+      - multiline_secondary: false
+      - options: "vert_delim= \u2022 "
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Switches & Outlets
@@ -970,22 +830,6 @@ cards:
       - entity: sensor.none_15_1min
       - app: default
       - width: narrow
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.kitchen_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id010
-      - *id011
-      - *id012
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Shades & Covers
@@ -1072,35 +916,6 @@ cards:
     - entity: sensor.kitchen_door_device_temperature
       yaxis_id: temp
       transform: return x;
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.kitchen_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -1154,36 +969,20 @@ cards:
       variables:
       - entity: sensor.pantry_thermometer_temperature
       - app: ambient
-      - &id013
+      - &id010
         layout: vertical
-      - &id014
+      - &id011
         multiline_secondary: false
-      - &id015
+      - &id012
         options: "vert_delim= \u2022 "
     - type: custom:decluttering-card
       template: template_card
       variables:
       - entity: sensor.pantry_thermometer_humidity
       - app: indoor
-      - *id013
-      - *id014
-      - *id015
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.pantry_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id013
-      - *id014
-      - *id015
+      - *id010
+      - *id011
+      - *id012
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Automations & Scripts
@@ -1226,35 +1025,6 @@ cards:
       transform: return x;
     - entity: sensor.pantry_thermometer_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.pantry_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -1283,19 +1053,6 @@ cards:
     - power
     tap_action:
       action: more-info
-  - type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-    - type: template
-      entity: binary_sensor.dryer_heating_state
-      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
-        app=''running'') }}: {{ get_short_desc(entity, app=''running'') }}'
-      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''running'')
-        }}'
-      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
-        app=''running'') }}'
-      tap_action:
-        action: more-info
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Comfort & Climate
@@ -1308,20 +1065,20 @@ cards:
       variables:
       - entity: sensor.laundry_room_thermometer_temperature
       - app: ambient
-      - &id016
+      - &id013
         layout: vertical
-      - &id017
+      - &id014
         multiline_secondary: false
-      - &id018
+      - &id015
         options: "vert_delim= \u2022 "
     - type: custom:decluttering-card
       template: template_card
       variables:
       - entity: sensor.laundry_room_thermometer_humidity
       - app: indoor
-      - *id016
-      - *id017
-      - *id018
+      - *id013
+      - *id014
+      - *id015
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Switches & Outlets
@@ -1387,18 +1144,9 @@ cards:
       - entity: sensor.dryer_gas_today
       - app: energy_daily_house
       - project_daily: 'true'
-      - *id016
-      - *id017
-      - *id018
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.laundry_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id016
-      - *id017
-      - *id018
+      - *id013
+      - *id014
+      - *id015
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Shades & Covers
@@ -1465,9 +1213,6 @@ cards:
         y:
           formatter: EVAL:function(val) { return Number(val).toFixed(2); }
     series:
-    - entity: sensor.laundry_room_energy_today
-      yaxis_id: energy
-      transform: return x;
     - entity: sensor.dryer_gas_today
       yaxis_id: gas
-      transform: return x;
+      transform: return x/100;

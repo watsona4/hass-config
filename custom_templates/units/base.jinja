@@ -36,7 +36,7 @@
         'base': 'm³',
         'map': { 'L': 0.001, 'ft³': 0.028316846592, 'in³': 0.000016387064,
             'gal': 0.003785411784, 'qt': 0.000946352946, 'pt': 0.000473176473,
-            'cup': 0.000236588236, 'fl oz': 0.0000295735295625,
+            'cup': 0.000236588236, 'fl oz': 0.0000295735295625, 'CCF': 2.8316846592,
         }
     },
     'illuminance': {
@@ -377,6 +377,6 @@
     {{- u_humanize_value(states(entity_id) , state_attr(entity_id, 'unit_of_measurement')) -}}
 {%- endmacro %}
 
-{% macro u_humanize_attr(entity_id, attr, unit) -%}
+{% macro u_humanize_attr(entity_id, attr, unit='') -%}
     {{- u_humanize_value(state_attr(entity_id, attr) , unit) -}}
 {%- endmacro %}

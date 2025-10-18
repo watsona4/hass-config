@@ -65,22 +65,6 @@ cards:
         action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.front_hallway_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -88,35 +72,6 @@ cards:
       entity: cover.front_hallway_window
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.front_hallway_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -239,22 +194,6 @@ cards:
       - width: narrow
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.study_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id001
-      - *id002
-      - *id003
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -329,35 +268,6 @@ cards:
       transform: return x;
     - entity: sensor.study_thermometer_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.study_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -433,22 +343,6 @@ cards:
         action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.guest_bedroom_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -475,35 +369,6 @@ cards:
       entity: automation.guest_bedroom_window_button
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.guest_bedroom_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -534,22 +399,6 @@ cards:
       action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.master_bedroom_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -572,35 +421,6 @@ cards:
       entity: automation.master_bedroom_window_button
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.master_bedroom_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -670,22 +490,6 @@ cards:
       - *id006
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.master_bathroom_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id004
-      - *id005
-      - *id006
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -739,35 +543,6 @@ cards:
       transform: return x;
     - entity: sensor.master_bathroom_presence_living_room_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.master_bathroom_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -909,22 +684,6 @@ cards:
       - width: narrow
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.back_hallway_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id007
-      - *id008
-      - *id009
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -968,35 +727,6 @@ cards:
       yaxis_id: hum
     - entity: sensor.icomfort_s30_8655fc_current_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.back_hallway_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -1071,22 +801,6 @@ cards:
         action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.eleanor_s_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Automations & Scripts
   - type: grid
     columns: 2
@@ -1096,35 +810,6 @@ cards:
       entity: automation.eleanor_room_window_button
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.eleanor_s_room_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -1199,22 +884,6 @@ cards:
         action: more-info
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.michael_s_room_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -1233,35 +902,6 @@ cards:
       entity: automation.michael_room_window_button
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.michael_s_room_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -1331,22 +971,6 @@ cards:
       - *id012
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.kids_bathroom_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id010
-      - *id011
-      - *id012
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Automations & Scripts
   - type: grid
     columns: 2
@@ -1387,32 +1011,3 @@ cards:
       transform: return x;
     - entity: sensor.kids_bathroom_presence_living_room_humidity
       yaxis_id: hum
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.kids_bathroom_energy_today
-      yaxis_id: energy
-      transform: return x;

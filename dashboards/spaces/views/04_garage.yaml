@@ -118,22 +118,6 @@ cards:
       - width: narrow
   - type: custom:mushroom-title-card
     title: ''
-    subtitle: Utility Meters
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.garage_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - layout: vertical
-      - multiline_secondary: false
-      - options: "vert_delim= \u2022 "
-  - type: custom:mushroom-title-card
-    title: ''
     subtitle: Shades & Covers
   - type: vertical-stack
     cards:
@@ -156,35 +140,6 @@ cards:
       entity: automation.platform_battery
       tap_action:
         action: more-info
-  - type: custom:mushroom-title-card
-    title: ''
-    subtitle: Utility Trends (7 days)
-  - type: custom:apexcharts-card
-    graph_span: 7d
-    apex_config:
-      yaxis:
-      - id: energy
-        opposite: false
-        forceNiceScale: true
-        title:
-          text: Energy (kWh)
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      - id: gas
-        opposite: true
-        forceNiceScale: true
-        title:
-          text: "Gas (ft\xB3)"
-        labels:
-          formatter: EVAL:function(val) { return Number(val).toFixed(1); }
-      tooltip:
-        shared: true
-        y:
-          formatter: EVAL:function(val) { return Number(val).toFixed(2); }
-    series:
-    - entity: sensor.garage_energy_today
-      yaxis_id: energy
-      transform: return x;
 - type: custom:stack-in-card
   mode: vertical
   keep:
@@ -224,16 +179,6 @@ cards:
         }}'
       icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
         app=''power'') }}'
-      tap_action:
-        action: more-info
-    - type: template
-      entity: binary_sensor.shop_furnace_heating_state
-      content: '{% from ''main.jinja'' import get_name, get_short_desc %}{{ get_name(entity,
-        app=''running'') }}: {{ get_short_desc(entity, app=''running'') }}'
-      icon: '{% from ''main.jinja'' import get_icon %}{{ get_icon(entity, app=''running'')
-        }}'
-      icon_color: '{% from ''main.jinja'' import get_color %}{{ get_color(entity,
-        app=''running'') }}'
       tap_action:
         action: more-info
   - type: custom:mushroom-title-card
@@ -327,15 +272,6 @@ cards:
       - *id001
       - *id002
       - *id003
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.shop_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
-      - *id001
-      - *id002
-      - *id003
   - type: custom:mushroom-title-card
     title: ''
     subtitle: Automations & Scripts
@@ -404,9 +340,6 @@ cards:
         y:
           formatter: EVAL:function(val) { return Number(val).toFixed(2); }
     series:
-    - entity: sensor.shop_energy_today
-      yaxis_id: energy
-      transform: return x;
     - entity: sensor.shop_furnace_gas_today
       yaxis_id: gas
-      transform: return x;
+      transform: return x/100;
