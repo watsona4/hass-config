@@ -3,7 +3,7 @@
   password: !secret my_zwift_password
 
 - platform: rest
-  name: Agromonitoring
+  name: "Agromonitoring"
   unique_id: agromonitoring
   scan_interval: 43200
   timeout: 8
@@ -25,7 +25,7 @@
     - t0
 
 - platform: filter
-  name: Outside Temperature Filtered
+  name: "Outside Temperature Filtered"
   unique_id: outside_temperature_filtered
   entity_id: sensor.acurite_tower_a_11075_temperature
   filters:
@@ -35,14 +35,14 @@
       precision: 2
 
 - platform: filter
-  name: Outside Water Temperature Filtered
+  name: "Outside Water Temperature Filtered"
   unique_id: outside_water_temperature_filtered
   entity_id: sensor.outside_water_temperature
   filters:
     - filter: outlier
 
 - platform: filter
-  name: Average Brightness
+  name: "Average Brightness"
   unique_id: average_brightness
   entity_id: sensor.outside_brightness
   filters:
@@ -50,7 +50,7 @@
       window_size: "0:15:00"
 
 - platform: min_max
-  name: Blind Tilt Battery Level
+  name: "Blind Tilt Battery Level"
   unique_id: blind_tilt_battery_level
   type: min
   entity_ids:
@@ -77,7 +77,7 @@
     - sensor.master_bedroom_right_window_battery
 
 - platform: min_max
-  name: Xaiomi Thermometer Battery Level
+  name: "Xaiomi Thermometer Battery Level"
   unique_id: xaiomi_thermometer_battery_level
   type: min
   entity_ids:
@@ -86,7 +86,7 @@
     - sensor.chicken_coop_thermometer_battery
 
 - platform: min_max
-  name: Nest Protect Battery Level
+  name: "Nest Protect Battery Level"
   unique_id: nest_protect_battery_level
   type: min
   entity_ids:
@@ -100,31 +100,31 @@
     - sensor.nest_protect_living_room_battery_level
 
 - platform: derivative
-  name: Gym Humidity First Derivative
+  name: "Gym Humidity First Derivative"
   source: sensor.both_humidity_d1f2020f4a37
   unit_time: s
   time_window: "0:05:00"
 
 - platform: derivative
-  name: Gym Humidity Second Derivative
+  name: "Gym Humidity Second Derivative"
   source: sensor.gym_humidity_first_derivative
   unit_time: s
   time_window: "0:05:00"
 
 - platform: derivative
-  name: Downstairs Temperature Rate
+  name: "Downstairs Temperature Rate"
   source: sensor.downstairs_thermostat_current_temperature
   unit_time: h
   time_window: "0:30:00"
 
 - platform: derivative
-  name: Outside Temperature Rate
+  name: "Outside Temperature Rate"
   source: sensor.outside_temperature_state
   unit_time: h
   time_window: "0:30:00"
 
 - platform: mold_indicator
-  name: Mold Indicator
+  name: "Mold Indicator"
   unique_id: mold_indicator
   indoor_temp_sensor: sensor.dehumidifier_temperature
   indoor_humidity_sensor: sensor.dehumidifier_humidity
@@ -132,28 +132,28 @@
   calibration_factor: 1.17777777777777
 
 - platform: statistics
-  name: High Temperature
+  name: "High Temperature"
   unique_id: high_temperature
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_max
   max_age: "24:00:00"
 
 - platform: statistics
-  name: Low Temperature
+  name: "Low Temperature"
   unique_id: low_temperature
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min
   max_age: "24:00:00"
 
 - platform: statistics
-  name: High Temperature All Time
+  name: "High Temperature All Time"
   unique_id: high_temperature_all_time
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_max
   max_age: "999999:00:00"
 
 - platform: statistics
-  name: Low Temperature All Time
+  name: "Low Temperature All Time"
   unique_id: low_temperature_all_time
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min

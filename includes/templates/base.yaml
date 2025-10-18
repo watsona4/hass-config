@@ -196,6 +196,18 @@
       attributes:
         power: "{{ states('sensor.living_room_dehumidifier_power') | float(0) }}"
 
+- sensor:
+    - name: "Humidifier Humidity State"
+      unique_id: 622849dd-366f-4b63-b903-478501e28c6b
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+      availability: "{{ has_value('sensor.humidifier_humidity') or has_value('sensor.parlor_thermometer_humidity') }}"
+      state: >-
+        {% set h1 = states('sensor.humidifier_humidity') | float(none) %}
+        {% set h2 = states('sensor.parlor_thermometer_humidity') | float(none) %}
+        {{ h1 or h2 }}
+
 # ===============================
 # Before School Time
 # ===============================

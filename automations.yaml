@@ -1596,18 +1596,6 @@
           data: {}
           target:
             entity_id: climate.study_space_heater
-        - action: input_boolean.turn_off
-          metadata: {}
-          data: {}
-          target:
-            entity_id: input_boolean.humidifiers_enabled
-        - action: humidifier.turn_off
-          metadata: {}
-          data: {}
-          target:
-            entity_id:
-            - humidifier.living_room_dehumidifier
-            - humidifier.humidifier
     - conditions:
       - condition: trigger
         id:
@@ -5803,31 +5791,6 @@
     data: {}
     target:
       entity_id: switch.water_heater_boost
-  mode: single
-- id: parlor_humidifier_50pct_control
-  alias: Parlor Humidifier, keep ~50%
-  description: Turn humidifier off above 50%, on below 50%
-  triggers:
-  - entity_id: sensor.humidifier_humidity
-    above: 50
-    for: 00:02:00
-    trigger: numeric_state
-  - entity_id: sensor.humidifier_humidity
-    below: 50
-    for: 00:02:00
-    trigger: numeric_state
-  actions:
-  - choose:
-    - conditions: '{{ states(''sensor.humidifier_humidity'')|float(0) > 50 }}'
-      sequence:
-      - target:
-          entity_id: switch.parlor_humidifier
-        action: switch.turn_off
-    - conditions: '{{ states(''sensor.humidifier_humidity'')|float(0) < 50 }}'
-      sequence:
-      - target:
-          entity_id: switch.parlor_humidifier
-        action: switch.turn_on
   mode: single
 - id: '1757846645392'
   alias: Parlor Humidifier, keep ~50%
