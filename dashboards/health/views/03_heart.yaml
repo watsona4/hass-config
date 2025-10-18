@@ -172,20 +172,9 @@ sections:
         header:
           title: BP Time in Range (30d)
           show: true
-        graph_span: 1d
-        now:
-          show: false
         apex_config:
           chart:
             type: bar
-            toolbar:
-              show: false
-          plotOptions:
-            bar:
-              horizontal: false
-              columnWidth: 60%
-              dataLabels:
-                position: top
           xaxis:
             type: category
             categories:
@@ -193,91 +182,27 @@ sections:
               - Elevated
               - Stage 1+
               - Stage 2+
-            labels:
-              style:
-                fontWeight: 600
-          yaxis:
+        yaxis:
+          - id: default
             min: 0
             max: 100
-            tickAmount: 5
-            labels:
-              formatter: EVAL:function (v) { return v + "%"; }
-          dataLabels:
-            enabled: true
-            formatter: EVAL:function (v) { return Math.round(v) + "%"; }
-            style:
-              fontWeight: 600
-          tooltip:
-            'y':
-              formatter: EVAL:function (v) { return Math.round(v) + "%"; }
-          grid:
-            show: true
-            strokeDashArray: 3
+            apex_config:
+              tickAmount: 5
+              labels:
+                formatter: EVAL:function (v) { return v + "%"; }
         series:
           - name: Normal
             type: column
-            color: '#7CB342'
-            entity: sensor.bp_time_normal_30d
+            color: "#7CB342"
+            entity: sensor.health_bp_combined
             show:
               legend_value: false
               in_header: false
             data_generator: >
-              const get = id => Number(hass.states[id]?.state) || 0;
-              const N  = get('sensor.bp_time_normal_30d');
-              const E  = get('sensor.bp_time_elevated_30d');
-              const S1 = get('sensor.bp_time_stage_1_30d');
-              const S2 = get('sensor.bp_time_stage_2_30d');
-              const total = N + E + S1 + S2;
-              const pct = total > 0 ? (N / total) * 100 : 0;
-              return [pct, null, null, null];
-          - name: Elevated
-            type: column
-            color: '#FDD835'
-            entity: sensor.bp_time_elevated_30d
-            show:
-              legend_value: false
-              in_header: false
-            data_generator: |
-              const get = id => Number(hass.states[id]?.state) || 0;
-              const N  = get('sensor.bp_time_normal_30d');
-              const E  = get('sensor.bp_time_elevated_30d');
-              const S1 = get('sensor.bp_time_stage_1_30d');
-              const S2 = get('sensor.bp_time_stage_2_30d');
-              const total = N + E + S1 + S2;
-              const pct = total > 0 ? (E / total) * 100 : 0;
-              return [null, pct, null, null];
-          - name: Stage 1+
-            type: column
-            color: '#EF6C00'
-            entity: sensor.bp_time_stage_1_30d
-            show:
-              legend_value: false
-              in_header: false
-            data_generator: |
-              const get = id => Number(hass.states[id]?.state) || 0;
-              const N  = get('sensor.bp_time_normal_30d');
-              const E  = get('sensor.bp_time_elevated_30d');
-              const S1 = get('sensor.bp_time_stage_1_30d');
-              const S2 = get('sensor.bp_time_stage_2_30d');
-              const total = N + E + S1 + S2;
-              const pct = total > 0 ? (S1 / total) * 100 : 0;
-              return [null, null, pct, null];
-          - name: Stage 2+
-            type: column
-            color: '#C62828'
-            entity: sensor.bp_time_stage_2_30d
-            show:
-              legend_value: false
-              in_header: false
-            data_generator: |
-              const get = id => Number(hass.states[id]?.state) || 0;
-              const N  = get('sensor.bp_time_normal_30d');
-              const E  = get('sensor.bp_time_elevated_30d');
-              const S1 = get('sensor.bp_time_stage_1_30d');
-              const S2 = get('sensor.bp_time_stage_2_30d');
-              const total = N + E + S1 + S2;
-              const pct = total > 0 ? (S2 / total) * 100 : 0;
-              return [null, null, null, pct];
+              const get = id => Number(hass.states[id]?.state) || 0; const N  =
+              get('sensor.bp_normal_30d'); const E  = get('sensor.bp_elevated_30d');
+              const S1 = get('sensor.bp_stage_1_30d'); const S2 =
+              get('sensor.bp_stage_2_30d'); return [N, E, S1, S2];
       - type: custom:auto-entities
         grid_options:
           columns: full

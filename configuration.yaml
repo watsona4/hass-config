@@ -93,6 +93,12 @@ lovelace:
     - url: /local/community/flex-table-card/flex-table-card.js
       type: module
   dashboards:
+    lovelace-health:
+      mode: yaml
+      title: "Health & Fitness"
+      icon: mdi:heart-pulse
+      show_in_sidebar: true
+      filename: dashboards/health/dashboard.yaml
     lovelace-environment:
       mode: yaml
       title: Environment

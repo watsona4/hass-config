@@ -1,0 +1,1613 @@
+template:
+  - sensor:
+
+    - name: "Xert Activity 0 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[0] if acts|length > 0 else '' }}
+
+    - name: "Xert Activity 1 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[1] if acts|length > 1 else '' }}
+
+    - name: "Xert Activity 2 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[2] if acts|length > 2 else '' }}
+
+    - name: "Xert Activity 3 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[3] if acts|length > 3 else '' }}
+
+    - name: "Xert Activity 4 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[4] if acts|length > 4 else '' }}
+
+    - name: "Xert Activity 5 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[5] if acts|length > 5 else '' }}
+
+    - name: "Xert Activity 6 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[6] if acts|length > 6 else '' }}
+
+    - name: "Xert Activity 7 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[7] if acts|length > 7 else '' }}
+
+    - name: "Xert Activity 8 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[8] if acts|length > 8 else '' }}
+
+    - name: "Xert Activity 9 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[9] if acts|length > 9 else '' }}
+
+    - name: "Xert Activity 10 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[10] if acts|length > 10 else '' }}
+
+    - name: "Xert Activity 11 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[11] if acts|length > 11 else '' }}
+
+    - name: "Xert Activity 12 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[12] if acts|length > 12 else '' }}
+
+    - name: "Xert Activity 13 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[13] if acts|length > 13 else '' }}
+
+    - name: "Xert Activity 14 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[14] if acts|length > 14 else '' }}
+
+    - name: "Xert Activity 15 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[15] if acts|length > 15 else '' }}
+
+    - name: "Xert Activity 16 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[16] if acts|length > 16 else '' }}
+
+    - name: "Xert Activity 17 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[17] if acts|length > 17 else '' }}
+
+    - name: "Xert Activity 18 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[18] if acts|length > 18 else '' }}
+
+    - name: "Xert Activity 19 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[19] if acts|length > 19 else '' }}
+
+    - name: "Xert Activity 20 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[20] if acts|length > 20 else '' }}
+
+    - name: "Xert Activity 21 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[21] if acts|length > 21 else '' }}
+
+    - name: "Xert Activity 22 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[22] if acts|length > 22 else '' }}
+
+    - name: "Xert Activity 23 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[23] if acts|length > 23 else '' }}
+
+    - name: "Xert Activity 24 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[24] if acts|length > 24 else '' }}
+
+    - name: "Xert Activity 25 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[25] if acts|length > 25 else '' }}
+
+    - name: "Xert Activity 26 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[26] if acts|length > 26 else '' }}
+
+    - name: "Xert Activity 27 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[27] if acts|length > 27 else '' }}
+
+    - name: "Xert Activity 28 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[28] if acts|length > 28 else '' }}
+
+    - name: "Xert Activity 29 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[29] if acts|length > 29 else '' }}
+
+    - name: "Xert Activity 30 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[30] if acts|length > 30 else '' }}
+
+    - name: "Xert Activity 31 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[31] if acts|length > 31 else '' }}
+
+    - name: "Xert Activity 32 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[32] if acts|length > 32 else '' }}
+
+    - name: "Xert Activity 33 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[33] if acts|length > 33 else '' }}
+
+    - name: "Xert Activity 34 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[34] if acts|length > 34 else '' }}
+
+    - name: "Xert Activity 35 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[35] if acts|length > 35 else '' }}
+
+    - name: "Xert Activity 36 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[36] if acts|length > 36 else '' }}
+
+    - name: "Xert Activity 37 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[37] if acts|length > 37 else '' }}
+
+    - name: "Xert Activity 38 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[38] if acts|length > 38 else '' }}
+
+    - name: "Xert Activity 39 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[39] if acts|length > 39 else '' }}
+
+    - name: "Xert Activity 40 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[40] if acts|length > 40 else '' }}
+
+    - name: "Xert Activity 41 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[41] if acts|length > 41 else '' }}
+
+    - name: "Xert Activity 42 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[42] if acts|length > 42 else '' }}
+
+    - name: "Xert Activity 43 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[43] if acts|length > 43 else '' }}
+
+    - name: "Xert Activity 44 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[44] if acts|length > 44 else '' }}
+
+    - name: "Xert Activity 45 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[45] if acts|length > 45 else '' }}
+
+    - name: "Xert Activity 46 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[46] if acts|length > 46 else '' }}
+
+    - name: "Xert Activity 47 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[47] if acts|length > 47 else '' }}
+
+    - name: "Xert Activity 48 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[48] if acts|length > 48 else '' }}
+
+    - name: "Xert Activity 49 Path"
+      state: >
+        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
+          | selectattr('path','defined')
+          | selectattr('start_date','defined')
+          | selectattr('start_date','mapping')
+          | sort(attribute='start_date.date', reverse=True)
+          | map(attribute='path') | list %}
+        {{ acts[49] if acts|length > 49 else '' }}
+###############################################################################
+# Zwift: weekly summaries
+###############################################################################
+
+sensor:
+  - platform: history_stats
+    name: "Zwift Hours This Week"
+    entity_id: binary_sensor.zwift_active
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: "Zwift Rides This Week"
+    entity_id: binary_sensor.zwift_active
+    state: "on"
+    type: count
+    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
+    end: "{{ now() }}"
+  
+  ###############################################################################
+  # Xert: RESTful sensors for training status & progression (activity list + per-activity details)
+  ###############################################################################
+  
+  - platform: rest
+    name: Xert Training Info Raw
+    resource_template: >-
+      {{ 'https://www.xertonline.com/oauth/training_info' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
+    method: GET
+    scan_interval: 900
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - signature
+      - status
+      - tl
+      - targetXSS
+      - wotd
+      - weight
+      - source
+  
+  # 1) Recent activity list (IDs) for the window
+  - platform: rest
+    name: Xert Activity List Raw
+    resource_template: >-
+      {{ 'https://www.xertonline.com/oauth/activity' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
+    method: GET
+    scan_interval: 999999999
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    params:
+      from: "{{ states('sensor.xert_lookback_from_epoch') }}"
+      to: "{{ states('sensor.xert_lookback_to_epoch') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - activities
+
+  # 2) Per-activity detail fetchers for the most recent N items
+  #    We dereference 'path' from list attributes by index.
+  - platform: rest
+    name: Xert Activity 0 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_0_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 1 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_1_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 2 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_2_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 3 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_3_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 4 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_4_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 5 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_5_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 6 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_6_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 7 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_7_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 8 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_8_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 9 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_9_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 10 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_10_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 11 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_11_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 12 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_12_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 13 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_13_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 14 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_14_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 15 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_15_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 16 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_16_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 17 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_17_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 18 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_18_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 19 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_19_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 20 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_20_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 21 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_21_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 22 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_22_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 23 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_23_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 24 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_24_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 25 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_25_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 26 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_26_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 27 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_27_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 28 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_28_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 29 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_29_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 30 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_30_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 31 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_31_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 32 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_32_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 33 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_33_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 34 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_34_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 35 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_35_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 36 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_36_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 37 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_37_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 38 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_38_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 39 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_39_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 40 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_40_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 41 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_41_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 42 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_42_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 43 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_43_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 44 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_44_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 45 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_45_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 46 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_46_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 47 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_47_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 48 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_48_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+
+  - platform: rest
+    name: Xert Activity 49 Detail Raw
+    resource_template: >-
+      {% set p = states('sensor.xert_activity_49_path') %}
+      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
+        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
+      {% else %}
+        {{ 'http://127.0.0.1:65535/' }}
+      {% endif %}
+    method: GET
+    scan_interval: 999999999
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+    value_template: "{{ value_json.success | default(false) }}"
+    json_attributes:
+      - summary
+      - name
+      - description
+      - progression
+

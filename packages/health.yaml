@@ -355,25 +355,29 @@ template:
         unit_of_measurement: '%'
         state: >
           {% set hrs = states('sensor.bp_time_normal_30d') | float(0) %}
-          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+          {% set tot = states('sensor.bp_total_time_30d') | float(1) %}
+          {{ (hrs / tot * 100) | round(0) }}
       - name: "BP % Elevated (30d)"
         unique_id: 5ce798c8-d3cf-4cf1-b5c2-af4a5d588736
         unit_of_measurement: '%'
         state: >
           {% set hrs = states('sensor.bp_time_elevated_30d') | float(0) %}
-          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+          {% set tot = states('sensor.bp_total_time_30d') | float(1) %}
+          {{ (hrs / tot * 100) | round(0) }}
       - name: "BP % Stage 1+ (30d)"
         unique_id: 5041d13b-2334-4da6-82c4-39ae29eff576
         unit_of_measurement: '%'
         state: >
           {% set hrs = states('sensor.bp_time_stage_1_30d') | float(0) %}
-          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+          {% set tot = states('sensor.bp_total_time_30d') | float(1) %}
+          {{ (hrs / tot * 100) | round(0) }}
       - name: "BP % Stage 2+ (30d)"
         unique_id: a16efc38-ff5e-4130-9c84-df6c57341556
         unit_of_measurement: '%'
         state: >
           {% set hrs = states('sensor.bp_time_stage_2_30d') | float(0) %}
-          {{ ((hrs / (30 * 24)) * 100) | round(0) }}
+          {% set tot = states('sensor.bp_total_time_30d') | float(1) %}
+          {{ (hrs / tot * 100) | round(0) }}
 
   - trigger:
       - platform: time
@@ -497,6 +501,14 @@ sensor:
     duration:
       days: 30
     end: "{{ now() }}"
+  - platform: min_max
+    name: "BP Total Time (30d)"
+    type: sum
+    entity_ids:
+      - sensor.bp_time_normal_30d
+      - sensor.bp_time_elevated_30d
+      - sensor.bp_time_stage_1_30d
+      - sensor.bp_time_stage_2_30d
   - platform: statistics
     name: "Systolic Yesterday Stats"
     entity_id: sensor.pixel_9_pro_xl_systolic_blood_pressure

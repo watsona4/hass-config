@@ -1,0 +1,469 @@
+type: sections
+max_columns: 3
+title: Weight
+path: weight
+sections:
+  - type: grid
+    column_span: 2
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        grid_options:
+          columns: full
+        card_param: cards
+        filter:
+          template: >-
+            {% from 'macros/weight_charts.jinja' import generate_weight_chart %}
+            {{ [
+              generate_weight_chart(
+                title = 'Aaron Weight & Body Fat — actuals & projection',
+                weight_data = 'sensor.aaron_weight_dataset',
+                weight_proj = 'sensor.aaron_weight_projection',
+                weight_extents = { 'min': 180, 'max': 330 },
+                weight_goals = [
+                  { 'value': 220, 'label': 'Max weight', 'color': '#1f77b4' },
+                  { 'value': 200, 'label': 'Ideal weight', 'color': '#27ae60' },
+                ],
+                bodyfat_data = 'sensor.aaron_bodyfat_dataset',
+                bodyfat_proj = 'sensor.aaron_bodyfat_projection',
+                bodyfat_extents = { 'min': 25, 'max': 55 },
+                bodyfat_goals = [
+                  { 'value': 28, 'label': 'Body fat goal 28%', 'color': '#e67e22' },
+                ],
+                annotations = 'sensor.aaron_weight_annotations',
+                show_bodyfat = true,
+              ) | from_json,
+            ] }}
+      - type: horizontal-stack
+        cards:
+          - type: custom:flex-table-card
+            title: Aaron Weight Milestones
+            entities:
+              - entity: sensor.aaron_weight_milestones_rows
+            columns:
+              - name: Weight
+                data: rows.weight
+                modify: x.toFixed(0) + ' lb'
+              - name: Days
+                data: rows.days
+                modify: x.toFixed(1)
+              - name: Date
+                data: rows.date
+                modify: >-
+                  new Date(x).toLocaleDateString(undefined, {weekday:
+                  'short', year: 'numeric', month: 'short', day: 'numeric'})
+          - type: custom:flex-table-card
+            title: Aaron Body Fat Milestones
+            entities:
+              - entity: sensor.aaron_body_fat_milestones_rows
+            columns:
+              - name: Body Fat
+                data: rows.body_fat
+                modify: x.toFixed(0) + '%'
+              - name: Days
+                data: rows.days
+                modify: x.toFixed(1)
+              - name: Date
+                data: rows.date
+                modify: >-
+                  new Date(x).toLocaleDateString(undefined, {weekday:
+                  'short', year: 'numeric', month: 'short', day: 'numeric'})
+        grid_options:
+          columns: full
+      - type: custom:auto-entities
+        card:
+          type: vertical-stack
+        grid_options:
+          columns: full
+        card_param: cards
+        filter:
+          template: >-
+            {% from 'macros/weight_charts.jinja' import generate_weight_chart %}
+            {{ [
+              generate_weight_chart(
+                title = 'Ashley Weight & Body Fat — actuals & projection',
+                weight_data = 'sensor.ashley_weight_dataset',
+                weight_proj = 'sensor.ashley_weight_projection',
+                weight_extents = { 'min': 140, 'max': 230 },
+                weight_goals = [
+                  { 'value': 150, 'label': 'Target weight', 'color': '#27ae60' },
+                ],
+                annotations = 'sensor.ashley_weight_annotations',
+                show_bodyfat = false,
+              ) | from_json,
+            ] }}
+      - type: horizontal-stack
+        cards:
+          - type: custom:flex-table-card
+            title: Ashley Weight Milestones
+            entities:
+              - entity: sensor.ashley_weight_milestones_rows
+            columns:
+              - name: Weight
+                data: rows.weight
+                modify: x.toFixed(0) + ' lb'
+              - name: Days
+                data: rows.days
+                modify: x.toFixed(1)
+              - name: Date
+                data: rows.date
+                modify: >-
+                  new Date(x).toLocaleDateString(undefined, {weekday:
+                  'short', year: 'numeric', month: 'short', day: 'numeric'})
+        grid_options:
+          columns: full
+  - type: grid
+    cards:
+      - type: custom:stack-in-card
+        title: Aaron — Weight Metrics
+        mode: vertical
+        keep:
+          background: true
+          box_shadow: true
+          border_radius: true
+        card_mod:
+          style: >-
+            ha-card {
+              border-radius: 12px;
+              background: var(--card-background-color);
+              box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2));
+              padding: 8px;
+            }
+        cards:
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_weight_params
+                primary: Update & Fit
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_attr -%}
+                  {%- set updated = state_attr(entity,'updated_at') -%}
+                  {%- if updated -%}
+                    {{- 'Updated ' ~ as_datetime(updated)|relative_time ~ ' ago' -}}
+                  {%- else -%}
+                    No update timestamp
+                  {%- endif -%}
+                  {{- '\nFit quality (R²): ' ~ u_humanize_attr(entity, 'r2') }}
+                icon: mdi:clock-check-outline
+                color: >
+                  {%- set r2 = state_attr(entity,'r2') | float(0) -%}
+                  {{- 'green' if r2 >= 0.98 else 'light-green' if r2 >= 0.95 else 'amber' if r2 >= 0.90 else 'red' if r2 > 0 else 'grey' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_weight_params
+                primary: Half-lives
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hf = p and p['t12_fast_days'] -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'Fast: ' ~ (hf is number and (hf | round(1)) ~ ' days' or '—') -}}
+                  {{- '\nSlow: ' ~ (hs is number and (hs | round(1)) ~ ' days' or '—') -}}
+                icon: mdi:clock-fast
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'grey' if hs is not number else 'red' if hs < 30 else 'amber' if hs < 120 else 'green' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_weight_params
+                primary: Oscillations
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set t0 = state_attr(entity,'t0') -%}
+                  {%- set unit = state_attr(entity,'unit') -%}
+                  {%- if not p -%}
+                    No data
+                  {%- else -%}
+                    {%- set dp1 = p['dp1'] | float(0) -%}
+                    {%- set dp2 = p['dp2'] | float(0) -%}
+                    {%- set tau1 = p['tau1'] | float(0) -%}
+                    {%- set tau2 = p['tau2'] | float(0) -%}
+                    {%- set peak_day = t0 | as_datetime | as_local + timedelta(days=tau1) -%}
+                    {%- set peak_time = t0 | as_datetime | as_local + timedelta(days=tau2) -%}
+                    {%- set peak_day = peak_day.strftime('%A') -%}
+                    {%- set peak_time = peak_time.strftime('@%-I:%M') ~ peak_time.strftime('%p').lower() -%}
+                    {{- 'Overall: ±' ~ dp1 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_day ~ 's' -}}
+                    {{- '\nDaily: ±' ~ dp2 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_time -}}
+                  {%- endif -%}
+                icon: mdi:sine-wave
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set dp1 = p and (p['dp1'] | abs) or 0 -%}
+                  {%- set dp2 = p and (p['dp2'] | abs) or 0 -%}
+                  {%- set amp = dp1 + dp2 -%}
+                  {{- 'green' if amp < 0.5 else 'amber' if amp < 2 else 'red' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_weight_params
+                primary: Target & Weekly Trend
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_value -%}
+                  {%- set winf = state_attr(entity, 'winf') | float(none) -%}
+                  {%- set unit = state_attr(entity, 'unit') or 'lb' -%}
+                  {%- set rate = state_attr(entity, 'weekly_change') | float(none) -%}
+                  {%- set rate_unit = (state_attr(entity, 'weekly_change_unit').replace(' ','') or 'lb/wk') -%}
+                  {%- if winf is none or rate is none -%}
+                    No data
+                  {%- else -%}
+                    {{- 'Asymptote: ' ~ u_humanize_value(winf, unit) ~ '\nCurrent rate: ' ~ u_humanize_value(rate,rate_unit) -}}
+                  {%- endif -%}
+                icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'mdi:trending-down' if v < 0 else 'mdi:trending-up' if v > 0 else 'mdi:minus' -}}
+                badge_icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'mdi:run-fast' if a >= 4.0 else 'mdi:walk' if a >= 2.0 else 'mdi:sleep' -}}
+                badge_color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'red' if a >= 4.0 else 'amber' if a >= 2.0 else 'green' -}}
+                color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'green' if v < 0 else 'red' if v > 0 else 'grey' -}}
+                multiline_secondary: true
+      - type: custom:stack-in-card
+        title: Aaron — Body Fat Metrics
+        mode: vertical
+        keep:
+          background: true
+          box_shadow: true
+          border_radius: true
+        card_mod:
+          style: >-
+            ha-card {
+              border-radius: 12px;
+              background: var(--card-background-color);
+              box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2));
+              padding: 8px;
+            }
+        cards:
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_bodyfat_params
+                primary: Update & Fit
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_attr -%}
+                  {%- set updated = state_attr(entity,'updated_at') -%}
+                  {%- if updated -%}
+                    {{- 'Updated ' ~ as_datetime(updated)|relative_time ~ ' ago' -}}
+                  {%- else -%}
+                    No update timestamp
+                  {%- endif -%}
+                  {{- '\nFit quality (R²): ' ~ u_humanize_attr(entity, 'r2') }}
+                icon: mdi:clock-check-outline
+                color: >
+                  {%- set r2 = state_attr(entity,'r2') | float(0) -%}
+                  {{- 'green' if r2 >= 0.98 else 'light-green' if r2 >= 0.95 else 'amber' if r2 >= 0.90 else 'red' if r2 > 0 else 'grey' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_bodyfat_params
+                primary: Half-lives
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hf = p and p['t12_fast_days'] -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'Fast: ' ~ (hf is number and (hf | round(1)) ~ ' days' or '—') -}}
+                  {{- '\nSlow: ' ~ (hs is number and (hs | round(1)) ~ ' days' or '—') -}}
+                icon: mdi:clock-fast
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'grey' if hs is not number else 'red' if hs < 30 else 'amber' if hs < 120 else 'green' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_bodyfat_params
+                primary: Oscillations
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set t0 = state_attr(entity,'t0') -%}
+                  {%- set unit = state_attr(entity,'unit') -%}
+                  {%- if not p -%}
+                    No data
+                  {%- else -%}
+                    {%- set dp1 = p['dp1'] | float(0) -%}
+                    {%- set dp2 = p['dp2'] | float(0) -%}
+                    {%- set tau1 = p['tau1'] | float(0) -%}
+                    {%- set tau2 = p['tau2'] | float(0) -%}
+                    {%- set peak_day = t0 | as_datetime | as_local + timedelta(days=tau1) -%}
+                    {%- set peak_time = t0 | as_datetime | as_local + timedelta(days=tau2) -%}
+                    {%- set peak_day = peak_day.strftime('%A') -%}
+                    {%- set peak_time = peak_time.strftime('@%-I:%M') ~ peak_time.strftime('%p').lower() -%}
+                    {{- 'Overall: ±' ~ dp1 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_day ~ 's' -}}
+                    {{- '\nDaily: ±' ~ dp2 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_time -}}
+                  {%- endif -%}
+                icon: mdi:sine-wave
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set dp1 = p and (p['dp1'] | abs) or 0 -%}
+                  {%- set dp2 = p and (p['dp2'] | abs) or 0 -%}
+                  {%- set amp = dp1 + dp2 -%}
+                  {{- 'green' if amp < 0.5 else 'amber' if amp < 2 else 'red' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.aaron_bodyfat_params
+                primary: Target & Weekly Trend
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_value -%}
+                  {%- set winf = state_attr(entity, 'winf') | float(none) -%}
+                  {%- set unit = state_attr(entity, 'unit') or 'lb' -%}
+                  {%- set rate = state_attr(entity, 'weekly_change') | float(none) -%}
+                  {%- set rate_unit = (state_attr(entity, 'weekly_change_unit').replace(' ','') or 'lb/wk') -%}
+                  {%- if winf is none or rate is none -%}
+                    No data
+                  {%- else -%}
+                    {{- 'Asymptote: ' ~ u_humanize_value(winf, unit) ~ '\nCurrent rate: ' ~ u_humanize_value(rate,rate_unit) -}}
+                  {%- endif -%}
+                icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'mdi:trending-down' if v < 0 else 'mdi:trending-up' if v > 0 else 'mdi:minus' -}}
+                badge_icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'mdi:run-fast' if a >= 4.0 else 'mdi:walk' if a >= 2.0 else 'mdi:sleep' -}}
+                badge_color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'red' if a >= 4.0 else 'amber' if a >= 2.0 else 'green' -}}
+                color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'green' if v < 0 else 'red' if v > 0 else 'grey' -}}
+                multiline_secondary: true
+      - type: custom:stack-in-card
+        title: Ashley — Weight Metrics
+        mode: vertical
+        keep:
+          background: true
+          box_shadow: true
+          border_radius: true
+        card_mod:
+          style: >-
+            ha-card {
+              border-radius: 12px;
+              background: var(--card-background-color);
+              box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2));
+              padding: 8px;
+            }
+        cards:
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.ashley_weight_params
+                primary: Update & Fit
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_attr -%}
+                  {%- set updated = state_attr(entity,'updated_at') -%}
+                  {%- if updated -%}
+                    {{- 'Updated ' ~ as_datetime(updated)|relative_time ~ ' ago' -}}
+                  {%- else -%}
+                    No update timestamp
+                  {%- endif -%}
+                  {{- '\nFit quality (R²): ' ~ u_humanize_attr(entity, 'r2') }}
+                icon: mdi:clock-check-outline
+                color: >
+                  {%- set r2 = state_attr(entity,'r2') | float(0) -%}
+                  {{- 'green' if r2 >= 0.98 else 'light-green' if r2 >= 0.95 else 'amber' if r2 >= 0.90 else 'red' if r2 > 0 else 'grey' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.ashley_weight_params
+                primary: Half-lives
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hf = p and p['t12_fast_days'] -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'Fast: ' ~ (hf is number and (hf | round(1)) ~ ' days' or '—') -}}
+                  {{- '\nSlow: ' ~ (hs is number and (hs | round(1)) ~ ' days' or '—') -}}
+                icon: mdi:clock-fast
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set hs = p and p['t12_slow_days'] -%}
+                  {{- 'grey' if hs is not number else 'red' if hs < 30 else 'amber' if hs < 120 else 'green' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.ashley_weight_params
+                primary: Oscillations
+                secondary: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set t0 = state_attr(entity,'t0') -%}
+                  {%- set unit = state_attr(entity,'unit') -%}
+                  {%- if not p -%}
+                    No data
+                  {%- else -%}
+                    {%- set dp1 = p['dp1'] | float(0) -%}
+                    {%- set dp2 = p['dp2'] | float(0) -%}
+                    {%- set tau1 = p['tau1'] | float(0) -%}
+                    {%- set tau2 = p['tau2'] | float(0) -%}
+                    {%- set peak_day = t0 | as_datetime | as_local + timedelta(days=tau1) -%}
+                    {%- set peak_time = t0 | as_datetime | as_local + timedelta(days=tau2) -%}
+                    {%- set peak_day = peak_day.strftime('%A') -%}
+                    {%- set peak_time = peak_time.strftime('@%-I:%M') ~ peak_time.strftime('%p').lower() -%}
+                    {{- 'Overall: ±' ~ dp1 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_day ~ 's' -}}
+                    {{- '\nDaily: ±' ~ dp2 | abs | round(2) ~ ' ' ~ unit ~ ' ' ~ peak_time -}}
+                  {%- endif -%}
+                icon: mdi:sine-wave
+                color: >
+                  {%- set p = state_attr(entity,'params') -%}
+                  {%- set dp1 = p and (p['dp1'] | abs) or 0 -%}
+                  {%- set dp2 = p and (p['dp2'] | abs) or 0 -%}
+                  {%- set amp = dp1 + dp2 -%}
+                  {{- 'green' if amp < 0.5 else 'amber' if amp < 2 else 'red' -}}
+                multiline_secondary: true
+              - type: custom:mushroom-template-card
+                entity: sensor.ashley_weight_params
+                primary: Target & Weekly Trend
+                secondary: >
+                  {%- from 'units/base.jinja' import u_humanize_value -%}
+                  {%- set winf = state_attr(entity, 'winf') | float(none) -%}
+                  {%- set unit = state_attr(entity, 'unit') or 'lb' -%}
+                  {%- set rate = state_attr(entity, 'weekly_change') | float(none) -%}
+                  {%- set rate_unit = (state_attr(entity, 'weekly_change_unit').replace(' ','') or 'lb/wk') -%}
+                  {%- if winf is none or rate is none -%}
+                    No data
+                  {%- else -%}
+                    {{- 'Asymptote: ' ~ u_humanize_value(winf, unit) ~ '\nCurrent rate: ' ~ u_humanize_value(rate,rate_unit) -}}
+                  {%- endif -%}
+                icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'mdi:trending-down' if v < 0 else 'mdi:trending-up' if v > 0 else 'mdi:minus' -}}
+                badge_icon: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'mdi:run-fast' if a >= 4.0 else 'mdi:walk' if a >= 2.0 else 'mdi:sleep' -}}
+                badge_color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {%- set a = v | abs -%}
+                  {{- 'red' if a >= 4.0 else 'amber' if a >= 2.0 else 'green' -}}
+                color: >
+                  {%- set v = state_attr(entity, 'weekly_change') | float(0) -%}
+                  {{- 'green' if v < 0 else 'red' if v > 0 else 'grey' -}}
+                multiline_secondary: true
+      - type: custom:flex-table-card
+        title: Upcoming holidays & events
+        entities:
+          - sensor.weight_events_joined
+        columns:
+          - name: Date
+            data: events.date
+            modify: new Date(x).toLocaleDateString()
+          - name: Event
+            data: events.name
+          - name: Aaron Weight (lb)
+            data: events.weight
+            align: right
+            modify: 'x == null ? ''—'' : Number(x).toFixed(0)'
+          - name: Aaron Body Fat (%)
+            data: events.bodyfat
+            align: right
+            modify: 'x == null ? ''—'' : Number(x).toFixed(1)'
+          - name: Ashley Weight (lb)
+            data: events.ashley_weight
+            align: right
+            modify: 'x == null ? ''—'' : Number(x).toFixed(0)'
