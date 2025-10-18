@@ -807,6 +807,23 @@
       - weather.openmeteo_weather_home
     response_variable: forecast
     action: weather.get_forecasts
+  - if:
+    - condition: template
+      value_template: '{{ forecast[''weather.openmeteo_weather_home''][''forecast'']
+        | length == 0 }}'
+    then:
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+        milliseconds: 0
+    - action: automation.trigger
+      metadata: {}
+      data:
+        skip_condition: true
+      target:
+        entity_id: automation.plants_inside
+    - stop: No forecast data
   - variables:
       forecast: "{% set morning = today_at(\"18:30\") if now() < today_at(\"18:30\")
         else today_at(\"07:30\") + timedelta(days=1) %} {% set ns = namespace(data=[])
@@ -888,6 +905,16 @@
         data:
           option: Inside
         action: input_select.select_option
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.plant_location_changed
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.plant_location_reason
+        data:
+          value: '{{ message }}'
     - conditions:
       - condition: state
         entity_id: input_select.plant_location
@@ -933,7 +960,18 @@
         data:
           option: Outside
         action: input_select.select_option
-  mode: restart
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.plant_location_changed
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.plant_location_reason
+        data:
+          value: '{{ message }}'
+  mode: parallel
+  max: 2
 - id: '1695898395461'
   alias: Wood Stove
   description: ''

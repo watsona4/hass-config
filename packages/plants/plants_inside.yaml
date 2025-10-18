@@ -1,0 +1,49 @@
+###############################################################################
+# Plant location state and views
+###############################################################################
+input_select:
+  plant_location:
+    name: "Plant Location"
+    options:
+      - Unknown
+      - Inside
+      - Outside
+    initial: Unknown
+    icon: "mdi:sprout"
+
+input_datetime:
+  plant_location_changed:
+    name: "Plant Location Changed"
+    has_date: true
+    has_time: true
+
+input_text:
+  plant_location_reason:
+    name: "Plant Location Reason"
+    max: 255
+
+template:
+  - sensor:
+      - name: "Plants Location"
+        unique_id: 485c773a-df07-477d-82f7-ea427b82818a
+        icon: >
+          {% set s = states('input_select.plant_location') %}
+          {% if s == 'Inside' %}mdi:home
+          {% elif s == 'Outside' %}mdi:tree
+          {% else %}mdi:sprout{% endif %}
+        state: "{{ states('input_select.plant_location') }}"
+
+      - name: "Plants Location Changed"
+        unique_id: affa43bd-e31c-44b5-b2c7-051555905b21
+        icon: "mdi:clock-outline"
+        state: >
+          {{ as_datetime(states('input_datetime.plant_location_changed')) | as_local | default(None) }}
+        attributes:
+          pretty: >
+            {% set dt = as_datetime(states('input_datetime.plant_location_changed')) %}
+            {% if dt %}{{ relative_time(dt) ~ ' ago' }}{% else %}never{% endif %}
+
+      - name: "Plants Location Reason"
+        unique_id: 3ce45101-4c51-4e00-a79e-7e08362c8517
+        icon: "mdi:comment-text"
+        state: "{{ states('input_text.plant_location_reason') }}"

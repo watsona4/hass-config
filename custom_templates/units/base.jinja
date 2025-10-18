@@ -263,7 +263,7 @@
 
 {# Block-list for common non-SI/US-customary units where prefixes are undesirable. #}
 {% set NON_PREFIXABLE = ["s", "ms", "min", "h", "d", "gal", "qt", "pt", "cup", "floz",
-    "fl oz", "in", "ft", "yd", "mi", "nmi", "psi", "°C", "°F", "K",
+    "fl oz", "in", "ft", "yd", "mi", "nmi", "psi", "°C", "°F", "K", 'lx', 'µS/cm',
 ] %}
 {# djlint:on #}
 
@@ -367,7 +367,7 @@
 
                 {%- set out = sig_format(ns.v) -%}
                 {%- set sign_str = '-' if sgn == -1 and ns.v != 0 else '' -%}
-                {{- sign_str ~ out ~ ' ' ~ (ns.pref_out if can_pref else '') ~ sp.base -}}
+                {{- sign_str ~ out ~ (' ' if sp.base[0] not in ['°', '%'] else '') ~ (ns.pref_out if can_pref else '') ~ sp.base -}}
             {%- endif -%}
         {%- endif -%}
     {%- endif -%}
