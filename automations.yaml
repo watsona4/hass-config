@@ -2231,6 +2231,9 @@
         - tue
         - fri
         - wed
+        - sun
+        - thu
+        - sat
       - condition: state
         entity_id: person.aaron_watson
         state: home
@@ -3326,6 +3329,16 @@
         entity_id: lock.side_door
         state: unlocked
       sequence:
+      - if:
+        - condition: state
+          entity_id: timer.gym_event_loop_running
+          state: active
+        then:
+        - delay:
+            hours: 0
+            minutes: 2
+            seconds: 0
+            milliseconds: 0
       - wait_template: '{{ not has_value(''binary_sensor.kitchen_door_contact'') or
           is_state(''binary_sensor.kitchen_door_contact'', ''off'') }}'
       - if:
