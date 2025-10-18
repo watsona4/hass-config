@@ -316,7 +316,7 @@ sections:
                 entity: this.entity_id
                 icon: mdi:fire-alert
                 icon_color: red
-                primary: "{{ area_name(entity) }}"
+                primary: "{{ area_name(entity) ~ ' Smoke Alarm' }}"
                 tap_action:
                   action: more-info
             - entity_id: binary_sensor.nest_protect_*_co_status
@@ -326,7 +326,7 @@ sections:
                 entity: this.entity_id
                 icon: mdi:molecule-co
                 icon_color: red
-                primary: "{{ area_name(entity) }}"
+                primary: "{{ area_name(entity) ~ ' CO Alarm' }}"
                 tap_action:
                   action: more-info
           exclude: []
@@ -367,8 +367,7 @@ sections:
               state: 'on'
               options:
                 type: custom:mushroom-template-card
-                entity: this.entity_id
-                primary: "{{ area_name(entity) }}"
+                primary: "{{ state_attr(entity, 'friendly_name') }}"
                 icon: mdi:door-open
                 icon_color: amber
                 tap_action:
@@ -379,8 +378,7 @@ sections:
               state: 'on'
               options:
                 type: custom:mushroom-template-card
-                entity: this.entity_id
-                primary: "{{ area_name(entity) }}"
+                primary: "{{ state_attr(entity, 'friendly_name') }}"
                 icon: mdi:window-open
                 icon_color: amber
                 tap_action:
