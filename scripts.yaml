@@ -30,6 +30,7 @@ open_all_windows:
     - data:
         switches:
         - binary_sensor.west_windows_closed_temperature
+        - binary_sensor.laundry_room_closed_brightness
         action: Open
         entities:
         - cover.laundry_room_window

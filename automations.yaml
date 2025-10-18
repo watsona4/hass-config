@@ -547,6 +547,8 @@
               entities:
               - cover.laundry_room_window
               action: Open
+              switches:
+              - binary_sensor.laundry_room_closed_brightness
             action: script.window_position
           - if:
             - condition: state
