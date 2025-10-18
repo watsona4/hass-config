@@ -78,7 +78,7 @@ sections:
             entity: sensor.raspberrypi4_memory_percent
             primary: Memory
             secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}
               {%- set mem_pct = u_humanize_entity(entity) -%}
               {%- set mem_used = u_humanize_entity('sensor.raspberrypi4_memory_used') -%}
               {%- set mem_total = u_humanize_entity('sensor.raspberrypi4_memory_total') -%}
