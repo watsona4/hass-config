@@ -25,3 +25,5 @@ RUN apk update && \
         contextily \
     && \
     apk del build-base
+
+LABEL org.opencontainers.image.source=https://github.com/watsona4/hass-config
