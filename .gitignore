@@ -24,6 +24,11 @@ ssh/
 .vacuum
 SERVICE_ACCOUNT.JSON
 
+dashboards/spaces/views/
+zwift_access_token.txt
+zwift_id_token.txt
+zwift_refresh_token.txt
+
 # Ignore heavy binary assets, allow config assets
 www/community 
 www/**/*.jpg
