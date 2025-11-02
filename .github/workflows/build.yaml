@@ -28,7 +28,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Optional: expose your host UID/GID into the build if you used ARGs
+      - name: Get base Home Assistant version
+        id: base
+        run: |
+          BASE_TAG=$(docker run --rm ghcr.io/home-assistant/home-assistant:stable \
+            bash -c 'echo $VERSION' 2>/dev/null || echo "stable")
+          echo "base_tag=$BASE_TAG" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -39,6 +45,6 @@ jobs:
           tags: |
             ghcr.io/watsona4/hass-config:latest
             ghcr.io/watsona4/hass-config:stable
-            ghcr.io/watsona4/hass-config:${{ steps.meta.outputs.version }}
+            ghcr.io/watsona4/hass-config:${{ steps.base.outputs.base_tag }}
           cache-from: type=registry,ref=ghcr.io/watsona4/hass-config:buildcache
           cache-to: type=registry,ref=ghcr.io/watsona4/hass-config:buildcache,mode=max
