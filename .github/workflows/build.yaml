@@ -31,8 +31,10 @@ jobs:
       - name: Get base Home Assistant version
         id: base
         run: |
-          BASE_TAG=$(docker run --rm ghcr.io/home-assistant/home-assistant:stable \
-            bash -c 'echo $VERSION' 2>/dev/null || echo "stable")
+          BASE_TAG=$(skopeo inspect docker://ghcr.io/home-assistant/home-assistant:stable | jq -r '.Labels["org.opencontainers.image.version"]')
+          if [ -z "$BASE_TAG" ] || [ "$BASE_TAG" = "null" ]; then
+            BASE_TAG="stable"
+          fi
           echo "base_tag=$BASE_TAG" >> $GITHUB_OUTPUT
 
       - name: Build and push
