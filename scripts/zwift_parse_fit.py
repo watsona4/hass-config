@@ -2,11 +2,18 @@
 # zwift_parse_fit.py
 # Download a FIT from Zwift S3, parse "record" messages, and render plots
 
+import json
 import math
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
+try:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+except ImportError:  # pragma: no cover - Python < 3.9 fallback
+    ZoneInfo = None
+    ZoneInfoNotFoundError = Exception
 
 import matplotlib
 import requests
@@ -63,7 +70,7 @@ def main():
         cadences: List[float] = []
         heartrates: List[float] = []
 
-        local_tz = datetime.now().astimezone().tzinfo
+        local_tz = _get_local_timezone()
 
         for m in records:
             d = {f.name: f.value for f in m}
@@ -95,6 +102,10 @@ def main():
 
         _plot_metrics(timestamps, powers, cadences, heartrates, metrics_path)
         _plot_route(latitudes, longitudes, map_path)
+
+        summary = _summarize_ride(heartrates)
+        if summary is not None:
+            print(json.dumps(summary))
     except Exception as e:
         sys.stderr.write(f"Error parsing FIT: {e}\n")
         sys.exit(3)
@@ -143,15 +154,15 @@ def _plot_metrics(
     host.xaxis.set_major_formatter(formatter)
 
     ax_cadence = host.twinx()
-    ax_cadence.spines["right"].set_position(("axes", 1.08))
-    _make_spine_visible(ax_cadence)
+    # ax_cadence.spines["right"].set_position(("axes", 1.08))
+    # _make_spine_visible(ax_cadence)
     ax_cadence.plot(timestamps, cadences, color=color_cadence, linewidth=1.0)
     ax_cadence.set_ylabel("Cadence (rpm)", color=color_cadence)
     ax_cadence.tick_params(axis="y", colors=color_cadence)
 
     ax_hr = host.twinx()
-    ax_hr.spines["right"].set_position(("axes", 1.16))
-    _make_spine_visible(ax_hr)
+    ax_hr.spines["right"].set_position(("axes", 1.08))
+    # _make_spine_visible(ax_hr)
     ax_hr.plot(timestamps, heartrates, color=color_hr, linewidth=1.0)
     ax_hr.set_ylabel("Heart Rate (bpm)", color=color_hr)
     ax_hr.tick_params(axis="y", colors=color_hr)
@@ -269,8 +280,39 @@ def _to_local_time(ts: datetime, local_tz) -> datetime:
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
     if local_tz is None:
-        return ts.astimezone()
-    return ts.astimezone(local_tz)
+        localized = ts.astimezone()
+    else:
+        localized = ts.astimezone(local_tz)
+    # Matplotlib's date handling assumes naive datetimes; strip tzinfo after conversion.
+    return localized.replace(tzinfo=None)
+
+
+def _get_local_timezone():
+    tz_name = os.environ.get("TZ")
+    if tz_name and ZoneInfo is not None:
+        try:
+            return ZoneInfo(tz_name)
+        except ZoneInfoNotFoundError:
+            sys.stderr.write(f"Warning: TZ environment set to unknown zone '{tz_name}'; falling back to system tz.\n")
+        except Exception:
+            pass
+    try:
+        return datetime.now().astimezone().tzinfo
+    except Exception:
+        return timezone.utc
+
+
+def _summarize_ride(heartrates: List[float]) -> Optional[dict]:
+    valid = [hr for hr in heartrates if isinstance(hr, (int, float)) and not math.isnan(hr)]
+    if not valid:
+        return None
+
+    avg = sum(valid) / len(valid)
+    max_hr = max(valid)
+    return {
+        "avg_heartrate": round(avg, 1),
+        "max_heartrate": round(max_hr, 1),
+    }
 
 
 def _load_world_polygons():
