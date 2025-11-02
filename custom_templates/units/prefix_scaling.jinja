@@ -64,6 +64,9 @@
 
 {% macro scale_value(value, from_prefix, to_prefix, system='SI') %}
     {%- set v = value | float(none) -%}
+    {%- if v is none -%}
+        {{- none -}}
+    {%- else -%}
     {%- if system == 'IEC' -%}
         {%- set from_e = IEC_PREFIXES[from_prefix] -%}
         {%- set to_e = IEC_PREFIXES[to_prefix] -%}
@@ -72,6 +75,7 @@
         {%- set from_e = SI_PREFIXES[from_prefix] -%}
         {%- set to_e = SI_PREFIXES[to_prefix] -%}
         {{- v * (10 ** (from_e - to_e)) -}}
+    {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 

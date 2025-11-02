@@ -182,6 +182,10 @@
 
 {#-  -------------------- scalar, rate, and top-level -------------------- -#}
 {% macro convert_scalar(value, from_u, to_u) %}
+    {%- set numeric = value | float(none) -%}
+    {%- if numeric is none -%}
+        {{- {'error': 'no numeric value'} | tojson -}}
+    {%- else -%}
     {%- set fu = from_u|string -%}
     {%- set tu = to_u|string -%}
     {%- set fsp = split_prefix_unit(normalize_unit(fu)) | from_json -%}
@@ -191,12 +195,13 @@
     {%- if df == 'unknown' or dt == 'unknown' or df != dt -%}
         {{- {'error': 'incompatible: ' ~ fu ~ ' -> ' ~ tu} | tojson -}}
     {%- else -%}
-        {%- set base = to_base_value(value, fu) | from_json -%}
+        {%- set base = to_base_value(numeric, fu) | from_json -%}
         {%- if base.error is defined -%}
             {{- base | tojson -}}
         {%- else -%}
             {{- from_base_value(base.value, tu) -}}
         {%- endif -%}
+    {%- endif -%}
     {%- endif -%}
 {% endmacro %}
 
