@@ -12,58 +12,25 @@
 #   - Units: uses native units coming from your REST/OpenMeteo setup.
 # =====================================================================================
 
-sensor:
-  - platform: rest
-    name: OpenMeteo Nearby
-    unique_id: openmeteo_nearby
-    state_class: measurement
-    device_class: temperature
-    unit_of_measurement: "°F"
-    scan_interval: 300
+###############################################################################
+# REST command: OpenMeteo Nearby
+###############################################################################
+rest_command:
+  openmeteo_nearby_fetch:
+    url: >-
+      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid, nearby_lat, nearby_lon, nearby_alt -%}
+      {%- set base = 'https://api.open-meteo.com/v1/forecast' if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}?latitude={{ nearby_lat() }}&longitude={{ nearby_lon() }}&elevation={{ nearby_alt() }}&timezone=auto&current=apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&daily=precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max&hourly=apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_hours=24
+      {%- endif -%}
+    method: GET
     timeout: 60
-    resource_template: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
-      {{- 'https://api.open-meteo.com/v1/forecast' if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
-    params:
-      latitude: >-
-        {%- from 'macros/rest_helpers.jinja' import nearby_lat -%}
-        {{- nearby_lat() -}}
-      longitude: >-
-        {%- from 'macros/rest_helpers.jinja' import nearby_lon -%}
-        {{- nearby_lon() -}}
-      elevation: >-
-        {%- from 'macros/rest_helpers.jinja' import nearby_alt -%}
-        {{- nearby_alt() -}}
-      timezone: auto
-      current: apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m
-      daily: precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max
-      hourly: apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m
-      temperature_unit: fahrenheit
-      wind_speed_unit: mph
-      precipitation_unit: inch
-      forecast_hours: 24
     headers:
       Accept: application/json
       User-Agent: HomeAssistant
       Cache-Control: no-cache
-    availability: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
-      {{- nearby_is_valid() | bool -}}
-    value_template: >-
-      {%- set data = value_json if value_json is mapping else {} -%}
-      {%- set cur = data.get('current') or {} -%}
-      {%- set t = cur.get('temperature_2m') -%}
-      {{- t if t is not none else states(this.entity_id) -}}
-    json_attributes:
-      - timezone
-      - timezone_abbreviation
-      - elevation
-      - current_units
-      - current
-      - hourly_units
-      - hourly
-      - daily_units
-      - daily
 
 weather:
   - platform: template
@@ -95,6 +62,36 @@ weather:
       {{- forecast_hourly('sensor.openmeteo_nearby') | from_json(default={}) -}}
 
 template:
+
+  - trigger:
+      - platform: event
+        event_type: openmeteo_nearby_update
+    sensor:
+      - name: OpenMeteo Nearby
+        unique_id: openmeteo_nearby
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+        availability: >-
+          {{ trigger is not none
+             and trigger.event is not none
+             and trigger.event.data is mapping
+             and (trigger.event.data.available | default(false)) }}
+        state: >-
+          {%- set data = trigger.event.data.parsed if trigger and trigger.event and trigger.event.data.parsed is mapping else {} -%}
+          {%- set cur = data.get('current') or {} -%}
+          {%- set t = cur.get('temperature_2m') -%}
+          {{ t if t is not none else states(this.entity_id) }}
+        attributes:
+          timezone: "{{ trigger.event.data.parsed.timezone if trigger else none }}"
+          timezone_abbreviation: "{{ trigger.event.data.parsed.timezone_abbreviation if trigger else none }}"
+          elevation: "{{ trigger.event.data.parsed.elevation if trigger else none }}"
+          current_units: "{{ trigger.event.data.parsed.current_units if trigger else none }}"
+          current: "{{ trigger.event.data.parsed.current if trigger else none }}"
+          hourly_units: "{{ trigger.event.data.parsed.hourly_units if trigger else none }}"
+          hourly: "{{ trigger.event.data.parsed.hourly if trigger else none }}"
+          daily_units: "{{ trigger.event.data.parsed.daily_units if trigger else none }}"
+          daily: "{{ trigger.event.data.parsed.daily if trigger else none }}"
 
   - sensor:
       - name: Nearby Temperature
@@ -501,3 +498,37 @@ template:
           {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st6', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
+
+automation:
+  - id: openmeteo_nearby_refresh_via_rest_command
+    alias: OpenMeteo Nearby, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"
+    variables:
+      nearby_valid: >-
+        {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
+        {{ nearby_is_valid() | bool }}
+    action:
+      - delay:
+          seconds: "{{ range(0, 60) | random | int }}"
+      - choose:
+          - conditions: "{{ nearby_valid }}"
+            sequence:
+              - service: rest_command.openmeteo_nearby_fetch
+                response_variable: resp
+              - variables:
+                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 }}"
+                  parsed_obj: >-
+                    {{ resp.content if resp is mapping and resp.content is mapping
+                       else (resp.content | default('') | string | from_json(default={})) }}
+              - event: openmeteo_nearby_update
+                event_data:
+                  available: "{{ ok }}"
+                  parsed: "{{ parsed_obj | tojson }}"
+        default:
+          - event: openmeteo_nearby_update
+            event_data:
+              available: false
+              parsed: {}
