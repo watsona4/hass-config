@@ -1,1613 +1,3239 @@
+rest_command:
+
+  xert_activity_detail_fetch_0:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_0_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_1:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_1_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_2:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_2_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_3:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_3_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_4:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_4_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_5:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_5_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_6:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_6_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_7:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_7_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_8:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_8_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_9:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_9_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_10:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_10_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_11:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_11_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_12:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_12_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_13:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_13_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_14:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_14_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_15:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_15_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_16:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_16_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_17:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_17_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_18:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_18_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_19:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_19_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_20:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_20_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_21:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_21_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_22:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_22_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_23:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_23_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_24:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_24_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_25:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_25_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_26:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_26_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_27:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_27_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_28:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_28_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_29:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_29_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_30:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_30_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_31:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_31_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_32:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_32_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_33:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_33_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_34:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_34_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_35:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_35_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_36:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_36_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_37:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_37_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_38:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_38_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_39:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_39_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_40:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_40_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_41:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_41_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_42:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_42_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_43:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_43_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_44:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_44_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_45:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_45_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_46:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_46_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_47:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_47_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_48:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_48_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  xert_activity_detail_fetch_49:
+    url: "{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_49_path') }}"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+###############################################################################
+# Xert: Event-driven base sensors (mirror original REST sensors)
+###############################################################################
 template:
-  - sensor:
+  - trigger:
+      - platform: event
+        event_type: xert_activity_list_update
+    variables:
+      root: >-
+        {%- set x = trigger.event.data.parsed -%}
+        {%- if x is mapping -%}
+          {{ x }}
+        {%- else -%}
+          {{ x | default('') | from_json(default={}) }}
+        {%- endif -%}
+      acts: >-
+        {%- set ac = root.get('activities') or [] -%}
+        {{ (ac
+            | selectattr('path','defined')
+            | selectattr('start_date','defined')
+            | selectattr('start_date','mapping')
+            | sort(attribute='start_date.date', reverse=true)
+            | map(attribute='path')
+            | list) }}
+    sensor:
 
-    - name: "Xert Activity 0 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[0] if acts|length > 0 else '' }}
+      - name: "Xert Activity 0 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[0] if (L | count) > 0 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 1 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[1] if acts|length > 1 else '' }}
+      - name: "Xert Activity 1 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[1] if (L | count) > 1 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 2 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[2] if acts|length > 2 else '' }}
+      - name: "Xert Activity 2 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[2] if (L | count) > 2 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 3 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[3] if acts|length > 3 else '' }}
+      - name: "Xert Activity 3 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[3] if (L | count) > 3 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 4 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[4] if acts|length > 4 else '' }}
+      - name: "Xert Activity 4 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[4] if (L | count) > 4 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 5 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[5] if acts|length > 5 else '' }}
+      - name: "Xert Activity 5 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[5] if (L | count) > 5 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 6 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[6] if acts|length > 6 else '' }}
+      - name: "Xert Activity 6 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[6] if (L | count) > 6 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 7 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[7] if acts|length > 7 else '' }}
+      - name: "Xert Activity 7 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[7] if (L | count) > 7 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 8 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[8] if acts|length > 8 else '' }}
+      - name: "Xert Activity 8 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[8] if (L | count) > 8 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 9 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[9] if acts|length > 9 else '' }}
+      - name: "Xert Activity 9 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[9] if (L | count) > 9 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 10 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[10] if acts|length > 10 else '' }}
+      - name: "Xert Activity 10 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[10] if (L | count) > 10 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 11 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[11] if acts|length > 11 else '' }}
+      - name: "Xert Activity 11 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[11] if (L | count) > 11 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 12 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[12] if acts|length > 12 else '' }}
+      - name: "Xert Activity 12 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[12] if (L | count) > 12 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 13 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[13] if acts|length > 13 else '' }}
+      - name: "Xert Activity 13 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[13] if (L | count) > 13 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 14 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[14] if acts|length > 14 else '' }}
+      - name: "Xert Activity 14 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[14] if (L | count) > 14 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 15 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[15] if acts|length > 15 else '' }}
+      - name: "Xert Activity 15 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[15] if (L | count) > 15 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 16 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[16] if acts|length > 16 else '' }}
+      - name: "Xert Activity 16 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[16] if (L | count) > 16 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 17 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[17] if acts|length > 17 else '' }}
+      - name: "Xert Activity 17 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[17] if (L | count) > 17 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 18 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[18] if acts|length > 18 else '' }}
+      - name: "Xert Activity 18 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[18] if (L | count) > 18 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 19 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[19] if acts|length > 19 else '' }}
+      - name: "Xert Activity 19 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[19] if (L | count) > 19 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 20 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[20] if acts|length > 20 else '' }}
+      - name: "Xert Activity 20 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[20] if (L | count) > 20 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 21 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[21] if acts|length > 21 else '' }}
+      - name: "Xert Activity 21 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[21] if (L | count) > 21 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 22 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[22] if acts|length > 22 else '' }}
+      - name: "Xert Activity 22 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[22] if (L | count) > 22 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 23 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[23] if acts|length > 23 else '' }}
+      - name: "Xert Activity 23 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[23] if (L | count) > 23 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 24 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[24] if acts|length > 24 else '' }}
+      - name: "Xert Activity 24 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[24] if (L | count) > 24 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 25 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[25] if acts|length > 25 else '' }}
+      - name: "Xert Activity 25 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[25] if (L | count) > 25 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 26 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[26] if acts|length > 26 else '' }}
+      - name: "Xert Activity 26 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[26] if (L | count) > 26 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 27 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[27] if acts|length > 27 else '' }}
+      - name: "Xert Activity 27 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[27] if (L | count) > 27 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 28 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[28] if acts|length > 28 else '' }}
+      - name: "Xert Activity 28 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[28] if (L | count) > 28 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 29 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[29] if acts|length > 29 else '' }}
+      - name: "Xert Activity 29 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[29] if (L | count) > 29 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 30 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[30] if acts|length > 30 else '' }}
+      - name: "Xert Activity 30 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[30] if (L | count) > 30 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 31 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[31] if acts|length > 31 else '' }}
+      - name: "Xert Activity 31 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[31] if (L | count) > 31 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 32 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[32] if acts|length > 32 else '' }}
+      - name: "Xert Activity 32 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[32] if (L | count) > 32 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 33 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[33] if acts|length > 33 else '' }}
+      - name: "Xert Activity 33 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[33] if (L | count) > 33 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 34 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[34] if acts|length > 34 else '' }}
+      - name: "Xert Activity 34 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[34] if (L | count) > 34 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 35 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[35] if acts|length > 35 else '' }}
+      - name: "Xert Activity 35 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[35] if (L | count) > 35 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 36 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[36] if acts|length > 36 else '' }}
+      - name: "Xert Activity 36 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[36] if (L | count) > 36 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 37 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[37] if acts|length > 37 else '' }}
+      - name: "Xert Activity 37 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[37] if (L | count) > 37 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 38 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[38] if acts|length > 38 else '' }}
+      - name: "Xert Activity 38 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[38] if (L | count) > 38 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 39 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[39] if acts|length > 39 else '' }}
+      - name: "Xert Activity 39 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[39] if (L | count) > 39 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 40 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[40] if acts|length > 40 else '' }}
+      - name: "Xert Activity 40 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[40] if (L | count) > 40 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 41 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[41] if acts|length > 41 else '' }}
+      - name: "Xert Activity 41 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[41] if (L | count) > 41 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 42 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[42] if acts|length > 42 else '' }}
+      - name: "Xert Activity 42 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[42] if (L | count) > 42 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 43 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[43] if acts|length > 43 else '' }}
+      - name: "Xert Activity 43 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[43] if (L | count) > 43 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 44 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[44] if acts|length > 44 else '' }}
+      - name: "Xert Activity 44 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[44] if (L | count) > 44 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 45 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[45] if acts|length > 45 else '' }}
+      - name: "Xert Activity 45 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[45] if (L | count) > 45 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 46 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[46] if acts|length > 46 else '' }}
+      - name: "Xert Activity 46 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[46] if (L | count) > 46 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 47 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[47] if acts|length > 47 else '' }}
+      - name: "Xert Activity 47 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[47] if (L | count) > 47 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 48 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[48] if acts|length > 48 else '' }}
+      - name: "Xert Activity 48 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[48] if (L | count) > 48 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
 
-    - name: "Xert Activity 49 Path"
-      state: >
-        {% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[49] if acts|length > 49 else '' }}
+      - name: "Xert Activity 49 Path"
+        state: >-
+          {%- set L = acts if acts is sequence else [] -%}
+          {{ L[49] if (L | count) > 49 else 'unknown' }}
+        availability: "{{ (acts | count) > 0 }}"
+
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_0
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 0 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_1
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 1 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_2
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 2 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_3
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 3 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_4
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 4 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_5
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 5 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_6
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 6 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_7
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 7 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_8
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 8 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_9
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 9 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_10
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 10 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_11
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 11 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_12
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 12 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_13
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 13 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_14
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 14 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_15
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 15 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_16
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 16 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_17
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 17 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_18
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 18 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_19
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 19 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_20
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 20 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_21
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 21 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_22
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 22 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_23
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 23 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_24
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 24 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_25
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 25 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_26
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 26 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_27
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 27 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_28
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 28 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_29
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 29 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_30
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 30 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_31
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 31 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_32
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 32 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_33
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 33 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_34
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 34 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_35
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 35 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_36
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 36 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_37
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 37 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_38
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 38 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_39
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 39 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_40
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 40 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_41
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 41 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_42
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 42 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_43
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 43 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_44
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 44 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_45
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 45 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_46
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 46 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_47
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 47 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_48
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 48 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_49
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
+    sensor:
+      - name: Xert Activity 49 Detail Raw
+        state: >-
+          {{ (root.success | default(false)) }}
+        attributes:
+          summary: "{{ root.get('summary') }}"
+          name: "{{ root.get('name') }}"
+          description: "{{ root.get('description') }}"
+          progression: "{{ root.get('progression') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
+
 ###############################################################################
-# Zwift: weekly summaries
+# Xert: Automations to run rest_commands & update sensors
+# - Training Info: every 15 min (like scan_interval 900) with jitter
+# - Activity List: on window/token change + startup (original was "manual")
+# - Activity Detail i: on path/token change; staggered per-index
 ###############################################################################
+automation:
 
-sensor:
-  - platform: history_stats
-    name: "Zwift Hours This Week"
-    entity_id: binary_sensor.zwift_active
-    state: "on"
-    type: time
-    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: "Zwift Rides This Week"
-    entity_id: binary_sensor.zwift_active
-    state: "on"
-    type: count
-    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
-    end: "{{ now() }}"
-  
-  ###############################################################################
-  # Xert: RESTful sensors for training status & progression (activity list + per-activity details)
-  ###############################################################################
-  
-  - platform: rest
-    name: Xert Training Info Raw
-    resource_template: >-
-      {{ 'https://www.xertonline.com/oauth/training_info' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
-    method: GET
-    scan_interval: 900
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - signature
-      - status
-      - tl
-      - targetXSS
-      - wotd
-      - weight
-      - source
-  
-  # 1) Recent activity list (IDs) for the window
-  - platform: rest
-    name: Xert Activity List Raw
-    resource_template: >-
-      {{ 'https://www.xertonline.com/oauth/activity' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
-    method: GET
-    scan_interval: 999999999
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    params:
-      from: "{{ states('sensor.xert_lookback_from_epoch') }}"
-      to: "{{ states('sensor.xert_lookback_to_epoch') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - activities
+  # ---- Per-activity Detail Raw (generated) ----
 
-  # 2) Per-activity detail fetchers for the most recent N items
-  #    We dereference 'path' from list attributes by index.
-  - platform: rest
-    name: Xert Activity 0 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_0_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_0_detail_refresh_via_rest_command
+    alias: Xert Activity 0 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_0_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_0_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (0 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_0
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_0
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 1 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_1_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_1_detail_refresh_via_rest_command
+    alias: Xert Activity 1 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_1_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_1_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (1 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_1
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_1
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 2 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_2_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_2_detail_refresh_via_rest_command
+    alias: Xert Activity 2 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_2_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_2_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (2 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_2
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_2
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 3 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_3_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_3_detail_refresh_via_rest_command
+    alias: Xert Activity 3 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_3_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_3_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (3 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_3
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_3
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 4 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_4_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_4_detail_refresh_via_rest_command
+    alias: Xert Activity 4 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_4_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_4_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (4 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_4
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_4
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 5 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_5_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_5_detail_refresh_via_rest_command
+    alias: Xert Activity 5 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_5_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_5_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (5 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_5
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_5
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 6 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_6_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_6_detail_refresh_via_rest_command
+    alias: Xert Activity 6 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_6_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_6_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (6 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_6
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_6
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 7 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_7_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_7_detail_refresh_via_rest_command
+    alias: Xert Activity 7 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_7_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_7_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (7 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_7
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_7
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 8 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_8_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_8_detail_refresh_via_rest_command
+    alias: Xert Activity 8 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_8_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_8_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (8 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_8
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_8
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 9 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_9_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_9_detail_refresh_via_rest_command
+    alias: Xert Activity 9 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_9_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_9_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (9 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_9
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_9
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 10 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_10_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_10_detail_refresh_via_rest_command
+    alias: Xert Activity 10 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_10_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_10_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (10 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_10
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_10
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 11 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_11_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_11_detail_refresh_via_rest_command
+    alias: Xert Activity 11 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_11_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_11_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (11 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_11
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_11
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 12 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_12_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_12_detail_refresh_via_rest_command
+    alias: Xert Activity 12 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_12_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_12_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (12 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_12
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_12
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 13 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_13_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_13_detail_refresh_via_rest_command
+    alias: Xert Activity 13 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_13_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_13_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (13 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_13
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_13
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 14 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_14_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_14_detail_refresh_via_rest_command
+    alias: Xert Activity 14 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_14_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_14_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (14 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_14
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_14
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 15 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_15_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_15_detail_refresh_via_rest_command
+    alias: Xert Activity 15 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_15_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_15_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (15 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_15
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_15
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 16 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_16_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_16_detail_refresh_via_rest_command
+    alias: Xert Activity 16 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_16_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_16_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (16 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_16
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_16
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 17 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_17_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_17_detail_refresh_via_rest_command
+    alias: Xert Activity 17 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_17_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_17_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (17 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_17
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_17
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 18 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_18_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_18_detail_refresh_via_rest_command
+    alias: Xert Activity 18 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_18_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_18_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (18 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_18
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_18
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 19 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_19_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_19_detail_refresh_via_rest_command
+    alias: Xert Activity 19 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_19_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_19_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (19 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_19
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_19
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 20 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_20_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_20_detail_refresh_via_rest_command
+    alias: Xert Activity 20 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_20_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_20_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (20 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_20
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_20
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 21 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_21_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_21_detail_refresh_via_rest_command
+    alias: Xert Activity 21 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_21_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_21_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (21 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_21
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_21
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 22 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_22_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_22_detail_refresh_via_rest_command
+    alias: Xert Activity 22 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_22_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_22_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (22 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_22
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_22
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 23 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_23_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_23_detail_refresh_via_rest_command
+    alias: Xert Activity 23 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_23_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_23_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (23 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_23
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_23
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 24 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_24_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_24_detail_refresh_via_rest_command
+    alias: Xert Activity 24 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_24_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_24_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (24 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_24
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_24
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 25 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_25_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_25_detail_refresh_via_rest_command
+    alias: Xert Activity 25 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_25_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_25_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (25 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_25
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_25
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 26 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_26_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_26_detail_refresh_via_rest_command
+    alias: Xert Activity 26 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_26_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_26_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (26 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_26
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_26
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 27 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_27_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_27_detail_refresh_via_rest_command
+    alias: Xert Activity 27 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_27_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_27_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (27 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_27
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_27
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 28 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_28_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_28_detail_refresh_via_rest_command
+    alias: Xert Activity 28 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_28_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_28_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (28 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_28
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_28
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 29 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_29_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_29_detail_refresh_via_rest_command
+    alias: Xert Activity 29 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_29_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_29_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (29 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_29
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_29
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 30 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_30_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_30_detail_refresh_via_rest_command
+    alias: Xert Activity 30 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_30_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_30_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (30 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_30
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_30
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 31 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_31_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_31_detail_refresh_via_rest_command
+    alias: Xert Activity 31 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_31_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_31_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (31 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_31
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_31
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 32 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_32_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_32_detail_refresh_via_rest_command
+    alias: Xert Activity 32 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_32_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_32_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (32 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_32
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_32
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 33 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_33_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_33_detail_refresh_via_rest_command
+    alias: Xert Activity 33 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_33_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_33_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (33 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_33
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_33
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 34 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_34_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_34_detail_refresh_via_rest_command
+    alias: Xert Activity 34 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_34_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_34_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (34 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_34
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_34
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 35 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_35_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_35_detail_refresh_via_rest_command
+    alias: Xert Activity 35 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_35_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_35_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (35 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_35
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_35
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 36 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_36_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_36_detail_refresh_via_rest_command
+    alias: Xert Activity 36 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_36_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_36_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (36 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_36
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_36
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 37 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_37_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_37_detail_refresh_via_rest_command
+    alias: Xert Activity 37 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_37_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_37_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (37 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_37
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_37
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 38 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_38_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_38_detail_refresh_via_rest_command
+    alias: Xert Activity 38 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_38_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_38_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (38 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_38
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_38
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 39 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_39_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_39_detail_refresh_via_rest_command
+    alias: Xert Activity 39 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_39_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_39_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (39 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_39
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_39
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 40 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_40_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_40_detail_refresh_via_rest_command
+    alias: Xert Activity 40 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_40_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_40_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (40 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_40
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_40
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 41 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_41_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_41_detail_refresh_via_rest_command
+    alias: Xert Activity 41 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_41_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_41_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (41 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_41
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_41
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 42 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_42_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_42_detail_refresh_via_rest_command
+    alias: Xert Activity 42 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_42_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_42_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (42 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_42
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_42
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 43 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_43_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_43_detail_refresh_via_rest_command
+    alias: Xert Activity 43 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_43_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_43_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (43 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_43
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_43
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 44 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_44_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_44_detail_refresh_via_rest_command
+    alias: Xert Activity 44 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_44_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_44_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (44 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_44
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_44
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 45 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_45_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_45_detail_refresh_via_rest_command
+    alias: Xert Activity 45 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_45_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_45_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (45 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_45
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_45
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 46 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_46_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_46_detail_refresh_via_rest_command
+    alias: Xert Activity 46 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_46_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_46_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (46 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_46
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_46
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 47 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_47_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_47_detail_refresh_via_rest_command
+    alias: Xert Activity 47 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_47_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_47_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (47 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_47
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_47
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 48 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_48_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_48_detail_refresh_via_rest_command
+    alias: Xert Activity 48 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_48_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_48_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (48 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_48
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_48
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
-  - platform: rest
-    name: Xert Activity 49 Detail Raw
-    resource_template: >-
-      {% set p = states('sensor.xert_activity_49_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}
-    method: GET
-    scan_interval: 999999999
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+  - id: xert_activity_49_detail_refresh_via_rest_command
+    alias: Xert Activity 49 Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_49_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{{ has_value('sensor.xert_activity_49_path') }}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{{ (49 * 2) + (range(0, 2) | random | int) }}"
+      - service: rest_command.xert_activity_detail_fetch_49
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: "{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}"
+      - event: xert_activity_detail_update_49
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
