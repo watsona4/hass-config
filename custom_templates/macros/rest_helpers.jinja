@@ -41,15 +41,15 @@
 {% endmacro %}
 
 {% macro rv_lat() %}
-    {{- state_attr('device_tracker.rv_device_tracker', 'latitude') | float(0) -}}
+    {{- state_attr('device_tracker.rv_gps', 'latitude') | float(0) -}}
 {% endmacro %}
 
 {% macro rv_lon() %}
-    {{- state_attr('device_tracker.rv_device_tracker', 'longitude') | float(0) -}}
+    {{- state_attr('device_tracker.rv_gps', 'longitude') | float(0) -}}
 {% endmacro %}
 
 {% macro rv_alt() %}
-    {{- state_attr('device_tracker.rv_device_tracker', 'altitude') | float(0) -}}
+    {{- state_attr('device_tracker.rv_gps', 'altitude') | float(0) -}}
 {% endmacro %}
 
 {% macro rv_is_valid() %}
