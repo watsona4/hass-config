@@ -1,0 +1,100 @@
+###############################################################################
+# MiFlora plant probe routing (generated)
+###############################################################################
+
+input_select:
+  plant_sensor_location:
+    name: MiFlora probe is in
+    icon: mdi:leaf-maple
+    options:
+      - ficus religiosa
+      - haworthia fasciata
+      - hedera helix
+
+template:
+  - sensor:
+      # Optional mirrors of raw MiFlora sensors (keep, edit, or remove)
+      - name: "MiFlora Temperature F"
+        unique_id: miflora_temperature_f
+        state: "{{ states('sensor.plant_sensor_d455_temperature') }}"
+        unit_of_measurement: "°F"
+      - name: "MiFlora Illuminance"
+        unique_id: miflora_illuminance
+        state: "{{ states('sensor.plant_sensor_d455_illuminance') }}"
+        unit_of_measurement: "lx"
+      - name: "MiFlora Moisture"
+        unique_id: miflora_moisture
+        state: "{{ states('sensor.plant_sensor_d455_moisture') }}"
+        unit_of_measurement: "%"
+      - name: "MiFlora Conductivity"
+        unique_id: miflora_conductivity
+        state: "{{ states('sensor.plant_sensor_d455_conductivity') }}"
+        unit_of_measurement: "µS/cm"
+
+  - sensor:
+
+      - name: "ficus religiosa Temperature Routed"
+        unique_id: ficus_religiosa_temperature_routed
+        state: "{{ states('sensor.plant_sensor_d455_temperature') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','ficus religiosa') }}"
+        unit_of_measurement: "°F"
+      - name: "ficus religiosa Illuminance Routed"
+        unique_id: ficus_religiosa_illuminance_routed
+        state: "{{ states('sensor.plant_sensor_d455_illuminance') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','ficus religiosa') }}"
+        unit_of_measurement: "lx"
+      - name: "ficus religiosa Moisture Routed"
+        unique_id: ficus_religiosa_moisture_routed
+        state: "{{ states('sensor.plant_sensor_d455_moisture') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','ficus religiosa') }}"
+        unit_of_measurement: "%"
+      - name: "ficus religiosa Conductivity Routed"
+        unique_id: ficus_religiosa_conductivity_routed
+        state: "{{ states('sensor.plant_sensor_d455_conductivity') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','ficus religiosa') }}"
+        unit_of_measurement: "µS/cm"
+
+
+      - name: "haworthia fasciata Temperature Routed"
+        unique_id: haworthia_fasciata_temperature_routed
+        state: "{{ states('sensor.plant_sensor_d455_temperature') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','haworthia fasciata') }}"
+        unit_of_measurement: "°F"
+      - name: "haworthia fasciata Illuminance Routed"
+        unique_id: haworthia_fasciata_illuminance_routed
+        state: "{{ states('sensor.plant_sensor_d455_illuminance') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','haworthia fasciata') }}"
+        unit_of_measurement: "lx"
+      - name: "haworthia fasciata Moisture Routed"
+        unique_id: haworthia_fasciata_moisture_routed
+        state: "{{ states('sensor.plant_sensor_d455_moisture') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','haworthia fasciata') }}"
+        unit_of_measurement: "%"
+      - name: "haworthia fasciata Conductivity Routed"
+        unique_id: haworthia_fasciata_conductivity_routed
+        state: "{{ states('sensor.plant_sensor_d455_conductivity') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','haworthia fasciata') }}"
+        unit_of_measurement: "µS/cm"
+
+
+      - name: "hedera helix Temperature Routed"
+        unique_id: hedera_helix_temperature_routed
+        state: "{{ states('sensor.plant_sensor_d455_temperature') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','hedera helix') }}"
+        unit_of_measurement: "°F"
+      - name: "hedera helix Illuminance Routed"
+        unique_id: hedera_helix_illuminance_routed
+        state: "{{ states('sensor.plant_sensor_d455_illuminance') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','hedera helix') }}"
+        unit_of_measurement: "lx"
+      - name: "hedera helix Moisture Routed"
+        unique_id: hedera_helix_moisture_routed
+        state: "{{ states('sensor.plant_sensor_d455_moisture') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','hedera helix') }}"
+        unit_of_measurement: "%"
+      - name: "hedera helix Conductivity Routed"
+        unique_id: hedera_helix_conductivity_routed
+        state: "{{ states('sensor.plant_sensor_d455_conductivity') }}"
+        availability: "{{ is_state('input_select.plant_sensor_location','hedera helix') }}"
+        unit_of_measurement: "µS/cm"
+

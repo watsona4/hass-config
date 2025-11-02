@@ -8,7 +8,6 @@ input_select:
       - Unknown
       - Inside
       - Outside
-    initial: Unknown
     icon: "mdi:sprout"
 
 input_datetime:

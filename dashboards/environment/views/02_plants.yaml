@@ -7,10 +7,10 @@ badges:
     entity: sensor.plants_location
     icon: "{{ 'mdi:home' if is_state(entity,'Inside') else 'mdi:tree' if is_state(entity,'Outside') else 'mdi:sprout' }}"
     color: "{{ 'blue' if is_state(entity,'Inside') else 'green' if is_state(entity,'Outside') else 'amber' }}"
-    content: "{{ 'Plants Location: ' ~ states(entity) }}"
+    content: "Plants Location: {{ states(entity) }}"
   - type: custom:mushroom-template-badge
     entity: sensor.plants_location_reason
-    content: "{{ 'Location Reason: ' ~ (states(entity) or '—') }}"
+    content: "Location Reason: {{ states(entity) or '—' }}"
     icon: mdi:comment-text
     color: blue
   - type: custom:mushroom-template-badge
@@ -18,86 +18,12 @@ badges:
     icon: mdi:clock-outline
     content: >
       {% set p = state_attr(entity,'pretty') %}
-      {{ 'Last Changed: ' ~ (p if p else 'never') }}
-sections:
-  - type: grid
-    cards:
-      - type: custom:mushroom-title-card
-        title: 🌿 Bodhi Tree Status
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: template
-            entity: binary_sensor.bodhi_all_ok
-            content: "{{ 'All good' if is_state(entity,'on') else 'Needs attention' }}"
-            icon: "{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}"
-            icon_color: "{{ 'green' if is_state(entity,'on') else 'red' }}"
-          - type: template
-            entity: sensor.bodhi_care_action
-            content: "{{ states(entity) }}"
-            icon: mdi:leaf
-            icon_color: green
-        alignment: center
-      - square: false
-        type: grid
-        columns: 2
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.bodhi_temperature_degf
-            primary: Temperature
-            secondary: >
-              {% from 'units/base.jinja' import u_humanize_entity %}
-              {{ 'Current: ' ~ u_humanize_entity(entity) }}
-              {{ '\nRange: ' ~ states('sensor.bodhi_temperature_range') }}
-            icon: mdi:thermometer
-            color: "{{ 'green' if is_state('binary_sensor.bodhi_temp_ok','on') else 'red' }}"
-            multiline_secondary: true
-          - type: custom:mushroom-template-card
-            entity: sensor.bodhi_light_lux
-            primary: Light
-            secondary: |
-              {% from 'units/base.jinja' import u_humanize_entity %}
-              {{ 'Current: ' ~ u_humanize_entity(entity) }}
-              {{ 'Range: ' ~ states('sensor.bodhi_light_range') }}
-            icon: mdi:white-balance-sunny
-            color: "{{ 'green' if is_state('binary_sensor.bodhi_light_ok','on') else 'red' }}"
-            multiline_secondary: true
-          - type: custom:mushroom-template-card
-            entity: sensor.bodhi_moisture
-            primary: Moisture
-            secondary: |
-              {% from 'units/base.jinja' import u_humanize_entity %}
-              {{ 'Current: ' ~ u_humanize_entity(entity) }}
-              {{ 'Range: ' ~ states('sensor.bodhi_moisture_range') }}
-            icon: mdi:white-balance-sunny
-            color: "{{ 'green' if is_state('binary_sensor.bodhi_moisture_ok','on') else 'red' }}"
-            multiline_secondary: true
-          - type: custom:mushroom-template-card
-            entity: sensor.bodhi_conductivity_ms_cm
-            primary: Conductivity
-            secondary: |
-              {% from 'units/base.jinja' import u_humanize_entity %}
-              {{ 'Current: ' ~ u_humanize_entity(entity) }}
-              {{ 'Range: ' ~ states('sensor.bodhi_conductivity_range') }}
-            icon: mdi:white-balance-sunny
-            color: "{{ 'green' if is_state('binary_sensor.bodhi_conductivity_ok','on') else 'red' }}"
-            multiline_secondary: true
-      - type: markdown
-        content: >
-          {% set ok = {
-            'temp': is_state('binary_sensor.bodhi_temp_ok','on'),
-            'light': is_state('binary_sensor.bodhi_light_ok','on'),
-            'moist': is_state('binary_sensor.bodhi_moisture_ok','on'),
-            'cond': is_state('binary_sensor.bodhi_conductivity_ok','on')
-          } %}
-          {% set action = states('sensor.bodhi_care_action') %}
-          {% set overall_ok = (ok.temp and ok.light and ok.moist and ok.cond) %}
-          {{ '**' ~ ('✅ All Good!' if overall_ok else '⚠️ Needs Attention') ~ '**: ' ~ action }}
-          {{ '\n---' }}
-          {{ '\n**🌤 Sunlight:** ' ~ states('sensor.bodhi_sunlight') }}
-          {{ '\n**🚿 Watering:** ' ~ states('sensor.bodhi_watering') }}   
-          {{ '\n**🌱 Fertilization:** ' ~ states('sensor.bodhi_fertilization') }}   
-          {{ '\n**✂️ Pruning:** ' ~ states('sensor.bodhi_pruning') }}   
-          {{ '\n**🪴 Soil:** ' ~ states('sensor.bodhi_soil') }}   
-          {{ '\n**📝 Notes:** ' ~ states('sensor.bodhi_notes') }}
-      - type: picture
-        image: "local/images/ficus religiosa.jpg"
+      Last Changed: {{ p if p else 'never' }}
+  - type: custom:mushroom-template-badge
+    entity: input_select.plant_sensor_location
+    icon: mdi:leaf
+    color: green
+    content: "Probe Location: {{ states(entity) | title }}"
+    tap_action:
+      action: more-info
+sections: !include_dir_list ../plant_sections
