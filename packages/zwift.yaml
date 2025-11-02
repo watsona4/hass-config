@@ -432,7 +432,7 @@ template:
       - action: shell_command.zwift_parse_fit
         response_variable: fit_data
         data:
-          fit_url: https://{{fit_file_bucket}}.s3.amazonaws.com/{{fit_file_key}}
+          fit_url: "https://{{fit_file_bucket}}.s3.amazonaws.com/{{fit_file_key}}"
           output_prefix: /config/www/zwift/
     sensor:
       - name: "Zwift Activity Data"
@@ -441,8 +441,10 @@ template:
         attributes:
           activities: "{{d}}"
       - name: "Zwift Last Ride Title"
+        unique_id: 221a86fb-2af5-40f3-aa32-81ed893e044e
         state: "{{ last.get('name','') }}"
       - name: "Zwift Last Ride Distance"
+        unique_id: 2ec53f50-fed2-45d1-ac6f-e769e9c07260
         device_class: distance
         unit_of_measurement: "mi"
         state_class: measurement
@@ -450,27 +452,42 @@ template:
           {% from 'units/base.jinja' import u_convert_value %}
           {{ u_convert_value(last.get('distanceInMeters',0), 'm', 'mi') }}
       - name: "Zwift Last Ride Elevation"
+        unique_id: 8952e7c9-e4e2-433e-bb0a-c1b29a52ecdf
         device_class: distance
         unit_of_measurement: "m"
         state_class: measurement
         state: "{{ last.get('totalElevation',0) }}"
       - name: "Zwift Last Ride Avg Power"
+        unique_id: 6c8464a7-fd08-4ee0-bd84-6b0f1c250737
         device_class: power
         unit_of_measurement: "W"
         state_class: measurement
         state: "{{ last.get('avgWatts',0) }}"
       - name: "Zwift Last Ride Duration"
+        unique_id: 14c3535b-4cbe-4c94-9168-d99be1ef090a
         device_class: duration
         unit_of_measurement: "min"
         state_class: measurement
-        state: "{{ last.get('movingTimeInMs',0)/1000/60 }}"
+        state: >-
+          {% from 'units/base.jinja' import u_convert_value %}
+          {{ u_convert_value(last.get('movingTimeInMs',0), 'ms', 'min') }}
       - name: "Zwift Last Ride Calories"
+        unique_id: 4666604b-0d9d-4237-a9bc-44e512ad2016
         device_class: energy
         unit_of_measurement: "kcal"
         state_class: measurement
         state: "{{ last.get('calories',0) }}"
       - name: "Zwift Last Ride Image"
+        unique_id: 97cd09f5-ef2a-43f1-ba94-668a812b0420
         state: "{{ last.get('primaryImageUrl','') }}"
+      - name: "Zwift Last Ride Avg HR"
+        unique_id: 908dae6e-f189-4d1d-8f6d-91b46118faa8
+        state_class: measurement
+        state: "{{ (fit_data.get('stdout')|from_json).get('avg_heartrate',0) }}"
+      - name: "Zwift Last Ride Max HR"
+        unique_id: a067799b-59ca-4e17-848f-b5330cb94381
+        state_class: measurement
+        state: "{{ (fit_data.get('stdout')|from_json).get('max_heartrate',0) }}"
 
   - trigger:
       - platform: event

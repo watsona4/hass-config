@@ -1545,7 +1545,7 @@ automation:
                 data:
                   title: "Strava rate limit"
                   message: >-
-                    Read rate limit exceeded (status {{ status_code }}).
+                    Read rate limit exceeded (status {{ resp.status }}).
                     Backing off until {{ (now() + timedelta(minutes=16)).strftime('%H:%M:%S') }}.
 
   - id: strava_activity_details_enrich
