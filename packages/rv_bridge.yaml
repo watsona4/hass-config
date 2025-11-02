@@ -472,13 +472,19 @@ automation:
     trigger:
       - platform: time_pattern
         seconds: "/59"
-    condition: []
+    condition:
+      - condition: template
+        value_template: >
+          {% set lat = state_attr('device_tracker.rv_gps','latitude') %}
+          {% set lon = state_attr('device_tracker.rv_gps','longitude') %}
+          {{ lat is number and lon is number
+             and -90 <= lat <= 90 and -180 <= lon <= 180 }}
     action:
       - service: device_tracker.see
         data:
           dev_id: rv_gps_map
           source_type: gps
           gps:
-            - "{{ state_attr('device_tracker.rv_gps','latitude') }}"
-            - "{{ state_attr('device_tracker.rv_gps','longitude') }}"
-          gps_accuracy: "{{ state_attr('device_tracker.rv_gps','gps_accuracy') | default(10) }}"
+            - "{{ state_attr('device_tracker.rv_gps','latitude') | float }}"
+            - "{{ state_attr('device_tracker.rv_gps','longitude') | float }}"
+          gps_accuracy: "{{ state_attr('device_tracker.rv_gps','gps_accuracy') | int(default=10) }}"
