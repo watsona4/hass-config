@@ -101,11 +101,6 @@ template:
              and is_state('binary_sensor.haworthia_fasciata_moisture_ok','on')
              and is_state('binary_sensor.haworthia_fasciata_ec_ok','on') }}
 
-          {%- set temp_min_f = u_humanize_value(u_convert_entity('sensor.haworthia_fasciata_temp_min', 'f'), '°F') -%}
-          {%- set temp_max_f = u_humanize_value(u_convert_entity('sensor.haworthia_fasciata_temp_max', 'f'), '°F') -%}
-          {{ 'Current: ' ~ u_humanize_entity(entity) }}
-          {{ '\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}
-
   - sensor:
       - name: "Haworthia fasciata Care Notes"
         unique_id: "haworthia_fasciata_care_notes"

@@ -1,10 +1,13 @@
 type: grid
 column_span: 1
 cards:
-  # -------------- Section for Peepul Tree --------------
+  # -------------- Section for Bodhi Tree --------------
   - type: custom:mushroom-title-card
-    title: "Peepul Tree"
+    title: "Bodhi Tree"
     subtitle: "Ficus religiosa"
+    card_mod:
+      attributes:
+        title: "Bodhi Tree"
   
   # Centered chip row (overall + per-signal)
   - type: custom:mushroom-chips-card

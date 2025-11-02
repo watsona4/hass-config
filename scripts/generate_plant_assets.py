@@ -82,8 +82,40 @@ def yaml_attr(key: str, value: Optional[str], indent_spaces: int = 10) -> str:
     return f'{pad}{key}: "{v}"'
 
 
-def get_common_name_gbif(scientific: str, lang="en", timeout=8) -> str | None:
-    """Use GBIF to get an English vernacular name for a scientific name."""
+ISO_LANG_MAP = {
+    "en": "eng",
+    "es": "spa",
+    "fr": "fra",
+    "de": "deu",
+    "it": "ita",
+    "pt": "por",
+    "zh": "zho",
+    "ja": "jpn",
+    "ko": "kor",
+}
+
+
+def _match_lang_codes(lang: str) -> set[str]:
+    if not lang:
+        return set()
+    lang = lang.strip().lower()
+    codes = {lang}
+    iso3 = ISO_LANG_MAP.get(lang[:2])
+    if iso3:
+        codes.add(iso3)
+    if len(lang) == 3:
+        codes.add(lang[:2])
+    return {code for code in codes if code}
+
+
+def get_common_name_gbif(scientific: str, lang: str = "en", country: str | None = "US", timeout=8) -> str | None:
+    """Use GBIF to get a vernacular name for a scientific name.
+
+    Preference order:
+      1. Matching language + country (when both exist on the record)
+      2. Matching language
+      3. Any available vernacular name
+    """
     s = requests.Session()
     # 1) species/match → usageKey
     r = s.get("https://api.gbif.org/v1/species/match", params={"name": scientific}, timeout=timeout)
@@ -94,12 +126,49 @@ def get_common_name_gbif(scientific: str, lang="en", timeout=8) -> str | None:
     # 2) vernacularNames for that key
     r = s.get(f"https://api.gbif.org/v1/species/{key}/vernacularNames", timeout=timeout)
     r.raise_for_status()
-    names = r.json() or []
-    # prefer English, then any language
-    en = [n.get("vernacularName") for n in names if n.get("language") == lang]
-    if en:
-        return en[0]
-    any_name = next((n.get("vernacularName") for n in names if n.get("vernacularName")), None)
+    data = r.json()
+    if isinstance(data, list):
+        names = data
+    elif isinstance(data, dict):
+        names = data.get("results") or data.get("vernacularNames") or []
+    else:
+        names = []
+
+    if not names:
+        return None
+
+    lang_codes = _match_lang_codes(lang)
+    country_code = country.upper() if isinstance(country, str) else None
+
+    def _pick(filter_fn):
+        for entry in names:
+            name = (entry or {}).get("vernacularName")
+            if not name:
+                continue
+            if filter_fn(entry):
+                return name
+        return None
+
+    # 1. Language + country match
+    if lang_codes and country_code:
+        match = _pick(lambda entry: entry.get("language", "").lower() in lang_codes and entry.get("country", "").upper() == country_code)
+        if match:
+            return match
+
+    # 2. Language-only match
+    if lang_codes:
+        match = _pick(lambda entry: entry.get("language", "").lower() in lang_codes)
+        if match:
+            return match
+
+    # 3. Country-only match
+    if country_code:
+        match = _pick(lambda entry: entry.get("country", "").upper() == country_code)
+        if match:
+            return match
+
+    # 4. Fallback to any available vernacular name
+    any_name = _pick(lambda entry: True)
     return any_name
 
 
@@ -129,10 +198,10 @@ def get_common_name_wikidata(scientific: str, lang="en", timeout=8) -> str | Non
     return None
 
 
-def best_common_name(scientific: str, lang="en") -> str | None:
-    """GBIF first, then Wikidata."""
+def best_common_name(scientific: str, lang="en", country: str | None = "US") -> str | None:
+    """GBIF first (language+country preferences), then Wikidata (language only)."""
     try:
-        name = get_common_name_gbif(scientific, lang=lang)
+        name = get_common_name_gbif(scientific, lang=lang, country=country)
         if name:
             return name
     except Exception:
@@ -290,11 +359,6 @@ template:
              and is_state('binary_sensor.{slug}_moisture_ok','on')
              and is_state('binary_sensor.{slug}_ec_ok','on') }}}}
 
-          {{%- set temp_min_f = u_humanize_value(u_convert_entity('sensor.{slug}_temp_min', 'f'), '°F') -%}}
-          {{%- set temp_max_f = u_humanize_value(u_convert_entity('sensor.{slug}_temp_max', 'f'), '°F') -%}}
-          {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-          {{{{ '\\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}}}
-
   - sensor:
       - name: "{display_pid} Care Notes"
         unique_id: "{slug}_care_notes"
@@ -379,6 +443,13 @@ def build_dashboard_section(row: Dict[str, Any]) -> str:
     # Match your Bodhi example image path style: local/images/<scientific name>.jpg (spaces kept, no leading slash)
     image_path = f"local/images/{pid}.jpg"
 
+    # Escape helpers for YAML double-quoted strings
+    def _dq(text: str) -> str:
+        return text.replace("\\", "\\\\").replace('"', '\\"')
+
+    common_q = _dq(common)
+    scientific_q = _dq(scientific)
+
     # Section YAML (kept as close to your Bodhi card as possible)
     section = f"""\
 type: grid
@@ -386,8 +457,11 @@ column_span: 1
 cards:
   # -------------- Section for {common} --------------
   - type: custom:mushroom-title-card
-    title: "{common}"
-    subtitle: "{scientific}"
+    title: "{common_q}"
+    subtitle: "{scientific_q}"
+    card_mod:
+      attributes:
+        title: "{common_q}"
   
   # Centered chip row (overall + per-signal)
   - type: custom:mushroom-chips-card

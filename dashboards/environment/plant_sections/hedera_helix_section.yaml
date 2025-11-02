@@ -5,6 +5,9 @@ cards:
   - type: custom:mushroom-title-card
     title: "English Ivy"
     subtitle: "Hedera helix"
+    card_mod:
+      attributes:
+        title: "English Ivy"
   
   # Centered chip row (overall + per-signal)
   - type: custom:mushroom-chips-card

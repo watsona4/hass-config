@@ -1,10 +1,13 @@
 type: grid
 column_span: 1
 cards:
-  # -------------- Section for Haworthia Fasciata --------------
+  # -------------- Section for Zebra Haworthia --------------
   - type: custom:mushroom-title-card
     title: "Zebra Haworthia"
     subtitle: "Haworthia fasciata"
+    card_mod:
+      attributes:
+        title: "Zebra Haworthia"
   
   # Centered chip row (overall + per-signal)
   - type: custom:mushroom-chips-card

@@ -101,11 +101,6 @@ template:
              and is_state('binary_sensor.hedera_helix_moisture_ok','on')
              and is_state('binary_sensor.hedera_helix_ec_ok','on') }}
 
-          {%- set temp_min_f = u_humanize_value(u_convert_entity('sensor.hedera_helix_temp_min', 'f'), '°F') -%}
-          {%- set temp_max_f = u_humanize_value(u_convert_entity('sensor.hedera_helix_temp_max', 'f'), '°F') -%}
-          {{ 'Current: ' ~ u_humanize_entity(entity) }}
-          {{ '\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}
-
   - sensor:
       - name: "Hedera helix Care Notes"
         unique_id: "hedera_helix_care_notes"
