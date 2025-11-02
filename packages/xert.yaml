@@ -28,21 +28,6 @@ input_text:
     name: "Xert Refresh Token"
     max: 255
 
-group:
-  strava_latest_sources:
-    name: Strava latest sources
-    entities:
-      - sensor.strava_0_0
-      - sensor.strava_1_0
-      - sensor.strava_2_0
-      - sensor.strava_3_0
-      - sensor.strava_4_0
-      - sensor.strava_5_0
-      - sensor.strava_6_0
-      - sensor.strava_7_0
-      - sensor.strava_8_0
-      - sensor.strava_9_0
-
 ###############################################################################
 # Xert: rest_command for token fetch/refresh (called on demand)
 ###############################################################################
@@ -87,198 +72,6 @@ rest_command:
       Cache-Control: no-cache
 
 template:
-
-###############################################################################
-# Strava: normalize “latest ride” sensors into readable units
-###############################################################################
-  - trigger:
-      - platform: state
-        entity_id: group.strava_latest_sources
-      - platform: homeassistant
-        event: start
-    variables:
-      latest_entity: >
-        {% set rides = states.sensor
-          | selectattr('entity_id', 'match', '^sensor\\.strava_\\d+_0$')
-          | selectattr('attributes.sport_type', 'in', ['Ride','VirtualRide'])
-          | list %}
-        {% set latest = rides | sort(attribute='state', reverse=True) | first %}
-        {{ latest.entity_id if latest else '' }}
-      latest_idx: >
-        {{ latest_entity.split('_')[1] if latest_entity else '0' }}
-    sensor:
-      - name: "Last Ride Index"
-        state: "{{ latest_idx }}"
-      - name: "Last Ride Title"
-        state: >
-          {{ state_attr('sensor.strava_' ~ latest_idx ~ '_0','title')
-             or state_attr('sensor.strava_' ~ latest_idx ~ '_0','friendly_name')
-             or 'Latest ride' }}
-      - name: "Last Ride Distance mi"
-        unit_of_measurement: "mi"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_3')|float(0)|round(2) }}"
-      - name: "Last Ride Elevation ft"
-        unit_of_measurement: "ft"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_5')|float(0)|round(0) }}"
-      - name: "Last Ride Moving Time min"
-        unit_of_measurement: "min"
-        state: "{{ (states('sensor.strava_' ~ latest_idx ~ '_1')|float(0)/60)|round(1) }}"
-      - name: "Last Ride Elapsed Time min"
-        unit_of_measurement: "min"
-        state: "{{ (states('sensor.strava_' ~ latest_idx ~ '_10')|float(0)/60)|round(1) }}"
-      - name: "Last Ride Avg Power W"
-        unit_of_measurement: "W"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_6')|float(0)|round(0) }}"
-      - name: "Last Ride Avg HR bpm"
-        unit_of_measurement: "bpm"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_8')|float(0)|round(0) }}"
-      - name: "Last Ride Max HR bpm"
-        unit_of_measurement: "bpm"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_9')|float(0)|round(0) }}"
-      - name: "Last Ride Avg Cadence"
-        unit_of_measurement: "rpm"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_13')|float(0)|round(0) }}"
-      - name: "Last Ride Calories kCal"
-        unit_of_measurement: "kCal"
-        state: "{{ states('sensor.strava_' ~ latest_idx ~ '_7')|float(0)|round(0) }}"
-      - name: Strava Non-Ride Summary
-        state: "{{ now().isoformat() }}"
-        attributes:
-          types: >-
-            {{ states.sensor
-               | selectattr('entity_id','match','^sensor\\.strava_\\d+_0$')
-               | rejectattr('attributes.sport_type','in',['Ride','VirtualRide'])
-               | map(attribute='attributes.sport_type')
-               | select('defined')
-               | reject('none')
-               | reject('equalto','')
-               | unique | list }}
-          rows: >-
-            {% set ids = states.sensor
-               | selectattr('entity_id','match','^sensor\\.strava_\\d+_0$')
-               | rejectattr('attributes.sport_type','in',['Ride','VirtualRide'])
-               | sort(attribute='state', reverse=True)
-               | map(attribute='entity_id') | list %}
-            {% set out = namespace(list=[]) %}
-            {% for eid in ids %}
-              {% set idx = eid.split('_')[1] %}
-              {% set item = {
-                'date': states(eid),
-                'title': state_attr(eid,'title') or state_attr(eid,'friendly_name'),
-                'type': state_attr(eid,'sport_type'),
-                'distance_mi': (states('sensor.strava_' ~ idx ~ '_3')|float(0)|round(2)),
-                'moving_min': ((states('sensor.strava_' ~ idx ~ '_1')|float(0)/60)|round(1)),
-                'kcal': (states('sensor.strava_' ~ idx ~ '_7')|float(0)|round(1)),
-              } %}
-              {% set out.list = out.list + [item] %}
-            {% endfor %}
-            {{ out.list | tojson }}
-
-  - trigger:
-      - platform: state
-        entity_id: group.strava_latest_sources
-      - platform: homeassistant
-        event: start
-      - platform: time_pattern
-        minutes: "/30"
-
-    variables:
-
-      ride_ids: >-
-        {{ states.sensor
-          | selectattr('entity_id','match','^sensor\\.strava_\\d+_0$')
-          | selectattr('attributes.sport_type','in',['Ride','VirtualRide'])
-          | map(attribute='entity_id')
-          | list }}
-
-      week_start_ts: >-
-        {{ as_timestamp(
-            now().replace(hour=0, minute=0, second=0, microsecond=0)
-            - timedelta(days=now().weekday())
-          ) }}
-      week_end_ts: "{{ week_start_ts + 7*24*3600 }}"
-      last_week_start_ts: "{{ week_start_ts - 7*24*3600 }}"
-      last_week_end_ts: "{{ week_start_ts }}"
-      start_7d_ts: "{{ as_timestamp(now()) - 7*24*3600 }}"
-      start_28d_ts: "{{ as_timestamp(now()) - 28*24*3600 }}"
-
-      week_totals: >-
-        {% set ns = namespace(rides=0, sec=0.0, mi=0.0, ft=0.0) %}
-        {% for eid in ride_ids %}
-          {% set dt_ts = as_timestamp(states(eid)) %}
-          {% if dt_ts is number and week_start_ts|float <= dt_ts < week_end_ts|float %}
-            {% set idx = eid.split('_')[1] %}
-            {% set ns.rides = ns.rides + 1 %}
-            {% set ns.sec = ns.sec + states('sensor.strava_' ~ idx ~ '_1')|float(0) %}
-            {% set ns.mi = ns.mi  + states('sensor.strava_' ~ idx ~ '_3')|float(0) %}
-            {% set ns.ft = ns.ft  + states('sensor.strava_' ~ idx ~ '_5')|float(0) %}
-          {% endif %}
-        {% endfor %}
-        {{ {'rides': ns.rides, 'sec': ns.sec, 'mi': ns.mi, 'ft': ns.ft} }}
-
-      last_week_sec: >-
-        {% set ns = namespace(sec=0.0) %}
-        {% for eid in ride_ids %}
-          {% set dt_ts = as_timestamp(states(eid)) %}
-          {% if dt_ts is number and last_week_start_ts|float <= dt_ts < last_week_end_ts|float %}
-            {% set idx = eid.split('_')[1] %}
-            {% set ns.sec = ns.sec + states('sensor.strava_' ~ idx ~ '_1')|float(0) %}
-          {% endif %}
-        {% endfor %}
-        {{ ns.sec }}
-
-      load_7d_sec: >-
-        {% set ns = namespace(sec=0.0) %}
-        {% for eid in ride_ids %}
-          {% set dt_ts = as_timestamp(states(eid)) %}
-          {% if dt_ts is number and start_7d_ts|float <= dt_ts < as_timestamp(now()) %}
-            {% set idx = eid.split('_')[1] %}
-            {% set ns.sec = ns.sec + states('sensor.strava_' ~ idx ~ '_1')|float(0) %}
-          {% endif %}
-        {% endfor %}
-        {{ ns.sec }}
-
-      load_28d_sec: >-
-        {% set ns = namespace(sec=0.0) %}
-        {% for eid in ride_ids %}
-          {% set dt_ts = as_timestamp(states(eid)) %}
-          {% if dt_ts is number and start_28d_ts|float <= dt_ts < as_timestamp(now()) %}
-            {% set idx = eid.split('_')[1] %}
-            {% set ns.sec = ns.sec + states('sensor.strava_' ~ idx ~ '_1')|float(0) %}
-          {% endif %}
-        {% endfor %}
-        {{ ns.sec }}
-
-    sensor:
-      - name: Ride Training Summary (This Week)
-        icon: mdi:bike
-        state: "{{ now().isoformat() }}"
-        attributes:
-          week_start: "{{ week_start_ts }}"
-          week_end: "{{ week_end_ts }}"
-          rides: "{{ week_totals.rides }}"
-          week_hours: "{{ (week_totals.sec / 3600) | round(2) }}"
-          week_miles: "{{ week_totals.mi | round(1) }}"
-          week_elev_ft: "{{ week_totals.ft | round(0) }}"
-          last_week_hours: "{{ (last_week_sec | float(0) / 3600) | round(2) }}"
-          load_7d_hours: "{{ (load_7d_sec | float(0) / 3600) | round(2) }}"
-          load_28d_hours: "{{ (load_28d_sec | float(0) / 3600) | round(2) }}"
-      - name: Ride Week Hours
-        state: "{{ (week_totals.sec / 3600) | round(2) }}"
-        unit_of_measurement: "h"
-        icon: mdi:chart-line
-      - name: Ride Last Week Hours
-        state: "{{ (last_week_sec | float(0) / 3600) | round(2) }}"
-        unit_of_measurement: "h"
-        icon: mdi:chart-line
-      - name: Ride Load 7d Hours
-        state: "{{ (load_7d_sec | float(0) / 3600) | round(2) }}"
-        unit_of_measurement: "h"
-        icon: mdi:chart-line
-      - name: Ride Load 28d Hours
-        state: "{{ (load_28d_sec | float(0) / 3600) | round(2) }}"
-        unit_of_measurement: "h"
-        icon: mdi:chart-line
 
   # ---- Xert Training Info Raw ----
   - trigger:
@@ -371,7 +164,14 @@ template:
 ###############################################################################
 # Xert: Lookback sensors
 ###############################################################################
-  - sensor:
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: time_pattern
+        hours: "0"
+        minutes: "0"
+        seconds: "42"
+    sensor:
       - name: "Xert Lookback From Epoch"
         state: "{{ (now().timestamp()|int(0) - 90*24*3600) }}"  # 90 days
       - name: "Xert Lookback To Epoch"
@@ -476,8 +276,8 @@ automation:
   - id: xert_bootstrap_token
     alias: "Xert: bootstrap token on startup"
     trigger:
-      platform: homeassistant
-      event: start
+      - platform: homeassistant
+        event: start
     mode: restart
     action:
       - delay: "00:00:05"
@@ -507,26 +307,32 @@ automation:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
                   value: "{{ exp_epoch - 300 }}"   # refresh 5 min early
-              - service: homeassistant.update_entity
-                target:
-                  entity_id:
-                    - sensor.xert_training_info_raw
-                    - sensor.xert_activity_list_raw
+              - service: rest_command.xert_training_info_fetch
+                response_variable: resp_ti
+              - variables:
+                  ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
+                  ti_parsed: >-
+                    {{ resp_ti.content if resp_ti is mapping and resp_ti.content is mapping
+                       else (resp_ti.content|default('')|string|from_json(default={})) }}
+              - event: xert_training_info_update
+                event_data:
+                  available: "{{ ti_ok }}"
+                  parsed: "{{ ti_parsed | tojson }}"
+              - service: rest_command.xert_activity_list_fetch
+                response_variable: resp_al
+              - variables:
+                  al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
+                  al_parsed: >-
+                    {{ resp_al.content if resp_al is mapping and resp_al.content is mapping
+                       else (resp_al.content|default('')|string|from_json(default={})) }}
+              - event: xert_activity_list_update
+                event_data:
+                  available: "{{ al_ok }}"
+                  parsed: "{{ al_parsed | tojson }}"
               - wait_template: >-
                   {{ (state_attr('sensor.xert_activity_list_raw','activities') or []) | length > 0 }}
-                timeout: "00:01:00"
+                timeout: "00:00:45"
                 continue_on_timeout: true
-              - service: homeassistant.update_entity
-                target:
-                  entity_id: >-
-                    {# Build the list from entities that actually exist #}
-                    {% set out = [] %}
-                    {% for s in states.sensor
-                        if s.entity_id.startswith('sensor.xert_activity_')
-                        and s.entity_id.endswith('_detail_raw') %}
-                      {% set out = out + [s.entity_id] %}
-                    {% endfor %}
-                    {{ out }}
 
   - id: xert_refresh_daemon
     alias: "Xert: refresh token proactively"
@@ -563,27 +369,30 @@ automation:
                 target:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
-                  value: "{{ exp_epoch - 300 }}"   # refresh 5 min early
-              - service: homeassistant.update_entity
-                target:
-                  entity_id:
-                    - sensor.xert_training_info_raw
-                    - sensor.xert_activity_list_raw
-              - wait_template: >
-                  {{ (state_attr('sensor.xert_activity_list_raw','activities') or []) | length > 0 }}
-                timeout: "00:01:00"
-                continue_on_timeout: true
-              - service: homeassistant.update_entity
-                target:
-                  entity_id: >-
-                    {# Build the list from entities that actually exist #}
-                    {% set out = [] %}
-                    {% for s in states.sensor
-                        if s.entity_id.startswith('sensor.xert_activity_')
-                        and s.entity_id.endswith('_detail_raw') %}
-                      {% set out = out + [s.entity_id] %}
-                    {% endfor %}
-                    {{ out }}
+                  value: "{{ exp_epoch - 300 }}"
+              - delay: "00:00:02"
+              - service: rest_command.xert_training_info_fetch
+                response_variable: resp_ti
+              - variables:
+                  ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
+                  ti_parsed: >-
+                    {{ resp_ti.content if resp_ti is mapping and resp_ti.content is mapping
+                       else (resp_ti.content|default('')|string|from_json(default={})) }}
+              - event: xert_training_info_update
+                event_data:
+                  available: "{{ ti_ok }}"
+                  parsed: "{{ ti_parsed | tojson }}"
+              - service: rest_command.xert_activity_list_fetch
+                response_variable: resp_al
+              - variables:
+                  al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
+                  al_parsed: >-
+                    {{ resp_al.content if resp_al is mapping and resp_al.content is mapping
+                       else (resp_al.content|default('')|string|from_json(default={})) }}
+              - event: xert_activity_list_update
+                event_data:
+                  available: "{{ al_ok }}"
+                  parsed: "{{ al_parsed | tojson }}"
 
   - id: xert_self_heal_on_failure
     alias: "Xert: self-heal when training_info fails"
@@ -618,52 +427,76 @@ automation:
                 target:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
-                  value: "{{ exp_epoch - 300 }}"   # refresh 5 min early
+                  value: "{{ exp_epoch - 300 }}"
       - delay: "00:00:05"
-      - service: homeassistant.update_entity
-        target:
-          entity_id:
-            - sensor.xert_training_info_raw
-            - sensor.xert_activity_list_raw
-      - wait_template: >-
-          {{ (state_attr('sensor.xert_activity_list_raw','activities') or []) | length > 0 }}
-        timeout: "00:01:00"
-        continue_on_timeout: true
-      - service: homeassistant.update_entity
-        target:
-          entity_id: >-
-            {# Build the list from entities that actually exist #}
-            {% set out = [] %}
-            {% for s in states.sensor
-                 if s.entity_id.startswith('sensor.xert_activity_')
-                 and s.entity_id.endswith('_detail_raw') %}
-              {% set out = out + [s.entity_id] %}
-            {% endfor %}
-            {{ out }}
+      - service: rest_command.xert_training_info_fetch
+        response_variable: resp_ti
+      - variables:
+          ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
+          ti_parsed: >-
+            {{ resp_ti.content if resp_ti is mapping and resp_ti.content is mapping
+               else (resp_ti.content|default('')|string|from_json(default={})) }}
+      - event: xert_training_info_update
+        event_data:
+          available: "{{ ti_ok }}"
+          parsed: "{{ ti_parsed | tojson }}"
+      - service: rest_command.xert_activity_list_fetch
+        response_variable: resp_al
+      - variables:
+          al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
+          al_parsed: >-
+            {{ resp_al.content if resp_al is mapping and resp_al.content is mapping
+               else (resp_al.content|default('')|string|from_json(default={})) }}
+      - event: xert_activity_list_update
+        event_data:
+          available: "{{ al_ok }}"
+          parsed: "{{ al_parsed | tojson }}"
 
-  - id: xert_hourly_data_pull
-    alias: "Xert: hourly data update"
+  - id: xert_training_info_refresh_via_rest_command
+    alias: Xert Training Info Raw, refresh via REST command
+    mode: single
     trigger:
       - platform: time_pattern
         minutes: "/15"
-    condition:
-      - condition: template
-        value_template: "{{ states('input_text.xert_access_token') | length > 0 }}"
+      - platform: homeassistant
+        event: start
     action:
-      - service: homeassistant.update_entity
-        target:
-          entity_id:
-            - sensor.xert_training_info_raw
-            - sensor.xert_activity_list_raw
-      - delay: "00:00:15"
-      - service: homeassistant.update_entity
-        target:
-          entity_id: >-
-            {# Build the list from entities that actually exist #}
-            {% set out = [] %}
-            {% for s in states.sensor
-                 if s.entity_id.startswith('sensor.xert_activity_')
-                 and s.entity_id.endswith('_detail_raw') %}
-              {% set out = out + [s.entity_id] %}
-            {% endfor %}
-            {{ out }}
+      - delay:
+          seconds: "{{ range(0, 20) | random | int }}"
+      - service: rest_command.xert_training_info_fetch
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: xert_training_info_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
+
+  - id: xert_activity_list_refresh_via_rest_command
+    alias: Xert Activity List Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_lookback_from_epoch
+          - sensor.xert_lookback_to_epoch
+          - input_text.xert_access_token
+      - platform: homeassistant
+        event: start
+    action:
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
+      - service: rest_command.xert_activity_list_fetch
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: xert_activity_list_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"

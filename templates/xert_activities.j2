@@ -1,101 +1,103 @@
-template:
-  - sensor:
+rest_command:
 {% for i in range(count) %}
-    - name: "Xert Activity {{ i }} Path"
-      state: >
-        {% raw %}{% set acts = (state_attr('sensor.xert_activity_list_raw','activities') or [])
-          | selectattr('path','defined')
-          | selectattr('start_date','defined')
-          | selectattr('start_date','mapping')
-          | sort(attribute='start_date.date', reverse=True)
-          | map(attribute='path') | list %}
-        {{ acts[{% endraw %}{{ i }}{% raw %}] if acts|length > {% endraw %}{{ i }}{% raw %} else '' }}{% endraw %}
-{% endfor %}
-
-
-{%- raw -%}
-###############################################################################
-# Zwift: weekly summaries
-###############################################################################
-
-sensor:
-  - platform: history_stats
-    name: "Zwift Hours This Week"
-    entity_id: binary_sensor.zwift_active
-    state: "on"
-    type: time
-    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: "Zwift Rides This Week"
-    entity_id: binary_sensor.zwift_active
-    state: "on"
-    type: count
-    start: "{{ now().replace(hour=0,minute=0,second=0) - timedelta(days=now().weekday()) }}"
-    end: "{{ now() }}"
-  
-  ###############################################################################
-  # Xert: RESTful sensors for training status & progression (activity list + per-activity details)
-  ###############################################################################
-  
-  - platform: rest
-    name: Xert Training Info Raw
-    resource_template: >-
-      {{ 'https://www.xertonline.com/oauth/training_info' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
+  xert_activity_detail_fetch_{{ i }}:
+    url: "{% raw %}{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_{% endraw %}{{ i }}{% raw %}_path') }}{%- endraw %}"
     method: GET
-    scan_interval: 900
-    timeout: 20
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - signature
-      - status
-      - tl
-      - targetXSS
-      - wotd
-      - weight
-      - source
-  
-  # 1) Recent activity list (IDs) for the window
-  - platform: rest
-    name: Xert Activity List Raw
-    resource_template: >-
-      {{ 'https://www.xertonline.com/oauth/activity' if states('input_text.xert_access_token')|length > 0 else 'http://127.0.0.1:65535/' }}
-    method: GET
-    scan_interval: 999999999
-    headers:
-      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
-    params:
-      from: "{{ states('sensor.xert_lookback_from_epoch') }}"
-      to: "{{ states('sensor.xert_lookback_to_epoch') }}"
-    value_template: "{{ value_json.success | default(false) }}"
-    json_attributes:
-      - activities
-
-  # 2) Per-activity detail fetchers for the most recent N items
-  #    We dereference 'path' from list attributes by index.
-{%- endraw %}
-
-{%- for i in range(count) %}
-  - platform: rest
-    name: Xert Activity {{ i }} Detail Raw
-    resource_template: >-
-      {% raw %}{% set p = states('sensor.xert_activity_{% endraw %}{{ i }}{% raw %}_path') %}
-      {% if p is not none and p not in ['', 'unknown', 'unavailable'] %}
-        {{ 'https://www.xertonline.com/oauth/activity/' ~ p }}
-      {% else %}
-        {{ 'http://127.0.0.1:65535/' }}
-      {% endif %}{% endraw %}
-    method: GET
-    scan_interval: 999999999
     timeout: 20
     headers:
       Authorization: "{% raw %}Bearer {{ states('input_text.xert_access_token') }}{% endraw %}"
-    value_template: "{% raw %}{{ value_json.success | default(false) }}{% endraw %}"
-    json_attributes:
-      - summary
-      - name
-      - description
-      - progression
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+{% endfor %}
+###############################################################################
+# Xert: Event-driven base sensors (mirror original REST sensors)
+###############################################################################
+template:
+  - trigger:
+      - platform: event
+        event_type: xert_activity_list_update
+    variables:
+      root: >-
+        {% raw %}{%- set x = trigger.event.data.parsed -%}
+        {%- if x is mapping -%}
+          {{ x }}
+        {%- else -%}
+          {{ x | default('') | from_json(default={}) }}
+        {%- endif -%}{% endraw %}
+      acts: >-
+        {% raw %}{%- set ac = root.get('activities') or [] -%}
+        {{ (ac
+            | selectattr('path','defined')
+            | selectattr('start_date','defined')
+            | selectattr('start_date','mapping')
+            | sort(attribute='start_date.date', reverse=true)
+            | map(attribute='path')
+            | list) }}{% endraw %}
+    sensor:
+{% for i in range(count) %}
+      - name: "Xert Activity {{ i }} Path"
+        state: >-
+          {% raw %}{%- set L = acts if acts is sequence else [] -%}
+          {{ L[{% endraw %}{{ i }}{% raw %}] if (L | count) > {% endraw %}{{ i }}{% raw %} else 'unknown' }}{% endraw %}
+        availability: "{% raw %}{{ (acts | count) > 0 }}{% endraw %}"
+{% endfor %}
+{% for i in range(count) %}
+  - trigger:
+      - platform: event
+        event_type: xert_activity_detail_update_{{ i }}
+    variables:
+      root: >-
+        {% raw %}{% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}{% endraw %}
+    sensor:
+      - name: Xert Activity {{ i }} Detail Raw
+        state: >-
+          {% raw %}{{ (root.success | default(false)) }}{% endraw %}
+        attributes:
+          summary: "{% raw %}{{ root.get('summary') }}{% endraw %}"
+          name: "{% raw %}{{ root.get('name') }}{% endraw %}"
+          description: "{% raw %}{{ root.get('description') }}{% endraw %}"
+          progression: "{% raw %}{{ root.get('progression') }}{% endraw %}"
+        availability: "{% raw %}{{ trigger.event.data.available | default(false) }}{% endraw %}"
+{% endfor %}
+###############################################################################
+# Xert: Automations to run rest_commands & update sensors
+# - Training Info: every 15 min (like scan_interval 900) with jitter
+# - Activity List: on window/token change + startup (original was "manual")
+# - Activity Detail i: on path/token change; staggered per-index
+###############################################################################
+automation:
+
+  # ---- Per-activity Detail Raw (generated) ----
+{% for i in range(count) %}
+  - id: xert_activity_{{ i }}_detail_refresh_via_rest_command
+    alias: Xert Activity {{ i }} Detail Raw, refresh via REST command
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.xert_activity_{{ i }}_path
+          - input_text.xert_access_token
+      - platform: event
+        event_type: xert_activity_list_update
+    action:
+      - wait_template: "{% raw %}{{ has_value('sensor.xert_activity_{% endraw %}{{ i }}{% raw %}_path') }}{% endraw %}"
+        continue_on_timeout: false
+        timeout: "00:00:10"
+      - delay:
+          seconds: "{% raw %}{{ ({% endraw %}{{ i }}{% raw %} * 2) + (range(0, 2) | random | int) }}{% endraw %}"
+      - service: rest_command.xert_activity_detail_fetch_{{ i }}
+        response_variable: resp
+      - variables:
+          ok: "{% raw %}{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}{% endraw %}"
+          parsed_obj: "{% raw %}{{ resp.content if resp is mapping and resp.content is mapping else (resp.content | default('') | string | from_json(default={})) }}{% endraw %}"
+      - event: xert_activity_detail_update_{{ i }}
+        event_data:
+          available: "{% raw %}{{ ok }}{% endraw %}"
+          parsed: "{% raw %}{{ parsed_obj | tojson }}{% endraw %}"
 {% endfor %}
