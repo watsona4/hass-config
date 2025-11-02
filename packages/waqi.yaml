@@ -10,112 +10,168 @@
 #     - templates/metrics/air_quality/helpers.jinja    (aqi parsing, iaqi(), forecast_days(), etc.)
 # =============================================================================
 
-sensor:
-
-  # ============== WAQI Nearby (REST) ==============
-  - platform: rest
-    name: WAQI Nearby
-    unique_id: waqi_nearby
-    state_class: measurement
-    scan_interval: 60
-    timeout: 15
-    resource_template: >-
+###############################################################################
+# REST commands: WAQI (Nearby / Home / RV)
+# - We build the full URL (including the token query param) in the command.
+# - Token is injected by the automation using !secret.
+###############################################################################
+rest_command:
+  waqi_nearby_fetch:
+    url: >-
       {%- from 'macros/rest_helpers.jinja' import nearby_lat, nearby_lon, nearby_is_valid, waqi_url -%}
-      {%- set lat = nearby_lat() | int(0) -%}
-      {%- set lon = nearby_lon() | int(0) -%}
-      {{- waqi_url(lat, lon) if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
-    params:
-      token: !secret waqi_token
+      {%- set lat = nearby_lat() | float(0) -%}
+      {%- set lon = nearby_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
+    timeout: 15
     headers:
       Accept: application/json
       User-Agent: HomeAssistant
       Cache-Control: no-cache
-    availability: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
-      {{- nearby_is_valid() | bool -}}
-    value_template: >-
-      {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
-      {{- aqi_state_from_payload(value_json, this.entity_id) -}}
-    json_attributes_path: "$.data"
-    json_attributes:
-      - idx
-      - attributions
-      - city
-      - dominentpol
-      - iaqi
-      - time
-      - forecast
 
-  # ============== WAQI Home (REST) ==============
-  - platform: rest
-    name: WAQI Home
-    unique_id: waqi_home
-    state_class: measurement
-    scan_interval: 60
-    timeout: 15
-    resource_template: >-
+  waqi_home_fetch:
+    url: >-
       {%- from 'macros/rest_helpers.jinja' import home_lat, home_lon, home_is_valid, waqi_url -%}
-      {%- set lat = home_lat() | int(0) -%}
-      {%- set lon = home_lon() | int(0) -%}
-      {{- waqi_url(lat, lon) if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
-    params:
-      token: !secret waqi_token
-    headers:
-      Accept: application/json
-      User-Agent: HomeAssistant
-      Cache-Control: no-cache
-    availability: >-
-      {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
-      {{- home_is_valid() | bool -}}
-    value_template: >-
-      {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
-      {{- aqi_state_from_payload(value_json, this.entity_id) -}}
-    json_attributes_path: "$.data"
-    json_attributes:
-      - idx
-      - attributions
-      - city
-      - dominentpol
-      - iaqi
-      - time
-      - forecast
-
-  # ============== WAQI RV (REST) ==============
-  - platform: rest
-    name: WAQI RV
-    unique_id: waqi_rv
-    state_class: measurement
-    scan_interval: 60
+      {%- set lat = home_lat() | float(0) -%}
+      {%- set lon = home_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
     timeout: 15
-    resource_template: >-
-      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon, rv_is_valid, waqi_url -%}
-      {%- set lat = rv_lat() | int(0) -%}
-      {%- set lon = rv_lon() | int(0) -%}
-      {{- waqi_url(lat, lon) if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -}}
-    params:
-      token: !secret waqi_token
     headers:
       Accept: application/json
       User-Agent: HomeAssistant
       Cache-Control: no-cache
-    availability: >-
-      {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
-      {{- rv_is_valid() | bool -}}
-    value_template: >-
-      {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
-      {{- aqi_state_from_payload(value_json, this.entity_id) -}}
-    json_attributes_path: "$.data"
-    json_attributes:
-      - idx
-      - attributions
-      - city
-      - dominentpol
-      - iaqi
-      - time
-      - forecast
 
-# ===================== Per-location derived sensors =====================
+  waqi_rv_fetch:
+    url: >-
+      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon, rv_is_valid, waqi_url -%}
+      {%- set lat = rv_lat() | float(0) -%}
+      {%- set lon = rv_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
+    timeout: 15
+    headers:
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+###############################################################################
+# Event-driven base sensors that mirror the original three WAQI REST sensors
+# - Same names and unique_ids
+# - Same state logic via aqi_state_from_payload()
+# - Same attributes (taken from $.data): idx, attributions, city, dominentpol, iaqi, time, forecast
+###############################################################################
 template:
+  # Nearby
+  - trigger:
+      - platform: event
+        event_type: waqi_nearby_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI Nearby
+        unique_id: waqi_nearby
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
+
+  # Home
+  - trigger:
+      - platform: event
+        event_type: waqi_home_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI Home
+        unique_id: waqi_home
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
+
+  # RV
+  - trigger:
+      - platform: event
+        event_type: waqi_rv_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI RV
+        unique_id: waqi_rv
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
 
   # -------------------- Nearby block --------------------
   - trigger:
@@ -727,3 +783,82 @@ template:
           hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
           badge: "{{ (aqi_days[4] or {}).get('badge') }}"
           icon: "{{ (aqi_days[4] or {}).get('icon') }}"
+
+###############################################################################
+# Automations: call rest_command every 60s with per-location jitter
+# - Staggered offsets: Nearby early, Home middle, RV late
+# - Pass waqi token from secrets via data (templated into URL)
+# - Normalize resp.content whether mapping or string; send JSON via tojson
+###############################################################################
+automation:
+  # Nearby
+  - id: waqi_nearby_refresh_via_rest_command
+    alias: WAQI Nearby, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ range(0, 10) | random | int }}"
+      - service: rest_command.waqi_nearby_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_nearby_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
+
+  # Home
+  - id: waqi_home_refresh_via_rest_command
+    alias: WAQI Home, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ 10 + (range(0, 10) | random | int) }}"
+      - service: rest_command.waqi_home_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_home_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
+
+  # RV
+  - id: waqi_rv_refresh_via_rest_command
+    alias: WAQI RV, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ 20 + (range(0, 10) | random | int) }}"
+      - service: rest_command.waqi_rv_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_rv_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
