@@ -12,6 +12,7 @@
     "%": {"prefix": "", "base": "%"},
     "None": {"prefix": "", "base": "%"},
     "ft³": {"prefix": "", "base": "ft³"},
+    "m": {"prefix": "", "base": "m"},
     "mi": {"prefix": "", "base": "mi"},
     "mi/h": {"prefix": "", "base": "mi/h"},
     "min": {"prefix": "", "base": "min"},
@@ -24,7 +25,12 @@
 
 {% macro split_prefix_unit(unit_str) %}
     {%- set u = unit_str | string -%}
-    {%- if u in SPECIAL -%}
+    {%- set u_l = u | lower -%}
+    {%- if u_l in ['mile','miles'] -%}
+        {{- {'prefix':'','base':'mi'} | tojson -}}
+    {%- elif u_l in ['meter','meters','metre','metres'] -%}
+        {{- {'prefix':'','base':'m'} | tojson -}}
+    {%- elif u in SPECIAL -%}
         {{- SPECIAL[u] | tojson -}}
     {%- else -%}
         {#- try IEC first (two letters), then SI -#}
@@ -38,8 +44,13 @@
         {%- endfor -%}
         {%- if ns._ is none -%}
             {%- for p in SI_PREFIXES if p != '' -%}
+                {# skip 'm' as a prefix when followed by 'in' to avoid mistaking 'min' (minute) for milli-n #}
+                {%- set remainder = u[p|length:] -%}
+                {%- if p == 'm' and remainder.startswith('in') -%}
+                    {%- continue -%}
+                {%- endif -%}
                 {%- if u.startswith(p) -%}
-                    {{- {'prefix': p, 'base': u[p | length:]} | tojson -}}
+                    {{- {'prefix': p, 'base': remainder} | tojson -}}
                     {%- set ns._ = 1 -%}
                     {%- break -%}
                 {%- endif -%}

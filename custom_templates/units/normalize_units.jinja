@@ -4,8 +4,12 @@
     {%- set raw = (unit | string) | trim -%}
     {%- set cleaned = raw | replace(' ', '') -%}
 
+    {#- early canonical aliases to avoid prefix collisions -#}
+    {%- if cleaned | lower in ['mile','miles'] -%}{{- 'mi' -}}
+    {%- elif cleaned | lower in ['meter','meters','metre','metres'] -%}{{- 'm' -}}
+
     {#- rate shortcuts -#}
-    {%- if cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}{{- 'mi/h' -}}
+    {%- elif cleaned | lower in ['mph','mi/h','mileperhour','milesperhour'] -%}{{- 'mi/h' -}}
     {%- elif cleaned in ['bps'] -%}{{- 'bit/s' -}}
     {%- elif cleaned in ['kbps'] -%}{{- 'kbit/s' -}}
     {%- elif cleaned in ['Mbps'] -%}{{- 'Mbit/s' -}}
@@ -23,11 +27,11 @@
     {#- time -#}
     {%- elif cleaned | lower in ['ms'] -%}{{- 'ms' -}}
     {%- elif cleaned | lower in ['s','sec','secs','second','seconds'] -%}{{- 's' -}}
-    {%- elif cleaned | lower in ['m','min','mins','minute','minutes'] and raw | lower not in ['meter','metre','meters','metres'] -%}{{- 'min' -}}
+    {%- elif cleaned | lower in ['min','mins','minute','minutes'] -%}{{- 'min' -}}
     {%- elif cleaned | lower in ['h','hr','hrs','hour','hours'] -%}{{- 'h' -}}
     {%- elif cleaned | lower in ['d','day','days'] -%}{{- 'd' -}}
-    {%- elif cleaned | lower in ['w','wk','wks','week','weeks'] -%}{{- 'wk' -}}
-    {%- elif cleaned | lower in ['y','yr','yrs','year','years','a'] -%}{{- 'yr' -}}
+    {%- elif cleaned | lower in ['wk','wks','week','weeks'] -%}{{- 'wk' -}}
+    {%- elif cleaned | lower in ['y','yr','yrs','year','years'] -%}{{- 'yr' -}}
 
     {#- length -#}
     {%- elif cleaned | lower in ['mm','millimeter','millimeters','millimetre'] -%}{{- 'mm' -}}

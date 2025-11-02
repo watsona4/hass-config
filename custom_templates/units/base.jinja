@@ -378,5 +378,17 @@
 {%- endmacro %}
 
 {% macro u_humanize_attr(entity_id, attr, unit='') -%}
-    {{- u_humanize_value(state_attr(entity_id, attr) , unit) -}}
+    {{- u_humanize_value(state_attr(entity_id, attr), unit) -}}
+{%- endmacro %}
+
+{% macro u_convert_humanize_value(value, from_unit, to_unit) -%}
+    {{- u_humanize_value(u_convert_value(value, from_unit, to_unit), to_unit) -}}
+{%- endmacro %}
+
+{% macro u_convert_humanize_entity(entity_id, to_unit) -%}
+    {{- u_humanize_value(u_convert_value(states(entity_id), state_attr(entity_id,'unit_of_measurement'), to_unit), to_unit) -}}
+{%- endmacro %}
+
+{% macro u_convert_humanize_attr(entity_id, attr, from_unit, to_unit) -%}
+    {{- u_humanize_value(u_convert_value(state_attr(entity_id, attr), from_unit, to_unit), to_unit) -}}
 {%- endmacro %}
