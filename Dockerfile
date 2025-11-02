@@ -26,4 +26,8 @@ RUN apk update && \
     && \
     apk del build-base
 
+COPY prestart/ /prestart/
+RUN chmod +x /prestart/entrypoint.sh /prestart/run_prestart_tasks.py
+
+ENTRYPOINT ["/prestart/entrypoint.sh"]
 LABEL org.opencontainers.image.source=https://github.com/watsona4/hass-config
