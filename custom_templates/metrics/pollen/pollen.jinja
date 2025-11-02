@@ -21,17 +21,21 @@
     {%- endif -%}
 {% endmacro %}
 
-{# ---- Choose a “best” species from a day object ---- #}
 {% macro best_species(d) -%}
     {%- set plants = d.get('plantInfo') or [] -%}
+
+    {# 1) Choose by highest numeric index value (strictly > 0) #}
     {%- set best = namespace(p=None, v=-1) -%}
     {%- for p in plants -%}
-        {%- set v = (p.get('indexInfo') or {}).get('value') -%}
-        {%- if v is not none and v > best.v -%}
+        {%- set ii = p.get('indexInfo') or {} -%}
+        {%- set v = ii.get('value') -%}
+        {%- if v is number and v > best.v and v > 0 -%}
             {%- set best.p = p -%}
             {%- set best.v = v -%}
         {%- endif -%}
     {%- endfor -%}
+
+    {# 2) If no values at all, prefer a plant that has a picture #}
     {%- if best.p is none -%}
         {%- for p in plants -%}
             {%- set desc = p.get('plantDescription') or {} -%}
@@ -41,18 +45,32 @@
             {%- endif -%}
         {%- endfor -%}
     {%- endif -%}
-    {%- set p = best.p or (plants | first) or {} -%}
-    {%- set desc = p.get('plantDescription') or {} -%}
-    {%- set ii = p.get('indexInfo') or {} -%}
-    {{- {
-        'name': p.get("displayName") or p.get('code'),
-        'code': p.get('code'),
-        'type': desc.get('type'),
-        'in_season': p.get('inSeason'),
-        'value': ii.get('value'),
-        'category': ii.get('category'),
-        'picture': desc.get('picture') or desc.get('pictureCloseup')
-    } | tojson -}}
+
+    {# 3) If still nothing meaningful, return a neutral "none" object #}
+    {%- if best.p is none -%}
+        {{- {
+            'name': 'none',
+            'code': none,
+            'type': none,
+            'in_season': none,
+            'value': 0,
+            'category': 'none',
+            'picture': none
+        } | tojson -}}
+    {%- else -%}
+        {%- set p = best.p -%}
+        {%- set desc = p.get('plantDescription') or {} -%}
+        {%- set ii = p.get('indexInfo') or {} -%}
+        {{- {
+            'name': p.get("displayName") or p.get('code'),
+            'code': p.get('code'),
+            'type': desc.get('type'),
+            'in_season': p.get('inSeason'),
+            'value': ii.get('value') if (ii.get('value') is number) else 0,
+            'category': ii.get('category') or 'none',
+            'picture': desc.get('picture') or desc.get('pictureCloseup')
+        } | tojson -}}
+    {%- endif -%}
 {%- endmacro %}
 
 {# ---- Summarize first n days for forecast tiles ---- #}
@@ -64,7 +82,7 @@
         {%- for t in types -%}
             {%- set ii = t.get('indexInfo') or {} -%}
             {%- set v = ii.get('value') -%}
-            {%- if v is not none and v > best.v -%}
+            {%- if v is number and v > best.v and v > 0 -%}
                 {%- set best.t = t -%}
                 {%- set best.v = v -%}
             {%- endif -%}
@@ -72,16 +90,16 @@
         {%- set top = best.t or {} -%}
         {%- set ii = top.get('indexInfo') or {} -%}
         {%- set col = ii.get('color') or {} -%}
-        {%- set hex = _hex_from_rgb01(col) -%}
+        {%- set hex = _hex_from_rgb01(col) if col else '#9E9E9E' -%}
         {%- set sp = best_species(d) | from_json -%}
         {%- set dt = d.get('date') or {} -%}
         {%- set item = {
             'exists': true,
             'date': _safe_date(dt),
-            'state': ii.get('category') or 'unknown',
-            'dominant_type': top.get('displayName') or top.get('code'),
-            'dominant_value': ii.get('value'),
-            'dominant_category': ii.get('category'),
+            'state': ii.get('category') or 'none',
+            'dominant_type': top.get('displayName') or top.get('code') or 'none',
+            'dominant_value': ii.get('value') if (ii.get('value') is number) else 0,
+            'dominant_category': ii.get('category') or 'none',
             'dominant_hex': hex,
             'species_name': sp.get('name'),
             'species_value': sp.get('value'),
