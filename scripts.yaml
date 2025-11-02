@@ -571,6 +571,7 @@ turn_off_interior_lights:
           > 900\n  }}\n{% else %}\n  false\n{% endif %}"
         timeout: 00:30:00
         continue_on_timeout: true
+        enabled: false
       - parallel:
         - repeat:
             sequence:
@@ -699,6 +700,41 @@ turn_on_interior_lights:
             - switch.guest_bedroom_lamp_socket_1
           data: {}
           action: switch.turn_on
+      else:
+      - parallel:
+        - sequence:
+          - wait_template: "{% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy')
+              %}\n  {{\n    not (states('binary_sensor.everything_presence_one_6dbad0_occupancy')
+              | bool)\n    and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
+              > 900\n  }}\n{% else %}\n  false\n{% endif %}"
+            timeout: 00:30:00
+            continue_on_timeout: true
+          - target:
+              entity_id:
+              - switch.parlor_table_lamp
+              - switch.living_room_end_table_lamp
+            data: {}
+            action: switch.turn_off
+        - if:
+          - condition: state
+            entity_id: input_boolean.study_occupied
+            state: 'off'
+          then:
+          - target:
+              entity_id:
+              - light.study_lamp
+            data: {}
+            action: light.turn_off
+        - if:
+          - condition: state
+            entity_id: input_boolean.guest_bedroom_occupied
+            state: 'off'
+          then:
+          - target:
+              entity_id:
+              - switch.guest_bedroom_lamp_socket_1
+            data: {}
+            action: switch.turn_off
   mode: single
   icon: mdi:lightbulb-on-outline
   description: ''
