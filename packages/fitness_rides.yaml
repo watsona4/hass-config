@@ -14,11 +14,6 @@
 ###############################################################################
 
 input_number:
-  zwift_ride_minutes_total:
-    name: "Zwift Ride Minutes Total"
-    min: 0
-    max: 100000
-    step: 0.1
   xert_token_expires_epoch:
     name: "Xert Token Expires (epoch)"
     min: 0
@@ -68,29 +63,30 @@ rest_command:
     payload: "grant_type=refresh_token&refresh_token={{ states('input_text.xert_refresh_token')|urlencode }}"
     content_type: "application/x-www-form-urlencoded"
 
-###############################################################################
-# Rolling minutes accumulator to chart weekly hours over months
-###############################################################################
+  xert_training_info_fetch:
+    url: "https://www.xertonline.com/oauth/training_info"
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
 
-utility_meter:
-  zwift_weekly_minutes:
-    source: sensor.zwift_ride_minutes_total
-    cycle: weekly
+  xert_activity_list_fetch:
+    url: >-
+      {% set from = states('sensor.xert_lookback_from_epoch') %}
+      {% set to = states('sensor.xert_lookback_to_epoch') %}
+      {{ 'https://www.xertonline.com/oauth/activity?from=' ~ from ~ '&to=' ~ to }}
+    method: GET
+    timeout: 20
+    headers:
+      Authorization: "Bearer {{ states('input_text.xert_access_token') }}"
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
 
-###############################################################################
-# Zwift: active flag and summaries
-###############################################################################
 template:
-  - binary_sensor:
-      - name: "Zwift Active"
-        state: >
-          {% set spd = states('sensor.zwift_speed_1747373')|float(0) %}
-          {% set online = states('sensor.zwift_online_1747373')|lower %}
-          {{ spd > 0 or online in ['on','online','true','1'] }}
-  - sensor:
-      - name: "Zwift Ride Minutes Total"
-        unit_of_measurement: "min"
-        state: "{{ states('input_number.zwift_ride_minutes_total')|float(0) }}"
 
 ###############################################################################
 # Strava: normalize “latest ride” sensors into readable units
@@ -284,45 +280,47 @@ template:
         unit_of_measurement: "h"
         icon: mdi:chart-line
 
-###############################################################################
-# Zwift: last-ride snapshots fallback
-###############################################################################
+  # ---- Xert Training Info Raw ----
   - trigger:
-      - platform: state
-        entity_id: binary_sensor.zwift_active
-        from: "on"
-        to: "off"
+      - platform: event
+        event_type: xert_training_info_update
+    variables:
+      root: >-
+        {% set x = trigger.event.data.parsed %}
+        {% if x is mapping %}
+          {{ x }}
+        {% else %}
+          {{ x | default('') | from_json(default={}) }}
+        {% endif %}
     sensor:
-      - name: "Zwift Last Ride Distance km"
-        unit_of_measurement: "km"
-        state: "{{ states('sensor.zwift_distance_1747373')|float(0)|round(2) }}"
-      - name: "Zwift Last Ride Avg Power W"
-        unit_of_measurement: "W"
-        state: "{{ states('sensor.zwift_power_1747373')|float(0)|round(0) }}"
-      - name: "Zwift Last Ride Avg HR bpm"
-        unit_of_measurement: "bpm"
-        state: "{{ states('sensor.zwift_heart_rate_1747373')|float(0)|round(0) }}"
+      - name: Xert Training Info Raw
+        state: >-
+          {{ root.success | default(false) }}
+        attributes:
+          signature: "{{ root.get('signature') }}"
+          status: "{{ root.get('status') }}"
+          tl: "{{ root.get('tl') }}"
+          targetXSS: "{{ root.get('targetXSS') }}"
+          wotd: "{{ root.get('wotd') }}"
+          weight: "{{ root.get('weight') }}"
+          source: "{{ root.get('source') }}"
+        availability: "{{ trigger.event.data.available | default(false) }}"
 
-  - sensor:
-      - name: "Unified Last Ride Distance mi"
-        unit_of_measurement: "mi"
-        state: >
-          {# Prefer Strava miles; else Zwift km -> miles #}
-          {% set s_mi = states('sensor.last_ride_distance_mi')|float(0) %}
-          {% set z_km = states('sensor.zwift_last_ride_distance_km')|float(0) %}
-          {{ (s_mi if s_mi>0 else (z_km*0.621371))|round(2) }}
-      - name: "Unified Last Ride Avg Power W"
-        unit_of_measurement: "W"
-        state: >
-          {% set s = states('sensor.last_ride_avg_power_w') %}
-          {% set z = states('sensor.zwift_last_ride_avg_power_w') %}
-          {{ s if s not in ['unknown','unavailable','0','0.0',''] else z }}
-      - name: "Unified Last Ride Avg HR bpm"
-        unit_of_measurement: "bpm"
-        state: >
-          {% set s = states('sensor.last_ride_avg_hr_bpm') %}
-          {% set z = states('sensor.zwift_last_ride_avg_hr_bpm') %}
-          {{ s if s not in ['unknown','unavailable','0','0.0',''] else z }}
+  # ---- Xert Activity List Raw ----
+  - trigger:
+      - platform: event
+        event_type: xert_activity_list_update
+    sensor:
+      - name: Xert Activity List Raw
+        state: >-
+          {%- set root = (trigger.event.data.parsed if trigger and trigger.event and trigger.event.data.parsed is mapping
+                          else (trigger.event.data.parsed | default('') | from_json(default={}))) -%}
+          {{ (root.success | default(false)) }}
+        attributes:
+          activities: >-
+            {%- set d = root if root is mapping else {} -%}
+            {{ d.get('activities') }}
+        availability: "{{ trigger.event.data.available | default(false) }}"
 
 ###############################################################################
 # Xert: Derived sensors
@@ -474,22 +472,6 @@ template:
 # Automations: bootstrap, store tokens, proactive refresh, self heal
 ###############################################################################
 automation:
-  - id: zwift_accumulate_minutes_on_ride_end
-    alias: "Zwift: accumulate minutes on ride end"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.zwift_active
-        from: "on"
-        to: "off"
-    variables:
-      minutes: "{{ states('sensor.last_ride_elapsed_time_min')|float(0) }}"
-    action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.zwift_ride_minutes_total
-        data:
-          value: >
-            {{ (states('input_number.zwift_ride_minutes_total')|float(0) + minutes)|float(0)|round(1) }}
 
   - id: xert_bootstrap_token
     alias: "Xert: bootstrap token on startup"
