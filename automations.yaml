@@ -466,12 +466,6 @@
             action: script.window_position
           - data:
               entities:
-              - cover.study_west_window
-              action: Closed Up
-              reason: Temperature
-            action: script.window_position
-          - data:
-              entities:
               - cover.living_room_left_window
               - cover.living_room_right_window
               action: Closed Up
@@ -509,22 +503,6 @@
                 action: script.window_position
         else:
         - parallel:
-          - sequence:
-            - if:
-              - condition: state
-                entity_id: input_boolean.study_occupied
-                state: 'on'
-              then:
-              - wait_template: '{{ not is_state(''binary_sensor.guest_bedroom_presence_delay'',
-                  ''on'') }}'
-                timeout: 01:00:00
-            - data:
-                entities:
-                - cover.study_west_window
-                action: Open
-                switches:
-                - binary_sensor.study_west_closed_brightness
-              action: script.window_position
           - data:
               entities:
               - cover.living_room_left_window
@@ -603,19 +581,33 @@
     - binary_sensor.daytime
     to: 'on'
     trigger: state
+    id: State
   - entity_id:
     - binary_sensor.evening
     to: 'off'
     trigger: state
+    id: State
   - trigger: state
     entity_id:
     - input_boolean.daytime_override
+    id: State
   - trigger: homeassistant
     event: start
+  - trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.exterior_lights_timer
   conditions: []
   actions:
-  - wait_template: '{{ is_state(''timer.exterior_lights_timer'', ''idle'') }}'
-    continue_on_timeout: true
+  - if:
+    - condition: not
+      conditions:
+      - condition: trigger
+        id:
+        - State
+    then:
+    - wait_template: '{{ is_state(''timer.exterior_lights_timer'', ''idle'') }}'
+      continue_on_timeout: true
   - choose:
     - conditions:
       - condition: state
@@ -861,9 +853,14 @@
     continue_on_timeout: true
   - choose:
     - conditions:
-      - condition: state
-        entity_id: input_select.plant_location
-        state: Outside
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: input_select.plant_location
+          state: Outside
+        - condition: state
+          entity_id: input_select.plant_location
+          state: Unknown
       - condition: template
         value_template: '{{ ''inside'' in title }}'
       sequence:
@@ -916,9 +913,14 @@
         data:
           value: '{{ message }}'
     - conditions:
-      - condition: state
-        entity_id: input_select.plant_location
-        state: Inside
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: input_select.plant_location
+          state: Inside
+        - condition: state
+          entity_id: input_select.plant_location
+          state: Unknown
       - condition: template
         value_template: '{{ ''outside'' in title }}'
       sequence:
@@ -1396,7 +1398,7 @@
         %} {% if upstairs_temp > temp + 1 and upstairs_action == 'cooling' %}\n  {{
         temp - 1 }}\n{% else %}\n  {{ [temp, furnace_temp + 3]|max }}\n{% endif %}"
       upstairs: '{{ downstairs|float(0) + 1}}'
-      study_heater: '{% set weekday = now().strftime("%w")|int(0)  %} {{ 68 if weekday
+      study_heater: '{% set weekday = now().strftime("%w")|int(0)  %} {{ 72 if weekday
         >= 1 and weekday <= 5 else 65 }}'
   - if:
     - condition: or
@@ -2212,12 +2214,13 @@
     trigger: mqtt
     id: Manual
   - trigger: state
-    entity_id: input_button.start_gym_event_loop
-    id: Manual
-  - trigger: state
-    entity_id: sensor.zwift_online_1747373
+    entity_id:
+    - binary_sensor.zwift_online
     to: 'False'
-    for: 00:02:00
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
     id: RideFinished
   conditions:
   - condition: or
@@ -2259,10 +2262,19 @@
       entity_id: timer.gym_event_loop_timer
   - choose:
     - conditions:
-      - condition: trigger
-        id:
-        - Start
-        - Manual
+      - condition: or
+        conditions:
+        - condition: trigger
+          id:
+          - Start
+        - condition: and
+          conditions:
+          - condition: trigger
+            id:
+            - Manual
+          - condition: state
+            entity_id: timer.gym_event_loop_running
+            state: idle
       sequence:
       - action: timer.start
         metadata: {}
@@ -2324,9 +2336,19 @@
         target:
           entity_id: climate.gym_minisplit_setall_gym_minisplit
     - conditions:
-      - condition: trigger
-        id:
-        - RideFinished
+      - condition: or
+        conditions:
+        - condition: trigger
+          id:
+          - RideFinished
+        - condition: and
+          conditions:
+          - condition: trigger
+            id:
+            - Manual
+          - condition: state
+            entity_id: timer.gym_event_loop_running
+            state: active
       sequence:
       - action: timer.start
         target:
@@ -2666,7 +2688,6 @@
             - cover.study_west_window
             action: Open
             switches:
-            - binary_sensor.west_windows_closed_temperature
             - binary_sensor.study_west_closed_temperature
           action: script.window_position
   - choose:
@@ -4874,16 +4895,29 @@
     - binary_sensor.daytime
     to: 'on'
     trigger: state
+    id: State
   - entity_id:
     - binary_sensor.evening
-    to: 'off'
+    to:
     trigger: state
+    id: State
   - trigger: homeassistant
     event: start
+  - trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.interior_lights_timer
   conditions: []
   actions:
-  - wait_template: '{{ is_state(''timer.interior_lights_timer'', ''idle'') }}'
-    continue_on_timeout: true
+  - if:
+    - condition: not
+      conditions:
+      - condition: trigger
+        id:
+        - State
+    then:
+    - wait_template: '{{ is_state(''timer.interior_lights_timer'', ''idle'') }}'
+      continue_on_timeout: true
   - choose:
     - conditions:
       - condition: numeric_state
@@ -4911,12 +4945,6 @@
         target:
           entity_id: script.turn_on_interior_lights
         action: script.turn_on
-      - action: automation.trigger
-        metadata: {}
-        data:
-          skip_condition: true
-        target:
-          entity_id: automation.study_light_off
     - conditions:
       - condition: numeric_state
         entity_id: sensor.light_sensor_illuminance
