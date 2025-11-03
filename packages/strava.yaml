@@ -1541,12 +1541,6 @@ automation:
                   entity_id: input_number.strava_next_allowed_fetch_epoch
                 data:
                   value: "{{ now().timestamp()|int(0) + 16*60 }}"
-              - service: persistent_notification.create
-                data:
-                  title: "Strava rate limit"
-                  message: >-
-                    Read rate limit exceeded (status {{ resp.status }}).
-                    Backing off until {{ (now() + timedelta(minutes=16)).strftime('%H:%M:%S') }}.
 
   - id: strava_activity_details_enrich
     alias: "Strava: enrich first N activities with /activities/{id}"
