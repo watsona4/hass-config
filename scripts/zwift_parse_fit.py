@@ -6,22 +6,23 @@ import json
 import math
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Tuple
+
+import matplotlib
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import requests
+from fitparse import FitFile, StandardUnitsDataProcessor
+from matplotlib.ticker import FuncFormatter
+
 try:
     from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 except ImportError:  # pragma: no cover - Python < 3.9 fallback
     ZoneInfo = None
     ZoneInfoNotFoundError = Exception
-
-import matplotlib
-import requests
-
-matplotlib.use("Agg")
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 
 try:
     import geopandas as gpd
@@ -38,7 +39,7 @@ try:
 except ImportError:
     ctx = None
 
-from fitparse import FitFile, StandardUnitsDataProcessor
+matplotlib.use("Agg")
 
 EARTH_RADIUS = 6378137.0
 
@@ -64,11 +65,14 @@ def main():
         ff = FitFile(raw, data_processor=StandardUnitsDataProcessor())
         records = (m for m in ff.get_messages() if m.name == "record")
         timestamps: List[datetime] = []
+        epoch_ms: List[int] = []
         latitudes: List[float] = []
         longitudes: List[float] = []
         powers: List[float] = []
         cadences: List[float] = []
         heartrates: List[float] = []
+        speeds: List[float] = []
+        json_points: List[List[Optional[float]]] = []
 
         local_tz = _get_local_timezone()
 
@@ -85,12 +89,28 @@ def main():
             if not isinstance(timestamp, datetime):
                 continue
 
-            timestamps.append(_to_local_time(timestamp, local_tz))
+            dt_local, ts_epoch_ms = _convert_timestamp(timestamp, local_tz)
+            timestamps.append(dt_local)
+            epoch_ms.append(ts_epoch_ms)
             latitudes.append(float(lat) if isinstance(lat, (int, float)) else math.nan)
             longitudes.append(float(lng) if isinstance(lng, (int, float)) else math.nan)
             powers.append(float(power) if isinstance(power, (int, float)) else math.nan)
             cadences.append(float(cadence) if isinstance(cadence, (int, float)) else math.nan)
             heartrates.append(float(heartrate) if isinstance(heartrate, (int, float)) else math.nan)
+            power_value = _coerce_float(power)
+            hr_value = _coerce_float(heartrate)
+            cadence_value = _coerce_float(cadence)
+            speed_value = _coerce_float(d.get("enhanced_speed"), d.get("speed"))
+            speeds.append(speed_value if speed_value is not None else math.nan)
+            elevation_value = _coerce_float(d.get("enhanced_altitude"), d.get("altitude"))
+            json_points.append([
+                ts_epoch_ms,
+                power_value,
+                hr_value,
+                cadence_value,
+                speed_value,
+                elevation_value,
+            ])
 
         if not timestamps:
             sys.stderr.write("No usable record data found in FIT file.\n")
@@ -102,6 +122,25 @@ def main():
 
         _plot_metrics(timestamps, powers, cadences, heartrates, metrics_path)
         _plot_route(latitudes, longitudes, map_path)
+        session_title = _session_title(ff) or "Zwift Ride"
+        version = int(time.time())
+        laps = _extract_laps(ff, local_tz, epoch_ms, latitudes, longitudes)
+        _write_apex_payload(
+            title=session_title,
+            version=version,
+            points=json_points,
+            epoch_ms=epoch_ms,
+            laps=laps,
+        )
+        _write_route_payload(
+            title=session_title,
+            version=version,
+            latitudes=latitudes,
+            longitudes=longitudes,
+            powers=powers,
+            speeds=speeds,
+            laps=laps,
+        )
 
         summary = _summarize_ride(heartrates)
         if summary is not None:
@@ -171,7 +210,9 @@ def _plot_metrics(
     host.grid(True, linewidth=0.3, linestyle="--", alpha=0.6)
 
     fig.autofmt_xdate()
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    fig.tight_layout(
+        rect=(0, 0, 1, 0.96),
+    )
     fig.savefig(output_path, dpi=150)
     plt.close(fig)
 
@@ -235,7 +276,7 @@ def _plot_route(latitudes: List[float], longitudes: List[float], output_path: Pa
 
 def _make_spine_visible(ax: plt.Axes) -> None:
     ax.set_frame_on(True)
-    ax.patch.set_visible(False)
+    ax.set_visible(False)
     for spine in ax.spines.values():
         spine.set_visible(False)
     ax.spines["right"].set_visible(True)
@@ -276,15 +317,16 @@ def _mercator_to_lat(y: float) -> float:
     return math.degrees(2 * math.atan(math.exp(y / EARTH_RADIUS)) - math.pi / 2)
 
 
-def _to_local_time(ts: datetime, local_tz) -> datetime:
+def _convert_timestamp(ts: datetime, local_tz) -> Tuple[datetime, int]:
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
     if local_tz is None:
         localized = ts.astimezone()
     else:
         localized = ts.astimezone(local_tz)
-    # Matplotlib's date handling assumes naive datetimes; strip tzinfo after conversion.
-    return localized.replace(tzinfo=None)
+    epoch_ms = int(localized.timestamp() * 1000)
+    # Matplotlib prefers naive datetimes in local time for plotting.
+    return localized.replace(tzinfo=None), epoch_ms
 
 
 def _get_local_timezone():
@@ -315,6 +357,125 @@ def _summarize_ride(heartrates: List[float]) -> Optional[dict]:
     }
 
 
+def _coerce_float(*values) -> Optional[float]:
+    for value in values:
+        if isinstance(value, (int, float)):
+            val = float(value)
+            if math.isnan(val):
+                continue
+            return val
+    return None
+
+
+def _extract_laps(
+    ff: FitFile,
+    local_tz,
+    epoch_ms: List[int],
+    latitudes: List[float],
+    longitudes: List[float],
+) -> List[dict]:
+    laps: List[dict] = []
+    for idx, lap_msg in enumerate(ff.get_messages("lap")):
+        fields = {f.name: f.value for f in lap_msg}
+        start_time = fields.get("start_time") or fields.get("timestamp")
+        if not isinstance(start_time, datetime):
+            continue
+        _, ts_ms = _convert_timestamp(start_time, local_tz)
+        label = fields.get("name")
+        if not isinstance(label, str) or not label.strip():
+            label = f"Lap {idx + 1}"
+        entry = {"label": label, "ts": ts_ms}
+        if epoch_ms:
+            nearest = min(range(len(epoch_ms)), key=lambda i: abs(epoch_ms[i] - ts_ms))
+            lat = latitudes[nearest] if nearest < len(latitudes) else math.nan
+            lon = longitudes[nearest] if nearest < len(longitudes) else math.nan
+            if not math.isnan(lat) and not math.isnan(lon):
+                entry["lat"] = round(float(lat), 6)
+                entry["lon"] = round(float(lon), 6)
+        laps.append(entry)
+    return laps
+
+
+def _session_title(ff: FitFile) -> Optional[str]:
+    session = next((ff.get_messages("session")), None)
+    if session is None:
+        return None
+    fields = {f.name: f.value for f in session}
+    for key in ("name", "event", "sub_sport", "sport"):
+        value = fields.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    sport = fields.get("sport")
+    if sport:
+        return str(sport).strip().title()
+    return None
+
+
+def _write_apex_payload(
+    title: str,
+    version: int,
+    points: List[List[Optional[float]]],
+    epoch_ms: List[int],
+    laps: List[dict],
+) -> None:
+    if not points:
+        return
+
+    ride_dir = Path("/config/www/ride")
+    ride_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "title": title,
+        "version": version,
+        "start_ts": int(epoch_ms[0] / 1000) if epoch_ms else None,
+        "points": points,
+        "laps": laps,
+    }
+    payload_text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    (ride_dir / "latest.json").write_text(payload_text, encoding="utf-8")
+
+
+def _write_route_payload(
+    title: str,
+    version: int,
+    latitudes: List[float],
+    longitudes: List[float],
+    powers: List[float],
+    speeds: List[float],
+    laps: List[dict],
+) -> None:
+    route_points: List[List[float]] = []
+    power_series: List[Optional[float]] = []
+    speed_series: List[Optional[float]] = []
+    for lat, lon, power, speed in zip(latitudes, longitudes, powers, speeds):
+        if math.isnan(lat) or math.isnan(lon):
+            continue
+        route_points.append([round(float(lat), 6), round(float(lon), 6)])
+        power_series.append(None if math.isnan(power) else round(float(power), 2))
+        speed_series.append(None if math.isnan(speed) else round(float(speed), 2))
+
+    if not route_points:
+        return
+
+    payload: dict[str, object] = {
+        "title": title,
+        "version": version,
+        "points": route_points,
+        "start": route_points[0],
+        "end": route_points[-1],
+    }
+    if any(p is not None for p in power_series):
+        payload["power_w"] = power_series
+    if any(s is not None for s in speed_series):
+        payload["speed_mps"] = speed_series
+    if laps:
+        payload["laps"] = laps
+
+    ride_dir = Path("/config/www/ride")
+    ride_dir.mkdir(parents=True, exist_ok=True)
+    route_text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    (ride_dir / "route.json").write_text(route_text, encoding="utf-8")
+
+
 def _load_world_polygons():
     if gpd is None:
         raise RuntimeError("geopandas is required for rendering the route map.")
@@ -327,16 +488,12 @@ def _load_world_polygons():
         except Exception:
             pass
 
-    natural_earth_url = (
-        "https://naturalearth.s3.amazonaws.com/110m_cultural/"
-        "ne_110m_admin_0_countries.zip"
-    )
+    natural_earth_url = "https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
     try:
         return gpd.read_file(natural_earth_url).to_crs("EPSG:4326")
     except Exception as exc:
         raise RuntimeError(
-            "Failed to load Natural Earth background. Ensure network access is available "
-            "or provide a local shapefile."
+            "Failed to load Natural Earth background. Ensure network access is available or provide a local shapefile."
         ) from exc
 
 
