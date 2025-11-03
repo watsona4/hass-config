@@ -16,6 +16,11 @@ input_text:
     initial: !secret zwift_password
 
 input_number:
+  zwift_ride_minutes_total:
+    name: "Zwift Ride Minutes Total"
+    min: 0
+    max: 100000
+    step: 0.1
   zwift_my_player_id:
     name: "Zwift: My Player ID"
     min: 1
@@ -106,7 +111,30 @@ shell_command:
   zwift_player_status_json: >-
     bash -lc 'python3 /config/scripts/zwift_player_status.py {{ states("input_select.zwift_relay_host") }} {{world_id}} {{player_id}} {{access_token}}'
 
+utility_meter:
+  zwift_weekly_minutes:
+    unique_id: 992c9a70-0bce-4601-add4-8b64fdd20230
+    source: sensor.zwift_ride_minutes_total
+    cycle: weekly
+
 automation:
+
+  - id: zwift_accumulate_minutes_on_ride_end
+    alias: "Zwift: accumulate minutes on ride end"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.zwift_online
+        from: "on"
+        to: "off"
+    variables:
+      minutes: "{{ states('sensor.last_ride_elapsed_time_min')|float(0) }}"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.zwift_ride_minutes_total
+        data:
+          value: >
+            {{ (states('input_number.zwift_ride_minutes_total')|float(0) + minutes)|float(0)|round(1) }}
 
   # Bootstrap or refresh tokens as they approach expiry
   - id: zwift_token_ensure_valid
@@ -357,6 +385,12 @@ script:
 
 template:
 
+  - sensor:
+      - name: "Zwift Ride Minutes Total"
+        unique_id: a97f032a-7135-4c25-a1b8-160aed7f824e
+        unit_of_measurement: "min"
+        state: "{{ states('input_number.zwift_ride_minutes_total')|float(0) }}"
+
   - trigger:
       - platform: event
         event_type: zwift_profile_update
@@ -428,6 +462,104 @@ template:
       last: "{{ d | first }}"
       fit_file_bucket: "{{ (d | first).get('fitFileBucket') }}"
       fit_file_key: "{{ (d | first).get('fitFileKey') }}"
+      now_ts: "{{ as_timestamp(now()) }}"
+      ride_events_json: >-
+        {% set ns = namespace(items=[]) %}
+        {% for ac in d %}
+          {% set sport = (ac.get('sport') or ac.get('activityType') or ac.get('type') or ac.get('eventSubType') or '')|string|lower %}
+          {% if 'ride' in sport or sport in ['cycling', 'bike'] %}
+            {% set raw_ts = ac.get('eventStart') or ac.get('startDate') or ac.get('startDateUtc') or ac.get('startDateLocal') or ac.get('startTime') %}
+            {% set ts_calc = namespace(val=none) %}
+            {% if raw_ts %}
+              {% if raw_ts is string %}
+                {% set ts_calc.val = as_timestamp(raw_ts) %}
+              {% elif raw_ts is number %}
+                {% set raw_val = raw_ts|float %}
+                {% if raw_val > 1000000000000 %}
+                  {% set ts_calc.val = raw_val / 1000 %}
+                {% else %}
+                  {% set ts_calc.val = raw_val %}
+                {% endif %}
+              {% else %}
+                {% set ts_calc.val = as_timestamp(raw_ts) %}
+              {% endif %}
+            {% endif %}
+            {% set ts = ts_calc.val %}
+            {% if ts is number %}
+              {% set moving_sec = (ac.get('movingTimeInMs')|float(0)) / 1000 %}
+              {% if moving_sec <= 0 %}
+                {% set moving_sec = ac.get('movingTimeInSeconds')|float(0) %}
+              {% endif %}
+              {% if moving_sec <= 0 %}
+                {% set moving_sec = ac.get('durationInSeconds')|float(0) %}
+              {% endif %}
+              {% set distance_m = ac.get('distanceInMeters')|float(0) %}
+              {% if distance_m <= 0 %}
+                {% set distance_m = ac.get('distanceInMetersRaw')|float(0) %}
+              {% endif %}
+              {% set elev_m = ac.get('totalElevation')|float(0) %}
+              {% if elev_m <= 0 %}
+                {% set elev_m = ac.get('totalElevationGainInMeters')|float(0) %}
+              {% endif %}
+              {% set ns.items = ns.items + [{'ts': ts, 'sec': moving_sec, 'dist_m': distance_m, 'elev_m': elev_m}] %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.items | tojson }}
+      ride_events: "{{ (ride_events_json | default('[]', true) | string) | from_json }}"
+      week_start_ts: >-
+        {{ as_timestamp(
+            now().replace(hour=0, minute=0, second=0, microsecond=0)
+            - timedelta(days=now().weekday())
+        ) }}
+      week_end_ts: "{{ week_start_ts + 7*24*3600 }}"
+      last_week_start_ts: "{{ week_start_ts - 7*24*3600 }}"
+      last_week_end_ts: "{{ week_start_ts }}"
+      start_7d_ts: "{{ now_ts - 7*24*3600 }}"
+      start_28d_ts: "{{ now_ts - 28*24*3600 }}"
+      week_totals: >-
+        {% set rides = ride_events %}
+        {% set ns = namespace(rides=0, sec=0.0, mi=0.0, ft=0.0) %}
+        {% for ride in rides %}
+          {% set ts = ride['ts'] %}
+          {% if ts is number and week_start_ts <= ts < week_end_ts %}
+            {% set ns.rides = ns.rides + 1 %}
+            {% set ns.sec = ns.sec + ride['sec']|float(0) %}
+            {% set ns.mi = ns.mi + ride['dist_m']|float(0) * 0.000621371 %}
+            {% set ns.ft = ns.ft + ride['elev_m']|float(0) * 3.28084 %}
+          {% endif %}
+        {% endfor %}
+        {{ {'rides': ns.rides, 'sec': ns.sec, 'mi': ns.mi, 'ft': ns.ft} }}
+      last_week_sec: >-
+        {% set rides = ride_events %}
+        {% set total = namespace(sec=0.0) %}
+        {% for ride in rides %}
+          {% set ts = ride['ts'] %}
+          {% if ts is number and last_week_start_ts <= ts < last_week_end_ts %}
+            {% set total.sec = total.sec + ride['sec']|float(0) %}
+          {% endif %}
+        {% endfor %}
+        {{ total.sec }}
+      load_7d_sec: >-
+        {% set rides = ride_events %}
+        {% set total = namespace(sec=0.0) %}
+        {% for ride in rides %}
+          {% set ts = ride['ts'] %}
+          {% if ts is number and start_7d_ts <= ts < now_ts %}
+            {% set total.sec = total.sec + ride['sec']|float(0) %}
+          {% endif %}
+        {% endfor %}
+        {{ total.sec }}
+      load_28d_sec: >-
+        {% set rides = ride_events %}
+        {% set total = namespace(sec=0.0) %}
+        {% for ride in rides %}
+          {% set ts = ride['ts'] %}
+          {% if ts is number and start_28d_ts <= ts < now_ts %}
+            {% set total.sec = total.sec + ride['sec']|float(0) %}
+          {% endif %}
+        {% endfor %}
+        {{ total.sec }}
     actions:
       - action: shell_command.zwift_parse_fit
         response_variable: fit_data
@@ -440,6 +572,20 @@ template:
         state: "{{ now() }}"
         attributes:
           activities: "{{d}}"
+      - name: "Ride Training Summary (This Week)"
+        unique_id: 8f684f4b-8f0b-4df5-a3b0-e16173f4d903
+        icon: "mdi:bike"
+        state: "{{ now().isoformat() }}"
+        attributes:
+          week_start: "{{ week_start_ts }}"
+          week_end: "{{ week_end_ts }}"
+          rides: "{{ week_totals.rides }}"
+          week_hours: "{{ (week_totals.sec | float(0) / 3600) | round(2) }}"
+          week_miles: "{{ (week_totals.mi | float(0)) | round(1) }}"
+          week_elev_ft: "{{ (week_totals.ft | float(0)) | round(0) }}"
+          last_week_hours: "{{ (last_week_sec | float(0) / 3600) | round(2) }}"
+          load_7d_hours: "{{ (load_7d_sec | float(0) / 3600) | round(2) }}"
+          load_28d_hours: "{{ (load_28d_sec | float(0) / 3600) | round(2) }}"
       - name: "Zwift Last Ride Title"
         unique_id: 221a86fb-2af5-40f3-aa32-81ed893e044e
         state: "{{ last.get('name','') }}"
