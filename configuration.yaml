@@ -32,6 +32,9 @@ logger:
     homeassistant.components.bluetooth.manager: critical
     homeassistant.components.recorder: info
     sqlalchemy.engine.Engine: warning
+  filters:
+    homeassistant.components.mqtt.entity:
+      - "deprecated option `object_id`"
 
 recorder:
   db_url: "mysql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant?charset=utf8mb4"
@@ -39,8 +42,17 @@ recorder:
   auto_purge: true
   commit_interval: 3
   exclude:
+    event_types:
+      - strava_activities_update
+      - strava_activity_detail_update
+      - zwift_profile_update
+      - zwift_world_update
+      - zwift_activity_update
+      - zwift_fit_parsed
     entities:
       - device_tracker.rv_gps
+      - sensor.strava_activities_raw
+      - sensor.zwift_activity_data
     entity_globs:
       - sensor.*_weight_projection
       - sensor.*_bodyfat_projection
