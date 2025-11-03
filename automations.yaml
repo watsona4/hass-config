@@ -176,6 +176,7 @@
         data: {}
         target:
           entity_id: cover.ratgdov25i_f6128e_door
+        enabled: true
     - conditions:
       - condition: state
         entity_id: binary_sensor.dark_outside
@@ -208,6 +209,13 @@
         data: {}
         target:
           entity_id: cover.ratgdov25i_f6128e_door
+        enabled: false
+      - action: cover.close_cover
+        metadata: {}
+        data: {}
+        target:
+          entity_id: cover.ratgdov25i_f6128e_door
+        enabled: true
     default:
     - if:
       - condition: trigger
