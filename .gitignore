@@ -25,9 +25,13 @@ ssh/
 SERVICE_ACCOUNT.JSON
 
 dashboards/spaces/views/
+dashboards/environment/plant_sections
+packages/plants
 zwift_access_token.txt
 zwift_id_token.txt
 zwift_refresh_token.txt
+packages/strava.yaml
+packages/xert_activities.yaml
 
 # Ignore heavy binary assets, allow config assets
 www/community 
