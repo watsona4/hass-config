@@ -1,7 +1,7 @@
 # Tasks executed before Home Assistant starts inside the container.
 tasks:
   - name: generate_plant_assets
-    cwd: .
+    cwd: /config
     run:
       - python3
       - scripts/generate_plant_assets.py
@@ -15,7 +15,7 @@ tasks:
       - --router-file=packages/plants/plant_sensor_router.yaml
 
   - name: render_strava_templates
-    cwd: .
+    cwd: /config
     run:
       - python3
       - scripts/render_templates.py
@@ -25,7 +25,7 @@ tasks:
       - --var=count=20
 
   - name: render_xert_templates
-    cwd: .
+    cwd: /config
     run:
       - python3
       - scripts/render_templates.py

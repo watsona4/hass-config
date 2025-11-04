@@ -628,7 +628,7 @@ template:
         unique_id: 4666604b-0d9d-4237-a9bc-44e512ad2016
         device_class: energy
         unit_of_measurement: "kcal"
-        state_class: measurement
+        state_class: total
         state: "{{ last.get('calories',0) }}"
       - name: "Zwift Last Ride Image"
         unique_id: 97cd09f5-ef2a-43f1-ba94-668a812b0420
