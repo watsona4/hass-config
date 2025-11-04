@@ -586,6 +586,13 @@ template:
           last_week_hours: "{{ (last_week_sec | float(0) / 3600) | round(2) }}"
           load_7d_hours: "{{ (load_7d_sec | float(0) / 3600) | round(2) }}"
           load_28d_hours: "{{ (load_28d_sec | float(0) / 3600) | round(2) }}"
+      - name: "Ride Training Load (7d Hours)"
+        unique_id: 8a72c3e7-5388-4af1-bae7-775363ad9b3d
+        unit_of_measurement: "h"
+        device_class: duration
+        state_class: measurement
+        icon: "mdi:bike"
+        state: "{{ (load_7d_sec | float(0) / 3600) | round(2) }}"
       - name: "Zwift Last Ride Title"
         unique_id: 221a86fb-2af5-40f3-aa32-81ed893e044e
         state: "{{ last.get('name','') }}"
