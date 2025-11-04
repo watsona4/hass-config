@@ -8,63 +8,97 @@ cards:
         columns: 2
         square: false
         cards:
-          - type: sensor
+          - type: custom:mushroom-template-card
             entity: sensor.zep_residual_mg
-            name: Residual
-          - type: sensor
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
+            secondary: Residual
+            icon: mdi:pill
+            color: green
+          - type: custom:mushroom-template-card
             entity: sensor.zep_target_residual_mg
-            name: Target Residual
-          - type: sensor
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
+            secondary: Target Residual
+            icon: mdi:target
+            color: red
+          - type: custom:mushroom-template-card
             entity: sensor.zep_current_course_peak_mg
-            name: Current Course Peak
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
+            secondary: Current Course Peak
+            icon: mdi:chart-bell-curve
+            color: blue
+            multiline_secondary: true
             visibility:
               - condition: state
                 entity: sensor.zep_current_course_phase
                 state: rising
-          - type: sensor
+          - type: custom:mushroom-template-card
             entity: sensor.zep_next_course_peak_mg
-            name: Next Course Peak
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
+            secondary: Next Course Peak
+            icon: mdi:chart-bell-curve
+            color: blue
+            multiline_secondary: true
             visibility:
               - condition: state
                 entity: sensor.zep_current_course_phase
                 state: past
-          - type: entity
+          - type: custom:mushroom-template-card
             entity: binary_sensor.zep_ready_to_inject
-            name: Ready To Inject
+            primary: "{{ states(entity).title() }}"
+            secondary: Ready To Inject
             icon: mdi:needle
-      - type: entity
+            color: purple
+            multiline_secondary: true
+      - type: custom:mushroom-template-card
         entity: sensor.zep_current_course_peak_mg
-        attribute: details
-        name: Current Course Peak Time
+        primary: Current Course Peak Time
+        secondary: "{{ state_attr(entity,'details') }}"
+        icon: mdi:calendar
+        color: darkblue
+        multiline_secondary: true
         visibility:
           - condition: state
             entity: sensor.zep_current_course_phase
             state: rising
-      - type: entity
+      - type: custom:mushroom-template-card
         entity: sensor.zep_next_course_peak_mg
-        attribute: details
-        name: Next Course Peak Time
+        primary: Next Course Peak Time
+        secondary: "{{ state_attr(entity,'details') }}"
+        icon: mdi:calendar
+        color: darkblue
+        multiline_secondary: true
         visibility:
           - condition: state
             entity: sensor.zep_current_course_phase
             state: past
-      - type: entity
+      - type: custom:mushroom-template-card
         entity: sensor.zep_next_ready_timestamp
-        name: Next At-Target Time
-        attribute: display
+        primary: Next At-Target Time
+        secondary: "{{ state_attr(entity,'display') }}"
+        icon: mdi:clock-outline
+        color: darkgreen
+        multiline_secondary: true
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: input_number.zep_desired_dose_mg
+            name: Desired Dose
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-entity-card
+            entity: input_number.zep_desired_peak_mg
+            name: Desired Peak
+            tap_action:
+              action: more-info
       - type: markdown
-        visibility:
-          - condition: state
-            entity: binary_sensor.zep_ready_to_inject
-            state: 'on'
-          - condition: or
-            conditions:
-              - condition: state
-                entity: binary_sensor.daytime
-                state: 'on'
-              - condition: state
-                entity: binary_sensor.evening
-                state: 'on'
         content: >
           ## ✅ Zepbound: You are ready to inject
 
@@ -72,9 +106,22 @@ cards:
           target **{{ states('sensor.zep_target_residual_mg') }} mg**.
 
           Dose **{{ states('input_number.zep_weekly_dose_mg') }} mg**.
-          Projected peak **{{ states('sensor.zep_projected_peak_mg') }}
-          mg**.  
-      - type: horizontal-stack
+          Projected peak **{{ states('sensor.zep_projected_peak_mg') }} mg**.
+        visibility:
+          - condition: state
+            entity: binary_sensor.zep_ready_to_inject
+            state: "on"
+          - condition: or
+            conditions:
+              - condition: state
+                entity: binary_sensor.daytime
+                state: "on"
+              - condition: state
+                entity: binary_sensor.evening
+                state: "on"
+      - type: grid
+        columns: 3
+        square: true
         cards:
           - type: button
             name: Record Taken Now
@@ -98,50 +145,6 @@ cards:
               service: script.zep_snooze_hours
               data:
                 hours: 24
-  - type: vertical-stack
-    cards:
-      - type: entities
-        title: Dosing Inputs
-        entities:
-          - entity: input_number.zep_desired_peak_mg
-          - entity: input_number.zep_desired_dose_mg
-          - entity: input_select.zep_eval_mode
-          - entity: input_number.zep_band_min_mg
-          - entity: input_number.zep_band_max_mg
-      - type: custom:flex-table-card
-        title: ZepBound Peak/Trough
-        sort_by: dose
-        entities:
-          - sensor.zep_band_plan
-        columns:
-          - name: Dose
-            data: per_dose.dose
-            align: center
-          - name: Peak (mg)
-            data: per_dose.peak
-            align: right
-            modify: "x==null ? '—' : Number(x).toFixed(2)"
-          - name: Trough (mg)
-            data: per_dose.trough
-            align: right
-            modify: "x==null ? '—' : Number(x).toFixed(2)"
-          - name: Schedule
-            data: per_dose.T_h
-            align: center
-            modify: >
-              x==null ? "—" : (Math.floor(Number(x)/24) + " days, " +
-              (Number(x)%24).toFixed(0) + " hrs")
-          - name: Valid
-            data: per_dose.valid
-            align: center
-        row_style: |
-          (row.valid===false) ? "opacity:0.6" : ""
-        css:
-          thead: "background-color: rgb(199,200,202);"
-          tbody tr:has(.doseflag.ok): "background-color: rgba(76, 175, 80, 0.14); color: var(--primary-text-color);"
-          tbody tr:has(.doseflag.bad): "background-color: rgba(244, 67, 54, 0.12); color: var(--primary-text-color);"
-          th:last-child: display:none;
-          td:last-child: display:none;
   - type: custom:config-template-card
     entities:
       - sensor.zep_residual_mg
@@ -212,14 +215,14 @@ cards:
           strokeWidth: 0
         annotations:
           xaxis:
-            - x: ${ states['sensor.zep_current_plan_epoch_ms']?.state ?? Date.now() }
+            - x: "${ states['sensor.zep_current_plan_epoch_ms']?.state ?? Date.now() }"
               borderColor: "#999999"
               strokeDashArray: 4
               label:
                 text: Next injection
           yaxis:
-            - "y": ${ Number(states['input_number.zep_band_max_mg']?.state ?? 0) }
-              y2: ${ Number(states['input_number.zep_band_min_mg']?.state ?? 0) }
+            - "y": "${ Number(states['input_number.zep_band_max_mg']?.state ?? 0) }"
+              y2: "${ Number(states['input_number.zep_band_min_mg']?.state ?? 0) }"
               borderColor: rgba(76,175,80,0.25)
               fillColor: rgba(76,175,80,0.10)
               label:
@@ -227,7 +230,7 @@ cards:
                 style:
                   background: rgba(76,175,80,0.7)
                   color: "#fff"
-            - "y": ${ Number(states['sensor.zep_current_plan']?.attributes?.target ?? 0) }
+            - "y": "${ Number(states['sensor.zep_current_plan']?.attributes?.target ?? 0) }"
               borderColor: "#1f77b4"
               strokeDashArray: 2
               label:
@@ -237,7 +240,7 @@ cards:
                 style:
                   background: "#1f77b4"
                   color: "#fff"
-            - "y": ${ Number(states['sensor.zep_next_plan']?.attributes?.peak ?? 0) }
+            - "y": "${ Number(states['sensor.zep_next_plan']?.attributes?.peak ?? 0) }"
               borderColor: "#e67e22"
               strokeDashArray: 2
               label:
@@ -247,3 +250,58 @@ cards:
                 style:
                   background: "#e67e22"
                   color: "#fff"
+  - type: vertical-stack
+    title: ZepBound Peak/Trough
+    cards:
+      - type: custom:flex-table-card
+        sort_by: dose
+        entities:
+          - sensor.zep_band_plan
+        columns:
+          - name: Dose
+            data: per_dose.dose
+            align: center
+          - name: Peak (mg)
+            data: per_dose.peak
+            align: right
+            modify: "x == null ? '—' : Number(x).toFixed(2)"
+          - name: Trough (mg)
+            data: per_dose.trough
+            align: right
+            modify: "x == null ? '—' : Number(x).toFixed(2)"
+          - name: Schedule
+            data: per_dose.T_h
+            align: center
+            modify: "x == null ? '—' : (Math.floor(Number(x)/24) + ' days, ' + (Number(x)%24).toFixed(0) + ' hrs')"
+          - name: Valid
+            data: per_dose.valid
+            align: center
+        row_style: "(row.valid === false) ? 'opacity: 0.6' : ''"
+        css:
+          "thead": "background-color: rgb(199,200,202);"
+          "tbody tr:has(.doseflag.ok)": "background-color: rgba(76, 175, 80, 0.14); color: var(--primary-text-color);"
+          "tbody tr:has(.doseflag.bad)": "background-color: rgba(244, 67, 54, 0.12); color: var(--primary-text-color);"
+          "th:last-child": "display:none;"
+          "td:last-child": "display:none;"
+      - type: custom:mushroom-template-card
+        entity: input_select.zep_eval_mode
+        primary: Evaluation Mode
+        secondary: >-
+          {% set m = states(entity) %}
+          {{ 'Steady State' if m == 'steady' else 'From Current Residual' if m == 'course' else 'Unknown' }}
+        icon: mdi:swap-horizontal
+        color: blue
+        tap_action:
+          action: more-info
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: input_number.zep_band_min_mg
+            name: Target Min
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-entity-card
+            entity: input_number.zep_band_max_mg
+            name: Target Max
+            tap_action:
+              action: more-info
