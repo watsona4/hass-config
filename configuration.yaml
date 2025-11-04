@@ -104,6 +104,8 @@ lovelace:
       type: module
     - url: /local/community/flex-table-card/flex-table-card.js
       type: module
+    - url: /local/community/lovelace-state-switch/state-switch.js
+      type: module
   dashboards:
     lovelace-health:
       mode: yaml

@@ -151,7 +151,10 @@ def get_common_name_gbif(scientific: str, lang: str = "en", country: str | None 
 
     # 1. Language + country match
     if lang_codes and country_code:
-        match = _pick(lambda entry: entry.get("language", "").lower() in lang_codes and entry.get("country", "").upper() == country_code)
+        match = _pick(
+            lambda entry: entry.get("language", "").lower() in lang_codes
+            and entry.get("country", "").upper() == country_code
+        )
         if match:
             return match
 
@@ -452,124 +455,125 @@ def build_dashboard_section(row: Dict[str, Any]) -> str:
 
     # Section YAML (kept as close to your Bodhi card as possible)
     section = f"""\
-type: grid
-column_span: 1
+type: horizontal-stack
 cards:
-  # -------------- Section for {common} --------------
-  - type: custom:mushroom-title-card
-    title: "{common_q}"
-    subtitle: "{scientific_q}"
-    card_mod:
-      attributes:
-        title: "{common_q}"
-  
-  # Centered chip row (overall + per-signal)
-  - type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-      - type: template
-        entity: binary_sensor.{slug}_all_ok
-        content: "{{{{ 'All Good' if is_state(entity, 'on') else 'Needs Attention' }}}}"
-        icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
-        icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
-      - type: template
-        entity: binary_sensor.{slug}_light_ok
-        content: "Light Level: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
-        icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
-        icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
-      - type: template
-        entity: binary_sensor.{slug}_temperature_ok
-        content: "Temperature: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
-        icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
-        icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
-      - type: template
-        entity: binary_sensor.{slug}_moisture_ok
-        content: "Moisture: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
-        icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
-        icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
-      - type: template
-        entity: binary_sensor.{slug}_ec_ok
-        content: "Conductivity: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
-        icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
-        icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
-  
-  # 2-column metric grid (Temperature, Light, Moisture, Conductivity)
-  - square: false
-    type: grid
-    columns: 2
+  - type: vertical-stack
     cards:
-      - type: custom:mushroom-template-card
-        entity: sensor.{slug}_temperature_routed
-        primary: Temperature
-        secondary: >
-          {{%- from 'units/base.jinja' import u_convert_value, u_humanize_value, u_humanize_entity -%}}
-          {{%- set temp_min_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_min'), 'c', 'f'), '°F') -%}}
-          {{%- set temp_max_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_max'), 'c', 'f'), '°F') -%}}
-          {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-          {{{{ '\\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}}}
-        icon: mdi:thermometer
-        color: "{{{{ 'green' if is_state('binary_sensor.{slug}_temperature_ok','on') else 'red' }}}}"
-        multiline_secondary: true
-  
-      - type: custom:mushroom-template-card
-        entity: sensor.{slug}_illuminance_routed
-        primary: Light
-        secondary: >
-          {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-          {{%- set light_min_lux = u_humanize_value(states('sensor.{slug}_light_min_lux')) -%}}
-          {{%- set light_max_lux = u_humanize_value(states('sensor.{slug}_light_max_lux'), 'lx') -%}}
-          {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-          {{{{ '\\nRange: ' ~ light_min_lux ~ '–' ~ light_max_lux }}}}
-        icon: mdi:white-balance-sunny
-        color: "{{{{ 'green' if is_state('binary_sensor.{slug}_light_ok','on') else 'red' }}}}"
-        multiline_secondary: true
-  
-      - type: custom:mushroom-template-card
-        entity: sensor.{slug}_moisture_routed
-        primary: Moisture
-        secondary: >
-          {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-          {{%- set moist_min_pct = u_humanize_value(states('sensor.{slug}_moisture_min'), '%') -%}}
-          {{%- set moist_max_pct = u_humanize_value(states('sensor.{slug}_moisture_max'), '%') -%}}
-          {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-          {{{{ '\\nRange: ' ~ moist_min_pct ~ '–' ~ moist_max_pct }}}}
-        icon: mdi:water-percent
-        color: "{{{{ 'green' if is_state('binary_sensor.{slug}_moisture_ok','on') else 'red' }}}}"
-        multiline_secondary: true
-  
-      - type: custom:mushroom-template-card
-        entity: sensor.{slug}_conductivity_routed
-        primary: Conductivity
-        secondary: >
-          {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-          {{%- set cond_min_uscm = u_humanize_value(states('sensor.{slug}_ec_min')) -%}}
-          {{%- set cond_max_uscm = u_humanize_value(states('sensor.{slug}_ec_max')) -%}}
-          {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-          {{{{ '\\nRange: ' ~ cond_min_uscm ~ '–' ~ cond_max_uscm ~ ' µS/cm' }}}}
-        icon: mdi:flash
-        color: "{{{{ 'green' if is_state('binary_sensor.{slug}_ec_ok','on') else 'red' }}}}"
-        multiline_secondary: true
-  
-  # Care summary (markdown-like), matching your Bodhi pattern
-  - type: markdown
-    content: |
-      {{% set ok = {{
-        'temp': is_state('binary_sensor.{slug}_temperature_ok','on'),
-        'light': is_state('binary_sensor.{slug}_light_ok','on'),
-        'moist': is_state('binary_sensor.{slug}_moisture_ok','on'),
-        'cond': is_state('binary_sensor.{slug}_ec_ok','on')
-      }} %}}
-      {{% set overall_ok = (ok.temp and ok.light and ok.moist and ok.cond) %}}
-      **{{{{ '✅ All Good!' if overall_ok else '⚠️ Needs Attention' }}}}:** {{{{ states('sensor.{slug}_care_notes') }}}}
-  
-      ---
-      **🌤 Sunlight:** {{{{ state_attr('sensor.{slug}_care_notes','sunlight') or states('sensor.{slug}_care_notes') }}}}
-      **🚿 Watering:** {{{{ state_attr('sensor.{slug}_care_notes','watering') or '—' }}}}
-      **🌱 Fertilization:** {{{{ state_attr('sensor.{slug}_care_notes','fertilization') or '—' }}}}
-      **✂️ Pruning:** {{{{ state_attr('sensor.{slug}_care_notes','pruning') or '—' }}}}
-      **🪴 Soil:** {{{{ state_attr('sensor.{slug}_care_notes','soil') or '—' }}}}
-      **📝 Notes:** {{{{ state_attr('sensor.{slug}_care_notes','floral_language') or '—' }}}}
-  
+      # -------------- Section for {common} --------------
+      - type: custom:mushroom-title-card
+        title: "{common_q}"
+        subtitle: "{scientific_q}"
+        card_mod:
+          attributes:
+            title: "{common_q}"
+
+      # Centered chip row (overall + per-signal)
+      - type: custom:mushroom-chips-card
+        alignment: center
+        chips:
+          - type: template
+            entity: binary_sensor.{slug}_all_ok
+            content: "{{{{ 'All Good' if is_state(entity, 'on') else 'Needs Attention' }}}}"
+            icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
+            icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
+          - type: template
+            entity: binary_sensor.{slug}_light_ok
+            content: "Light Level: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
+            icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
+            icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
+          - type: template
+            entity: binary_sensor.{slug}_temperature_ok
+            content: "Temperature: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
+            icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
+            icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
+          - type: template
+            entity: binary_sensor.{slug}_moisture_ok
+            content: "Moisture: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
+            icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
+            icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
+          - type: template
+            entity: binary_sensor.{slug}_ec_ok
+            content: "Conductivity: {{{{ 'OK' if is_state(entity, 'on') else 'Problem' }}}}"
+            icon: "{{{{ 'mdi:check-circle' if is_state(entity,'on') else 'mdi:alert-circle' }}}}"
+            icon_color: "{{{{ 'green' if is_state(entity,'on') else 'red' }}}}"
+
+      # 2-column metric grid (Temperature, Light, Moisture, Conductivity)
+      - square: false
+        type: grid
+        columns: 2
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.{slug}_temperature_routed
+            primary: Temperature
+            secondary: >
+              {{%- from 'units/base.jinja' import u_convert_value, u_humanize_value, u_humanize_entity -%}}
+              {{%- set temp_min_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_min'), 'c', 'f'), '°F') -%}}
+              {{%- set temp_max_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_max'), 'c', 'f'), '°F') -%}}
+              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+              {{{{ '\\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}}}
+            icon: mdi:thermometer
+            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_temperature_ok','on') else 'red' }}}}"
+            multiline_secondary: true
+
+          - type: custom:mushroom-template-card
+            entity: sensor.{slug}_illuminance_routed
+            primary: Light
+            secondary: >
+              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+              {{%- set light_min_lux = u_humanize_value(states('sensor.{slug}_light_min_lux')) -%}}
+              {{%- set light_max_lux = u_humanize_value(states('sensor.{slug}_light_max_lux'), 'lx') -%}}
+              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+              {{{{ '\\nRange: ' ~ light_min_lux ~ '–' ~ light_max_lux }}}}
+            icon: mdi:white-balance-sunny
+            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_light_ok','on') else 'red' }}}}"
+            multiline_secondary: true
+
+          - type: custom:mushroom-template-card
+            entity: sensor.{slug}_moisture_routed
+            primary: Moisture
+            secondary: >
+              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+              {{%- set moist_min_pct = u_humanize_value(states('sensor.{slug}_moisture_min'), '%') -%}}
+              {{%- set moist_max_pct = u_humanize_value(states('sensor.{slug}_moisture_max'), '%') -%}}
+              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+              {{{{ '\\nRange: ' ~ moist_min_pct ~ '–' ~ moist_max_pct }}}}
+            icon: mdi:water-percent
+            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_moisture_ok','on') else 'red' }}}}"
+            multiline_secondary: true
+
+          - type: custom:mushroom-template-card
+            entity: sensor.{slug}_conductivity_routed
+            primary: Conductivity
+            secondary: >
+              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+              {{%- set cond_min_uscm = u_humanize_value(states('sensor.{slug}_ec_min')) -%}}
+              {{%- set cond_max_uscm = u_humanize_value(states('sensor.{slug}_ec_max')) -%}}
+              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+              {{{{ '\\nRange: ' ~ cond_min_uscm ~ '–' ~ cond_max_uscm ~ ' µS/cm' }}}}
+            icon: mdi:flash
+            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_ec_ok','on') else 'red' }}}}"
+            multiline_secondary: true
+
+      # Care summary (markdown-like), matching your Bodhi pattern
+      - type: markdown
+        content: |
+          {{% set ok = {{
+            'temp': is_state('binary_sensor.{slug}_temperature_ok','on'),
+            'light': is_state('binary_sensor.{slug}_light_ok','on'),
+            'moist': is_state('binary_sensor.{slug}_moisture_ok','on'),
+            'cond': is_state('binary_sensor.{slug}_ec_ok','on')
+          }} %}}
+          {{% set overall_ok = (ok.temp and ok.light and ok.moist and ok.cond) %}}
+          **{{{{ '✅ All Good!' if overall_ok else '⚠️ Needs Attention' }}}}:** {{{{ states('sensor.{slug}_care_notes') }}}}
+
+          ---
+          **🌤 Sunlight:** {{{{ state_attr('sensor.{slug}_care_notes','sunlight') or states('sensor.{slug}_care_notes') }}}}
+          **🚿 Watering:** {{{{ state_attr('sensor.{slug}_care_notes','watering') or '—' }}}}
+          **🌱 Fertilization:** {{{{ state_attr('sensor.{slug}_care_notes','fertilization') or '—' }}}}
+          **✂️ Pruning:** {{{{ state_attr('sensor.{slug}_care_notes','pruning') or '—' }}}}
+          **🪴 Soil:** {{{{ state_attr('sensor.{slug}_care_notes','soil') or '—' }}}}
+          **📝 Notes:** {{{{ state_attr('sensor.{slug}_care_notes','floral_language') or '—' }}}}
+
   # Photo (exactly like your Bodhi example uses local/ with spaces)
   - type: picture
     image: "{image_path}"

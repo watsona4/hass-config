@@ -26,4 +26,17 @@ badges:
     content: "Probe Location: {{ states(entity) | title }}"
     tap_action:
       action: more-info
-sections: !include_dir_list ../plant_sections
+sections:
+  - type: grid
+    column_span: 2
+    cards:
+      - type: custom:state-switch
+        entity: input_select.plant_sensor_location
+        default: ficus religiosa
+        transition: slide-left
+        grid_options:
+          columns: full
+        states:
+          "ficus religiosa": !include ../plant_sections/ficus_religiosa_section.yaml
+          "haworthia fasciata": !include ../plant_sections/haworthia_fasciata_section.yaml
+          "hedera helix": !include ../plant_sections/hedera_helix_section.yaml
