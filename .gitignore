@@ -51,6 +51,7 @@ config/www/**/*.avif
 !config/www/**/*.css
 !config/www/**/*.yaml
 !config/www/**/*.json
+config/www/ride/*.json
 
 # Old OpenZWave / OZW logs and DBs
 config/ozw_log.txt
