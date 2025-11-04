@@ -275,6 +275,7 @@
     - name: Dark Outside
       unique_id: dark_outside
       availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      delay_off: "00:05:00"
       state: >-
         {% set ill = states('sensor.light_sensor_illuminance') | float(default=none) %}
         {% if ill is not none %}
@@ -283,6 +284,17 @@
         {% else %}
           false
         {% endif %}
+
+# ===============================
+# Kinda Dark Outside
+# ===============================
+- binary_sensor:
+    - name: Darkish Outside
+      unique_id: darkish_outside
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      delay_off: "00:05:00"
+      state: >-
+        {{ states('sensor.light_sensor_illuminance')|float < 300 }}
 
 # -----------------------------
 # Living Room Illuminance State

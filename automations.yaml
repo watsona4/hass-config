@@ -579,43 +579,20 @@
   triggers:
   - entity_id:
     - binary_sensor.dark_outside
-    to: 'on'
-    trigger: state
-  - entity_id:
-    - binary_sensor.dark_outside
-    to: 'off'
+    to:
     trigger: state
   - entity_id:
     - binary_sensor.daytime
-    to: 'on'
+    to:
     trigger: state
-    id: State
   - entity_id:
     - binary_sensor.evening
-    to: 'off'
+    to:
     trigger: state
-    id: State
-  - trigger: state
-    entity_id:
-    - input_boolean.daytime_override
-    id: State
   - trigger: homeassistant
     event: start
-  - trigger: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.exterior_lights_timer
   conditions: []
   actions:
-  - if:
-    - condition: not
-      conditions:
-      - condition: trigger
-        id:
-        - State
-    then:
-    - wait_template: '{{ is_state(''timer.exterior_lights_timer'', ''idle'') }}'
-      continue_on_timeout: true
   - choose:
     - conditions:
       - condition: state
@@ -664,12 +641,6 @@
         target:
           entity_id: script.turn_off_exterior_lights
         action: script.turn_on
-  - action: timer.start
-    metadata: {}
-    data:
-      duration: 00:05:00
-    target:
-      entity_id: timer.exterior_lights_timer
   mode: single
   trace:
     stored_traces: 100
@@ -4884,53 +4855,26 @@
   description: ''
   triggers:
   - entity_id:
-    - sensor.light_sensor_illuminance
-    above: 300
-    trigger: numeric_state
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-  - entity_id:
-    - sensor.light_sensor_illuminance
-    below: 300
-    trigger: numeric_state
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
+    - binary_sensor.darkish_outside
+    to:
+    trigger: state
   - entity_id:
     - binary_sensor.daytime
-    to: 'on'
+    to:
     trigger: state
-    id: State
   - entity_id:
     - binary_sensor.evening
     to:
     trigger: state
-    id: State
   - trigger: homeassistant
     event: start
-  - trigger: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.interior_lights_timer
   conditions: []
   actions:
-  - if:
-    - condition: not
-      conditions:
-      - condition: trigger
-        id:
-        - State
-    then:
-    - wait_template: '{{ is_state(''timer.interior_lights_timer'', ''idle'') }}'
-      continue_on_timeout: true
   - choose:
     - conditions:
-      - condition: numeric_state
-        entity_id: sensor.light_sensor_illuminance
-        below: 300
+      - condition: state
+        entity_id: binary_sensor.darkish_outside
+        state: 'on'
       - condition: state
         entity_id: binary_sensor.daytime
         state: 'on'
@@ -4941,9 +4885,9 @@
           entity_id: script.turn_on_interior_lights
         action: script.turn_on
     - conditions:
-      - condition: numeric_state
-        entity_id: sensor.light_sensor_illuminance
-        below: 300
+      - condition: state
+        entity_id: binary_sensor.darkish_outside
+        state: 'on'
       - condition: state
         entity_id: binary_sensor.evening
         state: 'on'
@@ -4954,9 +4898,9 @@
           entity_id: script.turn_on_interior_lights
         action: script.turn_on
     - conditions:
-      - condition: numeric_state
-        entity_id: sensor.light_sensor_illuminance
-        below: 300
+      - condition: state
+        entity_id: binary_sensor.darkish_outside
+        state: 'on'
       - condition: state
         entity_id: binary_sensor.daytime
         state: 'off'
@@ -4970,9 +4914,9 @@
           entity_id: script.turn_off_interior_lights
         action: script.turn_on
     - conditions:
-      - condition: numeric_state
-        entity_id: sensor.light_sensor_illuminance
-        above: 300
+      - condition: state
+        entity_id: binary_sensor.darkish_outside
+        state: 'off'
       - condition: state
         entity_id: binary_sensor.daytime
         state: 'on'
@@ -4982,12 +4926,6 @@
         target:
           entity_id: script.turn_off_interior_lights
         action: script.turn_on
-  - action: timer.start
-    metadata: {}
-    data:
-      duration: 0:05:00
-    target:
-      entity_id: timer.interior_lights_timer
   mode: queued
   trace:
     stored_traces: 100
