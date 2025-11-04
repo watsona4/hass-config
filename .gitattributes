@@ -18,4 +18,4 @@
 *.rar  filter=lfs diff=lfs merge=lfs -text
 
 # Safety: do NOT LFS things under www/ since you ignore it anyway
-www/** -filter -diff -merge
+config/www/** -filter -diff -merge
