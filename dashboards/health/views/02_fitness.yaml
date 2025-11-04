@@ -250,13 +250,9 @@ sections:
         now:
           show: true
         series:
-          - entity: sensor.ride_training_summary_this_week
+          - entity: sensor.ride_training_load_7d_hours
             name: 7d Load
             type: line
-            data_generator: >
-              // Use the attribute as a single daily point to make a clean sparkline
-              const v = Number(entity.attributes.load_7d_hours || 0);
-              return [[Date.now(), v]];
         apex_config:
           yaxis:
             decimalsInFloat: 1
