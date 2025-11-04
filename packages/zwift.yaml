@@ -628,10 +628,12 @@ template:
         state: "{{ last.get('primaryImageUrl','') }}"
       - name: "Zwift Last Ride Avg HR"
         unique_id: 908dae6e-f189-4d1d-8f6d-91b46118faa8
+        unit_of_measurement: "bpm"
         state_class: measurement
         state: "{{ (fit_data.get('stdout')|from_json).get('avg_heartrate',0) }}"
       - name: "Zwift Last Ride Max HR"
         unique_id: a067799b-59ca-4e17-848f-b5330cb94381
+        unit_of_measurement: "bpm"
         state_class: measurement
         state: "{{ (fit_data.get('stdout')|from_json).get('max_heartrate',0) }}"
 

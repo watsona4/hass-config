@@ -7,43 +7,50 @@ badges:
     icon: mdi:heart-pulse
     label: Xert Status
     content: "{{ states(entity) }}"
-    color: >-
+    color: >
       {% set s = states(entity)|lower %}
-      {{ 'green' if 'fresh' in s else 'orange' if 'tired' in s else 'red' if 'very tired' in s else 'grey' }}
+      {{ 'green' if 'fresh' in s else 'orange' if 'tired' in s else 'red' if 'very tired' in s else 'disabled' }}
   - type: custom:mushroom-template-badge
     entity: sensor.xert_ftp
     icon: mdi:gauge
-    label: FTP
+    label: Xert FTP
     content: >-
+      {% from 'units/base.jinja' import u_humanize_value %}
       {% set p = states(entity) | float(0) %}
       {% set w = state_attr('sensor.xert_training_info_raw','weight') | float(1) %}
-      {{ p | round(0) ~ ' W = ' ~ (p / w) | round(1) ~ ' W/kg' }}
+      {{ u_humanize_value(p, 'W') ~ ' = ' ~ u_humanize_value(p / w, 'W/kg') }}
     color: blue
   - type: custom:mushroom-template-badge
     entity: sensor.zwift_hours_this_week
     icon: mdi:clock-outline
-    label: Time This Week
+    label: Zwift Time This Week
     content: >-
-      {% from 'units/base.jinja' import u_humanize_duration %}
-      {{ u_humanize_duration(states(entity), 'h') }}
+      {% from 'units/base.jinja' import u_humanize_entity %}
+      {{ u_humanize_entity(entity) }}
     color: teal
   - type: custom:mushroom-template-badge
-    entity: sensor.last_ride_distance_km
+    entity: sensor.zwift_last_ride_distance
     icon: mdi:map-marker-distance
-    label: Last Ride
-    content: "{{ states(entity) }} mi"
+    label: Last Ride Distance
+    content: >-
+      {% from 'units/base.jinja' import u_humanize_entity %}
+      {{ u_humanize_entity(entity) }}
     color: green
   - type: custom:mushroom-template-badge
-    entity: sensor.last_ride_avg_power_w
+    entity: sensor.zwift_last_ride_avg_power
     icon: mdi:lightning-bolt
-    label: Avg Power
-    content: "{{ states(entity) }} W"
+    label: Last Ride Power
+    content: >-
+      {% from 'units/base.jinja' import u_humanize_entity %}
+      {{ u_humanize_entity(entity) }}
     color: amber
   - type: custom:mushroom-template-badge
-    entity: sensor.last_ride_avg_hr_bpm
+    entity: sensor.zwift_last_ride_avg_hr
     icon: mdi:heart
-    label: Avg HR
-    content: "{{ states(entity) }} bpm"
+    label: Last Ride Avg HR
+    content: >-
+      {% from 'units/base.jinja' import u_humanize_entity %}
+      {{ u_humanize_entity(entity) }}
     color: red
 sections:
   - type: grid
@@ -51,150 +58,53 @@ sections:
       - type: heading
         heading: 🚴 Latest Ride
       - type: custom:mushroom-template-card
-        entity: sensor.last_ride_title
-        primary: "{{ states(entity) }}"
+        entity: sensor.zwift_activity_data
+        primary: "{{ (state_attr(entity,'activities') | first).get('name','Unknown') }}"
         secondary: >-
-          {% set dist = states('sensor.last_ride_distance_mi') %}
-          {% set time = states('sensor.last_ride_moving_time_min') %}
-          {% set pow = states('sensor.last_ride_avg_power_w') %}
-          {{ dist ~ ' mi · ' ~ time ~ ' min · ' ~ pow ~ ' W' }}
+          {% from 'units/base.jinja' import u_convert_humanize_value %}
+          {% set d = (state_attr(entity,'activities') | first).get('distanceInMeters',0) %}
+          {% set t = (state_attr(entity,'activities') | first).get('movingTimeInMs',0) %}
+          {% set p = (state_attr(entity,'activities') | first).get('avgWatts',0) %}
+          {{ u_convert_humanize_value(d,'m','mi') ~ ' · ' ~ u_convert_humanize_value(t,'ms','min') ~ ' · ' ~ u_convert_humanize_value(p,'w','w') }}
         icon: mdi:bike
         color: green
-        features_position: bottom
         grid_options:
           columns: full
-      - show_state: false
+      - type: picture-entity
+        entity: sensor.zwift_activity_data
+        image: /local/strava/latest_ride.jpg
+        show_state: false
         show_name: false
         camera_view: auto
         fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_0_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '0'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_1_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '1'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_2_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '2'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_3_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '3'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_4_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '4'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_5_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '5'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_6_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '6'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_7_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '7'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_8_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '8'
-      - show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        type: picture-entity
-        entity: camera.strava_activity_9_photos
-        aspect_ratio: '1.8'
-        visibility:
-          - condition: state
-            entity: sensor.last_ride_index
-            state: '9'
-      - square: false
-        type: grid
+      - type: grid
         columns: 3
+        square: false
         cards:
           - type: custom:mushroom-template-card
-            entity: sensor.last_ride_avg_hr_bpm
+            entity: sensor.zwift_last_ride_avg_hr
             primary: Avg HR
-            secondary: "{{ states(entity) }} bpm"
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
             icon: mdi:heart
             color: red
             vertical: true
           - type: custom:mushroom-template-card
-            entity: sensor.last_ride_max_hr_bpm
+            entity: sensor.zwift_last_ride_max_hr
             primary: Max HR
-            secondary: "{{ states(entity) }} bpm"
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }} bpm
             icon: mdi:heart-pulse
             color: red
             vertical: true
           - type: custom:mushroom-template-card
-            entity: sensor.last_ride_calories_kcal
+            entity: sensor.zwift_activity_data
             primary: Calories
-            secondary: '{{ states(entity) }} kCal'
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_value %}
+              {{ u_humanize_value((state_attr(entity,'activities') | first).get('calories')) }}
             icon: mdi:fire
             color: amber
             vertical: true
@@ -253,54 +163,61 @@ sections:
     cards:
       - type: heading
         heading: 💪 Xert Training Metrics
-      - square: false
-        type: grid
+      - type: grid
         columns: 1
+        square: false
         cards:
           - type: custom:mushroom-template-card
+            entity: sensor.xert_ftp
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
             secondary: Functional Threshold Power
             icon: mdi:gauge
             color: blue
             multiline_secondary: true
-            entity: sensor.xert_ftp
-            primary: '{{ states(entity) }} W'
         grid_options:
           columns: full
-      - square: false
-        type: grid
+      - type: grid
         columns: 3
+        square: false
         cards:
           - type: custom:mushroom-template-card
             entity: sensor.xert_ltp
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
             secondary: Lower Threshold Power
-            primary: "{{ states(entity) }} W"
             icon: mdi:sine-wave
             color: teal
             vertical: true
             multiline_secondary: true
           - type: custom:mushroom-template-card
             entity: sensor.xert_peak_power
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
             secondary: Peak Power
-            primary: "{{ states(entity) }} W"
             icon: mdi:lightning-bolt
             color: yellow
             vertical: true
             multiline_secondary: true
           - type: custom:mushroom-template-card
             entity: sensor.xert_hie
-            secondary: High Intensity Energy
-            primary: "{{ states(entity) }} kJ"
+            primary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {{ u_humanize_entity(entity) }}
             icon: mdi:chart-bell-curve
             color: amber
             vertical: true
             multiline_secondary: true
-      - square: false
-        type: grid
+      - type: grid
         columns: 2
+        square: false
         cards:
           - type: custom:mushroom-template-card
             primary: Training Loads
-            secondary: |
+            secondary: >-
               {{- 'Low:\t' ~ states('sensor.xert_tl_low') ~ ' XSS' -}}
               {{- '\nHigh:\t' ~ states('sensor.xert_tl_high') ~ ' XSS' -}}
               {{- '\nPeak:\t' ~ states('sensor.xert_tl_peak') ~ ' XSS' -}}
@@ -316,7 +233,7 @@ sections:
                 }
           - type: custom:mushroom-template-card
             primary: Training Targets
-            secondary: >
+            secondary: >-
               {{- 'Low:\t' ~ states('sensor.xert_target_xss_low') ~ ' XSS' -}}
               {{- '\nHigh:\t' ~ states('sensor.xert_target_xss_high') ~ ' XSS' -}}
               {{- '\nPeak:\t' ~ states('sensor.xert_target_xss_peak') ~ ' XSS' -}}
@@ -337,6 +254,7 @@ sections:
             name: 7d Load
             type: line
             data_generator: >
+              // Use the attribute as a single daily point to make a clean sparkline
               const v = Number(entity.attributes.load_7d_hours || 0);
               return [[Date.now(), v]];
         apex_config:
@@ -386,25 +304,45 @@ sections:
         apex_config:
           stroke:
             width: 2
-          yaxis:
-            - id: power
+        yaxis:
+          - id: power
+            apex_config:
               title:
                 text: Power (W)
-            - id: hr
-              opposite: true
+          - id: hr
+            opposite: true
+            apex_config:
               title:
                 text: HR (bpm)
         series:
-          - entity: sensor.last_ride_avg_power_w
+          - entity: sensor.zwift_last_ride_avg_power
             name: Avg Power
             type: line
             yaxis_id: power
-            color: '#f4b400'
-          - entity: sensor.last_ride_avg_hr_bpm
+            color: "#f4b400"
+          - entity: sensor.zwift_last_ride_avg_hr
             name: Avg HR
             type: line
             yaxis_id: hr
-            color: '#db4437'
+            color: "#db4437"
+  - type: grid
+    column_span: 2
+    cards:
+      - type: iframe
+        url: /local/ride/index.html
+        title: Zwift - Latest Ride
+        grid_options:
+          columns: full
+          rows: 8
+  - type: grid
+    cards:
+      - type: iframe
+        url: /local/ride/map.html
+        aspect_ratio: 100%
+        title: Zwift - Latest Route
+        grid_options:
+          columns: full
+          rows: 8
   - type: grid
     cards:
       - type: custom:apexcharts-card
@@ -462,33 +400,7 @@ sections:
             yaxis_id: power
             type: line
             data_generator: |
-              const ids = [
-                "sensor.xert_activity_0_detail_raw","sensor.xert_activity_1_detail_raw",
-                "sensor.xert_activity_2_detail_raw","sensor.xert_activity_3_detail_raw",
-                "sensor.xert_activity_4_detail_raw","sensor.xert_activity_5_detail_raw",
-                "sensor.xert_activity_6_detail_raw","sensor.xert_activity_7_detail_raw",
-                "sensor.xert_activity_8_detail_raw","sensor.xert_activity_9_detail_raw",
-                "sensor.xert_activity_10_detail_raw","sensor.xert_activity_11_detail_raw",
-                "sensor.xert_activity_12_detail_raw","sensor.xert_activity_13_detail_raw",
-                "sensor.xert_activity_14_detail_raw","sensor.xert_activity_15_detail_raw",
-                "sensor.xert_activity_16_detail_raw","sensor.xert_activity_17_detail_raw",
-                "sensor.xert_activity_18_detail_raw","sensor.xert_activity_19_detail_raw",
-                "sensor.xert_activity_20_detail_raw","sensor.xert_activity_21_detail_raw",
-                "sensor.xert_activity_22_detail_raw","sensor.xert_activity_23_detail_raw",
-                "sensor.xert_activity_24_detail_raw","sensor.xert_activity_25_detail_raw",
-                "sensor.xert_activity_26_detail_raw","sensor.xert_activity_27_detail_raw",
-                "sensor.xert_activity_28_detail_raw","sensor.xert_activity_29_detail_raw",
-                "sensor.xert_activity_30_detail_raw","sensor.xert_activity_31_detail_raw",
-                "sensor.xert_activity_32_detail_raw","sensor.xert_activity_33_detail_raw",
-                "sensor.xert_activity_34_detail_raw","sensor.xert_activity_35_detail_raw",
-                "sensor.xert_activity_36_detail_raw","sensor.xert_activity_37_detail_raw",
-                "sensor.xert_activity_38_detail_raw","sensor.xert_activity_39_detail_raw",
-                "sensor.xert_activity_40_detail_raw","sensor.xert_activity_41_detail_raw",
-                "sensor.xert_activity_42_detail_raw","sensor.xert_activity_43_detail_raw",
-                "sensor.xert_activity_44_detail_raw","sensor.xert_activity_45_detail_raw",
-                "sensor.xert_activity_46_detail_raw","sensor.xert_activity_47_detail_raw",
-                "sensor.xert_activity_48_detail_raw","sensor.xert_activity_49_detail_raw",
-              ];
+              const ids = Array.from({ length: 50 }, (_, i) => `sensor.xert_activity_${i}_detail_raw`);
               const pull = (id) => {
                 const a = hass.states[id]?.attributes;
                 const d = a?.summary?.start_date?.date || a?.summary?.date || a?.progression?.date;
@@ -496,161 +408,69 @@ sections:
                 if (!d || ftp == null) return null;
                 return [new Date(d), Math.round(ftp)];
               };
-              return ids.map(pull).filter(Boolean).sort((a,b)=>a[0]-b[0]);
+              return ids
+                .map(pull)
+                .filter(Boolean)
+                .sort((a, b) => a[0] - b[0]);
           - entity: sensor.xert_activity_list_raw
             name: TL (total)
             yaxis_id: load
             type: area
             data_generator: |
-              const ids = [
-                "sensor.xert_activity_0_detail_raw","sensor.xert_activity_1_detail_raw",
-                "sensor.xert_activity_2_detail_raw","sensor.xert_activity_3_detail_raw",
-                "sensor.xert_activity_4_detail_raw","sensor.xert_activity_5_detail_raw",
-                "sensor.xert_activity_6_detail_raw","sensor.xert_activity_7_detail_raw",
-                "sensor.xert_activity_8_detail_raw","sensor.xert_activity_9_detail_raw",
-                "sensor.xert_activity_10_detail_raw","sensor.xert_activity_11_detail_raw",
-                "sensor.xert_activity_12_detail_raw","sensor.xert_activity_13_detail_raw",
-                "sensor.xert_activity_14_detail_raw","sensor.xert_activity_15_detail_raw",
-                "sensor.xert_activity_16_detail_raw","sensor.xert_activity_17_detail_raw",
-                "sensor.xert_activity_18_detail_raw","sensor.xert_activity_19_detail_raw",
-                "sensor.xert_activity_20_detail_raw","sensor.xert_activity_21_detail_raw",
-                "sensor.xert_activity_22_detail_raw","sensor.xert_activity_23_detail_raw",
-                "sensor.xert_activity_24_detail_raw","sensor.xert_activity_25_detail_raw",
-                "sensor.xert_activity_26_detail_raw","sensor.xert_activity_27_detail_raw",
-                "sensor.xert_activity_28_detail_raw","sensor.xert_activity_29_detail_raw",
-                "sensor.xert_activity_30_detail_raw","sensor.xert_activity_31_detail_raw",
-                "sensor.xert_activity_32_detail_raw","sensor.xert_activity_33_detail_raw",
-                "sensor.xert_activity_34_detail_raw","sensor.xert_activity_35_detail_raw",
-                "sensor.xert_activity_36_detail_raw","sensor.xert_activity_37_detail_raw",
-                "sensor.xert_activity_38_detail_raw","sensor.xert_activity_39_detail_raw",
-                "sensor.xert_activity_40_detail_raw","sensor.xert_activity_41_detail_raw",
-                "sensor.xert_activity_42_detail_raw","sensor.xert_activity_43_detail_raw",
-                "sensor.xert_activity_44_detail_raw","sensor.xert_activity_45_detail_raw",
-                "sensor.xert_activity_46_detail_raw","sensor.xert_activity_47_detail_raw",
-                "sensor.xert_activity_48_detail_raw","sensor.xert_activity_49_detail_raw",
-              ];
-              const sum = (o)=> (o?.ftp||0)+(o?.hie||0)+(o?.pp||0);
+              const ids = Array.from({ length: 50 }, (_, i) => `sensor.xert_activity_${i}_detail_raw`);
+              const sum = (o) => (o?.ftp || 0) + (o?.hie || 0) + (o?.pp || 0);
               const pull = (id) => {
                 const a = hass.states[id]?.attributes;
                 const d = a?.progression?.date || a?.summary?.start_date?.date;
                 const tl = sum(a?.summary?.progression?.tl || {});
                 if (!d) return null;
-                return [new Date(d), Math.round(tl*10)/10];
+                return [new Date(d), Math.round(tl * 10) / 10];
               };
-              return ids.map(pull).filter(Boolean).sort((a,b)=>a[0]-b[0]);
+              return ids
+                .map(pull)
+                .filter(Boolean)
+                .sort((a, b) => a[0] - b[0]);
           - entity: sensor.xert_activity_list_raw
             name: RL (total)
             yaxis_id: load
             type: line
             data_generator: |
-              const ids = [
-                "sensor.xert_activity_0_detail_raw","sensor.xert_activity_1_detail_raw",
-                "sensor.xert_activity_2_detail_raw","sensor.xert_activity_3_detail_raw",
-                "sensor.xert_activity_4_detail_raw","sensor.xert_activity_5_detail_raw",
-                "sensor.xert_activity_6_detail_raw","sensor.xert_activity_7_detail_raw",
-                "sensor.xert_activity_8_detail_raw","sensor.xert_activity_9_detail_raw",
-                "sensor.xert_activity_10_detail_raw","sensor.xert_activity_11_detail_raw",
-                "sensor.xert_activity_12_detail_raw","sensor.xert_activity_13_detail_raw",
-                "sensor.xert_activity_14_detail_raw","sensor.xert_activity_15_detail_raw",
-                "sensor.xert_activity_16_detail_raw","sensor.xert_activity_17_detail_raw",
-                "sensor.xert_activity_18_detail_raw","sensor.xert_activity_19_detail_raw",
-                "sensor.xert_activity_20_detail_raw","sensor.xert_activity_21_detail_raw",
-                "sensor.xert_activity_22_detail_raw","sensor.xert_activity_23_detail_raw",
-                "sensor.xert_activity_24_detail_raw","sensor.xert_activity_25_detail_raw",
-                "sensor.xert_activity_26_detail_raw","sensor.xert_activity_27_detail_raw",
-                "sensor.xert_activity_28_detail_raw","sensor.xert_activity_29_detail_raw",
-                "sensor.xert_activity_30_detail_raw","sensor.xert_activity_31_detail_raw",
-                "sensor.xert_activity_32_detail_raw","sensor.xert_activity_33_detail_raw",
-                "sensor.xert_activity_34_detail_raw","sensor.xert_activity_35_detail_raw",
-                "sensor.xert_activity_36_detail_raw","sensor.xert_activity_37_detail_raw",
-                "sensor.xert_activity_38_detail_raw","sensor.xert_activity_39_detail_raw",
-                "sensor.xert_activity_40_detail_raw","sensor.xert_activity_41_detail_raw",
-                "sensor.xert_activity_42_detail_raw","sensor.xert_activity_43_detail_raw",
-                "sensor.xert_activity_44_detail_raw","sensor.xert_activity_45_detail_raw",
-                "sensor.xert_activity_46_detail_raw","sensor.xert_activity_47_detail_raw",
-                "sensor.xert_activity_48_detail_raw","sensor.xert_activity_49_detail_raw",
-              ];
-              const sum = (o)=> (o?.ftp||0)+(o?.hie||0)+(o?.pp||0);
+              const ids = Array.from({ length: 50 }, (_, i) => `sensor.xert_activity_${i}_detail_raw`);
+              const sum = (o) => (o?.ftp || 0) + (o?.hie || 0) + (o?.pp || 0);
               const pull = (id) => {
                 const a = hass.states[id]?.attributes;
                 const d = a?.progression?.date || a?.summary?.start_date?.date;
                 const rl = sum(a?.summary?.progression?.rl || {});
                 if (!d) return null;
-                return [new Date(d), Math.round(rl*10)/10];
+                return [new Date(d), Math.round(rl * 10) / 10];
               };
-              return ids.map(pull).filter(Boolean).sort((a,b)=>a[0]-b[0]);
+              return ids
+                .map(pull)
+                .filter(Boolean)
+                .sort((a, b) => a[0] - b[0]);
           - entity: sensor.xert_activity_list_raw
             name: Form
             yaxis_id: form
             type: line
             data_generator: |
-              const ids = [
-                "sensor.xert_activity_0_detail_raw","sensor.xert_activity_1_detail_raw",
-                "sensor.xert_activity_2_detail_raw","sensor.xert_activity_3_detail_raw",
-                "sensor.xert_activity_4_detail_raw","sensor.xert_activity_5_detail_raw",
-                "sensor.xert_activity_6_detail_raw","sensor.xert_activity_7_detail_raw",
-                "sensor.xert_activity_8_detail_raw","sensor.xert_activity_9_detail_raw",
-                "sensor.xert_activity_10_detail_raw","sensor.xert_activity_11_detail_raw",
-                "sensor.xert_activity_12_detail_raw","sensor.xert_activity_13_detail_raw",
-                "sensor.xert_activity_14_detail_raw","sensor.xert_activity_15_detail_raw",
-                "sensor.xert_activity_16_detail_raw","sensor.xert_activity_17_detail_raw",
-                "sensor.xert_activity_18_detail_raw","sensor.xert_activity_19_detail_raw",
-                "sensor.xert_activity_20_detail_raw","sensor.xert_activity_21_detail_raw",
-                "sensor.xert_activity_22_detail_raw","sensor.xert_activity_23_detail_raw",
-                "sensor.xert_activity_24_detail_raw","sensor.xert_activity_25_detail_raw",
-                "sensor.xert_activity_26_detail_raw","sensor.xert_activity_27_detail_raw",
-                "sensor.xert_activity_28_detail_raw","sensor.xert_activity_29_detail_raw",
-                "sensor.xert_activity_30_detail_raw","sensor.xert_activity_31_detail_raw",
-                "sensor.xert_activity_32_detail_raw","sensor.xert_activity_33_detail_raw",
-                "sensor.xert_activity_34_detail_raw","sensor.xert_activity_35_detail_raw",
-                "sensor.xert_activity_36_detail_raw","sensor.xert_activity_37_detail_raw",
-                "sensor.xert_activity_38_detail_raw","sensor.xert_activity_39_detail_raw",
-                "sensor.xert_activity_40_detail_raw","sensor.xert_activity_41_detail_raw",
-                "sensor.xert_activity_42_detail_raw","sensor.xert_activity_43_detail_raw",
-                "sensor.xert_activity_44_detail_raw","sensor.xert_activity_45_detail_raw",
-                "sensor.xert_activity_46_detail_raw","sensor.xert_activity_47_detail_raw",
-                "sensor.xert_activity_48_detail_raw","sensor.xert_activity_49_detail_raw",
-              ];
+              const ids = Array.from({ length: 50 }, (_, i) => `sensor.xert_activity_${i}_detail_raw`);
               const pull = (id) => {
                 const a = hass.states[id]?.attributes;
                 const d = a?.progression?.date || a?.summary?.start_date?.date;
                 const form = a?.summary?.progression?.form;
                 if (!d || form == null) return null;
-                return [new Date(d), Math.round(form*10)/10];
+                return [new Date(d), Math.round(form * 10) / 10];
               };
-              return ids.map(pull).filter(Boolean).sort((a,b)=>a[0]-b[0]);
+              return ids
+                .map(pull)
+                .filter(Boolean)
+                .sort((a, b) => a[0] - b[0]);
           - entity: sensor.xert_activity_list_raw
             name: XSS
             yaxis_id: xss
             type: column
             data_generator: |
-              const ids = [
-                "sensor.xert_activity_0_detail_raw","sensor.xert_activity_1_detail_raw",
-                "sensor.xert_activity_2_detail_raw","sensor.xert_activity_3_detail_raw",
-                "sensor.xert_activity_4_detail_raw","sensor.xert_activity_5_detail_raw",
-                "sensor.xert_activity_6_detail_raw","sensor.xert_activity_7_detail_raw",
-                "sensor.xert_activity_8_detail_raw","sensor.xert_activity_9_detail_raw",
-                "sensor.xert_activity_10_detail_raw","sensor.xert_activity_11_detail_raw",
-                "sensor.xert_activity_12_detail_raw","sensor.xert_activity_13_detail_raw",
-                "sensor.xert_activity_14_detail_raw","sensor.xert_activity_15_detail_raw",
-                "sensor.xert_activity_16_detail_raw","sensor.xert_activity_17_detail_raw",
-                "sensor.xert_activity_18_detail_raw","sensor.xert_activity_19_detail_raw",
-                "sensor.xert_activity_20_detail_raw","sensor.xert_activity_21_detail_raw",
-                "sensor.xert_activity_22_detail_raw","sensor.xert_activity_23_detail_raw",
-                "sensor.xert_activity_24_detail_raw","sensor.xert_activity_25_detail_raw",
-                "sensor.xert_activity_26_detail_raw","sensor.xert_activity_27_detail_raw",
-                "sensor.xert_activity_28_detail_raw","sensor.xert_activity_29_detail_raw",
-                "sensor.xert_activity_30_detail_raw","sensor.xert_activity_31_detail_raw",
-                "sensor.xert_activity_32_detail_raw","sensor.xert_activity_33_detail_raw",
-                "sensor.xert_activity_34_detail_raw","sensor.xert_activity_35_detail_raw",
-                "sensor.xert_activity_36_detail_raw","sensor.xert_activity_37_detail_raw",
-                "sensor.xert_activity_38_detail_raw","sensor.xert_activity_39_detail_raw",
-                "sensor.xert_activity_40_detail_raw","sensor.xert_activity_41_detail_raw",
-                "sensor.xert_activity_42_detail_raw","sensor.xert_activity_43_detail_raw",
-                "sensor.xert_activity_44_detail_raw","sensor.xert_activity_45_detail_raw",
-                "sensor.xert_activity_46_detail_raw","sensor.xert_activity_47_detail_raw",
-                "sensor.xert_activity_48_detail_raw","sensor.xert_activity_49_detail_raw",
-              ];
+              const ids = Array.from({ length: 50 }, (_, i) => `sensor.xert_activity_${i}_detail_raw`);
               const pull = (id) => {
                 const a = hass.states[id]?.attributes;
                 const d = a?.summary?.start_date?.date || a?.progression?.date;
@@ -658,7 +478,10 @@ sections:
                 if (!d || xss == null) return null;
                 return [new Date(d), Math.round(xss)];
               };
-              return ids.map(pull).filter(Boolean).sort((a,b)=>a[0]-b[0]);
+              return ids
+                .map(pull)
+                .filter(Boolean)
+                .sort((a, b) => a[0] - b[0]);
         grid_options:
           columns: full
     column_span: 3
