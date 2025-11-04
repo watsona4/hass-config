@@ -1,0 +1,51 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: homeassistant
+      MYSQL_USER: ha
+      MYSQL_PASSWORD: ufEOx3ZH8NBwD2HEfnJquHbk
+      MYSQL_ROOT_PASSWORD: PlxhKCEHDpe9jRk3EF1sQgMagk73Aa4kT89mMwfv5s50JUfq
+      TZ: America/New_York
+    volumes:
+      - /srv/db/mariadb:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --skip-name-resolve
+      --innodb_flush_log_at_trx_commit=2
+      --innodb_buffer_pool_size=1G
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "ha", "-pufEOx3ZH8NBwD2HEfnJquHbk"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  homeassistant:
+    image: ghcr.io/watsona4/hass-config:latest
+    build: .
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    environment:
+      UMASK: 002
+      TZ: America/New_York
+    volumes:
+      - ./config:/config:Z
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    stop_grace_period: 60s
+    cpus: 3.0
+    mem_limit: 2g
+    cpu_shares: 2048
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
