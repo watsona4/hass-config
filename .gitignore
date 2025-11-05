@@ -52,6 +52,7 @@ config/www/**/*.avif
 !config/www/**/*.yaml
 !config/www/**/*.json
 config/www/ride/*.json
+config/www/zwift/latest_ride.jpg
 
 # Old OpenZWave / OZW logs and DBs
 config/ozw_log.txt

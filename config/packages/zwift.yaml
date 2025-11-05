@@ -108,6 +108,7 @@ shell_command:
   zwift_parse_fit: >-
     bash -lc 'mkdir -p {{output_prefix}} &&
     python3 /config/scripts/zwift_parse_fit.py {{fit_url}} {{output_prefix}}'
+  zwift_download_last_ride_image: "python3 /config/scripts/download_latest_ride_image.py {{ url }}"
   zwift_player_status_json: >-
     bash -lc 'python3 /config/scripts/zwift_player_status.py {{ states("input_select.zwift_relay_host") }} {{world_id}} {{player_id}} {{access_token}}'
 
@@ -566,6 +567,14 @@ template:
         data:
           fit_url: "https://{{fit_file_bucket}}.s3.amazonaws.com/{{fit_file_key}}"
           output_prefix: /config/www/zwift/
+      - variables:
+          primary_image_url: "{{ last.get('primaryImageUrl','') if last is mapping else '' }}"
+      - choose:
+          - conditions: "{{ primary_image_url is string and primary_image_url | length > 0 }}"
+            sequence:
+              - service: shell_command.zwift_download_last_ride_image
+                data:
+                  url: "{{ primary_image_url }}"
     sensor:
       - name: "Zwift Activity Data"
         unique_id: 0706169f-d159-4c09-a93d-f995b94550d0
@@ -632,7 +641,13 @@ template:
         state: "{{ last.get('calories',0) }}"
       - name: "Zwift Last Ride Image"
         unique_id: 97cd09f5-ef2a-43f1-ba94-668a812b0420
-        state: "{{ last.get('primaryImageUrl','') }}"
+        state: "{{ last.get('primaryImageUrl','') if last is mapping else '' }}"
+        attributes:
+          entity_picture: >-
+            {% set cache_key = last.get('id') if last is mapping else none %}
+            {% set path = '/local/zwift/latest_ride.jpg' %}
+            {{ path ~ ('?v=' ~ cache_key) if cache_key is not none else path }}
+          remote_url: "{{ last.get('primaryImageUrl','') if last is mapping else '' }}"
       - name: "Zwift Last Ride Avg HR"
         unique_id: 908dae6e-f189-4d1d-8f6d-91b46118faa8
         unit_of_measurement: "bpm"
