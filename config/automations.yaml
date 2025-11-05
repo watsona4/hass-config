@@ -35,7 +35,7 @@
     - binary_sensor.windy
     to:
     trigger: state
-    id: Rainy
+    id: Weather
   - entity_id:
     - binary_sensor.dark_outside
     to:
@@ -218,7 +218,7 @@
         - One Minute
         - Ten Minutes
         - Timer
-        - Rainy
+        - Weather
         - Dark Outside
       - condition: state
         entity_id: cover.ratgdov25i_f6128e_door
