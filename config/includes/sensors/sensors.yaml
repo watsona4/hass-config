@@ -154,3 +154,19 @@
   entity_id: sensor.outside_temperature_filtered
   state_characteristic: value_min
   max_age: "999999:00:00"
+
+- platform: statistics
+  name: "Wind Gust Max 10m"
+  unique_id: 2e11cb6c-ce79-47fb-ab11-17d420eb94a1
+  entity_id: sensor.home_wind_gust
+  state_characteristic: value_max
+  max_age:
+    minutes: 10
+
+- platform: statistics
+  name: "Wind Speed Mean 5m"
+  unique_id: 59b765c8-0053-4d47-ab43-77d6ee573f6e
+  entity_id: sensor.home_wind_speed
+  state_characteristic: mean
+  max_age:
+    minutes: 5

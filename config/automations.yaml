@@ -32,6 +32,7 @@
     id: Someone is Home
   - entity_id:
     - binary_sensor.rainy
+    - binary_sensor.windy
     to:
     trigger: state
     id: Rainy
@@ -205,12 +206,6 @@
           state: closing
       sequence:
       - action: cover.open_cover
-        metadata: {}
-        data: {}
-        target:
-          entity_id: cover.ratgdov25i_f6128e_door
-        enabled: false
-      - action: cover.close_cover
         metadata: {}
         data: {}
         target:

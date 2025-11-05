@@ -175,6 +175,19 @@ sections:
             tap_action:
               action: more-info
           - type: template
+            entity: binary_sensor.windy
+            content: >-
+              {%- from 'main.jinja' import get_label -%}
+              {{- get_label(entity, app='windy') -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, app='windy') -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='windy') -}}
+            tap_action:
+              action: more-info
+          - type: template
             entity: binary_sensor.hot_inside
             content: >-
               {%- from 'main.jinja' import get_label -%}

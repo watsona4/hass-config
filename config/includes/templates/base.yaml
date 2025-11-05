@@ -60,6 +60,31 @@
         {{ elev > 3 and ill > 500 }}
 
 # ===============================
+# Windy outside
+# ===============================
+- binary_sensor:
+    - name: Windy
+      unique_id: 09f555b3-446b-4f32-8641-62c95e9669a6
+      state: >
+        {% set gust_max = states('sensor.wind_gust_max_10m')|float(0) %}
+        {% set gust_now = states('sensor.wind_gust_mph')|float(0) %}
+        {% set mean_5m  = states('sensor.wind_speed_mean_5m')|float(0) %}
+        {% set wind_dir = states('sensor.wind_bearing')|float(0) %}
+        {% set door_dir = states('input_number.garage_azimuth')|float(180) %}
+        {% set angle = (((wind_dir - door_dir + 180) % 360 - 180)|abs) %}
+        {% set aligned = angle <= 60 %}
+        {% set on_cond  = gust_max >= 16 or (mean_5m >= 12 and gust_now >= 14) %}
+        {% set off_cond = gust_max < 12 and mean_5m < 9 %}
+        {% if this.state == 'on' %}
+          {{ aligned and not off_cond }}
+        {% else %}
+          {{ aligned and on_cond }}
+        {% endif %}
+      delay_on: "00:02:00"
+      delay_off: "00:10:00"
+      icon: "{{ 'mdi:leaf-off' if is_state(this.entity_id,'on') else 'mdi:leaf' }}"
+
+# ===============================
 # Daytime/Evening without now()
 # ===============================
 - trigger:
