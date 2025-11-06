@@ -1,0 +1,65 @@
+{
+  "generated_at": "2025-11-06T00:17:51.727Z",
+  "worlds": [
+    {
+      "world": "new-york",
+      "file": "new-york.geojson",
+      "featureCount": 21
+    },
+    {
+      "world": "watopia",
+      "file": "watopia.geojson",
+      "featureCount": 110
+    },
+    {
+      "world": "scotland",
+      "file": "scotland.geojson",
+      "featureCount": 13
+    },
+    {
+      "world": "richmond",
+      "file": "richmond.geojson",
+      "featureCount": 9
+    },
+    {
+      "world": "makuri-islands",
+      "file": "makuri-islands.geojson",
+      "featureCount": 42
+    },
+    {
+      "world": "paris",
+      "file": "paris.geojson",
+      "featureCount": 4
+    },
+    {
+      "world": "london",
+      "file": "london.geojson",
+      "featureCount": 23
+    },
+    {
+      "world": "france",
+      "file": "france.geojson",
+      "featureCount": 19
+    },
+    {
+      "world": "innsbruck",
+      "file": "innsbruck.geojson",
+      "featureCount": 7
+    },
+    {
+      "world": "yorkshire",
+      "file": "yorkshire.geojson",
+      "featureCount": 8
+    },
+    {
+      "world": "crit-city",
+      "file": "crit-city.geojson",
+      "featureCount": 2
+    },
+    {
+      "world": "bologna",
+      "file": "bologna.geojson",
+      "featureCount": 1
+    }
+  ]
+}

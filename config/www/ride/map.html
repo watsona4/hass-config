@@ -62,6 +62,8 @@
       const JSON_URL = 'route.json';
       let map, routeLayer, startMarker, endMarker, lapLayers = [];
       let lastVersion = null;
+      let worldRouteLayers = null;
+      let worldBounds = null;
 
       function colorForPower(p) {
         if (p == null || Number.isNaN(p)) return '#1976d2';
@@ -162,7 +164,11 @@
         }
 
         if (latlngs.length >= 2) {
-          map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+          const bounds = L.latLngBounds(latlngs);
+          const targetBounds = worldBounds && worldBounds.isValid()
+            ? bounds.extend(worldBounds)
+            : bounds;
+          map.fitBounds(targetBounds, { padding: [20, 20] });
         } else if (latlngs.length === 1) {
           map.setView(latlngs[0], 15);
         }
@@ -174,11 +180,12 @@
           return;
         }
         map = L.map('map', { preferCanvas: true });
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
           maxZoom: 19,
-          attribution: '&copy; OpenStreetMap contributors',
+          attribution: '&copy; OpenStreetMap contributors & CARTO',
         }).addTo(map);
         map.addControl(L.control.scale({ imperial: false }));
+        loadWorldRoutesLayer('watopia');
 
         try {
           const data = await fetchRoute();
@@ -198,6 +205,42 @@
           applyRoute(data);
         } catch (err) {
           console.error(err);
+        }
+      }
+
+      async function loadWorldRoutesLayer(worldSlug) {
+        if (!map || !worldSlug) return;
+        if (worldRouteLayers) {
+          worldRouteLayers.remove();
+          worldRouteLayers = null;
+        }
+        try {
+          const geojsonPath = `/local/zwift/geojson/${worldSlug}.geojson`;
+          const response = await fetch(geojsonPath, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`Failed to load ${geojsonPath}: ${response.status}`);
+          const payload = await response.json();
+          worldRouteLayers = L.geoJSON(payload, {
+            style: () => ({
+              color: '#5eead4',
+              weight: 2,
+              opacity: 0.45,
+            }),
+            onEachFeature: (feature, layer) => {
+              const props = feature.properties || {};
+              const name = props.name || props.slug || 'Route';
+              const distance = typeof props.distance_km === 'number'
+                ? `${Number(props.distance_km).toFixed(1)} km`
+                : '';
+              layer.bindPopup(`<strong>${name}</strong>${distance ? `<br>${distance}` : ''}`);
+            },
+          });
+          worldRouteLayers.addTo(map);
+          const bounds = worldRouteLayers.getBounds();
+          if (bounds.isValid()) {
+            worldBounds = bounds;
+          }
+        } catch (error) {
+          console.warn('Failed to load Zwift world overlay:', error);
         }
       }
 
