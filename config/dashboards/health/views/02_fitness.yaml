@@ -70,16 +70,20 @@ sections:
         color: green
         grid_options:
           columns: full
-      - type: picture-entity
-        entity: sensor.zwift_last_ride_image
-        image: /local/zwift/latest_ride.jpg
-        show_state: false
-        show_name: false
-        camera_view: auto
-        fit_mode: cover
-        tap_action:
-          action: more-info
-          entity: sensor.zwift_activity_data
+      - type: custom:config-template-card
+        entities:
+          - sensor.zwift_last_ride_image
+        card:
+          type: picture-entity
+          entity: sensor.zwift_last_ride_image
+          image: ${states['sensor.zwift_last_ride_image'].state}
+          show_state: false
+          show_name: false
+          camera_view: auto
+          fit_mode: cover
+          tap_action:
+            action: more-info
+            entity: sensor.zwift_activity_data
       - type: grid
         columns: 3
         square: false
