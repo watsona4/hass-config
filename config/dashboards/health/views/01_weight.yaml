@@ -156,11 +156,12 @@ sections:
                 entity: sensor.aaron_weight_params
                 primary: Half-lives
                 secondary: >
+                  {% from 'units/base.jinja' import u_humanize_value %}
                   {%- set p = state_attr(entity,'params') -%}
-                  {%- set hf = p and p['t12_fast_days'] -%}
-                  {%- set hs = p and p['t12_slow_days'] -%}
-                  {{- 'Fast: ' ~ (hf is number and (hf | round(1)) ~ ' days' or '—') -}}
-                  {{- '\nSlow: ' ~ (hs is number and (hs | round(1)) ~ ' days' or '—') -}}
+                  {%- set hf = u_humanize_value(p['t12_fast_days']) -%}
+                  {%- set hs = u_humanize_value(p['t12_slow_days']) -%}
+                  {{- 'Fast: ' ~ hf ~ ' days' -}}
+                  {{- '\nSlow: ' ~ hs ~ ' days' -}}
                 icon: mdi:clock-fast
                 color: >
                   {%- set p = state_attr(entity,'params') -%}
