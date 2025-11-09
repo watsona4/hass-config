@@ -5444,9 +5444,12 @@
     to: 'on'
     id: webcam_on
   - trigger: state
-    entity_id: binary_sensor.webcam_running
+    entity_id:
+    - binary_sensor.webcam_running
     to: 'off'
     id: webcam_off
+    for:
+      minutes: 1
   actions:
   - variables:
       current: '{{ states(''input_boolean.in_a_teams_meeting'') }}'
