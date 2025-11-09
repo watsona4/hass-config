@@ -1,58 +1,49 @@
 - id: '1692822259889'
   alias: Garage Door
   description: 'Automates the garage door: opens or closes based on presence, daylight,
-    rain, motion, and obstruction. Closes automatically when left open and no one
-    is home. Sends alerts if obstruction detected. Uses timers and multiple safety
-    triggers.
+    rain, wind, motion, and obstruction. Closes automatically when left open and no
+    one is home, or during poor weather. Sends alerts if obstruction detected. Uses
+    timers and multiple safety triggers.
 
     '
   triggers:
   - trigger: state
-    entity_id:
-    - cover.ratgdov25i_f6128e_door
+    entity_id: cover.ratgdov25i_f6128e_door
+    to: open
+    id: Opened
+  - trigger: state
+    entity_id: cover.ratgdov25i_f6128e_door
     to: open
     for:
-      hours: 0
       minutes: 1
-      seconds: 0
     id: One Minute
   - trigger: state
-    entity_id:
-    - cover.ratgdov25i_f6128e_door
+    entity_id: cover.ratgdov25i_f6128e_door
     to: open
     for:
-      hours: 0
       minutes: 10
-      seconds: 0
     id: Ten Minutes
-  - entity_id:
-    - input_boolean.someone_is_home
-    to:
-    trigger: state
+  - trigger: state
+    entity_id: input_boolean.someone_is_home
     id: Someone is Home
-  - entity_id:
-    - binary_sensor.rainy
-    - binary_sensor.windy
-    to:
-    trigger: state
-    id: Weather
-  - entity_id:
-    - binary_sensor.dark_outside
-    to:
-    trigger: state
-    id: Dark Outside
-  - entity_id:
-    - binary_sensor.daytime
-    trigger: state
-    id: Daytime
   - trigger: state
     entity_id:
-    - binary_sensor.ratgdov25i_f6128e_obstruction
+    - binary_sensor.rainy
+    - binary_sensor.windy
+    id: Weather
+    to:
+  - trigger: state
+    entity_id: binary_sensor.dark_outside
+    id: Dark Outside
+  - trigger: state
+    entity_id: binary_sensor.daytime
+    id: Daytime
+  - trigger: state
+    entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
     to: 'on'
     id: Obstruction
   - trigger: state
-    entity_id:
-    - binary_sensor.ratgdov25i_f6128e_motion
+    entity_id: binary_sensor.ratgdov25i_f6128e_motion
     to: 'on'
     id: Motion
   - trigger: state
@@ -62,33 +53,59 @@
     from: not_home
     to: home
     id: Coming Home
-  - event_type: timer.finished
+  - trigger: event
+    event_type: timer.finished
     event_data:
       entity_id: timer.garage_door_delay
-    trigger: event
     id: Timer
-  - topic: site/home/devices/frigate/events
-    trigger: mqtt
+  - trigger: mqtt
+    topic: site/home/devices/frigate/events
     id: Motion
   conditions: []
   actions:
   - choose:
     - conditions:
       - condition: trigger
-        id:
-        - Coming Home
-        - Someone is Home
-        - Motion
-      sequence: []
-    default:
-    - wait_template: '{{ is_state(''timer.garage_door_delay'', ''idle'') }}'
-      continue_on_timeout: false
-      timeout: 00:10:00
+        id: Opened
+      sequence:
+      - action: timer.start
+        data:
+          duration: 00:03:00
+        target:
+          entity_id: timer.garage_door_delay
+    default: []
   - choose:
     - conditions:
       - condition: trigger
         id:
-        - Obstruction
+        - Weather
+      - condition: state
+        entity_id: binary_sensor.windy
+        state: 'on'
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: open
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: opening
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: closing
+      sequence:
+      - action: cover.close_cover
+        target:
+          entity_id: cover.ratgdov25i_f6128e_door
+      - stop:
+    default: []
+  - wait_template: '{{ is_state(''timer.garage_door_delay'', ''idle'') }}'
+    continue_on_timeout: false
+    timeout: 00:10:00
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Obstruction
       sequence:
       - if:
         - condition: state
@@ -96,7 +113,6 @@
           state: closing
         then:
         - action: notify.aaron_and_ashley_phones
-          metadata: {}
           data:
             title: Garage Door
             message: Garage door obstruction detected!
@@ -106,8 +122,7 @@
                 priority: high
     - conditions:
       - condition: trigger
-        id:
-        - Motion
+        id: Motion
       sequence:
       - if:
         - condition: state
@@ -118,24 +133,18 @@
           state: closed
         - condition: template
           value_template: '{% set after = trigger.payload_json[''after''] if ''payload_json''
-            in trigger else none %}
-
-            {{ after is none or after.camera == ''garage_camera'' }}'
+            in trigger else none %} {{ after is none or after.camera == ''garage_camera''
+            }}'
         then:
         - action: cover.open_cover
-          metadata: {}
-          data: {}
           target:
             entity_id: cover.ratgdov25i_f6128e_door
         - action: lock.unlock
-          metadata: {}
-          data: {}
           target:
             entity_id: lock.side_door
     - conditions:
       - condition: trigger
-        id:
-        - One Minute
+        id: One Minute
       sequence:
       - if:
         - condition: state
@@ -146,38 +155,28 @@
           - condition: state
             entity_id: cover.ratgdov25i_f6128e_door
             state: opening
-        - condition: not
-          conditions:
           - condition: state
             entity_id: cover.ratgdov25i_f6128e_door
             state: closing
         then:
         - action: cover.close_cover
-          metadata: {}
-          data: {}
           target:
             entity_id: cover.ratgdov25i_f6128e_door
     - conditions:
       - condition: trigger
-        id:
-        - Coming Home
+        id: Coming Home
       - condition: not
         conditions:
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: opening
-      - condition: not
-        conditions:
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: closing
       sequence:
       - action: cover.open_cover
-        metadata: {}
-        data: {}
         target:
           entity_id: cover.ratgdov25i_f6128e_door
-        enabled: true
     - conditions:
       - condition: state
         entity_id: binary_sensor.dark_outside
@@ -187,6 +186,9 @@
         state: 'on'
       - condition: state
         entity_id: binary_sensor.rainy
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.windy
         state: 'off'
       - condition: state
         entity_id: input_boolean.someone_is_home
@@ -199,18 +201,13 @@
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: opening
-      - condition: not
-        conditions:
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: closing
       sequence:
       - action: cover.open_cover
-        metadata: {}
-        data: {}
         target:
           entity_id: cover.ratgdov25i_f6128e_door
-        enabled: true
     default:
     - if:
       - condition: trigger
@@ -228,20 +225,14 @@
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: opening
-      - condition: not
-        conditions:
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: closing
-      - condition: not
-        conditions:
         - condition: state
           entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
           state: 'on'
       then:
       - action: cover.close_cover
-        metadata: {}
-        data: {}
         target:
           entity_id: cover.ratgdov25i_f6128e_door
   - if:
@@ -252,16 +243,16 @@
         - Obstruction
         - Motion
         - Timer
+        - Weather
     then:
     - action: timer.start
-      metadata: {}
       data:
         duration: 00:03:00
       target:
         entity_id: timer.garage_door_delay
   mode: restart
   trace:
-    stored_traces: 100
+    stored_traces: 1000
 - id: '1692822419953'
   alias: Close Windows Temperature
   description: ''

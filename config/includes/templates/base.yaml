@@ -69,7 +69,7 @@
         {% set gust_max = states('sensor.wind_gust_max_10m')|float(0) %}
         {% set gust_now = states('sensor.wind_gust_mph')|float(0) %}
         {% set mean_5m  = states('sensor.wind_speed_mean_5m')|float(0) %}
-        {% set wind_dir = states('sensor.wind_bearing')|float(0) %}
+        {% set wind_dir = states('sensor.home_wind_direction')|float(0) %}
         {% set door_dir = states('input_number.garage_azimuth')|float(180) %}
         {% set angle = (((wind_dir - door_dir + 180) % 360 - 180)|abs) %}
         {% set aligned = angle <= 60 %}
