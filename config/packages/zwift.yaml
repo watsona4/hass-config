@@ -107,7 +107,7 @@ shell_command:
   write_zwift_refresh_token: "bash -c 'echo {{token}} > /config/zwift_refresh_token.txt'"
   zwift_parse_fit: >-
     bash -lc 'mkdir -p {{output_prefix}} &&
-    python3 /config/scripts/zwift_parse_fit.py {{fit_url}} {{output_prefix}}'
+    python3 /config/scripts/zwift_parse_fit.py "{{fit_url}}" "{{output_prefix}}" "{{world_slug|default("", true)}}"'
   zwift_player_status_json: >-
     bash -lc 'python3 /config/scripts/zwift_player_status.py {{ states("input_select.zwift_relay_host") }} {{world_id}} {{player_id}} {{access_token}}'
 
@@ -462,6 +462,45 @@ template:
       last: "{{ d | first }}"
       fit_file_bucket: "{{ (d | first).get('fitFileBucket') }}"
       fit_file_key: "{{ (d | first).get('fitFileKey') }}"
+      world_slug: >-
+        {% if last is mapping %}
+          {% set world_map = {
+            1: 'watopia',
+            2: 'richmond',
+            3: 'london',
+            4: 'new-york',
+            5: 'innsbruck',
+            6: 'bologna',
+            7: 'yorkshire',
+            8: 'crit-city',
+            9: 'makuri-islands',
+            10: 'france',
+            11: 'paris',
+            13: 'scotland'
+          } %}
+          {% set slug = none %}
+          {% for candidate in [last.get('worldId'), last.get('mapId')] %}
+            {% if slug %}
+              {% break %}
+            {% endif %}
+            {% if candidate is number %}
+              {% set slug = world_map.get(candidate|int) %}
+            {% elif candidate is string and candidate|trim|length > 0 %}
+              {% if candidate|trim|isdigit %}
+                {% set slug = world_map.get(candidate|int) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% if not slug %}
+            {% set name = last.get('worldName') or last.get('world') %}
+            {% if name is string and name|trim|length > 0 %}
+              {% set slug = name|trim|lower|replace(' ', '-') %}
+            {% endif %}
+          {% endif %}
+          {{ slug or '' }}
+        {% else %}
+          {{ '' }}
+        {% endif %}
       now_ts: "{{ as_timestamp(now()) }}"
       ride_events_json: >-
         {% set ns = namespace(items=[]) %}
@@ -566,6 +605,7 @@ template:
         data:
           fit_url: "https://{{fit_file_bucket}}.s3.amazonaws.com/{{fit_file_key}}"
           output_prefix: /config/www/zwift/
+          world_slug: "{{ world_slug }}"
     sensor:
       - name: "Zwift Activity Data"
         unique_id: 0706169f-d159-4c09-a93d-f995b94550d0

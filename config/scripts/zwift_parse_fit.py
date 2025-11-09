@@ -9,7 +9,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import requests
 from fitparse import FitFile, StandardUnitsDataProcessor
@@ -21,13 +21,34 @@ except ImportError:  # pragma: no cover - Python < 3.9 fallback
     ZoneInfoNotFoundError = Exception
 
 
+ZWIFT_WORLDS = [
+    {"id": 1, "slug": "watopia", "name": "Watopia", "bounds": ((-11.74087, 166.87747), (-11.62597, 167.03255))},
+    {"id": 2, "slug": "richmond", "name": "Richmond", "bounds": ((37.5014, -77.48954), (37.5774, -77.394))},
+    {"id": 3, "slug": "london", "name": "London", "bounds": ((51.4601, -0.1776), (51.5362, -0.0555))},
+    {"id": 4, "slug": "new-york", "name": "New York", "bounds": ((40.74085, -74.0227), (40.81725, -73.9222))},
+    {"id": 5, "slug": "innsbruck", "name": "Innsbruck", "bounds": ((47.2055, 11.3501), (47.2947, 11.4822))},
+    {"id": 6, "slug": "bologna", "name": "Bologna", "bounds": ((44.45463821, 11.26261748), (44.5308037, 11.36991729102076))},
+    {"id": 7, "slug": "yorkshire", "name": "Yorkshire", "bounds": ((53.9491, -1.632), (54.0254, -1.5022))},
+    {"id": 8, "slug": "crit-city", "name": "Crit City", "bounds": ((-10.4038, 165.7824), (-10.3657, 165.8207))},
+    {"id": 9, "slug": "makuri-islands", "name": "Makuri Islands", "bounds": ((-10.85234, 165.76591), (-10.73746, 165.88222))},
+    {"id": 10, "slug": "france", "name": "France", "bounds": ((-21.7564, 166.1384), (-21.64155, 166.26125))},
+    {"id": 11, "slug": "paris", "name": "Paris", "bounds": ((48.82945, 2.2561), (48.9058, 2.3722))},
+    {"id": 13, "slug": "scotland", "name": "Scotland", "bounds": ((55.61845, -5.2802), (55.67595, -5.17798))},
+]
+
+WORLD_BY_ID = {world["id"]: world for world in ZWIFT_WORLDS if "id" in world}
+WORLD_BY_SLUG = {world["slug"]: world for world in ZWIFT_WORLDS}
+WORLD_BY_NAME = {world["name"].strip().lower(): world for world in ZWIFT_WORLDS}
+
+
 def main():
-    if len(sys.argv) != 3:
-        sys.stderr.write("Usage: zwift_parse_fit.py <fit_url> <output_prefix>\n")
+    if len(sys.argv) not in (3, 4):
+        sys.stderr.write("Usage: zwift_parse_fit.py <fit_url> <output_prefix> [world_hint]\n")
         sys.exit(1)
 
     fit_url = sys.argv[1]
     _output_prefix = sys.argv[2]  # retained for CLI compatibility; assets now written via _write_* helpers.
+    world_hint = sys.argv[3] if len(sys.argv) == 4 else None
 
     try:
         resp = requests.get(fit_url, timeout=30)
@@ -94,12 +115,15 @@ def main():
         session_title = _session_title(ff) or "Zwift Ride"
         version = int(time.time())
         laps = _extract_laps(ff, local_tz, epoch_ms, latitudes, longitudes)
+        world = _resolve_world(ff, latitudes, longitudes, world_hint)
+        world_payload = _world_payload(world)
         _write_apex_payload(
             title=session_title,
             version=version,
             points=json_points,
             epoch_ms=epoch_ms,
             laps=laps,
+            world=world_payload,
         )
         _write_route_payload(
             title=session_title,
@@ -109,6 +133,7 @@ def main():
             powers=powers,
             speeds=speeds,
             laps=laps,
+            world=world_payload,
         )
 
         summary = _summarize_ride(heartrates)
@@ -219,6 +244,7 @@ def _write_apex_payload(
     points: List[List[Optional[float]]],
     epoch_ms: List[int],
     laps: List[dict],
+    world: Optional[dict],
 ) -> None:
     if not points:
         return
@@ -232,6 +258,8 @@ def _write_apex_payload(
         "points": points,
         "laps": laps,
     }
+    if world:
+        payload["world"] = world
     payload_text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     (ride_dir / "latest.json").write_text(payload_text, encoding="utf-8")
 
@@ -244,6 +272,7 @@ def _write_route_payload(
     powers: List[float],
     speeds: List[float],
     laps: List[dict],
+    world: Optional[dict],
 ) -> None:
     route_points: List[List[float]] = []
     power_series: List[Optional[float]] = []
@@ -265,6 +294,8 @@ def _write_route_payload(
         "start": route_points[0],
         "end": route_points[-1],
     }
+    if world:
+        payload["world"] = world
     if any(p is not None for p in power_series):
         payload["power_w"] = power_series
     if any(s is not None for s in speed_series):
@@ -276,6 +307,105 @@ def _write_route_payload(
     ride_dir.mkdir(parents=True, exist_ok=True)
     route_text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     (ride_dir / "route.json").write_text(route_text, encoding="utf-8")
+
+
+def _resolve_world(
+    ff: FitFile,
+    latitudes: List[float],
+    longitudes: List[float],
+    world_hint: Optional[str],
+):
+    world = _match_world_from_hint(world_hint)
+    if world:
+        return world
+    world = _match_world_from_metadata(ff)
+    if world:
+        return world
+    return _match_world_from_coordinates(latitudes, longitudes)
+
+
+def _normalize_world_token(value: str) -> str:
+    return value.strip().lower().replace("_", "-").replace(" ", "-")
+
+
+def _match_world_from_hint(world_hint: Optional[str]):
+    if world_hint is None:
+        return None
+    hint = str(world_hint).strip()
+    if not hint or hint.lower() in {"none", "null"}:
+        return None
+    if hint.isdigit():
+        return WORLD_BY_ID.get(int(hint))
+    try:
+        possible_id = int(float(hint))
+        return WORLD_BY_ID.get(possible_id)
+    except (ValueError, TypeError):
+        pass
+    normalized = _normalize_world_token(hint)
+    return WORLD_BY_SLUG.get(normalized) or WORLD_BY_NAME.get(hint.strip().lower())
+
+
+def _match_world_from_metadata(ff: FitFile):
+    candidates: List[str] = []
+    for message_name in ("session", "sport", "event"):
+        for msg in ff.get_messages(message_name):
+            for field in msg:
+                value = getattr(field, "value", None)
+                if isinstance(value, str):
+                    candidates.append(value)
+    return _match_world_from_strings(candidates)
+
+
+def _match_world_from_strings(strings: Iterable[str]):
+    for text in strings:
+        normalized = _normalize_world_token(text)
+        if not normalized:
+            continue
+        exact = WORLD_BY_SLUG.get(normalized) or WORLD_BY_NAME.get(text.strip().lower())
+        if exact:
+            return exact
+        for slug, world in WORLD_BY_SLUG.items():
+            options = {
+                slug,
+                slug.replace("-", " "),
+                world["name"].strip().lower(),
+                world["name"].strip().lower().replace(" ", "-"),
+            }
+            if any(token in normalized for token in options):
+                return world
+    return None
+
+
+def _match_world_from_coordinates(latitudes: List[float], longitudes: List[float]):
+    coords = [
+        (lat, lon)
+        for lat, lon in zip(latitudes, longitudes)
+        if isinstance(lat, (int, float))
+        and isinstance(lon, (int, float))
+        and not math.isnan(lat)
+        and not math.isnan(lon)
+    ]
+    if not coords:
+        return None
+    for world in ZWIFT_WORLDS:
+        (lat_a, lon_a), (lat_b, lon_b) = world["bounds"]
+        lat_min, lat_max = sorted((lat_a, lat_b))
+        lon_min, lon_max = sorted((lon_a, lon_b))
+        for lat, lon in coords:
+            if lat_min <= lat <= lat_max and lon_min <= lon <= lon_max:
+                return world
+    return None
+
+
+def _world_payload(world: Optional[dict]):
+    if not world:
+        return None
+    payload = {"slug": world.get("slug")}
+    if "name" in world and world["name"]:
+        payload["name"] = world["name"]
+    if "id" in world:
+        payload["id"] = world["id"]
+    return payload
 
 
 if __name__ == "__main__":
