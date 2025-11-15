@@ -1,0 +1,95 @@
+{# ======================================================================
+  Severity definitions for sulfur dioxide (SO₂)
+  Home Assistant device_class: sulphur_dioxide
+  Based on U.S. EPA AQI breakpoints (1-hour SO₂, ppb)
+====================================================================== #}
+
+{% set lookup_unit = "ppb" %}
+{% set levels = {
+    "default": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "N/A",
+            "long_desc": "SO₂ data unavailable",
+            "icon": "mdi:close-circle",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sulfur dioxide sensor is disabled or not reporting."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Air quality is good",
+            "icon": "mdi:emoticon-excited-outline",
+            "color": "#00e400",
+            "badge": "mdi:numeric-0-circle",
+            "full_desc": "Air quality poses little or no risk."
+        },
+        {
+            "min_value": 36,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Air quality is acceptable",
+            "icon": "mdi:emoticon-happy-outline",
+            "color": "#ffff00",
+            "badge": "mdi:numeric-2-circle",
+            "full_desc": "Generally acceptable; some sensitive individuals may notice effects."
+        },
+        {
+            "min_value": 76,
+            "default_desc": "Unhealthy for Sensitive Groups",
+            "short_desc": "USG",
+            "long_desc": "Sensitive groups may be affected",
+            "icon": "mdi:emoticon-neutral-outline",
+            "color": "#ff7e00",
+            "badge": "mdi:numeric-4-circle",
+            "full_desc": "Children, elderly, and people with lung disease may experience health effects."
+        },
+        {
+            "min_value": 186,
+            "default_desc": "Unhealthy",
+            "short_desc": "Unhealthy",
+            "long_desc": "Air quality is unhealthy",
+            "icon": "mdi:emoticon-sad-outline",
+            "color": "#ff0000",
+            "badge": "mdi:numeric-6-circle",
+            "full_desc": "Everyone may begin to experience health effects; sensitive groups more serious effects."
+        },
+        {
+            "min_value": 305,
+            "default_desc": "Very Unhealthy",
+            "short_desc": "V Unhealthy",
+            "long_desc": "Air quality is very unhealthy",
+            "icon": "mdi:emoticon-dead-outline",
+            "color": "#8f3f97",
+            "badge": "mdi:numeric-8-circle",
+            "full_desc": "Health alert: everyone may experience more serious health effects."
+        },
+        {
+            "min_value": 605,
+            "default_desc": "Hazardous",
+            "short_desc": "Hazard",
+            "long_desc": "Air quality is hazardous",
+            "icon": "mdi:skull",
+            "color": "#7e0023",
+            "badge": "mdi:numeric-9-circle",
+            "full_desc": "Serious health warnings of emergency conditions; the entire population is at risk."
+        },
+        {
+            "min_value": 1005,
+            "default_desc": "Hazardous+",
+            "short_desc": "Haz+",
+            "long_desc": "Extremely hazardous air quality",
+            "icon": "mdi:skull-crossbones",
+            "color": "#5b0217",
+            "badge": "mdi:numeric-9-plus-circle",
+            "full_desc": "Extreme emergency conditions; avoid all outdoor activity."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

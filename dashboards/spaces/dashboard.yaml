@@ -1,6 +1,0 @@
-# File: /config/dashboards/spaces/dashboard.yaml
-# Description: This file defines the dashboard configuration for monitoring various spaces.
-
-title: Spaces
-decluttering_templates: !include ../decluttering.yaml
-views: !include_dir_list views

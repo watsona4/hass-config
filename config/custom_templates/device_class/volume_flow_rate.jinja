@@ -1,0 +1,182 @@
+{# Severity definitions for volume flow rate #}
+{# Device: Liquid flow per unit time #}
+{# Typical applications: Domestic water, irrigation zones #}
+
+{% set lookup_unit = "L/min" %}
+{% set levels = {
+    "domestic_water": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "No flow",
+            "icon": "mdi:water-off",
+            "color": "#9ca3af",
+            "full_desc": "All taps closed."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc": "Drip",
+            "short_desc": "Drip",
+            "long_desc": "Drip",
+            "icon": "mdi:water-alert",
+            "color": "#eab308",
+            "full_desc": "Possible leak."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low flow",
+            "icon": "mdi:water",
+            "color": "#22c55e",
+            "full_desc": "Single tap."
+        },
+        {
+            "min_value": 15.0,
+            "default_desc": "Medium",
+            "short_desc": "Med",
+            "long_desc": "Medium flow",
+            "icon": "mdi:water",
+            "color": "#10b981",
+            "full_desc": "Shower running."
+        },
+        {
+            "min_value": 30.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High flow",
+            "icon": "mdi:water-pump",
+            "color": "#f97316",
+            "full_desc": "Multiple fixtures."
+        }
+    ],
+    "irrigation_zone": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "No flow",
+            "icon": "mdi:sprinkler-variant-off",
+            "color": "#9ca3af",
+            "full_desc": "Zone idle."
+        },
+        {
+            "min_value": 2.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low",
+            "icon": "mdi:sprinkler-variant",
+            "color": "#22c55e",
+            "full_desc": "Few heads."
+        },
+        {
+            "min_value": 10.0,
+            "default_desc": "Normal",
+            "short_desc": "Norm",
+            "long_desc": "Normal",
+            "icon": "mdi:sprinkler",
+            "color": "#10b981",
+            "full_desc": "Typical zone."
+        },
+        {
+            "min_value": 20.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High",
+            "icon": "mdi:sprinkler",
+            "color": "#eab308",
+            "full_desc": "Possible broken head."
+        }
+    ],
+    "gas_rate": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Gas flow sensor is not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "No gas flow",
+            "icon": "mdi:fire-off",
+            "color": "#9ca3af",
+            "full_desc": "No burners or appliances are currently consuming gas."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "Pilot",
+            "short_desc": "Pilot",
+            "long_desc": "Very low gas flow",
+            "icon": "mdi:fire",
+            "color": "#eab308",
+            "full_desc": "Only a standing pilot light or minimal idle consumption is detected."
+        },
+        {
+            "min_value": 20.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low gas flow",
+            "icon": "mdi:fire",
+            "color": "#22c55e",
+            "full_desc": "Small appliance running (e.g., stove burner or water heater cycling)."
+        },
+        {
+            "min_value": 100.0,
+            "default_desc": "Medium",
+            "short_desc": "Med",
+            "long_desc": "Moderate gas flow",
+            "icon": "mdi:fire",
+            "color": "#10b981",
+            "full_desc": "One large appliance or multiple small burners active (e.g., furnace or dryer)."
+        },
+        {
+            "min_value": 250.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High gas flow",
+            "icon": "mdi:fire-alert",
+            "color": "#f97316",
+            "full_desc": "Heavy demand detected (multiple major gas appliances running)."
+        },
+        {
+            "min_value": 500.0,
+            "default_desc": "Very High",
+            "short_desc": "VHigh",
+            "long_desc": "Very high gas flow",
+            "icon": "mdi:alert-decagram",
+            "color": "#dc2626",
+            "full_desc": "Extremely high usage, possible leak or multiple furnaces/stoves operating simultaneously."
+        }
+    ],
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

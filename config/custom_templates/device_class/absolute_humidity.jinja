@@ -1,0 +1,125 @@
+{# Severity definitions for absolute humidity #}
+{# Device: Absolute humidity, mass of water vapor per unit volume of air #}
+{# Typical applications: Indoor comfort, server rooms #}
+
+{% set lookup_unit = "g/m³" %}
+{% set levels = {
+    "indoor_comfort": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Very Dry",
+            "short_desc": "Very Dry",
+            "long_desc": "Extremely dry air",
+            "icon": "mdi:water-off",
+            "color": "#60a5fa",
+            "full_desc": "Risk of dry skin and irritation."
+        },
+        {
+            "min_value": 3.0,
+            "default_desc": "Dry",
+            "short_desc": "Dry",
+            "long_desc": "Dry indoor air",
+            "icon": "mdi:water-outline",
+            "color": "#93c5fd",
+            "full_desc": "Acceptable in winter."
+        },
+        {
+            "min_value": 7.0,
+            "default_desc": "Comfort",
+            "short_desc": "Comfort",
+            "long_desc": "Comfortable range",
+            "icon": "mdi:water",
+            "color": "#22c55e",
+            "full_desc": "Good comfort for most people."
+        },
+        {
+            "min_value": 12.0,
+            "default_desc": "Humid",
+            "short_desc": "Humid",
+            "long_desc": "Humid indoor air",
+            "icon": "mdi:water-plus",
+            "color": "#eab308",
+            "full_desc": "May feel muggy."
+        },
+        {
+            "min_value": 18.0,
+            "default_desc": "Very Humid",
+            "short_desc": "V Humid",
+            "long_desc": "Very humid air",
+            "icon": "mdi:water-alert",
+            "color": "#ef4444",
+            "full_desc": "Mold growth risk increases."
+        }
+    ],
+    "server_room": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Too Dry",
+            "short_desc": "Too Dry",
+            "long_desc": "ESD risk",
+            "icon": "mdi:server-off",
+            "color": "#f97316",
+            "full_desc": "Electrostatic discharge risk rises."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Lower bound",
+            "icon": "mdi:server",
+            "color": "#22c55e",
+            "full_desc": "Lower bound of acceptable."
+        },
+        {
+            "min_value": 10.0,
+            "default_desc": "Optimal",
+            "short_desc": "Optimal",
+            "long_desc": "Recommended",
+            "icon": "mdi:server",
+            "color": "#10b981",
+            "full_desc": "Typical target range."
+        },
+        {
+            "min_value": 14.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "Upper bound",
+            "icon": "mdi:server-network",
+            "color": "#eab308",
+            "full_desc": "Condensation risk rises."
+        },
+        {
+            "min_value": 18.0,
+            "default_desc": "Too High",
+            "short_desc": "Too High",
+            "long_desc": "Unacceptable",
+            "icon": "mdi:server-alert",
+            "color": "#dc2626",
+            "full_desc": "Condensation risk unacceptable."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

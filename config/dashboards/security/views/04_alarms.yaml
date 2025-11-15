@@ -1,0 +1,99 @@
+type: sections
+max_columns: 4
+title: Alarms & Smoke
+path: alarms-smoke
+sections:
+  - type: grid
+    cards:
+      # ======= Status chips =======
+      - type: custom:mushroom-chips-card
+        alignment: start
+        chips:
+          - type: entity
+            entity: binary_sensor.any_door_open
+            name: Doors
+            icon: mdi:door
+          - type: entity
+            entity: binary_sensor.any_smoke_detected
+            name: Smoke
+            icon: mdi:smoke-detector-variant
+
+  - type: grid
+    cards:
+      # ======= Doors summary =======
+      - type: custom:mushroom-template-card
+        primary: >
+          {{ 'Door open: ' ~ state_attr('binary_sensor.any_door_open','open_count')
+             if is_state('binary_sensor.any_door_open','on') else 'All doors closed' }}
+        secondary: >
+          {% set lst = state_attr('binary_sensor.any_door_open','open_list') or [] -%}
+          {{ lst | join(', ') if lst else 'No open doors' }}
+        icon: mdi:door
+        icon_color: >
+          {{ 'red' if is_state('binary_sensor.any_door_open','on') else 'green' }}
+        tap_action:
+          action: none
+
+      # ======= Smoke summary =======
+      - type: custom:mushroom-template-card
+        primary: >
+          {{ 'Smoke alarm active: ' ~ state_attr('binary_sensor.any_smoke_detected','alarm_count')
+             if is_state('binary_sensor.any_smoke_detected','on') else 'No smoke alarms' }}
+        secondary: >
+          {% set lst = state_attr('binary_sensor.any_smoke_detected','alarm_list') or [] -%}
+          {{ lst | join(', ') if lst else 'All clear' }}
+        icon: mdi:smoke-detector-variant
+        icon_color: >
+          {{ 'red' if is_state('binary_sensor.any_smoke_detected','on') else 'green' }}
+        tap_action:
+          action: none
+
+  - type: grid
+    cards:
+      # ======= Open doors list (auto-entities) =======
+      - type: custom:auto-entities
+        show_empty: true
+        card:
+          type: entities
+          title: Open Doors
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: door
+              state: 'on'
+            - domain: binary_sensor
+              attributes:
+                device_class: opening
+              state: 'on'
+        sort:
+          method: name
+
+      # ======= Active smoke list (auto-entities) =======
+      - type: custom:auto-entities
+        show_empty: true
+        card:
+          type: entities
+          title: Smoke Alarms Active
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: smoke
+              state: 'on'
+            - domain: binary_sensor
+              attributes:
+                device_class: safety
+              state: 'on'
+        sort:
+          method: name
+
+  # Optional quick history
+  - type: grid
+    cards:
+      - type: history-graph
+        title: Last 24h
+        hours_to_show: 24
+        entities:
+          - binary_sensor.any_door_open
+          - binary_sensor.any_smoke_detected

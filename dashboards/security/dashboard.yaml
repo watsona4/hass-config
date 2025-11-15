@@ -1,6 +1,0 @@
-# File: /config/dashboards/security/dashboard.yaml
-# Description: This file defines the dashboard configuration for monitoring security conditions.
-
-title: Security
-decluttering_templates: !include ../decluttering.yaml
-views: !include_dir_list views

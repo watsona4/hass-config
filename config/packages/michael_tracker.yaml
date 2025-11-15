@@ -1,0 +1,280 @@
+# ======================= Michael Presence (Backpack-first) =======================
+# Purpose: Accurate "NOT HOME" even if iPad remains at home.
+# Strategy:
+#   - "Home" if backpack beacon recently seen (primary) OR short grace after door entry.
+#   - "Away" if beacon absent for a while AND no recent motion in his room.
+#   - iPad is ignored for away, used only to refine location when backpack is home.
+#   - If backpack state is unknown, the virtual tracker is set to 'unknown'.
+
+# ------------------------------ CONFIGURE ENTITIES ------------------------------
+# CHANGE THESE to your actual entities
+# Backpack BLE presence at home (on=in range) OR a device_tracker that represents the backpack at home:
+#   device_tracker.michael_tracker           (example)  or  binary_sensor.michael_backpack_beacon_home
+# Motion in Michael's room:
+#   binary_sensor.michael_presence_presence_information
+# Optional front door contact (for brief arrival grace):
+#   binary_sensor.kitchen_door_contact
+# Optional iPad tracker (for GPS/state pass-through when backpack is home):
+#   device_tracker.icloud3_michaels_ipad
+
+# ------------------------- School-hours notifier (optional) --------------------
+input_datetime:
+  michael_school_check_start:
+    name: Michael School Check Start
+    has_date: false
+    has_time: true
+    initial: "14:30:00"
+  michael_school_check_end:
+    name: Michael School Check End
+    has_date: false
+    has_time: true
+    initial: "17:30:00"
+
+template:
+  - trigger:
+      # Recompute on source changes and once per minute so time-based windows work
+      - platform: state
+        entity_id:
+          - device_tracker.michael_tracker
+          - binary_sensor.michael_presence_presence_information
+          - binary_sensor.kitchen_door_contact
+          - device_tracker.icloud3_michaels_ipad
+      - platform: homeassistant
+        event: start
+      - platform: time_pattern
+        minutes: "/1"
+    variables:
+      # Entities
+      ent_beacon: device_tracker.michael_tracker
+      ent_motion: binary_sensor.michael_presence_presence_information
+      ent_door:   binary_sensor.kitchen_door_contact
+      ent_ipad:   device_tracker.icloud3_michaels_ipad
+
+      # Raw states
+      beacon_state: "{{ states(ent_beacon) }}"
+      beacon_on: "{{ is_state(ent_beacon,'on') or is_state(ent_beacon,'home') }}"
+      motion_on: "{{ is_state(ent_motion,'on') }}"
+      door_open: "{{ is_state(ent_door,'on') if has_value(ent_door) else false }}"
+      ipad_home: "{{ is_state(ent_ipad,'home') }}"
+      now_ts: "{{ now()|as_timestamp }}"
+
+      # Tunables
+      beacon_recent_minutes: 10     # consider "present" if seen within this
+      arrival_door_grace_min: 5     # brief “home” grace after door opens
+      motion_recent_minutes: 15     # how long motion implies presence
+      beacon_absence_minutes: 15    # must be gone this long before we consider away
+
+      # Last-seen for beacon (fallback to last_changed if no attribute)
+      beacon_last_seen_ts: >-
+        {%- set ls = state_attr(ent_beacon,'last_seen') -%}
+        {%- set ts = (ls | as_datetime(default=none) | as_timestamp) if ls else
+                     (states[ent_beacon].last_changed | as_timestamp) -%}
+        {{ ts }}
+      beacon_last_seen_age_m: >-
+        {{ ((now_ts - beacon_last_seen_ts) / 60) if beacon_last_seen_ts else 9e9 }}
+
+      # Motion recency
+      motion_last_on_ts: >-
+        {{ (states[ent_motion].last_changed | as_timestamp) if motion_on else
+           (states[ent_motion].last_changed | as_timestamp) }}
+      motion_recent: >-
+        {{ motion_on or ((now_ts - (motion_last_on_ts or 0)) / 60 <= motion_recent_minutes) }}
+
+      # Door grace: home briefly right after opening (arrival)
+      door_last_open_ts: >-
+        {{ (states[ent_door].last_changed | as_timestamp) if has_value(ent_door) else none }}
+      door_grace_active: >-
+        {{ door_last_open_ts is number and ((now_ts - door_last_open_ts)/60 <= arrival_door_grace_min) }}
+
+      # Presence rules, kept for the binary presence sensor
+      present_via_beacon: >-
+        {{ beacon_on or (beacon_last_seen_age_m <= beacon_recent_minutes) }}
+      present_via_grace: "{{ door_grace_active }}"
+      present_hint_via_ipad: "{{ ipad_home }}"  # not used for away, only positive hint
+
+      # Final presence (home) — beacon/grace dominate; iPad+motion is a mild hint
+      is_home: >-
+        {{ present_via_beacon or present_via_grace or (present_hint_via_ipad and motion_recent) }}
+
+      # Away: beacon truly absent for a while AND no room motion recently
+      is_away: >-
+        {{ (beacon_last_seen_age_m >= beacon_absence_minutes) and (not motion_recent) }}
+
+      # Backpack state for downstream use:
+      #   home     = actively seen or seen recently
+      #   away     = not seen for absence window
+      #   unknown  = sensor unavailable/unknown or in-between window
+      backpack_state: >-
+        {% if beacon_state in ['unknown','unavailable', none] %}
+          unknown
+        {% elif present_via_beacon %}
+          home
+        {% elif beacon_last_seen_age_m is number and beacon_last_seen_age_m >= beacon_absence_minutes %}
+          away
+        {% else %}
+          unknown
+        {% endif %}
+
+    binary_sensor:
+      - name: Michael Home (Backpack-first)
+        unique_id: michael_home_backpack_first
+        device_class: presence
+        availability: >-
+          {{ has_value(ent_beacon) and has_value(ent_motion) }}
+        # Hysteresis: prefer stability; delay_off keeps 'home' a bit if inputs flicker
+        state: >-
+          {% if is_home %} true
+          {% elif is_away %} false
+          {% else %}
+            {{ states(this.entity_id) in ['on','off'] and states(this.entity_id) == 'on' }}
+          {% endif %}
+        delay_off: "00:05:00"
+        attributes:
+          backpack_state: "{{ backpack_state }}"
+          beacon_on: "{{ beacon_on }}"
+          beacon_last_seen_minutes: "{{ (beacon_last_seen_age_m | round(1)) if beacon_last_seen_age_m is number else none }}"
+          beacon_recent_minutes: "{{ beacon_recent_minutes }}"
+          beacon_absence_minutes: "{{ beacon_absence_minutes }}"
+          motion_recent: "{{ motion_recent }}"
+          door_grace_active: "{{ door_grace_active }}"
+          ipad_home_hint: "{{ present_hint_via_ipad }}"
+          policy: "Home = beacon or brief door grace (or iPad+motion). Away = beacon absent & no motion."
+
+    sensor:
+      - name: Michael School Check Window Active
+        unique_id: michael_school_check_window_active
+        icon: mdi:clock
+        state: >-
+          {% set s = states('input_datetime.michael_school_check_start') | as_datetime(default=none) %}
+          {% set e = states('input_datetime.michael_school_check_end')   | as_datetime(default=none) %}
+          {% if not s or not e %} false
+          {% else %}
+            {% set nowt = now() %}
+            {% set start = nowt.replace(hour=s.hour, minute=s.minute, second=s.second, microsecond=0) %}
+            {% set end   = nowt.replace(hour=e.hour, minute=e.minute, second=e.second, microsecond=0) %}
+            {{ start <= nowt <= end }}
+          {% endif %}
+
+automation:
+  - id: michael_away_alert_school_window
+    alias: "Michael: Away during school return window"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.michael_home_backpack_first
+        to: "off"
+    condition:
+      - condition: state
+        entity_id: sensor.michael_school_check_window_active
+        state: "on"
+    action:
+      - service: notify.aaron_and_ashley_phones
+        data:
+          title: "Michael is not home"
+          message: >-
+            Michael is away during the school return window.
+            (Backpack last seen {{ state_attr('binary_sensor.michael_home_backpack_first','beacon_last_seen_minutes') }} min ago)
+      - service: persistent_notification.create
+        data:
+          title: "Michael away (school window)"
+          message: "Triggered away alert so you can check Find My."
+
+  # ------------------ Virtual tracker: reflect your final rules ------------------
+  - alias: "Virtual tracker: Michael (backpack-first)"
+    id: virtual_tracker_michael
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.michael_home_backpack_first   # our computed presence
+          - device_tracker.icloud3_michaels_ipad        # for GPS/state pass-through
+    variables:
+      ent_presence: binary_sensor.michael_home_backpack_first
+      ent_ipad: device_tracker.icloud3_michaels_ipad
+
+      # Backpack state exported by the template sensor
+      backpack_state: "{{ state_attr(ent_presence, 'backpack_state') or 'unknown' }}"
+      backpack_is_home: "{{ backpack_state == 'home' }}"
+      backpack_is_away: "{{ backpack_state == 'away' }}"
+      backpack_is_unknown: "{{ backpack_state == 'unknown' }}"
+
+      # iPad data
+      ipad_lat: "{{ state_attr(ent_ipad,'latitude') }}"
+      ipad_lon: "{{ state_attr(ent_ipad,'longitude') }}"
+      have_ipad_gps: >-
+        {{ state_attr(ent_ipad,'latitude') is number and state_attr(ent_ipad,'longitude') is number }}
+      accuracy: "{{ state_attr(ent_ipad,'gps_accuracy') | int(100) }}"
+      ipad_state: "{{ states(ent_ipad) }}"
+      ipad_state_valid: "{{ has_value(ent_ipad) }}"
+
+    action:
+      - choose:
+          # Backpack unknown -> force the virtual tracker to 'unknown'
+          - conditions:
+              - condition: template
+                value_template: "{{ backpack_is_unknown }}"
+            sequence:
+              - service: device_tracker.see
+                data:
+                  dev_id: "michael_helper_tracker"
+                  location_name: "unknown"
+                  attributes:
+                    source: "virtual(backpack_unknown)"
+
+          # Backpack away -> not_home (do not guess a zone)
+          - conditions:
+              - condition: template
+                value_template: "{{ backpack_is_away }}"
+            sequence:
+              - service: device_tracker.see
+                data:
+                  dev_id: "michael_helper_tracker"
+                  location_name: "not_home"
+                  attributes:
+                    source: "virtual(backpack_away)"
+
+          # Backpack home -> use iPad location (GPS preferred, else iPad state, else home)
+          - conditions:
+              - condition: template
+                value_template: "{{ backpack_is_home }}"
+            sequence:
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ have_ipad_gps }}"
+                    sequence:
+                      - service: device_tracker.see
+                        data:
+                          dev_id: "michael_helper_tracker"
+                          gps:
+                            - "{{ ipad_lat }}"
+                            - "{{ ipad_lon }}"
+                          gps_accuracy: "{{ accuracy }}"
+                          source_type: "gps"
+                          attributes:
+                            source: "ipad_gps"
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ ipad_state_valid }}"
+                    sequence:
+                      - service: device_tracker.see
+                        data:
+                          dev_id: "michael_helper_tracker"
+                          location_name: "{{ ipad_state }}"
+                          attributes:
+                            source: "ipad_state"
+                default:
+                  - service: device_tracker.see
+                    data:
+                      dev_id: "michael_helper_tracker"
+                      location_name: "unknown"
+                      attributes:
+                        source: "virtual(backpack_home_no_ipad)"
+        # Failsafe, should never hit
+        default:
+          - service: device_tracker.see
+            data:
+              dev_id: "michael_helper_tracker"
+              location_name: "not_home"
+              attributes:
+                source: "virtual(fallback)"

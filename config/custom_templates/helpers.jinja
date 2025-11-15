@@ -1,0 +1,256 @@
+{# ======================================================================
+  helpers.jinja  —  Reusable helpers for values, levels, labels & units
+  - Safe context resolution for {levels, lookup_unit}
+  - Optional fields (e.g., 'badge') default to ""
+  - Unavailable handling centralized
+  - Clean, sectioned layout
+====================================================================== #}
+
+{# -- Imports ---------------------------------------------------------- #}
+{% from 'units/base.jinja' import u_convert_value, u_humanize_value %}
+
+{# ======================================================================
+  1) Numeric Utilities
+====================================================================== #}
+
+{% macro abs(x) %}
+    {%- set x = x | float(0) -%}
+    {{- -x if x < 0 else x -}}
+{% endmacro %}
+
+{# ======================================================================
+  2) Name & Label Formatting
+====================================================================== #}
+
+{% macro format_name(name, exceptions=[]) %}
+    {%- set ns = namespace(result=[], match=none) -%}
+    {%- for word in name.split() -%}
+        {%- set ns.match = none -%}
+        {%- for ex in exceptions -%}
+            {%- if (word | lower) == (ex | lower) -%}
+                {%- set ns.match = ex -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.match -%}
+            {%- set ns.result = ns.result + [ns.match] -%}
+        {%- else -%}
+            {%- set ns.result = ns.result + [word | title] -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.result | join(" ") -}}
+{% endmacro %}
+
+{#- If unavailable, show long_desc only; else "value • desc" when value text exists -#}
+{% macro format_label(value_text, desc_text, is_unavail=false, long_desc_text='', delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
+    {%- if is_unavail and long_desc_text -%}
+        {{- long_desc_text -}}
+    {%- elif binary -%}
+        {{- desc_text if desc_text|trim != '' else value_text -}}
+    {%- else -%}
+        {%- if value_text|trim != '' and desc_text|trim != '' -%}
+            {{- value_text ~ (vert_delim if layout == 'vertical' else delim) ~ desc_text -}}
+        {%- elif value_text != '' -%}
+            {{- value_text -}}
+        {%- else -%}
+            {{- desc_text -}}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro format_short_label(value_text, short_desc_text, is_unavail=false, long_desc_text='', delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
+    {{- format_label(value_text, short_desc_text, is_unavail, long_desc_text, delim, layout, vert_delim) -}}
+{% endmacro %}
+
+{% macro format_long_label(value_text, long_desc_text, is_unavail=false, delim= ' • ', layout='horizontal', vert_delim='\n', binary=false) %}
+    {{- format_label(value_text, long_desc_text, is_unavail, long_desc_text, delim, layout, vert_delim) -}}
+{% endmacro %}
+
+{# ======================================================================
+  3) Device-Class Context Resolution
+     (Prefer options.{levels, lookup_unit}; fallback to globals)
+====================================================================== #}
+
+{% macro resolve_ctx(options) %}
+    {%- set _levels = (options.get('levels') if options is mapping and options.get('levels') is defined
+        else (levels if levels is defined else none)) -%}
+    {%- set _lookup_unit = (options.get('lookup_unit') if options is mapping and options.get('lookup_unit') is defined
+        else (lookup_unit if lookup_unit is defined else none)) -%}
+    {{- {'levels': _levels, 'lookup_unit': _lookup_unit} | tojson -}}
+{% endmacro %}
+
+{# ======================================================================
+  4) Level Utilities (selection & attribute retrieval)
+====================================================================== #}
+
+{#- Pick the entry with the greatest min_value <= value (handles mixed order) -#}
+{% macro find_matching_level(value, levels) %}
+    {%- set ns = namespace(val=value | float(0), best=none, best_min=none, lowest=none, lowest_min=none) -%}
+    {%- for level in levels if level.min_value is not none -%}
+        {%- set m = level.min_value | float(0) -%}
+        {%- if ns.lowest is none or m < ns.lowest_min -%}
+            {%- set ns.lowest = level -%}
+            {%- set ns.lowest_min = m -%}
+        {%- endif -%}
+        {%- if ns.val >= m and (ns.best is none or m > ns.best_min) -%}
+            {%- set ns.best = level -%}
+            {%- set ns.best_min = m -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- (ns.best or ns.lowest) | tojson -}}
+{% endmacro %}
+
+{# Project a "today so far" cumulative reading to a full-day estimate
+   - Enable with options.project_daily = true
+   - Optional guard: options.project_guard (fraction of a day, default 0.05)
+   - No-op for unavailable/None. #}
+{% macro apply_projection(val, options) %}
+    {%- if val is none -%}
+        {{- val -}}
+    {%- elif options is mapping and options.get('project_daily', false) -%}
+        {%- set h = now().hour -%}
+        {%- set m = now().minute -%}
+        {%- set share = (h + (m / 60.0)) / 24.0 -%}
+        {%- set guard = (options.get('project_guard', 0.05) | float(0.05)) -%}
+        {#- avoid divide-by-near-zero early in the morning -#}
+        {%- set denom = share if share > guard else guard -%}
+        {{- (val | float(none) ) / denom if (val | float(none)) is not none else none -}}
+    {%- else -%}
+        {{- val -}}
+    {%- endif -%}
+{% endmacro %}
+
+{# Universal accessor used by the device-class getters #}
+{% macro get_level_attr(value, app, attr, options) %}
+    {%- set ctx = resolve_ctx(options) | from_json -%}
+    {%- set _levels = ctx.levels -%}
+    {%- if _levels is none -%}
+        {{- 'Error: levels undefined in device-class template' -}}
+    {%- elif app not in _levels -%}
+        {{- 'Error: Unknown application: ' ~ app -}}
+    {%- else -%}
+
+        {#- Prefer explicit 'unavailable' level (min_value == none) -#}
+        {%- set ns = namespace(unavailable_entry=none) -%}
+        {%- for lv in _levels[app] -%}
+            {%- if lv.min_value is none -%}
+                {%- set ns.unavailable_entry = lv -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- set unavailable_fallback = ns.unavailable_entry or _levels[app][0] -%}
+
+        {%- if options.get('is_unavail', false) -%}
+            {{- unavailable_fallback.get(attr, '') -}}
+        {%- else -%}
+            {%- set lookup = u_convert_value(value, options.uom, ctx.lookup_unit) -%}
+            {%- set lookup = apply_projection(lookup, options) -%}
+            {%- set match = find_matching_level(lookup, _levels[app]) | from_json -%}
+            {{- match.get(attr, '') -}}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{# ======================================================================
+  6) Public Getters (used by main.jinja)
+====================================================================== #}
+
+{% macro get_value(value, app='default', options={}) %}
+    {%- if options.get('is_unavail', false) -%}
+        {{- 'Unavailable' -}}
+    {%- else -%}
+        {%- set val = u_convert_value(value, options.uom, options.display_unit) -%}
+        {%- set val = apply_projection(val, options) -%}
+        {%- set text = u_humanize_value(val, options.display_unit) -%}
+        {%- if options is mapping and options.get('project_daily', false) -%}
+            {{- "~" ~ text -}}
+        {%- else -%}
+            {{- text -}}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_name(value, app='default', options={}) %}
+    {%- set exceptions = ['UV','AQI','PM','CO','CO2','NO2','SO2','O3','VOC','dB','dBA','dBC','A/C','W/D','USB'] -%}
+    {%- if options is mapping and options.get('name') -%}
+        {{- format_name(options.name, exceptions=exceptions) -}}
+    {%- else -%}
+        {{- format_name(options.friendly_name or app, exceptions=exceptions) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_default_desc(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'default_desc', options) -}}
+{% endmacro %}
+{% macro get_short_desc(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'short_desc', options) -}}
+{% endmacro %}
+{% macro get_long_desc(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'long_desc', options) -}}
+{% endmacro %}
+{% macro get_full_desc(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'full_desc', options) -}}
+{% endmacro %}
+{% macro get_icon(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'icon', options) -}}
+{% endmacro %}
+{% macro get_color(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'color', options) -}}
+{% endmacro %}
+{% macro get_badge(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'badge', options) -}}
+{% endmacro %}
+{% macro get_badge_color(value, app='default', options={}) %}
+    {{- get_level_attr(value, app, 'badge_color', options) or get_level_attr(value, app, 'color', options) -}}
+{% endmacro %}
+
+{# ======================================================================
+  7) Parsing Helpers (optional; used in some templates)
+====================================================================== #}
+
+{#- Parse "k=v; k2=(a,b); flag=true; none=null" into a dict -#}
+{% macro parse_options_kv(s) %}
+    {%- set raw = (s | string) -%}
+    {%- if not raw -%}
+        {{ {} | tojson }}
+    {%- else -%}
+        {%- set ns = namespace(d={}, val=none) -%}
+        {%- for pair in raw.split(';') if pair | trim -%}
+            {%- if '=' not in pair -%}{% continue %}{%- endif -%}
+            {%- set k, v = pair.split('=', 1) -%}
+            {%- set k = k | trim -%}
+            {%- set v = v | trim -%}
+
+            {# list syntax: (a,b,c) #}
+            {%- if v.startswith('(') and v.endswith(')') -%}
+                {%- set ns2 = namespace(items=[]) -%}
+                {%- for item in v[1:-1].split(',') -%}
+                    {%- set iv = item | trim -%}
+                    {%- set iv = iv.strip('"').strip("'") -%}
+                    {%- set ns2.items = ns2.items + [iv] -%}
+                {%- endfor -%}
+                {%- set ns.val = ns2.items -%}
+
+            {# booleans and null #}
+            {%- elif v | lower in ['true','false'] -%}
+                {%- set ns.val = (v | lower == 'true') -%}
+            {%- elif v | lower in ['null','none','~'] -%}
+                {%- set ns.val = none -%}
+
+            {# numbers (int or float), else string #}
+            {%- else -%}
+                {%- set vv = v.strip('"').strip("'") -%}
+                {%- set vv_clean = vv | replace('_','') -%}
+                {%- if vv_clean | regex_match('^-?[0-9]+$') -%}
+                    {%- set ns.val = vv_clean | int(0) -%}
+                {%- elif vv_clean | regex_match('^-?[0-9]*\\.[0-9]+$') -%}
+                    {%- set ns.val = vv_clean | float(0) -%}
+                {%- else -%}
+                    {%- set ns.val = vv -%}
+                {%- endif -%}
+            {%- endif -%}
+
+            {%- set ns.d = ns.d | combine({k: ns.val}) -%}
+        {%- endfor -%}
+        {{ ns.d | tojson }}
+    {%- endif -%}
+{% endmacro %}

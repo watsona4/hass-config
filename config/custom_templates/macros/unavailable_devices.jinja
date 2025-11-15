@@ -1,0 +1,86 @@
+{# Unavailable Devices Macro #}
+
+{% macro generate() %}
+
+    {%- set ns = namespace(seen=[], dom_count=none, integ=none, out=[]) -%}
+
+    {# djlint:off #}
+    {%- set icon_map = dict(
+        light='mdi:lightbulb-off',
+        switch='mdi:toggle-switch-variant-off',
+        fan='mdi:fan-off',
+        climate='mdi:thermometer-off',
+        sensor='mdi:chip',
+        binary_sensor='mdi:alert-circle',
+        media_player='mdi:television',
+        camera='mdi:cctv',
+        device_tracker='mdi:map-marker-off',
+        vacuum='mdi:robot-vacuum',
+        cover='mdi:garage-alert',
+        lock='mdi:lock-open-alert',
+        alarm_control_panel='mdi:alarm-light',
+        siren='mdi:alarm-light',
+        update='mdi:package-up',
+        button='mdi:gesture-tap-button',
+        person='mdi:account-off',
+    ) -%}
+
+    {%- set known_integrations = [
+        'mqtt','tuya','frigate','opnsense','browser_mod','mobile_app','esphome',
+        'homekit','unifi','icloud','zeroconf','dhcp','dlna','bluetooth'
+    ] -%}
+    {# djlint:on #}
+
+    {%- for s in states if s.state == 'unavailable' and device_id(s.entity_id) -%}
+
+        {%- set did = device_id(s.entity_id) -%}
+
+        {%- if did not in ns.seen -%}
+
+            {%- set ns.seen = ns.seen + [did] -%}
+
+            {%- set rep = s.entity_id -%}
+            {%- set dom = rep.split('.')[0] -%}
+            {%- set dev = device_attr(did,'name') -%}
+
+            {%- set ns.dom_count = 0 -%}
+            {%- set ns.integ = "" -%}
+            {%- for eid in device_entities(did) -%}
+                {%- if states(eid) == 'unavailable' -%}
+                    {%- set ns.dom_count = ns.dom_count + 1 -%}
+                {%- endif -%}
+            {%- endfor -%}
+
+            {%- for integ in known_integrations -%}
+                {%- if not ns.integ and rep in integration_entities(integ) -%}
+                    {%- set ns.integ = integ -%}
+                {%- endif -%}
+            {%- endfor -%}
+
+            {%- set area = area_name(did) or 'No area' -%}
+            {%- set sev = 'red' if ns.dom_count >= 5 else 'orange' if ns.dom_count >= 2 else 'yellow' -%}
+            {%- set icon = icon_map.get(dom, 'mdi:lan-pending') -%}
+            {%- set badge_icon = 'mdi:numeric-' ~ (ns.dom_count if ns.dom_count < 10 else '9-plus') ~ '-circle' -%}
+
+            {%- set picture = ( '/local/brands/' ~ ns.integ ~ '.png' ) if ns.integ else None -%}
+            {%- set remote = ( 'https://brands.home-assistant.io/_/' ~ ns.integ ~ '/icon.png' ) if ns.integ else None -%}
+
+            {# djlint:off #}
+            {%- set ns.out = ns.out + [dict(
+                type='custom:mushroom-template-card',
+                entity=rep,
+                primary=dev,
+                secondary=area,
+                icon_type='entity-picture' if ns.integ else 'icon',
+                picture=remote,
+                icon=icon,
+                badge_color=sev,
+                badge_icon=badge_icon,
+                tap_action=dict(action='navigate', navigation_path='/config/devices/device/' ~ did),
+            )] -%}
+            {# djlint:on #}
+
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.out -}}
+{% endmacro %}

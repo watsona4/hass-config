@@ -1,0 +1,383 @@
+{# ======================================================================
+  Device class: data_rate  (ABSOLUTE SCALE)
+  Apps:
+    - utilization : instantaneous absolute link rate
+    - speedtest   : absolute measured speed test result
+
+  Notes:
+    - Matching uses lookup_unit "Mb/s" so thresholds are consistent.
+    - Lower absolute rates are "worse", higher are "better".
+    - The first row handles Unavailable (min_value: none).
+====================================================================== #}
+
+{% set lookup_unit = "Mb/s" %}
+
+{% set levels = {
+    "utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "N/A",
+            "long_desc": "Data rate unavailable",
+            "icon": "mdi:close-circle",
+            "color": "disabled",
+            "full_desc": "Utilization sensor not reporting."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Trickle",
+            "short_desc": "Trickle",
+            "long_desc": "Near-idle traffic",
+            "icon": "mdi:lan-pending",
+            "color": "#9ca3af",
+            "full_desc": "Background chatter only."
+        },
+        {
+            "min_value": 0.5,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light traffic",
+            "icon": "mdi:lan",
+            "color": "#84cc16",
+            "full_desc": "Web, chat, small syncs feel snappy."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate traffic",
+            "icon": "mdi:lan",
+            "color": "#facc15",
+            "full_desc": "Large downloads are noticeable."
+        },
+        {
+            "min_value": 25.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High traffic",
+            "icon": "mdi:lan-check",
+            "color": "#f59e0b",
+            "full_desc": "Multiple active transfers."
+        },
+        {
+            "min_value": 100.0,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very high traffic",
+            "icon": "mdi:lan-check",
+            "color": "#fb923c",
+            "full_desc": "Backups/streaming saturating portions of the link."
+        },
+        {
+            "min_value": 500.0,
+            "default_desc": "Gig-Class",
+            "short_desc": "Gig",
+            "long_desc": "Gigabit-class traffic",
+            "icon": "mdi:lan-check",
+            "color": "#ef4444",
+            "full_desc": "Sustained heavy transfers; capacity concerns likely on sub-gig links."
+        },
+        {
+            "min_value": 1000.0,
+            "default_desc": "Gig+",
+            "short_desc": "Gig+",
+            "long_desc": "≥1 Gb/s traffic",
+            "icon": "mdi:lan-check",
+            "color": "#dc2626",
+            "full_desc": "Saturating typical gigabit; watch for contention."
+        },
+        {
+            "min_value": 2000.0,
+            "default_desc": "Multi-Gig",
+            "short_desc": "Multi-Gig",
+            "long_desc": "Multi-gigabit traffic",
+            "icon": "mdi:lan-check",
+            "color": "#b91c1c",
+            "full_desc": "Multi-gig backbones or LAN transfers."
+        },
+        {
+            "min_value": 5000.0,
+            "default_desc": "Extreme",
+            "short_desc": "Extreme",
+            "long_desc": "Extreme throughput",
+            "icon": "mdi:lan-disconnect",
+            "color": "#7c3aed",
+            "full_desc": "Very high performance environment."
+        }
+    ],
+    "download": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "N/A",
+            "long_desc": "Speed test unavailable",
+            "icon": "mdi:close-circle",
+            "color": "disabled",
+            "full_desc": "Speed test not run or not reporting."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Poor",
+            "short_desc": "Poor",
+            "long_desc": "Very low bandwidth",
+            "icon": "mdi:signal-cellular-outline",
+            "color": "#dc2626",
+            "full_desc": "Barely usable for basic browsing."
+        },
+        {
+            "min_value": 5.0,
+            "default_desc": "Basic",
+            "short_desc": "Basic",
+            "long_desc": "Entry-level",
+            "icon": "mdi:signal-cellular-1",
+            "color": "#f59e0b",
+            "full_desc": "Email, SD streaming, single-user acceptable."
+        },
+        {
+            "min_value": 25.0,
+            "default_desc": "Broadband",
+            "short_desc": "BB",
+            "long_desc": "Baseline broadband",
+            "icon": "mdi:signal-cellular-2",
+            "color": "#facc15",
+            "full_desc": "HD streaming, basic multi-user."
+        },
+        {
+            "min_value": 100.0,
+            "default_desc": "Fast",
+            "short_desc": "Fast",
+            "long_desc": "Fast broadband",
+            "icon": "mdi:signal-cellular-2",
+            "color": "#84cc16",
+            "full_desc": "Multiple HD/4K streams, work-from-home."
+        },
+        {
+            "min_value": 200.0,
+            "default_desc": "Very Fast",
+            "short_desc": "V Fast",
+            "long_desc": "High-capacity",
+            "icon": "mdi:signal-cellular-3",
+            "color": "#22c55e",
+            "full_desc": "Large uploads/downloads, families & small offices."
+        },
+        {
+            "min_value": 500.0,
+            "default_desc": "Gig-Ready",
+            "short_desc": "Gig-Rdy",
+            "long_desc": "Near gigabit",
+            "icon": "mdi:signal-cellular-3",
+            "color": "#10b981",
+            "full_desc": "Excellent overall performance."
+        },
+        {
+            "min_value": 940.0,
+            "default_desc": "Gigabit",
+            "short_desc": "Gig",
+            "long_desc": "Gigabit class",
+            "icon": "mdi:signal-cellular-3",
+            "color": "#0ea5e9",
+            "full_desc": "Typical max for 1GbE WAN."
+        },
+        {
+            "min_value": 2000.0,
+            "default_desc": "Multi-Gig",
+            "short_desc": "Multi-Gig",
+            "long_desc": "≥2 Gb/s",
+            "icon": "mdi:signal-cellular-3",
+            "color": "#7c3aed",
+            "full_desc": "Multi-gig service verified."
+        }
+    ],
+    "upload": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "N/A",
+            "long_desc": "Upload rate unavailable",
+            "icon": "mdi:close-circle",
+            "color": "disabled",
+            "full_desc": "Upload sensor not reporting."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"Trickle Up",
+            "short_desc":"Trickle",
+            "long_desc":"Near-idle upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#9ca3af",
+            "full_desc":"Only control traffic and keepalives."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc":"Basic Upload",
+            "short_desc":"Basic",
+            "long_desc":"Basic upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#84cc16",
+            "full_desc":"Messaging, presence, light photo syncs."
+        },
+        {
+            "min_value": 10.0,
+            "default_desc":"Broadband Upload",
+            "short_desc":"BB",
+            "long_desc":"Broadband upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#facc15",
+            "full_desc":"Smooth HD calls; moderate cloud backups."
+        },
+        {
+            "min_value": 50.0,
+            "default_desc":"Fast Upload",
+            "short_desc":"Fast",
+            "long_desc":"Fast upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#84cc16",
+            "full_desc":"Regular large uploads; multi-party video."
+        },
+        {
+            "min_value": 200.0,
+            "default_desc":"Gig-Ready Upload",
+            "short_desc":"Gig-Rdy",
+            "long_desc":"Near-gig upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#10b981",
+            "full_desc":"Creator friendly: 4K streaming and rapid publishing."
+        },
+        {
+            "min_value": 940.0,
+            "default_desc":"Gigabit Upload",
+            "short_desc":"Gig",
+            "long_desc":"Gigabit upstream",
+            "icon":"mdi:upload-outline",
+            "color":"#0ea5e9",
+            "full_desc":"Wire-speed for 1GbE WAN; sustained transfers."
+        },
+        {
+            "min_value": 2000.0,
+            "default_desc":"Multi-Gig Upload",
+            "short_desc":"Multi-Gig",
+            "long_desc":"≥2 Gb/s up",
+            "icon":"mdi:upload-outline",
+            "color":"#7c3aed",
+            "full_desc":"Validated multi-gig upstream; backbone or LAN uplinks."
+        }
+    ],
+  "drive_data_rate": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+    {
+      "min_value": 0,
+      "default_desc": "Idle",
+      "short_desc": "Idle",
+      "long_desc": "No Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#22c55e",
+      "full_desc": "No read/write activity; drive is idle."
+    },
+    {
+      "min_value": 10,
+      "default_desc": "Light",
+      "short_desc": "Light",
+      "long_desc": "Light Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#84cc16",
+      "full_desc": "Light background reads/writes (<10 Mb/s); negligible load."
+    },
+    {
+      "min_value": 100,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Moderate Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#eab308",
+      "full_desc": "Moderate sustained reads/writes (100+ Mb/s); noticeable load."
+    },
+    {
+      "min_value": 500,
+      "default_desc": "High",
+      "short_desc": "High",
+      "long_desc": "High Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#f97316",
+      "full_desc": "Heavy data transfer (500+ Mb/s); system responsiveness may be affected."
+    },
+    {
+      "min_value": 1000,
+      "default_desc": "Very High",
+      "short_desc": "V High",
+      "long_desc": "Very High Drive Activity",
+      "icon": "mdi:progress-download",
+      "color": "#dc2626",
+      "full_desc": "Sustained gigabit-class read/write rates; drive nearing saturation."
+    }
+  ],
+  "nvme_data_rate": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+    {
+      "min_value": 0,
+      "default_desc": "Idle",
+      "short_desc": "Idle",
+      "long_desc": "No NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#22c55e",
+      "full_desc": "No read/write activity; NVMe drive is idle."
+    },
+    {
+      "min_value": 100,
+      "default_desc": "Light",
+      "short_desc": "Light",
+      "long_desc": "Light NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#84cc16",
+      "full_desc": "Light background reads/writes (<100 Mb/s); negligible load for NVMe."
+    },
+    {
+      "min_value": 1000,
+      "default_desc": "Moderate",
+      "short_desc": "Moderate",
+      "long_desc": "Moderate NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#eab308",
+      "full_desc": "Moderate transfers (~1 Gb/s); well within NVMe capabilities."
+    },
+    {
+      "min_value": 5000,
+      "default_desc": "High",
+      "short_desc": "High",
+      "long_desc": "High NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#f97316",
+      "full_desc": "High throughput (5+ Gb/s); typical of sustained workloads."
+    },
+    {
+      "min_value": 10000,
+      "default_desc": "Very High",
+      "short_desc": "V High",
+      "long_desc": "Very High NVMe Activity",
+      "icon": "mdi:progress-download",
+      "color": "#dc2626",
+      "full_desc": "Extreme NVMe bandwidth (>10 Gb/s); near saturation of PCIe lanes."
+    }
+  ]
+} %}
+
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}

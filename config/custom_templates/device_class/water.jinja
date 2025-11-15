@@ -1,0 +1,184 @@
+{# ======================================================================
+  Device class: water
+  Apps:
+    - default : absolute water volume over a period (chunk/interval)
+    - daily   : TOTAL WATER PER DAY (utility meter daily rollup)
+
+  Notes:
+    - Matching uses lookup_unit "m³". Your u_convert will normalize L, gal, ft³, and CCF.
+====================================================================== #}
+
+{% set lookup_unit = "m³" %}
+
+{% set levels = {
+    "default": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Volume reading unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No reading from water meter.",
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"None",
+            "short_desc":"None",
+            "long_desc":"No consumption",
+            "icon":"mdi:water-off",
+            "color":"#9ca3af",
+            "full_desc":"No volume recorded.",
+        },
+        {
+            "min_value": 0.02,
+            "default_desc":"Very Low",
+            "short_desc":"V Low",
+            "long_desc":"Very low usage",
+            "icon":"mdi:water-percent",
+            "color":"#84cc16",
+            "full_desc":"Small draw or brief rinse.",
+        },
+        {
+            "min_value": 0.05,
+            "default_desc":"Low",
+            "short_desc":"Low",
+            "long_desc":"Low usage",
+            "icon":"mdi:water",
+            "color":"#facc15",
+            "full_desc":"Short cycle or quick wash.",
+        },
+        {
+            "min_value": 0.10,
+            "default_desc":"Moderate",
+            "short_desc":"Mod",
+            "long_desc":"Moderate usage",
+            "icon":"mdi:water",
+            "color":"#f59e0b",
+            "full_desc":"Shower or small load.",
+        },
+        {
+            "min_value": 0.20,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High usage",
+            "icon":"mdi:water",
+            "color":"#fb923c",
+            "full_desc":"Appliance cycle or bath.",
+        },
+        {
+            "min_value": 0.50,
+            "default_desc":"Very High",
+            "short_desc":"V High",
+            "long_desc":"Very high usage",
+            "icon":"mdi:sprinkler",
+            "color":"#ef4444",
+            "full_desc":"Yard watering.",
+        },
+        {
+            "min_value": 1.00,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extremely high",
+            "icon":"mdi:alert",
+            "color":"#dc2626",
+            "full_desc":"Likely abnormal for interval.",
+        },
+        {
+            "min_value": 2.00,
+            "default_desc":"Massive",
+            "short_desc":"Massive",
+            "long_desc":"Massive volume",
+            "icon":"mdi:alert",
+            "color":"#7c3aed",
+            "full_desc":"Investigate immediately.",
+        }
+    ],
+    "daily": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Daily total unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No daily total reported.",
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"None",
+            "short_desc":"None",
+            "long_desc":"No daily use",
+            "icon":"mdi:water-off",
+            "color":"#9ca3af",
+            "full_desc":"Zero m³ today.",
+        },
+        {
+            "min_value": 0.10,
+            "default_desc":"Very Low",
+            "short_desc":"V Low",
+            "long_desc":"Very low daily use",
+            "icon":"mdi:water-percent",
+            "color":"#84cc16",
+            "full_desc":"Single-person light day.",
+        },
+        {
+            "min_value": 0.30,
+            "default_desc":"Low",
+            "short_desc":"Low",
+            "long_desc":"Low daily use",
+            "icon":"mdi:water",
+            "color":"#facc15",
+            "full_desc":"Efficient household.",
+        },
+        {
+            "min_value": 0.57,
+            "default_desc":"Moderate",
+            "short_desc":"Mod",
+            "long_desc":"Typical daily use",
+            "icon":"mdi:water",
+            "color":"#f59e0b",
+            "full_desc":"Average family day.",
+        },
+        {
+            "min_value": 1.14,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High daily use",
+            "icon":"mdi:water",
+            "color":"#fb923c",
+            "full_desc":"Laundry, showers, dishes.",
+        },
+        {
+            "min_value": 2.27,
+            "default_desc":"Very High",
+            "short_desc":"V High",
+            "long_desc":"Very high daily use",
+            "icon":"mdi:sprinkler",
+            "color":"#ef4444",
+            "full_desc":"Irrigation or filling pool.",
+        },
+        {
+            "min_value": 3.79,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extremely high",
+            "icon":"mdi:alert",
+            "color":"#dc2626",
+            "full_desc":"Likely leak or abnormal.",
+        },
+        {
+            "min_value": 7.57,
+            "default_desc":"Massive",
+            "short_desc":"Massive",
+            "long_desc":"Massive daily total",
+            "icon":"mdi:alert",
+            "color":"#7c3aed",
+            "full_desc":"Investigate immediately.",
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

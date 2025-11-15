@@ -1,0 +1,922 @@
+# ===============================
+# Agromonitoring soil sensors
+# ===============================
+- sensor:
+    - name: Soil Temperature at 10cm
+      unique_id: soil_temp_10cm
+      unit_of_measurement: "°F"
+      device_class: temperature
+      state_class: measurement
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t10') is not none }}"
+      state: >-
+        {% from "units/base.jinja" import u_convert_value %}
+        {{ u_convert_value(state_attr('sensor.agromonitoring','t10'),'k','f') }}
+
+    - name: Soil Moisture
+      unique_id: soil_moisture
+      unit_of_measurement: "%"
+      device_class: moisture
+      state_class: measurement
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','moisture') is not none }}"
+      state: >-
+        {{ state_attr('sensor.agromonitoring','moisture') | float(0) * 100 }}
+
+    - name: Soil Surface Temperature
+      unique_id: soil_surface_temp
+      unit_of_measurement: "°F"
+      device_class: temperature
+      state_class: measurement
+      availability: "{{ has_value('sensor.agromonitoring') and state_attr('sensor.agromonitoring','t0') is not none }}"
+      state: >-
+        {% from "units/base.jinja" import u_convert_value %}
+        {{ u_convert_value(state_attr('sensor.agromonitoring','t0'),'k','f') }}
+
+# ===============================
+# RV connectivity pulse
+# ===============================
+- binary_sensor:
+    - name: RV Online
+      unique_id: rv_online
+      device_class: connectivity
+      availability: "{{ has_value('sensor.rv_last_seen') }}"
+      state: "{{ has_value('sensor.rv_last_seen') }}"
+      delay_off: "00:02:00"
+
+# ===============================
+# Sunny outside (debounced)
+# ===============================
+- binary_sensor:
+    - name: Sunny
+      unique_id: sunny_outside
+      device_class: light
+      delay_on: "00:05:00"
+      delay_off: "00:05:00"
+      availability: >-
+        {{ has_value('sensor.light_sensor_illuminance')
+           and (state_attr('sun.sun','elevation') | float(none)) is not none }}
+      state: >-
+        {% set elev = state_attr('sun.sun','elevation') | float(0) %}
+        {% set ill = states('sensor.light_sensor_illuminance') | float(0) %}
+        {{ elev > 3 and ill > 500 }}
+
+# ===============================
+# Windy outside
+# ===============================
+- binary_sensor:
+    - name: Windy
+      unique_id: 09f555b3-446b-4f32-8641-62c95e9669a6
+      state: >
+        {% set gust_max = states('sensor.wind_gust_max_10m')|float(0) %}
+        {% set gust_now = states('sensor.wind_gust_mph')|float(0) %}
+        {% set mean_5m  = states('sensor.wind_speed_mean_5m')|float(0) %}
+        {% set wind_dir = states('sensor.home_wind_direction')|float(0) %}
+        {% set door_dir = states('input_number.garage_azimuth')|float(180) %}
+        {% set angle = (((wind_dir - door_dir + 180) % 360 - 180)|abs) %}
+        {% set aligned = angle <= 60 %}
+        {% set on_cond  = gust_max >= 16 or (mean_5m >= 12 and gust_now >= 14) %}
+        {% set off_cond = gust_max < 12 and mean_5m < 9 %}
+        {% if this.state == 'on' %}
+          {{ aligned and not off_cond }}
+        {% else %}
+          {{ aligned and on_cond }}
+        {% endif %}
+      delay_on: "00:02:00"
+      delay_off: "00:10:00"
+      icon: "{{ 'mdi:leaf-off' if is_state(this.entity_id,'on') else 'mdi:leaf' }}"
+
+# ===============================
+# Daytime/Evening without now()
+# ===============================
+- trigger:
+    - platform: state
+      entity_id:
+        - schedule.daytime
+        - schedule.evening
+        - input_boolean.daytime_override
+        - calendar.holidays_in_united_states
+    - platform: time
+      at: "06:30:00"
+    - platform: time
+      at: "18:30:00"
+    - platform: time
+      at: "20:30:00"
+    - platform: time
+      at: "00:01:00"
+
+  variables:
+    daytime: "{{ states('schedule.daytime') }}"
+    evening: "{{ states('schedule.evening') }}"
+    override: "{{ states('input_boolean.daytime_override') }}"
+    is_holiday: "{{ states('calendar.holidays_in_united_states') }}"
+
+    # Time strings (safe for lexicographic compare)
+    t0630: "06:30:00"
+    t1830: "18:30:00"
+    t2030: "20:30:00"
+    hhmmss: "{{ now().strftime('%H:%M:%S') }}"
+
+    # Derived flags using string comparison
+    in_holiday_window: "{{ hhmmss >= t0630 and hhmmss < t2030 }}"
+    late: "{{ hhmmss >= t1830 }}"
+
+  binary_sensor:
+    - name: Daytime
+      unique_id: daytime_sensor
+      device_class: running
+      state: >-
+        {% set normal_daytime = (daytime == 'on') and (is_holiday != 'on') %}
+        {% set holiday_daytime = (is_holiday == 'on') and (in_holiday_window | bool) %}
+        {% set no_late_override = not ((override == 'on') and (late | bool)) %}
+        {% set special_override = (evening != 'on') and (override == 'on') and not (late | bool) %}
+        {{ special_override or ((normal_daytime or holiday_daytime) and no_late_override) }}
+
+    - name: Evening
+      unique_id: evening_sensor
+      device_class: running
+      state: >-
+        {{ (evening == 'on') or ((override == 'on') and (late | bool)) }}
+
+# ===============================
+# Humidity Ratio
+# ===============================
+- sensor:
+    - name: Humidity Ratio
+      unique_id: humidity_ratio
+      availability: "{{ has_value('sensor.outdoor_thermometer_humidity') and has_value('sensor.downstairs_thermostat_current_humidity') }}"
+      state: >-
+        {% set a = states('sensor.outdoor_thermometer_humidity') | float(0) %}
+        {% set b = states('sensor.downstairs_thermostat_current_humidity') | float(0) %}
+        {{ (a / b) if b > 0 else none }}
+
+# ===============================
+# Hot Inside / Hot In Study
+# ===============================
+- binary_sensor:
+    - name: Hot Inside
+      unique_id: hot_inside
+      device_class: heat
+      delay_on: "00:15:00"
+      delay_off: "00:15:00"
+      availability: >-
+        {{ has_value('input_number.downstairs_temperature')
+            and has_value('sensor.outside_temperature_state')
+            and state_attr('climate.downstairs_thermostat','current_temperature') is not none
+            and state_attr('climate.upstairs_thermostat','current_temperature') is not none }}
+      state: >-
+        {% set downstairs = state_attr('climate.downstairs_thermostat','current_temperature') | float(0) %}
+        {% set upstairs   = state_attr('climate.upstairs_thermostat','current_temperature')   | float(0) %}
+        {% set target     = states('input_number.downstairs_temperature') | float(0) %}
+        {% set outdoor    = states('sensor.outside_temperature_state') | float(0) %}
+        {{ (downstairs - target > 1 and upstairs - target > 2) or (outdoor > downstairs) }}
+
+    - name: Hot In Study
+      unique_id: hot_in_study
+      device_class: heat
+      delay_on: "00:15:00"
+      delay_off: "00:15:00"
+      availability: >-
+        {{ has_value('sensor.study_thermometer_temperature')
+            and has_value('sensor.outside_temperature_state')
+            and has_value('input_number.downstairs_temperature') }}
+      state: >-
+        {% set temp         = states('sensor.study_thermometer_temperature') | float(0) %}
+        {% set outside_temp = states('sensor.outside_temperature_state') | float(0) %}
+        {% set target_temp  = states('input_number.downstairs_temperature') | float(0) %}
+        {{ temp > target_temp + 1 or outside_temp > temp }}
+
+# ===============================
+# Presence delays
+# ===============================
+- binary_sensor:
+    - name: Eleanor Presence Delay
+      unique_id: eleanor_presence_delay
+      device_class: presence
+      delay_off: "01:00:00"
+      availability: "{{ has_value('binary_sensor.eleanor_presence_presence_information') }}"
+      state: "{{ is_state('binary_sensor.eleanor_presence_presence_information','on') }}"
+
+    - name: Michael Presence Delay
+      unique_id: michael_presence_delay
+      device_class: presence
+      delay_off: "01:00:00"
+      availability: "{{ has_value('binary_sensor.michael_presence_presence_information') }}"
+      state: "{{ is_state('binary_sensor.michael_presence_presence_information','on') }}"
+
+    - name: Guest Bedroom Presence Delay
+      unique_id: guest_bedroom_presence_delay
+      device_class: presence
+      delay_off: "01:00:00"
+      availability: "{{ has_value('binary_sensor.guest_bedroom_presence_presence_sensor_1') }}"
+      state: "{{ is_state('binary_sensor.guest_bedroom_presence_presence_sensor_1','on') }}"
+
+# ===============================
+# Dehumidifier with power attribute
+# ===============================
+- binary_sensor:
+    - name: Living Room Dehumidifier
+      unique_id: living_room_dehumidifier
+      device_class: running
+      availability: "{{ has_value('switch.living_room_dehumidifier') and has_value('sensor.living_room_dehumidifier_power') }}"
+      state: "{{ is_state('switch.living_room_dehumidifier','on') }}"
+      attributes:
+        power: "{{ states('sensor.living_room_dehumidifier_power') | float(0) }}"
+
+- sensor:
+    - name: "Humidifier Humidity State"
+      unique_id: 622849dd-366f-4b63-b903-478501e28c6b
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+      availability: "{{ has_value('sensor.humidifier_humidity') or has_value('sensor.parlor_thermometer_humidity') }}"
+      state: >-
+        {% set h1 = states('sensor.humidifier_humidity') | float(none) %}
+        {% set h2 = states('sensor.parlor_thermometer_humidity') | float(none) %}
+        {{ h1 or h2 }}
+
+# ===============================
+# Before School Time
+# ===============================
+- trigger:
+    # Edges of the window
+    - platform: time
+      at: "06:00:00"     # window opens
+    - platform: time
+      at: "08:15:00"     # window closes
+    # Recompute month/weekday each day (covers holidays/summer break, etc.)
+    - platform: time
+      at: "00:02:00"
+    # OPTIONAL but recommended: set correct state after a restart
+    - platform: homeassistant
+      event: start
+
+  binary_sensor:
+    - name: Before School Time
+      unique_id: before_school_time
+      device_class: running
+      state: >-
+        {% set m = now().month %}
+        {% set wd = now().weekday() %}  {# Mon=0..Sun=6 #}
+        {% set school_year = (m <= 6) or (m >= 9) %}
+        {% set is_weekday  = wd <= 4 %}
+        {% set in_window = today_at('06:00:00') <= now() <= today_at('08:15:00') %}
+        {{ school_year and is_weekday and in_window }}
+
+# ===============================
+# Sensor Problems
+# ===============================
+- trigger:
+    - platform: time_pattern
+      hours: "/3"
+  variables:
+    problem_list: >-
+      {% set sensors = [
+        "sensor.acurite_tower_a_11075_temperature",
+        "sensor.ambientweather_wh31e_1_167_temperature",
+        "sensor.water_barrel_fill_level",
+        "light.chicken_coop_light",
+        "sensor.outside_brightness",
+        "sensor.light_sensor_illuminance",
+        "binary_sensor.rain_sensor_moisture",
+      ] %}
+      {% set ns = namespace(data=[]) %}
+      {% for s in sensors %}
+        {% if not has_value(s) %}
+          {% set ns.data = ns.data + [s] %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.data }}
+  binary_sensor:
+    - name: Sensor Problems
+      unique_id: sensor_problems
+      device_class: problem
+      state: "{{ 'on' if problem_list | count > 0 else 'off' }}"
+      attributes:
+        problems: "{{ problem_list }}"
+
+# ===============================
+# Dark Outside
+# ===============================
+- binary_sensor:
+    - name: Dark Outside
+      unique_id: dark_outside
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      delay_off: "00:05:00"
+      state: >-
+        {% set ill = states('sensor.light_sensor_illuminance') | float(default=none) %}
+        {% if ill is not none %}
+          {% set was_dark = is_state('binary_sensor.dark_outside', 'on') %}
+          {{ ill < 30 or (was_dark and ill < 150) }}
+        {% else %}
+          false
+        {% endif %}
+
+# ===============================
+# Kinda Dark Outside
+# ===============================
+- binary_sensor:
+    - name: Darkish Outside
+      unique_id: darkish_outside
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      delay_off: "00:05:00"
+      state: >-
+        {{ states('sensor.light_sensor_illuminance')|float < 300 }}
+
+# -----------------------------
+# Living Room Illuminance State
+# -----------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.everything_presence_one_6dbad0_illuminance
+    - platform: time_pattern
+      minutes: "/5"          # periodic refresh for staleness check
+  variables:
+    src: sensor.everything_presence_one_6dbad0_illuminance
+    keep_sec: 1800           # consider cached value valid for 30 minutes
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Living Room Illuminance State
+      unique_id: living_room_illuminance_state
+      device_class: illuminance
+      unit_of_measurement: lx
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# -----------------------------
+# Outside Temperature State
+# -----------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.acurite_tower_a_11075_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.acurite_tower_a_11075_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Outside Temperature State
+      unique_id: outside_temperature_state
+      device_class: temperature
+      unit_of_measurement: "°F"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# ---------------------------
+# Outside Humidity State
+# ---------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.acurite_tower_a_11075_humidity
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.acurite_tower_a_11075_humidity
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Outside Humidity State
+      unique_id: outside_humidity_state
+      device_class: humidity
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# -----------------------------------
+# Outside Water Temperature State
+# -----------------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.outside_water_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Outside Water Temperature State
+      unique_id: outside_water_temperature_state
+      device_class: temperature
+      unit_of_measurement: "°F"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# -------------------------------
+# Outside Water Humidity State
+# -------------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.outside_water_humidity
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_humidity
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Outside Water Humidity State
+      unique_id: outside_water_humidity_state
+      device_class: humidity
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# ------------------------------
+# Outside Water Pressure State
+# ------------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.outside_water_pressure
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.outside_water_pressure
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Outside Water Pressure State
+      unique_id: outside_water_pressure_state
+      device_class: pressure
+      unit_of_measurement: "psi"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# ------------------------------------
+# Chicken Coop Temperature State
+# ------------------------------------
+- trigger:
+    - platform: state
+      entity_id: sensor.chicken_coop_thermometer_temperature
+    - platform: time_pattern
+      minutes: "/5"
+  variables:
+    src: sensor.chicken_coop_thermometer_temperature
+    keep_sec: 1800
+    age_sec: >-
+      {% set s = states[src] %}
+      {{ (now() - (s.last_updated or s.last_changed)).total_seconds() if s is not none else 999999 }}
+    raw: "{{ states(src) }}"
+    val: "{{ raw | float(default=none) }}"
+  sensor:
+    - name: Chicken Coop Temperature State
+      unique_id: chicken_coop_temperature_state
+      device_class: temperature
+      unit_of_measurement: "°F"
+      state_class: measurement
+      availability: >-
+        {{ has_value(src) or (has_value(this.entity_id) and age_sec <= keep_sec) }}
+      state: >-
+        {{ this.state if val is none else val }}
+
+# ===============================
+# Deco AP statuses (non-triggered)
+# ===============================
+- binary_sensor:
+    - name: Roof AP
+      unique_id: roof_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.roof_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.roof_deco','internet_online') is true }}"
+
+    - name: Gym AP
+      unique_id: gym_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.gym_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.gym_deco','internet_online') is true }}"
+
+    - name: Hallway AP
+      unique_id: hallway_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.hallway_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.hallway_deco','internet_online') is true }}"
+
+    - name: Study AP
+      unique_id: study_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.study_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.study_deco','internet_online') is true }}"
+
+    - name: Living Room AP
+      unique_id: living_room_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.living_room_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.living_room_deco','internet_online') is true }}"
+
+    - name: Playroom AP
+      unique_id: playroom_ap
+      device_class: connectivity
+      availability: "{{ state_attr('device_tracker.playroom_deco','internet_online') is not none }}"
+      state: "{{ state_attr('device_tracker.playroom_deco','internet_online') is true }}"
+
+# ===================================
+# Outside Brightness estimator (non-triggered)
+# ===================================
+- sensor:
+    - name: Outside Brightness
+      unique_id: outside_brightness
+      unit_of_measurement: "lm/W"
+      state_class: measurement
+      icon: mdi:brightness-5
+      availability: "{{ has_value('sensor.light_sensor_illuminance') }}"
+      state: >-
+        {{ (states('sensor.light_sensor_illuminance')|float(0))
+           / ([states('sensor.brightness_publisher_solar_irradiance')|float(0), 1]|max) }}
+
+# ===================================
+# Platform battery select and level (non-triggered)
+# ===================================
+- select:
+    - name: Platform Battery State
+      unique_id: platform_battery_state
+      availability: "{{ has_value('sensor.platform_battery_monitor_voltmeter') }}"
+      state: >-
+        {% set v = states('sensor.platform_battery_monitor_voltmeter')|float(0) %}
+        {% if v > 13 %} charging
+        {% elif v < 12 %} needs charging
+        {% else %} discharging
+        {% endif %}
+      options: "['charging','needs charging','discharging']"
+      select_option: []
+
+- sensor:
+    - name: Platform Battery Level
+      unique_id: platform_battery_level
+      device_class: battery
+      unit_of_measurement: "%"
+      availability: "{{ has_value('sensor.platform_battery_monitor_voltmeter') }}"
+      state: >-
+        {% set v = states('sensor.platform_battery_monitor_voltmeter')|float(0) %}
+        {{ 22.6757 * v**2 - 476.19 * v + 2500 }}
+
+# ===================================
+# Home/Person/RV lat/lon helpers (non-triggered)
+# ===================================
+- sensor:
+    - name: Home Latitude
+      unique_id: home_latitude
+      icon: mdi:home-map-marker
+      availability: "{{ state_attr('zone.home','latitude') is not none }}"
+      state: "{{ state_attr('zone.home','latitude') | float(0) }}"
+
+    - name: Home Longitude
+      unique_id: home_longitude
+      icon: mdi:home-map-marker
+      availability: "{{ state_attr('zone.home','longitude') is not none }}"
+      state: "{{ state_attr('zone.home','longitude') | float(0) }}"
+
+    - name: Aaron Latitude
+      unique_id: aaron_latitude
+      icon: mdi:account
+      availability: "{{ state_attr('person.aaron_watson','latitude') is not none }}"
+      state: "{{ state_attr('person.aaron_watson','latitude') | float(0) }}"
+
+    - name: Aaron Longitude
+      unique_id: aaron_longitude
+      icon: mdi:account
+      availability: "{{ state_attr('person.aaron_watson','longitude') is not none }}"
+      state: "{{ state_attr('person.aaron_watson','longitude') | float(0) }}"
+
+    - name: RV Latitude
+      unique_id: rv_latitude
+      icon: mdi:van-passenger
+      availability: "{{ state_attr('device_tracker.rv_device_tracker','latitude') is not none }}"
+      state: "{{ state_attr('device_tracker.rv_device_tracker','latitude') | float(0) }}"
+
+    - name: RV Longitude
+      unique_id: rv_longitude
+      icon: mdi:van-passenger
+      availability: "{{ state_attr('device_tracker.rv_device_tracker','longitude') is not none }}"
+      state: "{{ state_attr('device_tracker.rv_device_tracker','longitude') | float(0) }}"
+
+# ===================================
+# Brightness from lights (non-triggered)
+# ===================================
+- sensor:
+    - name: Chicken Coop Light Brightness
+      unique_id: chicken_coop_light_brightness
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: "{{ has_value('light.chicken_coop_light') }}"
+      state: "{{ (state_attr('light.chicken_coop_light','brightness') | float(0)) * 100 / 255 }}"
+
+    - name: Dining Room Brightness
+      unique_id: dining_room_brightness
+      unit_of_measurement: "%"
+      state_class: measurement
+      availability: "{{ has_value('light.dining_room_light') }}"
+      state: "{{ (state_attr('light.dining_room_light','brightness') | float(0)) * 100 / 255 }}"
+
+# ===================================
+# Mains Current (non-triggered)
+# ===================================
+- sensor:
+    - name: Mains Current
+      unique_id: mains_current
+      device_class: current
+      unit_of_measurement: A
+      state_class: measurement
+      availability: "{{ has_value('sensor.none_123_1min') }}"
+      state: "{{ (states('sensor.none_123_1min') | float(0)) / 240 }}"
+
+# ===============================
+# Updates Available (triggered)
+# ===============================
+- trigger:
+    - platform: time_pattern
+      minutes: "/5"
+  binary_sensor:
+    - name: Updates Available
+      unique_id: updates_available
+      device_class: update
+      state: >-
+        {{ expand(states) | selectattr('domain','eq','update')
+           | selectattr('state','eq','on') | list | count > 0 }}
+
+# ===============================
+# Rain probe “fresh” pulse (triggered)
+# ===============================
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.rain_sensor_moisture
+  binary_sensor:
+    - name: Rain Probe Fresh
+      unique_id: rain_probe_fresh
+      icon: mdi:timer-sand
+      device_class: connectivity
+      availability: "{{ has_value('binary_sensor.rain_sensor_moisture') }}"
+      state: "{{ trigger.platform == 'state' }}"
+      delay_off: "00:30:00"
+
+# ===============================
+# Rainy (non-triggered; uses pulse + weather/sunny)
+# ===============================
+- binary_sensor:
+    - name: Rainy
+      unique_id: rainy
+      device_class: moisture
+      icon: "{{ 'mdi:weather-pouring' if is_state(this.entity_id,'on') else 'mdi:weather-partly-cloudy' }}"
+      availability: >-
+        {{ has_value('binary_sensor.rain_sensor_moisture')
+           or has_value('binary_sensor.sunny')
+           or has_value('weather.openmeteo_weather_home') }}
+      state: >-
+        {% set probe_ok = has_value('binary_sensor.rain_sensor_moisture')
+                           and is_state('binary_sensor.rain_probe_fresh','on') %}
+        {% if probe_ok %}
+          {{ is_state('binary_sensor.rain_sensor_moisture','on') }}
+        {% else %}
+          {% set rainy_states = ['rainy','pouring','lightning-rainy'] %}
+          {{ (not is_state('binary_sensor.sunny','on')) and (states('weather.openmeteo_weather_home') in rainy_states) }}
+        {% endif %}
+      delay_on: "00:00:30"
+      delay_off: "00:05:00"
+      attributes:
+        source_used: "{{ 'moisture_sensor' if (has_value('binary_sensor.rain_sensor_moisture') and is_state('binary_sensor.rain_probe_fresh','on')) else 'fallback_weather_sunny' }}"
+        probe_last_changed: >-
+          {% if states.binary_sensor.rain_sensor_moisture is defined %}
+            {{ states.binary_sensor.rain_sensor_moisture.last_changed }}
+          {% else %} none {% endif %}
+        weather_state: "{{ states('weather.forecast_home') }}"
+
+# ===============================
+# Mold Status and Upstairs HVAC action
+# ===============================
+- select:
+    - name: Mold Status
+      unique_id: mold_status
+      availability: "{{ has_value('sensor.mold_indicator') }}"
+      state: >-
+        {% set s = states('sensor.mold_indicator') | float(0) %}
+        {{ 'OK' if s < 70 else 'High' if s < 100 else 'Wet' }}
+      options: "['OK','High','Wet']"
+      select_option: []
+
+    - name: Upstairs HVAC Action
+      unique_id: upstairs_hvac_action
+      availability: "{{ has_value('climate.upstairs_thermostat') }}"
+      state: "{{ state_attr('climate.upstairs_thermostat','hvac_action') }}"
+      options: "['cooling','drying','fan_only','idle','off']"
+      select_option: []
+
+- sensor:
+    - name: Open Doors & Windows
+      unique_id: open_doors_windows
+      icon: mdi:door
+      state: >
+        {# List the friendly names, comma-separated, or "None" #}
+        {% set open = states.binary_sensor
+            | selectattr('attributes.device_class','in',['door','window'])
+            | selectattr('state','eq','on')
+            | sort(attribute='name') | list %}
+        {% if open | count == 0 %}All closed
+        {% else %}{{ open | map(attribute='name') | list | join(', ') }}{% endif %}
+      attributes:
+        count: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on') | list %}
+          {{ open | count }}
+        names: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on')
+              | sort(attribute='name') | list %}
+          {{ open | map(attribute='name') | list }}
+        entity_ids: >
+          {% set open = states.binary_sensor
+              | selectattr('attributes.device_class','in',['door','window'])
+              | selectattr('state','eq','on')
+              | sort(attribute='name') | list %}
+          {{ open | map(attribute='entity_id') | list }}
+
+- binary_sensor:
+    - name: Any Door/Window Open
+      unique_id: any_door_window_open
+      device_class: opening
+      state: >
+        {{ (state_attr('sensor.open_doors_windows','count') | int(0)) > 0 }}
+
+- binary_sensor:
+    - name: Smoke Any
+      unique_id: smoke_any
+      state: >
+        {{
+          states.binary_sensor
+            | selectattr('entity_id','match','^binary_sensor\\.nest_protect_.*_smoke_status$')
+            | selectattr('state','eq','on') | list | count > 0
+        }}
+      device_class: smoke
+    - name: CO Any
+      unique_id: co_any
+      state: >
+        {{
+          states.binary_sensor
+            | selectattr('entity_id','match','^binary_sensor\\.nest_protect_.*_co_status$')
+            | selectattr('state','eq','on') | list | count > 0
+        }}
+      device_class: carbon_monoxide
+
+- sensor:
+    - name: People Home Count
+      unique_id: people_home_count
+      state: >
+        {{
+          [
+            is_state('person.aaron_watson','home'),
+            is_state('person.ashley_watson','home'),
+            is_state('person.eleanor_watson','home'),
+            is_state('person.michael_watson','home')
+          ] | select('equalto', true) | list | count
+        }}
+
+# ===================== Composite Location (Pixel + Work iPhone) =====================
+# Put in a package or templates dir. Adjust entity ids at top.
+- trigger:
+    - platform: state
+      entity_id:
+        - device_tracker.pixel_9_pro_xl
+        - device_tracker.aaron_work_phone
+    - platform: homeassistant
+      event: start
+  variables:
+    ent_pixel: device_tracker.pixel_9_pro_xl
+    ent_iphone: device_tracker.aaron_work_phone
+    pixel: >-
+      {%- set s   = states(ent_pixel) -%}
+      {%- set lat = state_attr(ent_pixel,'latitude') -%}
+      {%- set lon = state_attr(ent_pixel,'longitude') -%}
+      {%- set acc = state_attr(ent_pixel,'gps_accuracy') -%}
+      {%- set ts  = (states[ent_pixel].last_updated | as_timestamp) -%}
+      {%- set age_m = ((now()|as_timestamp) - ts) / 60 if ts else 9e9 -%}
+      {%- set valid = (s not in ['unknown','unavailable'])
+                      and ((lat|float(none)) is not none)
+                      and ((lon|float(none)) is not none)
+                      and ((acc|float(none)) is not none)
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
+      {%- set acc_f = acc | float(9999) -%}
+      {%- set score = (
+            (50 if valid else 0) +
+            (max(0, 30 - min(30, age_m))) +
+            (max(0, 20 - min(20, (acc_f / 2))))
+          ) -%}
+      {{ {'entity': ent_pixel, 'state': s, 'lat': (lat|float(none)), 'lon': (lon|float(none)),
+          'acc': (acc|float(none)), 'age_m': age_m, 'valid': valid, 'score': score} }}
+    iphone: >-
+      {%- set s   = states(ent_iphone) -%}
+      {%- set lat = state_attr(ent_iphone,'latitude') -%}
+      {%- set lon = state_attr(ent_iphone,'longitude') -%}
+      {%- set acc = state_attr(ent_iphone,'gps_accuracy') -%}
+      {%- set ts  = (states[ent_iphone].last_updated | as_timestamp) -%}
+      {%- set age_m = ((now()|as_timestamp) - ts) / 60 if ts else 9e9 -%}
+      {%- set valid = (s not in ['unknown','unavailable'])
+                      and ((lat|float(none)) is not none)
+                      and ((lon|float(none)) is not none)
+                      and ((acc|float(none)) is not none)
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
+      {%- set acc_f = acc | float(9999) -%}
+      {%- set score = (
+            (50 if valid else 0) +
+            (max(0, 30 - min(30, age_m))) +
+            (max(0, 20 - min(20, (acc_f / 2))))
+          ) -%}
+      {{ {'entity': ent_iphone, 'state': s, 'lat': (lat|float(none)), 'lon': (lon|float(none)),
+          'acc': (acc|float(none)), 'age_m': age_m, 'valid': valid, 'score': score} }}
+    best: >-
+      {%- if is_state(ent_pixel,'home') and not is_state(ent_iphone,'home') -%}
+        {{ iphone }}
+      {%- elif is_state(ent_iphone,'home') and not is_state(ent_pixel,'home') -%}
+        {{ pixel }}
+      {%- elif pixel.valid and not iphone.valid -%}
+        {{ pixel }}
+      {%- elif iphone.valid and not pixel.valid -%}
+        {{ iphone }}
+      {%- elif pixel.valid and iphone.valid -%}
+        {{ pixel if (pixel.score | float(0)) >= (iphone.score | float(0)) else iphone }}
+      {%- else -%}
+        {{ {'entity': none, 'state': 'unknown', 'lat': none, 'lon': none,
+            'acc': none, 'age_m': 9e9, 'valid': false, 'score': 0} }}
+      {%- endif -%}
+
+  sensor:
+    - name: Aaron Composite Location
+      unique_id: aaron_composite_location
+      icon: mdi:account
+      availability: "{{ best.valid }}"
+      state: "{{ best.state if best.state is string else 'unknown' }}"
+      attributes:
+        source_entity: "{{ best.entity }}"
+        latitude: "{{ best.lat }}"
+        longitude: "{{ best.lon }}"
+        gps_accuracy: "{{ best.acc }}"
+        age_minutes: "{{ (best.age_m | float(0) | round(1)) if (best.age_m|float(none)) is not none else none }}"
+        pixel_score: "{{ pixel.score }}"
+        iphone_score: "{{ iphone.score }}"
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.user_context
+        - sensor.outside_temperature_state
+        - sensor.nearby_temperature
+        - sensor.outside_humidity_state
+        - sensor.nearby_humidity
+  variables:
+    at_home: "{{ is_state('sensor.user_context', 'home') }}"
+    temp_src: "{{ 'sensor.outside_temperature_state' if (at_home | bool) else 'sensor.nearby_temperature' }}"
+    humid_src: "{{ 'sensor.outside_humidity_state' if (at_home | bool) else 'sensor.nearby_humidity' }}"
+    temp_val: "{{ states(temp_src) | float(none) }}"
+    humid_val: "{{ states(humid_src) | float(none) }}"
+  sensor:
+    - name: Local Temperature
+      unique_id: current_location_temperature
+      device_class: temperature
+      unit_of_measurement: "°F"
+      availability: "{{ (temp_val | float(none)) is not none }}"
+      state: "{{ temp_val | float }}"
+    - name: Local Humidity
+      unique_id: current_location_humidity
+      device_class: humidity
+      unit_of_measurement: "%"
+      availability: "{{ (humid_val | float(none)) is not none }}"
+      state: "{{ humid_val | float }}"

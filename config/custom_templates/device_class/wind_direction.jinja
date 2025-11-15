@@ -1,0 +1,143 @@
+{# Severity definitions for wind direction #}
+{# Device: Compass heading of wind #}
+{# Typical applications: Compass octants, quadrants #}
+
+{% set lookup_unit = "°" %}
+{% set levels = {
+    "compass_octants": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "N",
+            "short_desc": "N",
+            "long_desc": "North",
+            "icon": "mdi:compass-outline",
+            "color": "#22c55e",
+            "full_desc": "Heading within 0–22.5 and 337.5–360."
+        },
+        {
+            "min_value": 22.5,
+            "default_desc": "NE",
+            "short_desc": "NE",
+            "long_desc": "Northeast",
+            "icon": "mdi:compass-outline",
+            "color": "#10b981",
+            "full_desc": "22.5–67.5."
+        },
+        {
+            "min_value": 67.5,
+            "default_desc": "E",
+            "short_desc": "E",
+            "long_desc": "East",
+            "icon": "mdi:compass-outline",
+            "color": "#eab308",
+            "full_desc": "67.5–112.5."
+        },
+        {
+            "min_value": 112.5,
+            "default_desc": "SE",
+            "short_desc": "SE",
+            "long_desc": "Southeast",
+            "icon": "mdi:compass-outline",
+            "color": "#22c55e",
+            "full_desc": "112.5–157.5."
+        },
+        {
+            "min_value": 157.5,
+            "default_desc": "S",
+            "short_desc": "S",
+            "long_desc": "South",
+            "icon": "mdi:compass-outline",
+            "color": "#10b981",
+            "full_desc": "157.5–202.5."
+        },
+        {
+            "min_value": 202.5,
+            "default_desc": "SW",
+            "short_desc": "SW",
+            "long_desc": "Southwest",
+            "icon": "mdi:compass-outline",
+            "color": "#eab308",
+            "full_desc": "202.5–247.5."
+        },
+        {
+            "min_value": 247.5,
+            "default_desc": "W",
+            "short_desc": "W",
+            "long_desc": "West",
+            "icon": "mdi:compass-outline",
+            "color": "#22c55e",
+            "full_desc": "247.5–292.5."
+        },
+        {
+            "min_value": 292.5,
+            "default_desc": "NW",
+            "short_desc": "NW",
+            "long_desc": "Northwest",
+            "icon": "mdi:compass-outline",
+            "color": "#10b981",
+            "full_desc": "292.5–337.5."
+        }
+    ],
+    "cardinal_quadrants": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "N",
+            "short_desc": "N",
+            "long_desc": "North",
+            "icon": "mdi:arrow-up",
+            "color": "#22c55e",
+            "full_desc": "0–90 is NE quadrant."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "E",
+            "short_desc": "E",
+            "long_desc": "East",
+            "icon": "mdi:arrow-right",
+            "color": "#10b981",
+            "full_desc": "90–180 is SE quadrant."
+        },
+        {
+            "min_value": 180,
+            "default_desc": "S",
+            "short_desc": "S",
+            "long_desc": "South",
+            "icon": "mdi:arrow-down",
+            "color": "#eab308",
+            "full_desc": "180–270 is SW quadrant."
+        },
+        {
+            "min_value": 270,
+            "default_desc": "W",
+            "short_desc": "W",
+            "long_desc": "West",
+            "icon": "mdi:arrow-left",
+            "color": "#60a5fa",
+            "full_desc": "270–360 is NW quadrant."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

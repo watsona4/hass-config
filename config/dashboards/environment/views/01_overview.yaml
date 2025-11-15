@@ -1,0 +1,1332 @@
+title: Home
+type: sections
+max_columns: 2
+cards: []
+badges:
+
+  # UV protection
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.nearby_uv_protection
+    icon: mdi:shield-sun
+    color: >-
+      {% from 'metrics/uv/protection_window.jinja' import uv_badge_color %}
+      {{ uv_badge_color(entity) }}
+    content: >-
+      {% from 'metrics/uv/protection_window.jinja' import uv_badge_content %}
+      {{ uv_badge_content(entity) }}
+    tap_action:
+      action: more-info
+
+  # Air Quality
+  - type: custom:mushroom-template-badge
+    entity: sensor.waqi_nearby_aqi
+    icon: mdi:cloud
+    color: >-
+      {%- from 'main.jinja' import get_color -%}
+      {{- get_color(entity) -}}
+    content: >-
+      {%- set aqi = states(entity) | int(0) -%}
+      {{- 'AQI: ' ~ aqi ~ ' · ' ~ ('Mask Needed' if aqi > 150 else 'Consider Mask' if aqi > 100 else 'No Mask') -}}
+    tap_action:
+      action: more-info
+
+  # Weather Alerts
+  - type: custom:mushroom-template-badge
+    entity: sensor.nws_alerts_alerts
+    icon: mdi:weather-lightning
+    color: >-
+      {{- 'red' if states(entity) | int(0) > 0 else 'green' -}}
+    content: >-
+      {%- set alerts = state_attr(entity, 'Alerts') -%}
+      {{- alerts | map(attribute='Event') | join(', ') if alerts else 'No Active Alerts' -}}
+    tap_action:
+      action: more-info
+
+  # UV Index
+  - type: custom:mushroom-template-badge
+    entity: sensor.nearby_uv_index
+    icon: mdi:weather-sunny-alert
+    color: >-
+      {%- from 'main.jinja' import get_color -%}
+      {{- get_color(entity, app='uv_index') -}}
+    content: >-
+      {%- from 'main.jinja' import get_label -%}
+      {{- get_label(entity, app='uv_index') -}}
+    tap_action:
+      action: more-info
+
+  # Safe Exposure Time
+  - type: custom:mushroom-template-badge
+    entity: sensor.nearby_safe_exposure_minutes_st1
+    content: >-
+      {%- set v = states(entity) | int(0) -%}
+      {%- set h = v // 60 -%}
+      {%- set m = v % 60 -%}
+      {%- set ns = namespace(parts=[]) -%}
+      {%- if h > 0 -%}
+        {%- set ns.parts = ns.parts + [h ~ ' hour' ~ ('s' if h != 1 else '')] -%}
+      {%- endif -%}
+      {%- if m > 0 -%}
+        {%- set ns.parts = ns.parts + [m ~ ' minute' ~ ('s' if m != 1 else '')] -%}
+      {%- endif -%}
+      {%- set r = ns.parts | join(', ') -%}
+      {{- 'Safe Time: ' ~ r if has_value(entity) else 'Safe Time: —' -}}
+    icon: mdi:sun-clock
+    color: >-
+      {%- set v = states(entity) | float(none) -%}
+      {{- 'disabled' if v is none else 'green' if v >= 60 else 'yellow' if v >= 30 else 'orange' if v >= 10 else 'red' if v > 0 else 'grey' -}}
+    tap_action:
+      action: more-info
+
+  # Vitamin D
+  - type: custom:mushroom-template-badge
+    entity: sensor.nearby_uv_index
+    content: >-
+      {%- from 'metrics/uv/vitamin_d.jinja' import vitd_label -%}
+      {{- 'Vitamin D: ' ~ vitd_label(states(entity), 3) -}}
+    icon: mdi:pill
+    color: >-
+      {%- from 'metrics/uv/vitamin_d.jinja' import vitd_minutes -%}
+      {%- set r = vitd_minutes(states(entity), 3) | from_json -%}
+      {{- 'disabled' if r is none else 'green' if r.min < 5 else 'yellow' if r.max <= 20 else 'orange' if r.max <= 45 else 'blue' -}}
+    tap_action:
+      action: more-info
+
+sections:
+  - type: grid
+    column_span: 1
+    cards:
+
+      # Local Weather
+      - type: vertical-stack
+        cards:
+
+          # Local Weather
+          - type: custom:mushroom-title-card
+            title: Local Weather
+
+          # Current + Hourly Forecast
+          - type: custom:clock-weather-card
+            entity: weather.openmeteo_weather_nearby
+            show_humidity: true
+            forecast_type: hourly
+            temperature_sensor: sensor.local_temperature
+            humidity_sensor: sensor.local_humidity
+            apparent_sensor: sensor.nearby_apparent_temperature
+            aqi_sensor: sensor.waqi_nearby_aqi
+
+          # Hourly Forecast Grid
+          - type: custom:hourly-weather
+            entity: weather.openmeteo_weather_nearby
+            name: null
+            show_precipitation_amounts: true
+            show_precipitation_probability: true
+            show_wind: "true"
+            grid_options:
+              columns: 12
+              rows: 2
+
+      # RV Weather
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: rv
+          - condition: state
+            entity: binary_sensor.rv_near_home
+            state: 'off'
+        cards:
+          - type: custom:mushroom-title-card
+            title: RV Weather
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.openmeteo_weather_rv
+            forecast_type: daily
+            secondary_info_attribute: apparent_temperature
+            name: ' '
+
+      # Home Weather
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: home
+        cards:
+          - type: custom:mushroom-title-card
+            title: Home Weather
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.openmeteo_weather_home
+            forecast_type: daily
+            name: ' '
+            secondary_info_attribute: apparent_temperature
+
+  - type: grid
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # Local Pollen
+          - type: custom:mushroom-title-card
+            title: Local Pollen
+
+          # Today's Pollen Summary
+          - type: horizontal-stack
+            cards:
+
+              # Dominant Pollen Category
+              - type: custom:mushroom-template-card
+                entity: sensor.google_pollen_nearby_today
+                icon: mdi:flower-pollen-outline
+                primary: "{{- 'Dominant: ' ~ states(entity) -}}"
+                secondary: >
+                  {%- set dom_cat = state_attr(entity,'dominant_category') -%}
+                  {%- set dom_val = state_attr(entity,'dominant_value') -%}
+                  {{- (dom_cat or 'unknown') ~ ' · Index ' ~ (dom_val if dom_val is not none else '–') -}}
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                fill_container: false
+                multiline_secondary: false
+                tap_action:
+                  action: more-info
+
+              # Dominant Pollen Species
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_species_nearby_today
+                icon: mdi:sprout
+                primary: Dominant Species
+                picture: "{{- state_attr(entity, 'entity_picture') -}}"
+                secondary: "{{- states(entity) -}}"
+                tap_action:
+                  action: more-info
+
+          # Individual Pollen Categories
+          - type: horizontal-stack
+            cards:
+
+              # Grass pollen levels
+              - type: custom:mushroom-template-card
+                entity: sensor.google_pollen_nearby_today
+                icon: mdi:grass
+                primary: Grass
+                secondary: >-
+                  {%- set v = state_attr(entity,'grass_value') -%}
+                  {{- 'Index ' ~ v if v is not none else '–' -}}
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='grass_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Tree pollen levels
+              - type: custom:mushroom-template-card
+                entity: sensor.google_pollen_nearby_today
+                icon: mdi:tree
+                primary: Tree
+                secondary: >-
+                  {%- set v = state_attr(entity,'tree_value') -%}
+                  {{- 'Index ' ~ v if v is not none else '–' -}}
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='tree_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Weed pollen levels
+              - type: custom:mushroom-template-card
+                entity: sensor.google_pollen_nearby_today
+                icon: mdi:sprout
+                primary: Weed
+                secondary: >-
+                  {%- set v = state_attr(entity,'weed_value') -%}
+                  {{- 'Index ' ~ v if v is not none else '–' -}}
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='weed_value')) }}
+                tap_action:
+                  action: more-info
+
+          # Health Advice
+          - type: custom:mushroom-template-card
+            entity: sensor.google_pollen_nearby_today
+            icon: mdi:heart-pulse
+            primary: Health Advice
+            secondary: >-
+              {%- set recs = state_attr(entity,'recommendations') or [] -%}
+              {{- recs | join(' ') if recs else '—' -}}
+            multiline_secondary: true
+            icon_color: >-
+              {% from 'main.jinja' import get_color -%}
+              {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+            tap_action:
+              action: more-info
+
+          # 3-Day Pollen Forecast
+          - type: horizontal-stack
+            cards:
+
+              # Day 0 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_nearby_day_0
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Today
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 1 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_nearby_day_1
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Tomorrow
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 2 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_nearby_day_2
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+      # Home Pollen
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: home
+        cards:
+
+          # Home Pollen
+          - type: custom:mushroom-title-card
+            title: Home Pollen
+
+          - type: horizontal-stack
+            cards:
+
+              # Day 0 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_home_day_0
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Today
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 1 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_home_day_1
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Tomorrow
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 2 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_home_day_2
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+      # RV Pollen
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: rv
+          - condition: state
+            entity: binary_sensor.rv_near_home
+            state: 'off'
+        cards:
+
+          # RV Pollen
+          - type: custom:mushroom-title-card
+            title: RV Pollen
+
+          # Day 0 Forecast
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_rv_day_0
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Today
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 1 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_rv_day_1
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: Tomorrow
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+              # Day 2 Forecast
+              - type: custom:mushroom-template-card
+                entity: sensor.pollen_forecast_rv_day_2
+                icon: "{{- 'mdi:numeric-' ~ state_attr(entity, 'dominant_value') ~ '-box-outline' -}}"
+                primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+                secondary: "{{- state_attr(entity, 'species_name') -}}"
+                icon_color: >-
+                  {% from 'main.jinja' import get_color -%}
+                  {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+                tap_action:
+                  action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # Outdoor Thermometer
+          - type: custom:mushroom-title-card
+            title: Outdoor Thermometer
+
+          # Temperature and Humidity
+          - square: false
+            type: grid
+            cards:
+
+              # Current Temperature
+              - type: custom:decluttering-card
+                template: template_card
+                variables:
+                  - entity: sensor.outside_temperature_state
+                  - name: Temp
+                  - app: ambient
+
+              # Recent High Temperature
+              - type: custom:mushroom-template-card
+                entity: sensor.high_temperature
+                primary: High
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:thermometer-chevron-up
+                icon_color: >-
+                  {%- from 'main.jinja' import get_color -%}
+                  {{- get_color(entity, app='ambient') -}}
+                tap_action:
+                  action: more-info
+
+              # All-time High Temperature
+              - type: custom:mushroom-template-card
+                entity: sensor.high_temperature_all_time
+                primary: Rec High
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:fire
+                icon_color: red
+                tap_action:
+                  action: more-info
+
+              # Current Humidity
+              - type: custom:decluttering-card
+                template: template_card
+                variables:
+                  - entity: sensor.outside_humidity_state
+                  - name: Humidity
+                  - app: outdoor
+
+              # Recent Low Temperature
+              - type: custom:mushroom-template-card
+                entity: sensor.low_temperature
+                primary: Low
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:thermometer-chevron-down
+                icon_color: >-
+                  {%- from 'main.jinja' import get_color -%}
+                  {{- get_color(entity, app='ambient') -}}
+                tap_action:
+                  action: more-info
+
+              # All-time Low Temperature
+              - type: custom:mushroom-template-card
+                entity: sensor.low_temperature_all_time
+                primary: Rec Low
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:snowflake
+                icon_color: blue
+                tap_action:
+                  action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: Agromonitoring
+
+          - type: grid
+            square: false
+            cards:
+
+              # Soil Surface Temperature
+              - type: custom:mushroom-template-card
+                entity: sensor.soil_surface_temperature
+                primary: Surf Temp
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:thermometer
+                icon_color: >-
+                  {%- set t = states(entity) | float(-100) -%}
+                  {{- 'blue' if t <= 32 else 'light-blue' if t <= 59 else 'green' if t <= 77 else 'orange' if t <= 95 else 'red' -}}
+                tap_action:
+                  action: more-info
+
+              # Soil Temperature at 10cm
+              - type: custom:mushroom-template-card
+                entity: sensor.soil_temperature_at_10cm
+                primary: Depth10
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:thermometer-lines
+                icon_color: >-
+                  {%- set t = states(entity) | float(-100) -%}
+                  {{- 'blue' if t <= 32 else 'light-blue' if t <= 59 else 'green' if t <= 77 else 'orange' if t <= 95 else 'red' -}}
+                tap_action:
+                  action: more-info
+
+              # Soil Moisture
+              - type: custom:mushroom-template-card
+                entity: sensor.soil_moisture
+                primary: Moisture
+                secondary: >-
+                  {%- from 'units/base.jinja' import u_humanize_entity -%}
+                  {{- u_humanize_entity(entity) -}}
+                icon: mdi:water-percent
+                icon_color: >-
+                  {%- set m = states(entity) | float(-100) -%}
+                  {{- 'brown' if m < 20 else 'amber' if m < 40 else 'blue' if m < 70 else 'indigo' -}}
+                tap_action:
+                  action: more-info
+
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Local Air Quality
+      - type: custom:modern-circular-gauge
+        name: >-
+          {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+          {{- dominant('sensor.waqi_nearby') -}}
+        entity: sensor.waqi_nearby_aqi
+        max: 500
+        adaptive_state_color: true
+        segments:
+          - from: 0
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+          - from: 51
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+          - from: 101
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+          - from: 151
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+          - from: 201
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+          - from: 301
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+        secondary:
+          unit: AQI
+          show_gauge: none
+          entity: sensor.waqi_nearby_aqi
+        gauge_foreground_style:
+          width: 10
+        needle: true
+        grid_options:
+          columns: 12
+          rows: 4
+        tertiary: {}
+      - type: custom:mushroom-chips-card
+        alignment: center
+        chips:
+          - type: template
+            entity: sensor.waqi_nearby_pm2_5
+            icon: mdi:blur
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: sensor.waqi_nearby_pm10
+            icon: mdi:blur-radial
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: sensor.waqi_nearby_o3
+            icon: mdi:chemical-weapon
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: sensor.waqi_nearby_co
+            icon: mdi:molecule-co
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: sensor.waqi_nearby_no2
+            icon: mdi:periodic-table
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: sensor.waqi_nearby_so2
+            icon: mdi:factory
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity) -}}
+            tap_action:
+              action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.waqi_nearby_aqi
+        icon: >-
+          {%- from 'main.jinja' import get_icon -%}
+          {{- get_icon(entity) -}}
+        primary: Health Advice
+        secondary: >-
+          {%- from 'main.jinja' import get_full_desc -%}
+          {{- get_full_desc(entity) -}}
+        multiline_secondary: true
+        icon_color: >-
+          {%- from 'main.jinja' import get_color -%}
+          {{- get_color(entity) -}}
+        grid_options:
+          columns: full
+          rows: 2
+        tap_action:
+          action: more-info
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.aqi_forecast_nearby_day_0
+            primary: "{{- state_attr(entity, 'title') -}}"
+            secondary: "{{ states(entity) }}"
+            icon_color: "{{ state_attr(entity, 'hex') }}"
+            badge_icon: "{{ state_attr(entity, 'badge') }}"
+            icon: "{{ state_attr(entity, 'icon') }}"
+            badge_color: "{{ state_attr(entity, 'hex') }}"
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.aqi_forecast_nearby_day_1
+            primary: "{{- state_attr(entity, 'title') -}}"
+            secondary: "{{ states(entity) }}"
+            icon_color: "{{ state_attr(entity, 'hex') }}"
+            badge_icon: "{{ state_attr(entity, 'badge') }}"
+            icon: "{{ state_attr(entity, 'icon') }}"
+            badge_color: "{{ state_attr(entity, 'hex') }}"
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.aqi_forecast_nearby_day_2
+            primary: "{{- state_attr(entity, 'title') -}}"
+            secondary: "{{ states(entity) }}"
+            icon_color: "{{ state_attr(entity, 'hex') }}"
+            badge_icon: "{{ state_attr(entity, 'badge') }}"
+            icon: "{{ state_attr(entity, 'icon') }}"
+            badge_color: "{{ state_attr(entity, 'hex') }}"
+            tap_action:
+              action: more-info
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: home
+        cards:
+          - type: custom:mushroom-title-card
+            title: Home Air Quality
+          - type: horizontal-stack
+            cards:
+              - type: custom:modern-circular-gauge
+                name: >-
+                  {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+                  {{- dominant('sensor.waqi_home') -}}
+                entity: sensor.waqi_home_aqi
+                max: 500
+                adaptive_state_color: true
+                segments:
+                  - from: 0
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+                  - from: 51
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+                  - from: 101
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+                  - from: 151
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+                  - from: 201
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+                  - from: 301
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+                secondary:
+                  unit: AQI
+                  show_gauge: none
+                  entity: sensor.waqi_home_aqi
+                gauge_foreground_style:
+                  width: 10
+                needle: true
+                grid_options:
+                  columns: 12
+                  rows: 4
+                tertiary: {}
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_home_day_0
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_home_day_1
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_home_day_2
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: rv
+          - condition: state
+            entity: binary_sensor.rv_near_home
+            state: 'off'
+        cards:
+          - type: custom:mushroom-title-card
+            title: RV Air Quality
+          - type: horizontal-stack
+            cards:
+              - type: custom:modern-circular-gauge
+                name: >-
+                  {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+                  {{- dominant('sensor.waqi_rv') -}}
+                entity: sensor.waqi_rv_aqi
+                max: 500
+                adaptive_state_color: true
+                segments:
+                  - from: 0
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+                  - from: 51
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+                  - from: 101
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+                  - from: 151
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+                  - from: 201
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+                  - from: 301
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+                secondary:
+                  unit: AQI
+                  show_gauge: none
+                  entity: sensor.waqi_rv_aqi
+                gauge_foreground_style:
+                  width: 10
+                needle: true
+                grid_options:
+                  columns: 12
+                  rows: 4
+                tertiary: {}
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_rv_day_0
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_rv_day_1
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.aqi_forecast_rv_day_2
+                    primary: "{{- state_attr(entity, 'title') -}}"
+                    secondary: "{{ states(entity) }}"
+                    icon_color: "{{ state_attr(entity, 'hex') }}"
+                    badge_icon: "{{ state_attr(entity, 'badge') }}"
+                    icon: "{{ state_attr(entity, 'icon') }}"
+                    badge_color: "{{ state_attr(entity, 'hex') }}"
+                    tap_action:
+                      action: more-info
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Local UV Index & Exposure
+      - type: custom:modern-circular-gauge
+        name: ""
+        unit: ""
+        entity: sensor.nearby_uv_index
+        max: 11
+        segments:
+          - from: 0
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+          - from: 2
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+          - from: 5
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+          - from: 7
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+          - from: 10
+            color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+            label: >-
+              {%- from 'main.jinja' import get_long_desc -%}
+              {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+        secondary:
+          show_gauge: none
+          unit: UVI
+          entity: sensor.nearby_uv_index
+        gauge_foreground_style:
+          width: 10
+        needle: true
+        grid_options:
+          columns: 12
+          rows: 4
+        tertiary: {}
+        icon: mdi:white-balance-sunny
+        adaptive_state_color: true
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            entity: sensor.nearby_today_uv_index_max
+            icon: mdi:weather-sunny-alert
+            content: "{{- 'Max UV: ' ~ states(entity) | float(0) | round(1) -}}"
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, app='uv_index') -}}
+            tap_action:
+              action: more-info
+          - type: template
+            content: "Safe Min: {{- states(entity) if has_value(entity) else '–' -}}"
+            entity: sensor.nearby_safe_exposure_minutes_st1
+            icon: mdi:timer-sand
+            icon_color: >-
+              {%- set v = states(entity) | float(0) -%}
+              {{- 'red' if v < 30 else 'yellow' if v < 60 else 'green' -}}
+            tap_action:
+              action: more-info
+        alignment: center
+      - type: custom:mushroom-template-card
+        entity: sensor.nearby_uv_index
+        icon: >-
+          {%- from 'main.jinja' import get_icon -%}
+          {{- get_icon(entity, app='uv_index') -}}
+        primary: Health Advice
+        secondary: >-
+          {%- from 'main.jinja' import get_full_desc -%}
+          {{- get_full_desc(entity, app='uv_index') -}}
+        multiline_secondary: true
+        icon_color: >-
+          {%- from 'main.jinja' import get_color -%}
+          {{- get_color(entity, app='uv_index') -}}
+        grid_options:
+          columns: full
+          rows: 2
+        tap_action:
+          action: more-info
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: Today
+            secondary: >-
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            badge_icon: >-
+              {%- from 'main.jinja' import get_badge -%}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            badge_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: Tomorrow
+            secondary: >-
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            badge_icon: >-
+              {%- from 'main.jinja' import get_badge -%}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            badge_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: "{{ states('sensor.nearby_day_2_weekday') }}"
+            secondary: >-
+              {%- from 'main.jinja' import get_short_label -%}
+              {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            icon_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            badge_icon: >-
+              {%- from 'main.jinja' import get_badge -%}
+              {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            badge_color: >-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            tap_action:
+              action: more-info
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: home
+        cards:
+          - type: custom:mushroom-title-card
+            title: Home UV Index & Forecast
+          - type: horizontal-stack
+            cards:
+              - type: custom:modern-circular-gauge
+                entity: sensor.home_uv_index
+                name: ""
+                unit: ""
+                icon: mdi:white-balance-sunny
+                max: 11
+                segments:
+                  - from: 0
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+                  - from: 2
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+                  - from: 5
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+                  - from: 7
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+                  - from: 10
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+                secondary:
+                  show_gauge: none
+                  unit: UVI
+                  entity: sensor.home_uv_index
+                gauge_foreground_style:
+                  width: 10
+                needle: true
+                grid_options:
+                  columns: 6
+                  rows: 2
+                tertiary: {}
+                adaptive_state_color: true
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: Today
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: Tomorrow
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_home
+                    primary: "{{ states('sensor.home_day_2_weekday') }}"
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info
+      - type: vertical-stack
+        visibility:
+          - condition: state
+            entity: sensor.user_context
+            state_not: rv
+          - condition: state
+            entity: binary_sensor.rv_near_home
+            state: 'off'
+        cards:
+          - type: custom:mushroom-title-card
+            title: RV UV Index & Forecast
+          - type: horizontal-stack
+            cards:
+              - type: custom:modern-circular-gauge
+                entity: sensor.rv_uv_index
+                name: ""
+                unit: ""
+                icon: mdi:white-balance-sunny
+                max: 11
+                segments:
+                  - from: 0
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+                  - from: 2
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+                  - from: 5
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+                  - from: 7
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+                  - from: 10
+                    color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+                    label: >-
+                      {%- from 'main.jinja' import get_long_desc -%}
+                      {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+                secondary:
+                  show_gauge: none
+                  unit: UVI
+                  entity: sensor.rv_uv_index
+                gauge_foreground_style:
+                  width: 10
+                needle: true
+                grid_options:
+                  columns: 6
+                  rows: 2
+                tertiary: {}
+                adaptive_state_color: true
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: Today
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: Tomorrow
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-template-card
+                    entity: sensor.openmeteo_rv
+                    primary: "{{ states('sensor.rv_day_2_weekday') }}"
+                    secondary: >-
+                      {%- from 'main.jinja' import get_label -%}
+                      {{- get_label(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+                    icon: >-
+                      {%- from 'main.jinja' import get_icon -%}
+                      {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+                    icon_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+                    badge_icon: >-
+                      {%- from 'main.jinja' import get_badge -%}
+                      {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+                    badge_color: >-
+                      {%- from 'main.jinja' import get_color -%}
+                      {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+                    tap_action:
+                      action: more-info

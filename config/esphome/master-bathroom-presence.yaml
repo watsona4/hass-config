@@ -1,0 +1,148 @@
+esphome:
+  name: master-bathroom-presence
+  friendly_name: Master Bathroom Presence
+  project:
+    name: "seeedstudio.mmwave_kit"
+    version: "2.5"
+  platformio_options:
+    board_build.flash_mode: dio
+    board_build.mcu: esp32c3
+
+# external_components:
+#   - source: github://limengdu/mmwave-kit-external-components@mmwave-kit-factory-bin
+#     refresh: 0s
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "Q0LDymXVwNYR8VlTVuxICbDRqqt4ZQf8hy5QBFAaxJM="
+
+ota:
+  platform: esphome
+  password: "88c88bcf68b899655298a904982f9544"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Master-Bathroom-Presence"
+    password: "WDKL1YY4AXfu"
+
+captive_portal:
+
+uart:
+  id: uart_bus
+  baud_rate: 115200
+  rx_pin: 4
+  tx_pin: 5
+  parity: NONE
+  stop_bits: 1
+
+#i2c:
+#  sda: GPIO6
+#  scl: GPIO7
+#  scan: True
+#  id: bus_0x38
+
+seeed_mr24hpc1:
+  id: my_seeed_mr24hpc1
+#   mos_pin: GPIO21
+
+text_sensor:
+  - platform: seeed_mr24hpc1
+    heart_beat:
+      name: "Heartbeat"
+    product_model:
+      name: "Product Model"
+    product_id:
+      name: "Product ID"
+    hardware_model:
+      name: "Hardware Model"
+    hardware_version:
+      name: "Hardware Version"
+    keep_away:
+      name: "Active Reporting Of Proximity"
+    motion_status:
+      name: "Motion Information"
+    custom_mode_end:
+      name: "Custom Mode Status"
+
+binary_sensor:
+  - platform: seeed_mr24hpc1
+    has_target:
+      name: "Presence Information"
+
+sensor:
+  - platform: seeed_mr24hpc1
+    custom_presence_of_detection:
+      name: "Static Distance"
+    movement_signs:
+      name: "Body Movement Parameter"
+    custom_motion_distance:
+      name: "Motion Distance"
+    custom_spatial_static_value:
+      name: "Existence Energy"
+    custom_spatial_motion_value:
+      name: "Motion Energy"
+    custom_motion_speed:
+      name: "Motion Speed"
+    custom_mode_num:
+      name: "Current Custom Mode"
+  - platform: dht
+    pin: GPIO3
+    temperature:
+      name: "Living Room Temperature"
+    humidity:
+      name: "Living Room Humidity"
+    update_interval: 60s
+
+switch:
+  - platform: seeed_mr24hpc1
+    underlying_open_function:
+      name: Underlying Open Function Info Output Switch
+
+button:
+  - platform: seeed_mr24hpc1
+    restart:
+      name: "Module Restart"
+    custom_set_end:
+      name: "End Of Custom Mode Settings"
+
+select:
+  - platform: seeed_mr24hpc1
+    scene_mode:
+      name: "Scene"
+    unman_time:
+      name: "Time For Entering No Person State (Standard Function)"
+    existence_boundary:
+      name: "Existence Boundary"
+    motion_boundary:
+      name: "Motion Boundary"
+
+number:
+  - platform: seeed_mr24hpc1
+    sensitivity:
+      name: "Sensitivity"
+    custom_mode:
+      name: "Custom Mode"
+    existence_threshold:
+      name: "Existence Energy Threshold"
+    motion_threshold:
+      name: "Motion Energy Threshold"
+    motion_trigger:
+      name: "Motion Trigger Time"
+    motion_to_rest:
+      name: "Motion To Rest Time"
+    custom_unman_time:
+      name: "Time For Entering No Person State (Underlying Open Function)"

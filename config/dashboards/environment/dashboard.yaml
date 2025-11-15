@@ -1,0 +1,6 @@
+# File: /config/dashboards/environment/dashboard.yaml
+# Description: This file defines the dashboard configuration for monitoring environmental conditions.
+
+title: Environment
+decluttering_templates: !include ../decluttering.yaml
+views: !include_dir_list views

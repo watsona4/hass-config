@@ -1,6 +1,0 @@
-# File: /config/dashboards/computers/dashboard.yaml
-# Description: This file defines the dashboard configuration for monitoring computer hardware.
-
-title: Hardware
-decluttering_templates: !include ../decluttering.yaml
-views: !include_dir_list views

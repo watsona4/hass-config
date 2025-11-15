@@ -1,0 +1,384 @@
+###############################################################################
+# PACKAGE: Blinds with "closed_reason" helpers and tilt-wrapper covers
+###############################################################################
+
+input_text:
+  blind_kitchen_left_window_closed_reason:
+    name: Kitchen Left Window Closed Reason
+    max: 120
+  blind_kitchen_right_window_closed_reason:
+    name: Kitchen Right Window Closed Reason
+    max: 120
+  blind_living_room_left_window_closed_reason:
+    name: Living Room Left Window Closed Reason
+    max: 120
+  blind_living_room_right_window_closed_reason:
+    name: Living Room Right Window Closed Reason
+    max: 120
+  blind_breakfast_room_window_closed_reason:
+    name: Breakfast Room Window Closed Reason
+    max: 120
+  blind_laundry_room_window_closed_reason:
+    name: Laundry Room Window Closed Reason
+    max: 120
+  blind_front_hallway_window_closed_reason:
+    name: Front Hallway Window Closed Reason
+    max: 120
+  blind_study_left_window_closed_reason:
+    name: Study Left Window Closed Reason
+    max: 120
+  blind_study_right_window_closed_reason:
+    name: Study Right Window Closed Reason
+    max: 120
+  blind_study_west_window_closed_reason:
+    name: Study West Window Closed Reason
+    max: 120
+  blind_guest_bedroom_south_window_closed_reason:
+    name: Guest Bedroom South Window Closed Reason
+    max: 120
+  blind_guest_bedroom_left_window_closed_reason:
+    name: Guest Bedroom Left Window Closed Reason
+    max: 120
+  blind_guest_bedroom_right_window_closed_reason:
+    name: Guest Bedroom Right Window Closed Reason
+    max: 120
+  blind_eleanor_room_window_closed_reason:
+    name: Eleanor Room Window Closed Reason
+    max: 120
+  blind_michael_room_window_closed_reason:
+    name: Michael Room Window Closed Reason
+    max: 120
+  blind_back_hallway_window_closed_reason:
+    name: Back Hallway Window Closed Reason
+    max: 120
+  blind_kids_bathroom_window_closed_reason:
+    name: Kids Bathroom Window Closed Reason
+    max: 120
+  blind_master_bathroom_left_window_closed_reason:
+    name: Master Bathroom Left Window Closed Reason
+    max: 120
+  blind_master_bathroom_right_window_closed_reason:
+    name: Master Bathroom Right Window Closed Reason
+    max: 120
+  blind_master_bedroom_left_window_closed_reason:
+    name: Master Bedroom Left Window Closed Reason
+    max: 120
+  blind_master_bedroom_right_window_closed_reason:
+    name: Master Bedroom Right Window Closed Reason
+    max: 120
+
+template:
+  # ========================== Brightness Indicators ===========================
+  - binary_sensor:
+      - name: Breakfast Room Closed Brightness
+        unique_id: breakfast_room_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {%- set before_church = azi >= 228 and azi < 260 and elv < 59 -%}
+          {%- set above_church  = azi >= 260 and azi < 311 and elv >= 15 and elv < 59 -%}
+          {%- set behind_church = azi >= 311 and azi < 336 and elv < 59 -%}
+          {{- home and sunny and (before_church or above_church or behind_church) -}}
+
+      - name: Kitchen Closed Brightness
+        unique_id: kitchen_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('sun.sun') and ((state_attr('sun.sun','azimuth') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {{- home and sunny and azi >= 89 and azi < 100 -}}
+
+      - name: Laundry Room Closed Brightness
+        unique_id: laundry_room_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('sun.sun') and ((state_attr('sun.sun','azimuth') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {{- home and sunny and azi >= 204 -}}
+
+      - name: Living Room Closed Brightness
+        unique_id: living_room_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {%- set before_church               = azi >= 253 and azi < 268 and elv < 22 -%}
+          {%- set above_steeple              = azi >= 268 and azi < 274 and elv > 30 -%}
+          {%- set above_church               = azi >= 274 and azi < 315 and elv >= 15 and elv < 22 -%}
+          {%- set behind_church_left_window  = azi >= 315 and azi < 320 and elv < 22 -%}
+          {%- set behind_church_right_window = azi >= 338 and azi < 343 and elv < 18 -%}
+          {{- home and sunny and (
+              before_church or above_steeple or above_church or
+              behind_church_left_window or behind_church_right_window
+          ) -}}
+
+      - name: Study South Closed Brightness
+        unique_id: study_south_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {%- set elv_limit = (48 - 28) / (215 - 132) * (azi - 132) + 28 -%}
+          {{- home and sunny and azi >= 132 and azi < 215 and elv < elv_limit -}}
+
+      - name: Study West Closed Brightness
+        unique_id: study_west_closed_brightness
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and
+             has_value('input_boolean.in_a_teams_meeting') and
+             has_value('sun.sun') and ((state_attr('sun.sun','azimuth') | float(none)) is not none) -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set teams = is_state('input_boolean.in_a_teams_meeting','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {{- teams or (home and sunny and azi >= 215 and azi < 300) -}}
+
+  # ========================== Temperature Indicators ==========================
+  - binary_sensor:
+      - name: Front Hallway Closed Temperature
+        unique_id: front_hallway_closed_temperature
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('binary_sensor.hot_inside') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hot_inside = is_state('binary_sensor.hot_inside','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {{- sunny and hot_inside and (azi >= 117 and azi < 240 and elv >= 5) -}}
+
+      - name: Study South Closed Temperature
+        unique_id: study_south_closed_temperature
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('binary_sensor.hot_inside') and has_value('binary_sensor.hot_in_study') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hot_inside = is_state('binary_sensor.hot_inside','on') -%}
+          {%- set hot_study = is_state('binary_sensor.hot_in_study','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {{- sunny and (hot_inside or hot_study) and (azi >= 117 and azi < 261 and elv >= 5) -}}
+
+      - name: Study West Closed Temperature
+        unique_id: study_west_closed_temperature
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('binary_sensor.hot_inside') and has_value('binary_sensor.hot_in_study') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hot_inside = is_state('binary_sensor.hot_inside','on') -%}
+          {%- set hot_study = is_state('binary_sensor.hot_in_study','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {{- sunny and (hot_inside or hot_study) and azi >= 204 and elv >= 5 -}}
+
+      - name: Guest South Closed Temperature
+        unique_id: guest_south_closed_temperature
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('binary_sensor.hot_inside') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hot_inside = is_state('binary_sensor.hot_inside','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {{- sunny and hot_inside and (azi >= 170 and azi < 261 and elv >= 5) -}}
+
+      - name: West Windows Closed Temperature
+        unique_id: west_windows_closed_temperature
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('binary_sensor.hot_inside') and
+             has_value('sun.sun') and
+             ((state_attr('sun.sun','azimuth') | float(none)) is not none) and
+             ((state_attr('sun.sun','elevation') | float(none)) is not none) -}}
+        state: >-
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hot_inside = is_state('binary_sensor.hot_inside','on') -%}
+          {%- set azi = state_attr('sun.sun','azimuth') | float(0) -%}
+          {%- set elv = state_attr('sun.sun','elevation') | float(0) -%}
+          {{- sunny and hot_inside and azi >= 204 and elv >= 5 -}}
+
+  # ========================== Window Button States ============================
+  - binary_sensor:
+      - name: Breakfast Room Closed Button
+        unique_id: breakfast_room_closed_button
+        availability: "{{- has_value('timer.breakfast_room_timer') -}}"
+        state: "{{- is_state('timer.breakfast_room_timer','active') -}}"
+      - name: Eleanor Room Closed Button
+        unique_id: eleanor_room_closed_button
+        availability: "{{- has_value('timer.eleanor_room_timer') -}}"
+        state: "{{- is_state('timer.eleanor_room_timer','active') -}}"
+      - name: Guest Bedroom Closed Button
+        unique_id: guest_bedroom_closed_button
+        availability: "{{- has_value('timer.guest_bedroom_timer') -}}"
+        state: "{{- is_state('timer.guest_bedroom_timer','active') -}}"
+      - name: Kids Bathroom Closed Button
+        unique_id: kids_bathroom_closed_button
+        availability: "{{- has_value('timer.kids_bathroom_timer') -}}"
+        state: "{{- is_state('timer.kids_bathroom_timer','active') -}}"
+      - name: Living Room Closed Button
+        unique_id: living_room_closed_button
+        availability: "{{- has_value('timer.living_room_timer') -}}"
+        state: "{{- is_state('timer.living_room_timer','active') -}}"
+      - name: Master Bathroom Closed Button
+        unique_id: master_bathroom_closed_button
+        availability: "{{- has_value('timer.master_bathroom_timer') -}}"
+        state: "{{- is_state('timer.master_bathroom_timer','active') -}}"
+      - name: Master Bedroom Closed Button
+        unique_id: master_bedroom_closed_button
+        availability: "{{- has_value('timer.master_bedroom_timer') -}}"
+        state: "{{- is_state('timer.master_bedroom_timer','active') -}}"
+      - name: Michael Room Closed Button
+        unique_id: michael_room_closed_button
+        availability: "{{- has_value('timer.michael_room_timer') -}}"
+        state: "{{- is_state('timer.michael_room_timer','active') -}}"
+
+  # ============================= Presence States ==============================
+  - binary_sensor:
+      - name: Kids Bathroom Closed Presence
+        unique_id: kids_bathroom_closed_presence
+        device_class: occupancy
+        availability: "{{- has_value('binary_sensor.kids_bathroom_presence_presence_information') -}}"
+        state: "{{- is_state('binary_sensor.kids_bathroom_presence_presence_information','on') -}}"
+        delay_off: "1:00:00"
+
+  - binary_sensor:
+      - name: Master Bathroom Closed Presence
+        unique_id: master_bathroom_closed_presence
+        device_class: occupancy
+        availability: "{{- has_value('binary_sensor.master_bathroom_presence_presence_information') -}}"
+        state: "{{- is_state('binary_sensor.master_bathroom_presence_presence_information','on') -}}"
+        delay_off: "1:00:00"
+
+  - binary_sensor:
+      - name: Michael Room Closed Presence
+        unique_id: michael_room_closed_presence
+        device_class: occupancy
+        availability: "{{- has_value('binary_sensor.michael_presence_presence_information') -}}"
+        state: "{{- is_state('binary_sensor.michael_presence_presence_information','on') -}}"
+        delay_off: "1:00:00"
+
+  - binary_sensor:
+      - name: Eleanor Room Closed Presence
+        unique_id: eleanor_room_closed_presence
+        device_class: occupancy
+        availability: "{{- has_value('binary_sensor.eleanor_presence_presence_information') -}}"
+        state: "{{- is_state('binary_sensor.eleanor_presence_presence_information','on') -}}"
+        delay_off: "1:00:00"
+
+  - binary_sensor:
+      - name: Guest Bedroom Closed Presence
+        unique_id: guest_bedroom_closed_presence
+        device_class: occupancy
+        availability: "{{- has_value('binary_sensor.guest_bedroom_presence_presence_information') -}}"
+        state: "{{- is_state('binary_sensor.guest_bedroom_presence_presence_information','on') -}}"
+        delay_off: "1:00:00"
+
+  # ======================== Miscellaneous Conditions ==========================
+  - binary_sensor:
+      - name: Living Room Closed TV
+        unique_id: living_room_closed_tv
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and has_value('media_player.un50j5500') -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set tv_on = is_state('media_player.un50j5500','on') -%}
+          {{- home and sunny and tv_on -}}
+
+  - binary_sensor:
+      - name: Kitchen Closed Hub
+        unique_id: kitchen_closed_hub
+        availability: >-
+          {{- has_value('binary_sensor.sunny') and has_value('input_boolean.someone_is_home') and has_value('media_player.kitchen_hub') -}}
+        state: >-
+          {%- set home  = is_state('input_boolean.someone_is_home','on') -%}
+          {%- set sunny = is_state('binary_sensor.sunny','on') -%}
+          {%- set hub_on = is_state('media_player.kitchen_hub','on') -%}
+          {{- home and sunny and hub_on -}}
+
+  # ====================== Time Window: Before 06:00 Local =====================
+  - trigger:
+      - platform: time
+        at: "00:00:01"
+        id: midnight
+      - platform: time
+        at: "06:00:00"
+        id: six
+      - platform: homeassistant
+        event: start
+        id: start
+    binary_sensor:
+      - name: Master Bedroom Closed Morning
+        unique_id: master_bedroom_closed_morning
+        state: >-
+          {%- if trigger and trigger.id in ['midnight'] -%}
+            true
+          {%- elif trigger and trigger.id in ['six'] -%}
+            false
+          {%- else -%}
+            {{- now().hour < 6 -}}
+          {%- endif -%}
+
+  # ============================= Group Sensors ================================
+  - binary_sensor:
+      - name: "Closed Brightness"
+        unique_id: 8f3c1d2e-5b6a-4c8d-9f2e-7b6a4c8d9f2e
+        state: >-
+          {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+          {{- any_blinds_closed('brightness') | bool -}}
+      - name: "Closed Temperature"
+        unique_id: d5c3ade0-92b3-4c77-aad5-ed4c3aae8e03
+        state: >-
+          {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+          {{- any_blinds_closed('temperature') | bool -}}
+      - name: "Closed Presence"
+        unique_id: 2a4b6c8d-1e3f-4b7a-8c2e-9f2e7b6a4c8d
+        state: >-
+          {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+          {{- any_blinds_closed('presence') | bool -}}
+      - name: "Closed Devices"
+        unique_id: e75d0949-413a-4662-939d-a63caeb888a7
+        state: >-
+          {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+          {{- any_blinds_closed('device') | bool -}}
+      - name: "Closed Button"
+        unique_id: 9718a2aa-ef63-4d13-a024-8199a6ba5f50
+        state: >-
+          {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+          {{- any_blinds_closed('button') | bool -}}

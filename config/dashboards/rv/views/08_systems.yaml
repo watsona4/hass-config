@@ -1,0 +1,32 @@
+# =========================
+# 8) SYSTEMS (ALL ENTITIES)
+# =========================
+title: Systems
+icon: mdi:cog
+path: systems
+type: masonry
+cards:
+  - type: custom:mushroom-title-card
+    title: Advanced metrics
+    subtitle: Everything in one place
+
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: RV entities
+      show_header_toggle: false
+    filter:
+      include:
+        - group: group.rv_all_entities
+        - domain: sensor
+          pattern: "*rv_*"
+        - domain: binary_sensor
+          pattern: "*rv_*"
+        - domain: switch
+          pattern: "*rv_*"
+        - domain: select
+          pattern: "*rv_*"
+        - domain: climate
+          pattern: "*rv_*"
+        - domain: light
+          pattern: "*rv_*"

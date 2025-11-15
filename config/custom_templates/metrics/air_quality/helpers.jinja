@@ -1,0 +1,58 @@
+{# Common WAQI helpers #}
+
+{# Robustly compute state from REST payload (preserves previous state on bad/blank). #}
+{% macro aqi_state_from_payload(value_json, entity_id) -%}
+    {%- set ok = value_json is mapping and value_json.get('status') == 'ok' -%}
+    {%- set data = value_json.get('data') if ok else {} -%}
+    {%- set raw = data.get('aqi') if data else none -%}
+    {%- if (raw | float(none)) is not none -%}
+        {{- raw | int -}}
+    {%- elif (raw|string) in ['-', 'n/a', '', 'None'] or not ok -%}
+        {{- states(entity_id) -}}
+    {%- else -%}
+        {{- (raw | int(0) ) if raw is not none else states(entity_id) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Pull inner-IAQI numeric (e.g. pm25, pm10, t, h, w, wg, o3, co, no2, so2) #}
+{% macro iaqi(src, key) -%}
+    {{- ((state_attr(src,'iaqi') or {}).get(key) or {}).get('v') -}}
+{%- endmacro %}
+
+{# Build a normalized forecast list for tiles (Today/Tomorrow/Weekday) #}
+{% macro forecast_days(src) -%}
+    {%- from 'metrics/air_quality/aqi_calc.jinja' import compute_aqi -%}
+    {%- import 'main.jinja' as API -%}
+    {%- set today_iso = states('sensor.date') -%}
+    {%- set d = states('sensor.date') | as_datetime(default=none) -%}
+    {%- set tomorrow_iso = (d + timedelta(days=1)).date().isoformat() if d else none -%}
+
+    {%- set f = (state_attr(src,'forecast') or {}) -%}
+    {%- set daily = f.get('daily') or {} -%}
+    {%- set d25 = daily.get('pm25') or [] -%}
+    {%- set d10 = daily.get('pm10') or [] -%}
+    {%- set dates = ((d25 | map(attribute='day') | list) + (d10 | map(attribute='day') | list))
+        | select('string') | unique | list | sort -%}
+    {%- set dates = dates | select('ge', today_iso) | list -%}
+
+    {%- set out = namespace(list=[]) -%}
+    {%- for day in dates -%}
+        {%- set m25 = d25 | selectattr('day','equalto',day) | list -%}
+        {%- set m10 = d10 | selectattr('day','equalto',day) | list -%}
+        {%- set v25 = (m25[0].get('avg') | float(none)) if (m25|count)>0 else none -%}
+        {%- set v10 = (m10[0].get('avg') | float(none)) if (m10|count)>0 else none -%}
+        {%- set have = (v25 is number) or (v10 is number) -%}
+        {%- set aqi = (compute_aqi(pm25=v25, pm10=v10) | int(0)) if have else none -%}
+        {%- set label = API.get_short_label(none, options=dict(value=aqi, device_class='aqi')) -%}
+        {%- set hex = API.get_color(none, options=dict(value=aqi, device_class='aqi')) -%}
+        {%- set badge = API.get_badge(none, options=dict(value=aqi, device_class='aqi')) -%}
+        {%- set icon = API.get_icon(none, options=dict(value=aqi, device_class='aqi')) -%}
+        {%- set dts = day | as_datetime(default=none) -%}
+        {%- set wd = (dts.strftime('%A') if dts else day) -%}
+        {%- set title = 'Today' if day == today_iso else ('Tomorrow' if day == tomorrow_iso else wd) -%}
+        {%- set item = {'exists': have, 'date': day, 'title': title,
+                'state': label, 'aqi': aqi, 'hex': hex, 'badge': badge, 'icon': icon} -%}
+        {%- set out.list = out.list + [item] -%}
+    {%- endfor -%}
+    {{- out.list -}}
+{%- endmacro %}

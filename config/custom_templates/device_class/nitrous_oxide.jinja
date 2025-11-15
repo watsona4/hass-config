@@ -1,0 +1,80 @@
+{# Severity definitions for nitrous oxide #}
+{# Device: N2O gas concentration #}
+{# Typical applications: Indoor lab safety, outdoor background #}
+
+{% set lookup_unit = "ppb" %}
+{% set levels = {
+    "indoor_lab": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Clean",
+            "short_desc": "Clean",
+            "long_desc": "Very low N2O",
+            "icon": "mdi:home",
+            "color": "#22c55e",
+            "full_desc": "No source detected."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Elevated",
+            "short_desc": "Elev",
+            "long_desc": "Elevated N2O",
+            "icon": "mdi:air-filter",
+            "color": "#eab308",
+            "full_desc": "Check ventilation."
+        },
+        {
+            "min_value": 300,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High N2O",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Investigate leaks."
+        }
+    ],
+    "outdoor_background": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Background",
+            "short_desc": "Bkg",
+            "long_desc": "Background levels",
+            "icon": "mdi:leaf",
+            "color": "#22c55e",
+            "full_desc": "Normal ambient."
+        },
+        {
+            "min_value": 330,
+            "default_desc": "Elevated",
+            "short_desc": "Elev",
+            "long_desc": "Elevated levels",
+            "icon": "mdi:leaf-maple",
+            "color": "#eab308",
+            "full_desc": "Agricultural influence."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

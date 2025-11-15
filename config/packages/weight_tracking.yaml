@@ -1,0 +1,342 @@
+# File: docker/homeassistant/config/packages/weight_tracking.yaml
+# Weight tracking integration via MQTT
+mqtt:
+  sensor:
+
+    # Weight and Bodyfat sensors with attributes from Weight Sync
+    - name: "Aaron Weight Latest"
+      unique_id: 36ae3340-c21a-478f-a09b-a9d81206a282
+      state_topic: site/home/devices/weight_sync/weight/state
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/weight/state
+
+    - name: "Aaron Bodyfat Latest"
+      unique_id: 9596f649-eee7-44f8-b5bc-179a73452c56
+      state_topic: site/home/devices/weight_sync/bodyfat/state
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/bodyfat/state
+
+    # Full datasets and params for weight and bodyfat
+    - name: "Aaron Weight Dataset"
+      unique_id: 87e62fa1-7b99-4638-8115-781dc57b9771
+      state_topic: site/home/devices/weight_sync/weight/dataset
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/weight/dataset
+
+    - name: "Aaron Bodyfat Dataset"
+      unique_id: 339c61e0-ec55-48d2-af10-0fedd74ba6f5
+      state_topic: site/home/devices/weight_sync/bodyfat/dataset
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/bodyfat/dataset
+
+    - name: "Aaron Weight Params"
+      unique_id: 042e4ca2-9042-4f63-bcc2-14160fab3b39
+      state_topic: site/home/devices/weight_sync/weight/params
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/weight/params
+
+    - name: "Aaron Bodyfat Params"
+      unique_id: f7167f57-8c3e-4280-8eac-f2c6b93c54cb
+      state_topic: site/home/devices/weight_sync/bodyfat/params
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/bodyfat/params
+
+    # Projections and Events
+    - name: "Aaron Weight Projection"
+      unique_id: 7c4d795d-22f5-4290-9a31-ce43a7702d1a
+      state_topic: site/home/devices/weight_sync/weight/projection
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/weight/projection
+
+    - name: "Aaron Bodyfat Projection"
+      unique_id: 5d16403e-5029-4234-a9aa-5fed95b20e56
+      state_topic: site/home/devices/weight_sync/bodyfat/projection
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/bodyfat/projection
+
+    - name: "Aaron Weight Events"
+      unique_id: 6dfc6869-c798-44d5-bdb0-896733c84828
+      state_topic: site/home/devices/weight_sync/events
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/events
+
+    # Weight and Bodyfat sensors with attributes from Weight Sync
+    - name: "Ashley Weight Latest"
+      unique_id: 6c18d766-2c08-4842-90d1-57064d004cb3
+      state_topic: site/home/devices/weight_sync/ashley/weight/state
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/weight/state
+
+    - name: "Ashley Bodyfat Latest"
+      unique_id: 15d1118c-f906-4212-bab1-e3b2ad48f7a4
+      state_topic: site/home/devices/weight_sync/ashley/bodyfat/state
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/bodyfat/state
+
+    # Full datasets and params for weight and bodyfat
+    - name: "Ashley Weight Dataset"
+      unique_id: 63f6c6f3-5b7d-4d2f-9c31-70b9b6680438
+      state_topic: site/home/devices/weight_sync/ashley/weight/dataset
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/weight/dataset
+
+    - name: "Ashley Bodyfat Dataset"
+      unique_id: a3b097e0-004f-4f09-9484-a69552cba010
+      state_topic: site/home/devices/weight_sync/ashley/bodyfat/dataset
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/bodyfat/dataset
+
+    - name: "Ashley Weight Params"
+      unique_id: e6f3d65d-232f-4e2e-8944-3661c16d054e
+      state_topic: site/home/devices/weight_sync/ashley/weight/params
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/weight/params
+
+    - name: "Ashley Bodyfat Params"
+      unique_id: 1da1c25f-1c3a-4f78-a6f0-f042fde872b3
+      state_topic: site/home/devices/weight_sync/ashley/bodyfat/params
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/bodyfat/params
+
+    # Projections and Events
+    - name: "Ashley Weight Projection"
+      unique_id: ea5a4854-253b-4072-be5c-5334e43cd4cd
+      state_topic: site/home/devices/weight_sync/ashley/weight/projection
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/weight/projection
+
+    - name: "Ashley Bodyfat Projection"
+      unique_id: b442c6b8-992f-4c7e-8225-467f0d89da13
+      state_topic: site/home/devices/weight_sync/ashley/bodyfat/projection
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/bodyfat/projection
+
+    - name: "Ashley Weight Events"
+      unique_id: d9972f0a-28d8-437e-903c-2f25a859ceb6
+      state_topic: site/home/devices/weight_sync/ashley/events
+      value_template: "{{ value_json.updated_at }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/events
+
+    - name: "Aaron Weight Annotations"
+      unique_id: ee990f47-6ce8-4436-8093-8ecb780f02f9
+      state_topic: site/home/devices/weight_sync/weight/annotations
+      value_template: "{{ value_json.get('count', 0) }}"
+      json_attributes_topic: site/home/devices/weight_sync/weight/annotations
+
+    - name: "Ashley Weight Annotations"
+      unique_id: 4e6dabd2-bbd0-4e7b-85c8-27360afb7b08
+      state_topic: site/home/devices/weight_sync/ashley/weight/annotations
+      value_template: "{{ value_json.get('count', 0) }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/weight/annotations
+
+    - name: "Aaron Milestones"
+      unique_id: 0e496e10-e650-43a4-94ce-fddec5eccc2c
+      state_topic: site/home/devices/weight_sync/milestones
+      value_template: "{{ value_json.get('count', 0) }}"
+      json_attributes_topic: site/home/devices/weight_sync/milestones
+
+    - name: "Ashley Milestones"
+      unique_id: 251fc718-543d-4f2e-8b43-6407709420e1
+      state_topic: site/home/devices/weight_sync/ashley/milestones
+      value_template: "{{ value_json.get('count', 0) }}"
+      json_attributes_topic: site/home/devices/weight_sync/ashley/milestones
+
+template:
+  - sensor:
+      - name: "Weight Events Joined"
+        unique_id: 447ef39f-b873-4d30-b146-0456007961d1
+        state: "{{ now().isoformat() }}"
+        attributes:
+          events: >
+            {% set a = state_attr('sensor.aaron_weight_events','events') or [] %}
+            {% set b = state_attr('sensor.ashley_weight_events','events') or [] %}
+            {% set ns = namespace(rows=[]) %}
+            {% for e in a %}
+              {% set match = (b | selectattr('date', 'eq', e.date) | list | first) %}
+              {% set ash = match.weight if match is defined and match and match.weight is not none else none %}
+              {% set row = {
+                'date': e.date,
+                'name': e.name,
+                'weight': e.weight,
+                'bodyfat': e.bodyfat,
+                'ashley_weight': ash
+              } %}
+              {% set ns.rows = ns.rows + [row] %}
+            {% endfor %}
+            {{ ns.rows }}
+
+      - name: "Aaron Weight Milestones Rows"
+        unique_id: 0042b4e0-8681-45f0-9547-28725662e1b7
+        state: "{{ state_attr('sensor.aaron_milestones', 'updated_at') or now() }}"
+        attributes:
+          rows: >
+            {% set w = state_attr('sensor.aaron_milestones', 'weight') or {} %}
+            {% set ns = namespace(items=[]) %}
+            {% for k, v in w.items() if k != '_meta' %}
+              {% if v is mapping and v.days is not none and v.date %}
+                {% set ns.items = ns.items + [{
+                  'weight': k|float(0),
+                  'days': v.days|float(0),
+                  'date': v.date|string
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items | sort(attribute='weight') | reverse | list }}
+
+      - name: "Aaron Body Fat Milestones Rows"
+        unique_id: 8b182b34-8b13-4aa6-88fb-f34ef2afa432
+        state: "{{ state_attr('sensor.aaron_milestones', 'updated_at') or now() }}"
+        attributes:
+          rows: >
+            {% set b = state_attr('sensor.aaron_milestones', 'body_fat') or {} %}
+            {% set ns = namespace(items=[]) %}
+            {% for k, v in b.items() if k != '_meta' %}
+              {% if v is mapping and v.days is not none and v.date %}
+                {% set pct = (k|string).rstrip('%')|float(0) %}
+                {% set ns.items = ns.items + [{
+                  'body_fat': pct,
+                  'days': v.days|float(0),
+                  'date': v.date|string
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items | sort(attribute='body_fat') | reverse | list }}
+
+      - name: "Ashley Weight Milestones Rows"
+        unique_id: 5ec559b6-3182-48d4-b514-88a415bd0c4c
+        state: "{{ state_attr('sensor.ashley_milestones', 'updated_at') or now() }}"
+        attributes:
+          rows: >
+            {% set w = state_attr('sensor.ashley_milestones', 'weight') or {} %}
+            {% set ns = namespace(items=[]) %}
+            {% for k, v in w.items() if k != '_meta' %}
+              {% if v is mapping and v.days is not none and v.date %}
+                {% set ns.items = ns.items + [{
+                  'weight': k|float(0),
+                  'days': v.days|float(0),
+                  'date': v.date|string
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items | sort(attribute='weight') | reverse | list }}
+
+rest_command:
+  weight_sync_post:
+    url: !secret weight_sync_url
+    method: POST
+    content_type: "application/json"
+    headers:
+      Content-Type: "application/json"
+    payload: "{{ payload }}"
+
+script:
+  post_weight_sync:
+    alias: "Post weight/bodyfat to Weight Sync"
+    mode: queued
+    fields:
+      who:
+        description: "Person key for your Flask app (\"ashley\" or \"aaron\")"
+        example: ashley
+      metric:
+        description: "weights | bodyfat"
+        example: weights
+      entity_id:
+        description: "Sensor entity to read (e.g., sensor.pixel_9_pro_xl_weight)"
+        example: sensor.pixel_9_pro_xl_weight
+    sequence:
+      - variables:
+          e: "{{ entity_id }}"
+          who_var: "{{ who | default('ashley') }}"
+          metric_var: "{{ metric }}"
+          # Current numeric value
+          raw_val: "{{ states(e) | float(0) }}"
+          # Unit (lb/kg for weight, % for body fat)
+          unit: "{{ state_attr(e, 'unit_of_measurement') or ('%' if metric_var == 'bodyfat' else 'lb') }}"
+
+          # Timestamp: prefer 'date' (per your sensor), otherwise try common fallbacks, then last_changed
+          raw_when: >
+            {{ state_attr(e,'date')
+              or state_attr(e,'timestamp')
+              or state_attr(e,'start_time')
+              or state_attr(e,'time')
+              or states[e].last_changed }}
+
+          # Normalize to epoch seconds (handles ISO strings, seconds, or ms)
+          ts_sec: >
+            {% set x = raw_when %}
+            {% if x is number %}
+              {% set n = x | float(0) %}
+              {{ (n / 1000 if n > 1e11 else n) }}
+            {% else %}
+              {{ as_timestamp(x) }}
+            {% endif %}
+
+          # Format to UTC ISO8601 with trailing Z (what your Flask app expects)
+          iso: "{{ ts_sec | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', true) }}"
+
+          # Value normalized:
+          pounds: >
+            {% if metric_var == 'weights' %}
+              {% if unit | lower in ['kg','kilogram','kilograms'] %}
+                {{ (raw_val * 2.20462262185) | round(1) }}
+              {% else %}
+                {{ raw_val | round(1) }}
+              {% endif %}
+            {% else %}0{% endif %}
+          bodyfat_pct: >
+            {% if metric_var == 'bodyfat' %}
+              {{ raw_val | round(2) }}
+            {% else %}0{% endif %}
+
+          # Samples map
+          samples_map: >
+            {% if metric_var == 'weights' %}
+              {{ { iso: { 'pounds': pounds } } }}
+            {% else %}
+              {{ { iso: { 'bodyFatPct': bodyfat_pct } } }}
+            {% endif %}
+
+          # Final JSON body
+          body: >
+            {{ {
+              'who': who_var,
+              'part': (metric_var if metric_var in ['weights','bodyfat'] else 'weights'),
+              'samples': samples_map
+            } | tojson }}
+
+      - service: rest_command.weight_sync_post
+        data:
+          payload: "{{ body }}"
+
+automation:
+  - id: post_weight_on_update_aaron
+    alias: "Post weight when sensor updates (Aaron)"
+    mode: queued
+    trigger:
+      - platform: state
+        entity_id: sensor.pixel_9_pro_xl_weight
+    condition:
+      - condition: template
+        value_template: "{{ trigger.to_state is not none and trigger.to_state.state not in ['unknown','unavailable',''] }}"
+    action:
+      - service: script.post_weight_sync
+        data:
+          who: "aaron"
+          metric: "weights"
+          entity_id: "{{ trigger.entity_id }}"
+
+  - id: post_bodyfat_on_update_aaron
+    alias: "Post body fat when sensor updates (Aaron)"
+    mode: queued
+    trigger:
+      - platform: state
+        entity_id: sensor.pixel_9_pro_xl_body_fat
+    condition:
+      - condition: template
+        value_template: "{{ trigger.to_state is not none and trigger.to_state.state not in ['unknown','unavailable',''] }}"
+    action:
+      - service: script.post_weight_sync
+        data:
+          who: "aaron"
+          metric: "bodyfat"
+          entity_id: "{{ trigger.entity_id }}"

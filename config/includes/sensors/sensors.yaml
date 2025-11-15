@@ -1,0 +1,172 @@
+- platform: rest
+  name: "Agromonitoring"
+  unique_id: agromonitoring
+  scan_interval: 43200
+  timeout: 8
+  resource: https://api.agromonitoring.com/agro/1.0/soil
+  params:
+    polyid: !secret agromonitoring_polyid
+    appid: !secret agromonitoring_appid
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  value_template: >-
+    {% set dt = value_json.get('dt') if value_json is mapping else none %}
+    {{ dt if dt is not none else states(this.entity_id) }}
+  json_attributes:
+    - dt
+    - t10
+    - moisture
+    - t0
+
+- platform: filter
+  name: "Outside Temperature Filtered"
+  unique_id: outside_temperature_filtered
+  entity_id: sensor.acurite_tower_a_11075_temperature
+  filters:
+    - filter: outlier
+      window_size: 5
+      radius: 10.0
+      precision: 2
+
+- platform: filter
+  name: "Outside Water Temperature Filtered"
+  unique_id: outside_water_temperature_filtered
+  entity_id: sensor.outside_water_temperature
+  filters:
+    - filter: outlier
+
+- platform: filter
+  name: "Average Brightness"
+  unique_id: average_brightness
+  entity_id: sensor.outside_brightness
+  filters:
+    - filter: time_simple_moving_average
+      window_size: "0:15:00"
+
+- platform: min_max
+  name: "Blind Tilt Battery Level"
+  unique_id: blind_tilt_battery_level
+  type: min
+  entity_ids:
+    - sensor.breakfast_room_window_battery
+    - sensor.living_room_right_window_battery
+    - sensor.living_room_left_window_battery
+    - sensor.laundry_room_window_battery
+    - sensor.kitchen_left_window_battery
+    - sensor.kitchen_right_window_battery
+    - sensor.front_hallway_window_battery
+    - sensor.study_left_window_battery
+    - sensor.study_right_window_battery
+    - sensor.study_west_window_battery
+    - sensor.guest_bedroom_south_window_battery
+    - sensor.guest_bedroom_left_window_battery
+    - sensor.guest_bedroom_right_window_battery
+    - sensor.eleanor_room_window_battery
+    - sensor.michael_room_window_battery
+    - sensor.back_hallway_window_battery
+    - sensor.kids_bathroom_window_battery
+    - sensor.master_bathroom_left_window_battery
+    - sensor.master_bathroom_right_window_battery
+    - sensor.master_bedroom_left_window_battery
+    - sensor.master_bedroom_right_window_battery
+
+- platform: min_max
+  name: "Xaiomi Thermometer Battery Level"
+  unique_id: xaiomi_thermometer_battery_level
+  type: min
+  entity_ids:
+    - sensor.pantry_thermometer_battery
+    - sensor.laundry_thermometer_battery
+    - sensor.chicken_coop_thermometer_battery
+
+- platform: min_max
+  name: "Nest Protect Battery Level"
+  unique_id: nest_protect_battery_level
+  type: min
+  entity_ids:
+    - sensor.nest_protect_upstairs_battery_level
+    - sensor.nest_protect_kids_room_eleanor_battery_level
+    - sensor.nest_protect_kids_room_michael_battery_level
+    - sensor.nest_protect_family_room_battery_level
+    - sensor.nest_protect_hallway_battery_level
+    - sensor.nest_protect_guest_room_battery_level
+    - sensor.nest_protect_gym_battery_level
+    - sensor.nest_protect_living_room_battery_level
+
+- platform: derivative
+  name: "Gym Humidity First Derivative"
+  source: sensor.both_humidity_d1f2020f4a37
+  unit_time: s
+  time_window: "0:05:00"
+
+- platform: derivative
+  name: "Gym Humidity Second Derivative"
+  source: sensor.gym_humidity_first_derivative
+  unit_time: s
+  time_window: "0:05:00"
+
+- platform: derivative
+  name: "Downstairs Temperature Rate"
+  source: sensor.downstairs_thermostat_current_temperature
+  unit_time: h
+  time_window: "0:30:00"
+
+- platform: derivative
+  name: "Outside Temperature Rate"
+  source: sensor.outside_temperature_state
+  unit_time: h
+  time_window: "0:30:00"
+
+- platform: mold_indicator
+  name: "Mold Indicator"
+  unique_id: mold_indicator
+  indoor_temp_sensor: sensor.dehumidifier_temperature
+  indoor_humidity_sensor: sensor.dehumidifier_humidity
+  outdoor_temp_sensor: sensor.outside_temperature_filtered
+  calibration_factor: 1.17777777777777
+
+- platform: statistics
+  name: "High Temperature"
+  unique_id: high_temperature
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_max
+  max_age: "24:00:00"
+
+- platform: statistics
+  name: "Low Temperature"
+  unique_id: low_temperature
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_min
+  max_age: "24:00:00"
+
+- platform: statistics
+  name: "High Temperature All Time"
+  unique_id: high_temperature_all_time
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_max
+  max_age: "999999:00:00"
+
+- platform: statistics
+  name: "Low Temperature All Time"
+  unique_id: low_temperature_all_time
+  entity_id: sensor.outside_temperature_filtered
+  state_characteristic: value_min
+  max_age: "999999:00:00"
+
+- platform: statistics
+  name: "Wind Gust Max 10m"
+  unique_id: 2e11cb6c-ce79-47fb-ab11-17d420eb94a1
+  entity_id: sensor.home_wind_gust
+  state_characteristic: value_max
+  max_age:
+    minutes: 10
+
+- platform: statistics
+  name: "Wind Speed Mean 5m"
+  unique_id: 59b765c8-0053-4d47-ab43-77d6ee573f6e
+  entity_id: sensor.home_wind_speed
+  state_characteristic: mean
+  max_age:
+    minutes: 5

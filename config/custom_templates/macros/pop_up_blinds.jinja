@@ -1,0 +1,237 @@
+{# ========= Blinds → emit mushroom-template-card list for auto-entities ========= #}
+{# Required reason codes (exact): nighttime, brightness, device, temperature, presence, button #}
+
+{% macro _badge_icon_for(code) -%}
+    {%- if code|lower == 'nighttime' -%}mdi:weather-night
+    {%- elif code|lower == 'brightness' -%}mdi:white-balance-sunny
+    {%- elif code|lower == 'device' -%}mdi:television
+    {%- elif code|lower == 'temperature' -%}mdi:thermometer
+    {%- elif code|lower == 'presence' -%}mdi:account-off
+    {%- elif code|lower == 'button' -%}mdi:gesture-tap-button
+    {%- else -%}mdi:blank
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro _badge_color_for(code) -%}
+    {%- if code|lower == 'nighttime' -%}blue
+    {%- elif code|lower == 'brightness' -%}amber
+    {%- elif code|lower == 'device' -%}indigo
+    {%- elif code|lower == 'temperature' -%}red
+    {%- elif code|lower == 'presence' -%}purple
+    {%- elif code|lower == 'button' -%}teal
+    {%- else -%}grey
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro _card_for_cover(eid) -%}
+    {%- set slug = eid.split('.', 1)[1] -%}
+    {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+
+    {%- set primary_tmpl -%}
+        {% raw %}
+            {{ state_attr(entity, 'friendly_name') or entity }}
+        {% endraw %}
+    {%- endset -%}
+
+    {%- set secondary_tmpl -%}
+        {% raw -%}
+            {% set pos = state_attr(entity, 'current_position') %}
+            {% if pos is number %}
+                {{ states(entity) |title }} • {{ pos|round(0) }}%
+            {% else %}
+                {{ states(entity) |title }}
+            {% endif %}
+        {%- endraw %}
+    {%- endset -%}
+
+    {%- set icon_tmpl -%}
+        {% raw -%}
+            {% set s = states(entity) %}
+            {% if s == 'open' %}
+                mdi:blinds-open
+            {% elif s == 'opening' %}
+                mdi:arrow-up-bold-box
+            {% elif s == 'closing' %}
+                mdi:arrow-down-bold-box
+            {% elif s == 'closed' %}
+                mdi:blinds
+            {% elif s in ['paused','stopped'] %}
+                mdi:pause-circle
+            {% elif s in ['unavailable','unknown'] %}
+                mdi:cloud-off-outline
+            {% else %}
+                mdi:help-circle-outline
+            {% endif %}
+        {%- endraw %}
+    {%- endset -%}
+
+    {%- set icon_color_tmpl -%}
+        {% raw -%}
+            {% set s = states(entity) %}
+            {% if s == 'open' %}
+                green
+            {% elif s in ['opening','closing'] %}
+                amber
+            {% elif s == 'closed' %}
+                blue
+            {% elif s in ['paused','stopped'] %}
+                grey
+            {% elif s in ['unavailable','unknown'] %}
+                red
+            {% else %}
+                grey
+            {% endif %}
+        {%- endraw %}
+    {%- endset -%}
+
+    {%- set badge_tmpl -%}
+        {% raw -%}
+            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
+            {% if r == 'nighttime' %}
+                mdi:weather-night
+            {% elif r == 'brightness' %}
+                mdi:white-balance-sunny
+            {% elif r == 'device' %}
+                mdi:television
+            {% elif r == 'temperature' %}
+                mdi:thermometer
+            {% elif r == 'presence' %}
+                mdi:account-off
+            {% elif r == 'button' %}
+                mdi:gesture-tap-button
+            {% else %}
+                mdi:blank
+            {% endif %}
+        {%- endraw %}
+    {%- endset -%}
+
+    {%- set badge_color_tmpl -%}
+        {% raw -%}
+            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower%}
+            {% if r == 'nighttime' %}
+                blue
+            {% elif r == 'brightness' %}
+                amber
+            {% elif r == 'device' %}
+                indigo
+            {% elif r == 'temperature' %}
+                red
+            {% elif r == 'presence' %}
+                purple
+            {% elif r == 'button' %}
+                teal
+            {% else %}
+                grey
+            {% endif %}
+        {%- endraw %}
+    {%- endset -%}
+
+    {{ {
+    'type': 'custom:mushroom-template-card',
+    'entity': eid,
+    'layout': 'horizontal',
+    'fill_container': False,
+    'primary': primary_tmpl | trim,
+    'secondary': secondary_tmpl | trim,
+    'icon': icon_tmpl | trim,
+    'icon_color': icon_color_tmpl | trim,
+    'badge_icon': badge_tmpl | trim,
+    'badge_color': badge_color_tmpl | trim,
+    'tap_action': {'action': 'more-info'}
+    } | tojson }}
+{%- endmacro %}
+
+{# Build cards list.
+   wanted: single code or list of codes. Exact match only.
+   only_when_closed: True to include only closed/closing.
+   suffix: cover id suffix to include, default "_window". #}
+{% macro build_blind_cards(wanted=None, only_when_closed=True, suffix='_window') -%}
+    {%- set ns = namespace(cards=[]) -%}
+
+    {%- set wanted_list = wanted if wanted is iterable and wanted is not string
+        else ([wanted] if wanted not in [None, ''] else []) -%}
+
+    {%- for c in states.cover -%}
+        {%- set eid = c.entity_id -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}
+            {% continue %}
+        {%- endif -%}
+
+        {%- if only_when_closed and c.state not in ['closed','closing'] -%}
+            {% continue %}
+        {%- endif -%}
+
+        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set code = (states(reason_eid) or '') | trim | lower -%}
+
+        {# If filtering by wanted, require exact membership #}
+        {%- if wanted_list and code not in wanted_list -%}
+            {% continue %}
+        {%- endif -%}
+
+        {%- set card_json = _card_for_cover(eid) -%}
+        {%- set ns.cards = ns.cards + [ card_json | from_json ] -%}
+    {%- endfor -%}
+    {{ ns.cards | tojson }}
+{%- endmacro %}
+
+{% macro any_blinds_closed(wanted=None, suffix='_window') -%}
+    {# True/False: is there at least one matching blind that is closed/closing? #}
+    {%- set ns = namespace(found=false) -%}
+
+    {%- set wanted_list = wanted if wanted is iterable and wanted is not string
+        else ([wanted] if wanted not in [None, ''] else []) -%}
+
+    {%- for c in states.cover -%}
+        {%- set eid = c.entity_id -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+        {%- if c.state not in ['closed','closing'] -%}{% continue %}{%- endif -%}
+
+        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set code = (states(reason_eid) or '') | trim | lower -%}
+
+        {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
+
+        {%- set ns.found = true -%}
+        {# no break used, for HA template compatibility; loop will end quickly anyway #}
+    {%- endfor -%}
+
+    {{ ns.found }}
+{%- endmacro %}
+
+{# Build cards list for a specific area.
+   area_name: HA area name (string).
+   wanted: single code or list of codes. Exact match only.
+   only_when_closed: True to include only closed/closing.
+   suffix: cover id suffix to include, default "_window". #}
+{% macro build_blind_cards_in_area(area_name, wanted=None, only_when_closed=True, suffix='_window') -%}
+    {%- set ns = namespace(cards=[]) -%}
+    {%- set wanted_list = wanted if wanted is iterable and wanted is not string
+        else ([wanted] if wanted not in [None, ''] else []) -%}
+
+    {%- set ents = area_entities(area_name) | default([], true) -%}
+    {%- for eid in ents if eid.startswith('cover.') -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+
+        {%- set s = states(eid) -%}
+        {%- if only_when_closed and s not in ['closed','closing'] -%}{% continue %}{%- endif -%}
+
+        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set code = (states(reason_eid) or '') | trim | lower -%}
+        {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
+
+        {%- set card_json = _card_for_cover(eid) -%}
+        {%- set ns.cards = ns.cards + [ card_json | from_json ] -%}
+    {%- endfor -%}
+    {{ ns.cards | tojson }}
+{%- endmacro %}
+
+{# Build a single card object for a specific cover entity_id.
+   entity_id: full cover entity_id (e.g., cover.kitchen_window).
+   Returns a JSON object suitable for use as a card. #}
+{% macro build_blind_card_for(entity_id) -%}
+    {{ _card_for_cover(entity_id) }}
+{%- endmacro %}

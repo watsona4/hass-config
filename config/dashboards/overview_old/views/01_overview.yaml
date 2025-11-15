@@ -1,0 +1,1011 @@
+title: Overview
+type: sections
+max_columns: 2
+badges: []
+cards: []
+sections:
+  - type: grid
+    cards:
+      - type: custom:decluttering-card
+        template: title_card
+        variables:
+          - title: Climate
+          - subtitle: Downstairs / Upstairs · Quick Setpoints
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.downstairs_thermostat
+              - name: Downstairs
+          - type: custom:decluttering-card
+            template: climate_card
+            variables:
+              - entity: climate.upstairs_thermostat
+              - name: Upstairs
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: data_rate_card
+            variables:
+              - entity: sensor.netprobe_download
+              - primary: Download
+              - icon: mdi:download-network
+              - max_speed: 1000
+          - type: custom:decluttering-card
+            template: data_rate_card
+            variables:
+              - entity: sensor.netprobe_upload
+              - primary: Upload
+              - icon: mdi:upload-network
+              - max_speed: 50
+          - type: custom:decluttering-card
+            template: latency_card
+            variables:
+              - entity: sensor.netprobe_latency_icmp
+              - primary: Latency
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: numeric_card
+            variables:
+              - entity: sensor.electric_daily
+              - icon: mdi:flash
+              - icon_color: amber
+              - primary: Electricity
+              - tap_action:
+                  action: navigate
+                  navigation_path: /energy
+          - type: custom:decluttering-card
+            template: numeric_card
+            variables:
+              - entity: sensor.water_daily
+              - icon: mdi:water
+              - icon_color: blue
+              - primary: Water
+              - tap_action:
+                  action: navigate
+                  navigation_path: /energy
+          - type: custom:decluttering-card
+            template: numeric_card
+            variables:
+              - entity: sensor.gas_daily
+              - icon: mdi:fire
+              - icon_color: red
+              - primary: Gas
+              - tap_action:
+                  action: navigate
+                  navigation_path: /energy
+  - type: grid
+    cards:
+      - type: custom:decluttering-card
+        template: title_card
+        variables:
+          - title: Outside
+          - subtitle: Temperature · Humidity · Other Stats
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: numeric_color_card
+            variables:
+              - entity: sensor.outside_temperature_state
+              - primary: Outside Temp
+              - icon: mdi:thermometer
+              - icon_color_spec: "{{ 'blue' if v < 50 else 'green' if v < 80 else 'red' }}"
+              - temp_unit: f
+          - type: custom:decluttering-card
+            template: numeric_color_card
+            variables:
+              - entity: sensor.outside_humidity_state
+              - primary: Outside Humidity
+              - icon: mdi:water-percent
+              - icon_color_spec: "{{ 'orange' if v > 70 else 'green' }}"
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: numeric_card
+            variables:
+              - entity: sensor.outside_brightness
+              - primary: Brightness
+              - icon: >-
+                  {{ 'mdi:weather-night' if
+                  is_state('binary_sensor.dark_outside','on') else
+                  'mdi:weather-sunny' }}
+              - icon_color: >-
+                  {{ 'black' if is_state('binary_sensor.dark_outside','on')
+                  else 'yellow' if is_state('binary_sensor.sunny','on') else
+                  'blue' }}
+          - type: custom:mushroom-template-card
+            entity: sensor.openuv_nearby_apparent_uv_index
+            primary: UV Index
+            secondary: |-
+              {% from 'env/uv.jinja' import name %}
+              {{ name(states(entity)) }}
+            icon: mdi:weather-sunny-alert
+            icon_color: |-
+              {% from 'env/uv.jinja' import color %}
+              {{ color(states(entity)) }}
+            badge_icon: >-
+              {% set u = states(entity)|float(0)|round(0) %} mdi:numeric-{{
+              u|int(0) if u<10 else '9-plus' }}-circle
+            tap_action:
+              action: more-info
+            badge_color: |-
+              {% from 'env/uv.jinja' import color %}
+              {{ color(states(entity)) }}
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: Wind
+            secondary: >-
+              {% set cur = state_attr(entity,'current') %} {% set spd =
+              cur.get('wind_speed_10m') %} {% set gst =
+              cur.get('wind_gusts_10m') %} {% set deg =
+              cur.get('wind_direction_10m') %} {% set dirs =
+              ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW']
+              %} {% set dirtxt = (dirs[((deg|float(0)+11.25)/22.5)|int(0) %
+              16]) if deg is not none else '—' %} {{ dirtxt }} {{
+              spd|round(0) if spd is number else '—' }} {{
+              state_attr(entity,'current_units') and
+              state_attr(entity,'current_units').get('wind_speed_10m') or
+              'km/h' }} {%- if gst is number %}, Gust {{ gst|round(0) }} {{
+              state_attr(entity,'current_units') and
+              state_attr(entity,'current_units').get('wind_gusts_10m') or
+              'km/h' }}{% endif %}
+            icon: mdi:weather-windy
+            icon_color: >-
+              {% set cur = state_attr(entity,'current') %} {% set spd =
+              cur.get('wind_speed_10m')|float(0) %} {{ 'red' if spd>=50 else
+              'orange' if spd>=35 else 'amber' if spd>=20 else 'blue' }}
+            badge_icon: >-
+              {% set cur = state_attr(entity,'current') or {} %} {% set spd
+              = cur.get('wind_speed_10m')|float(0) %} {% set bft =
+              (((spd/2.237)/ 0.836)**(2/3))|round(0)|int(0) %} mdi:numeric-{{
+              bft if bft<10 else '9-plus' }}-circle
+            badge_color: >-
+              {% set spd = (state_attr(entity,'current') or
+              {}).get('wind_speed_10m')|float(0) %} {{ 'red' if spd>=50 else
+              'orange' if spd>=35 else 'amber' if spd>=20 else 'blue' }}
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: Precipitation
+            secondary: >-
+              {% set d = state_attr(entity,'daily') or {} %} {% set sum =
+              (d.get('precipitation_sum') or [None])[0] %} {% set prob =
+              (d.get('precipitation_probability_max') or [None])[0] %} {%
+              set unit = (state_attr(entity,'daily_units') or
+              state_attr(entity,'units') or
+              {}).get('precipitation_sum','mm') %} {%- if prob is not none
+              %}{{ prob }}% chance: {% endif %} {{ (sum if sum is not none
+              else 0)|round(1) }} {{ unit }}
+            icon: mdi:weather-pouring
+            icon_color: >-
+              {% set d = state_attr(entity,'daily') or {} %} {% set p =
+              (d.get('precipitation_probability_max') or [0])[0] | int(0) %}
+              {{ 'blue' if p>=60 else 'teal' if p>=30 else 'gray' }}
+            badge_icon: >-
+              {% set p = (state_attr(entity,'daily') or
+              {}).get('precipitation_probability_max') or [0] %} {% set v =
+              (p[0]|int(0) // 10) %}  {# decile 0..10 #} mdi:numeric-{{ v if
+              v<10 else '9-plus' }}-circle
+            badge_color: >-
+              {% set p = (state_attr(entity,'daily') or
+              {}).get('precipitation_probability_max') or [0] %} {% set v =
+              p[0]|int(0) %} {{ 'blue' if v>=60 else 'teal' if v>=30 else
+              'gray' }}
+            tap_action:
+              action: more-info
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.waqi_nearby_aqi
+            primary: Air Quality
+            secondary: |-
+              {% from 'env/aqi.jinja' import name %}
+              {{ name(states(entity)) }}
+            icon: mdi:smog
+            icon_color: |-
+              {% from 'env/aqi.jinja' import color %}
+              {{ color(states(entity)) }}
+            badge_icon: >-
+              {% set a = states(entity)|int(0) %} mdi:numeric-{{ a//10 if
+              a<100 else '9-plus' }}-circle
+            badge_color: |-
+              {% from 'env/aqi.jinja' import color %}
+              {{ color(states(entity)) }}
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.openmeteo_nearby
+            primary: Dew Point
+            secondary: >-
+              {% set cur = state_attr(entity,'current') or {} %} {% set dp =
+              cur.get('dew_point_2m') %} {% set u =
+              (state_attr(entity,'units') or {}).get('dew_point_2m') or '°F'
+              %} {% if dp is number %}
+                  {% set hint = 'Open windows' if dp <= 55
+                      else 'Okay outside' if dp <= 60
+                      else 'Humid outside' if dp <= 70
+                      else 'Sticky; keep closed' %}
+              {{ dp | round(1) }} {{ u }}: {{ hint }}
+
+              {% else %}
+                Waiting for dew point
+              {% endif %}
+            icon: mdi:thermometer-water
+            icon_color: >-
+              {% set dp = (state_attr(entity,'current') or
+              {}).get('dew_point_2m') %} {% if dp is number %}
+                {{ 'green' if dp <= 55 else 'amber' if dp <= 60 else 'orange' if dp <= 70 else 'red' }}
+              {% else %}gray{% endif %}
+            tap_action:
+              action: more-info
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Status
+        subtitle: Lights On · Doors & Windows Open · Smoke/CO Alerts
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - entity_id: binary_sensor.nest_protect_*_smoke_status
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                icon: mdi:fire-alert
+                icon_color: red
+                primary: "{{ area_name(entity) }}"
+                tap_action:
+                  action: more-info
+            - entity_id: binary_sensor.nest_protect_*_co_status
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                icon: mdi:molecule-co
+                icon_color: red
+                primary: "{{ area_name(entity) }}"
+                tap_action:
+                  action: more-info
+          exclude: []
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - domain: light
+              state: 'on'
+              options:
+                type: custom:mushroom-light-card
+                tap_action:
+                  action: more-info
+          exclude:
+            - options: {}
+              entity_id: /^.*\.browser_mod_/
+            - options: {}
+              entity_id: light.ratgdov25i_f6128e_light
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: door
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                primary: "{{ area_name(entity) }}"
+                icon: mdi:door-open
+                icon_color: amber
+                tap_action:
+                  action: more-info
+            - domain: binary_sensor
+              attributes:
+                device_class: window
+              state: 'on'
+              options:
+                type: custom:mushroom-template-card
+                entity: this.entity_id
+                primary: "{{ area_name(entity) }}"
+                icon: mdi:window-open
+                icon_color: amber
+                tap_action:
+                  action: more-info
+          exclude: []
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: Unavailable Devices
+        subtitle: Impacted Devices · Count of Affected Entities
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          template: |-
+            {%- set seen = namespace(dids=[]) -%}
+            {%- set out  = namespace(items=[]) -%}
+            {%- set icon_map = {
+              'light': 'mdi:lightbulb-off',
+              'switch': 'mdi:toggle-switch-variant-off',
+              'fan': 'mdi:fan-off',
+              'climate': 'mdi:thermometer-off',
+              'sensor': 'mdi:chip',
+              'binary_sensor': 'mdi:alert-circle',
+              'media_player': 'mdi:television',
+              'camera': 'mdi:cctv',
+              'device_tracker': 'mdi:map-marker-off',
+              'vacuum': 'mdi:robot-vacuum',
+              'cover': 'mdi:garage-alert',
+              'lock': 'mdi:lock-open-alert',
+              'alarm_control_panel': 'mdi:alarm-light',
+              'siren': 'mdi:alarm-light',
+              'update': 'mdi:package-up',
+              'button': 'mdi:gesture-tap-button',
+              'person': 'mdi:account-off'
+            } -%}
+            {%- set known_integrations = [
+              'mqtt','tuya','frigate','opnsense','browser_mod','mobile_app','esphome',
+              'homekit','unifi','icloud','zeroconf','dhcp','dlna','bluetooth'
+            ] -%}
+            {%- for s in states
+                  if s.state == 'unavailable'
+                  and device_id(s.entity_id) -%}
+              {%- set did = device_id(s.entity_id) -%}
+              {%- if did not in seen.dids -%}
+                {%- set seen.dids = seen.dids + [did] -%}
+
+                {%- set rep = s.entity_id -%}
+                {%- set dom = rep.split('.')[0] -%}
+                {%- set dev = device_attr(did,'name') -%}
+
+                {%- set ns = namespace(dom_count=0, integ='') -%}
+                {%- for eid in device_entities(did) -%}
+                  {%- if states(eid) == 'unavailable' -%}
+                    {%- set ns.dom_count = ns.dom_count + 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- for i in known_integrations -%}
+                  {%- if not ns.integ and rep in integration_entities(i) -%}
+                    {%- set ns.integ = i -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- set area = area_name(did) or 'No area' -%}
+                {%- set sev  = 'red' if ns.dom_count >= 5 else 'orange' if ns.dom_count >= 2 else 'yellow' -%}
+                {%- set icon = icon_map.get(dom, 'mdi:lan-pending') -%}
+                {%- set badge_icon = 'mdi:numeric-'~(ns.dom_count if ns.dom_count < 10 else '9-plus')~'-circle' -%}
+
+                {%- set picture = ( '/local/brands/' ~ ns.integ ~ '.png' ) if ns.integ else None -%}
+                {%- set remote  = ( 'https://brands.home-assistant.io/_/' ~ ns.integ ~ '/icon.png' ) if ns.integ else None -%}
+
+                {%- set out.items = out.items + [{
+                  'type': 'custom:mushroom-template-card',
+                  'entity': rep,
+                  'primary': dev,
+                  'secondary': area,
+                  'icon_type': 'entity-picture' if ns.integ else 'icon',
+                  'picture':  remote,
+                  'icon': icon,
+                  'badge_color': sev,
+                  'badge_icon': badge_icon,
+                  'tap_action': {'action': 'navigate', 'navigation_path': '/config/devices/device/'~did}
+                }] -%}
+              {%- endif -%}
+            {%- endfor -%} {{ out.items }}
+          exclude:
+            - options: {}
+              domain: person
+            - options: {}
+              domain: weather
+            - options: {}
+              entity_id: binary_sensor.remote_ui
+            - options: {}
+              integration: tuya
+            - options: {}
+              device: Eleanor Presence
+            - options: {}
+              device: Kids Bathroom Presence
+            - options: {}
+              entity_id: /^.*\.browser_mod_/
+            - options: {}
+              entity_id: /^.*\..*_ap$/
+            - options: {}
+              entity_id: /^sensor\.double_take_/
+            - options: {}
+              integration: mqtt
+              device: /[Ff]rigate/
+            - options: {}
+              integration: mqtt
+              device: /[Oo]pnsense/
+            - options: {}
+              integration: mqtt
+              device: LAPTOP-OO58T6KN
+            - options: {}
+              integration: mqtt
+              device: DESKTOP-BQ063IG
+            - options: {}
+              integration: dlna_dmr
+            - integration: smartthings
+            - options: {}
+              entity_id: /^.*\..*_pm10$/
+            - options: {}
+              entity_id: /^.*\..*_no2$/
+            - options: {}
+              entity_id: /^.*\..*_so2$/
+            - options: {}
+              entity_id: /^.*\..*_co$/
+            - options: {}
+              device: Dishwasher
+            - integration: ibeacon
+        sort:
+          method: name
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      - type: custom:mushroom-title-card
+        title: Cameras
+        subtitle: Stills Only · Tap for Live
+        grid_options:
+          columns: full
+      - type: picture-entity
+        entity: camera.doorbell_camera
+        name: Doorbell
+        camera_view: auto
+        tap_action:
+          action: more-info
+      - type: picture-entity
+        entity: camera.driveway_camera
+        name: Driveway
+        camera_view: auto
+        tap_action:
+          action: more-info
+      - type: vertical-stack
+        cards:
+          - type: custom:button-card
+            name: Climate
+            icon: mdi:thermostat
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Climate
+                  content:
+                    type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.downstairs_thermostat
+                          - name: Downstairs
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.upstairs_thermostat
+                          - name: Upstairs
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: >-
+                              climate.playroom_minisplit_setall_playroom_minisplit
+                          - name: Playroom
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.gym_minisplit_setall_gym_minisplit
+                          - name: Gym
+                      - type: custom:decluttering-card
+                        template: climate_card
+                        variables:
+                          - entity: climate.chicken_heat_lamp
+                          - name: Chicken Coop
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.living_room_dehumidifier
+                          - name: Living Room Dehumidifier
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.dehumidifier
+                          - name: Basement Dehumidifier
+                      - type: custom:decluttering-card
+                        template: humidifier_card
+                        variables:
+                          - entity: humidifier.humidifier
+                          - name: Parlor Humidifier
+                      - type: custom:mushroom-template-card
+                        entity: binary_sensor.sunny
+                        primary: "{{ state_attr(entity,'friendly_name') }}"
+                        secondary: >-
+                          {%- from 'hwmon.jinja' import hw_secondary -%} {{
+                          state_translated(entity) }} · {{
+                          hw_secondary('sensor.light_sensor_illuminance') }}
+                        icon: >-
+                          {% if is_state(entity,'on') %}mdi:weather-sunny{%
+                          else %}mdi:weather-cloudy{% endif %}
+                        icon_color: >-
+                          {% if is_state(entity,'on') %}yellow{% else
+                          %}blue{% endif %}
+                      - type: custom:mushroom-template-card
+                        entity: binary_sensor.rainy
+                        primary: "{{ state_attr(entity,'friendly_name') }}"
+                        secondary: >-
+                          {{ state_translated(entity) }} · {{
+                          state_translated('binary_sensor.rain_probe_fresh')
+                          }}
+                        icon: >-
+                          {% if is_state(entity,'on')
+                          %}mdi:weather-pouring{% else
+                          %}mdi:weather-partly-cloudy{% endif %}
+                        icon_color: >-
+                          {% if is_state(entity,'on') %}blue{% else
+                          %}disabled{% endif %}
+                      - type: custom:mushroom-template-card
+                        entity: binary_sensor.dark_outside
+                        primary: "{{ state_attr(entity,'friendly_name') }}"
+                        secondary: "{{ state_translated(entity) }}"
+                        icon: >-
+                          {% if is_state(entity,'on') %}mdi:weather-night{%
+                          else %}mdi:weather-partly-cloudy{% endif %}
+                        icon_color: >-
+                          {% if is_state(entity,'on') %}black{% else
+                          %}disabled{% endif %}
+                      - type: custom:mushroom-template-card
+                        entity: binary_sensor.hot_inside
+                        primary: "{{ state_attr(entity,'friendly_name') }}"
+                        secondary: "{{ state_translated(entity) }}"
+                        icon: >-
+                          {% if is_state(entity,'on') %}mdi:radiator{% else
+                          %}mdi:radiator-off{% endif %}
+                        icon_color: >-
+                          {% if is_state(entity,'on') %}red{% else
+                          %}disabled{% endif %}
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 16px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+          - type: custom:button-card
+            name: Exterior
+            icon: mdi:lightbulb-on
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Exterior Lights
+                  content:
+                    type: vertical-stack
+                    cards:
+                      - type: custom:mushroom-light-card
+                        entity: light.front_porch_light
+                      - type: custom:mushroom-light-card
+                        entity: light.kitchen_porch_light
+                      - type: custom:mushroom-light-card
+                        entity: light.garage_lights
+                      - type: custom:mushroom-light-card
+                        entity: light.back_porch_lights
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 80px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+          - type: custom:button-card
+            name: Blinds
+            icon: mdi:blinds
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Blinds
+                  content:
+                    type: vertical-stack
+                    cards:
+                      - type: heading
+                        icon: mdi:white-balance-sunny
+                        heading: Closed for Brightness
+                        heading_style: subtitle
+                        visibility:
+                          - condition: or
+                            conditions:
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.breakfast_room_closed_brightness
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.kitchen_closed_brightness
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.laundry_room_closed_brightness
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.living_room_closed_brightness
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.study_south_closed_brightness
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.study_west_closed_brightness
+                                state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: vertical-stack
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {%- set wanted = "brightness" -%} {%- set ns =
+                            namespace(out=[]) -%} {%- for c in states.cover
+                            -%}
+                              {%- set slug = c.entity_id.split('.', 1)[1] -%}
+                              {%- if slug.endswith('_window') -%}
+                                {%- set reason_id = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+                                {%- if c.state in ['closed', 'closing'] and (states(reason_id) | lower == wanted) -%}
+                                  {%- set card =
+                                    {
+                                      "type": "custom:mushroom-cover-card",
+                                      "entity": "cover." ~ slug
+                                    }-%}
+                                  {%- set ns.out = ns.out + [card] -%}
+                                {%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%} {{ ns.out | to_json }}
+                      - type: heading
+                        icon: mdi:thermometer-high
+                        heading: Closed for Temperature
+                        heading_style: subtitle
+                        visibility:
+                          - condition: or
+                            conditions:
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.front_hallway_closed_temperature
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.study_south_closed_temperature
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.study_west_closed_temperature
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.guest_south_closed_temperature
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.west_windows_closed_temperature
+                                state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: vertical-stack
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {%- set wanted = "temperature" -%} {%- set ns =
+                            namespace(out=[]) -%} {%- for c in states.cover
+                            -%}
+                              {%- set slug = c.entity_id.split('.', 1)[1] -%}
+                              {%- if slug.endswith('_window') -%}
+                                {%- set reason_id = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+                                {%- if c.state in ['closed', 'closing'] and (states(reason_id) | lower == wanted) -%}
+                                  {%- set card =
+                                    {
+                                      "type": "custom:mushroom-cover-card",
+                                      "entity": "cover." ~ slug
+                                    }-%}
+                                  {%- set ns.out = ns.out + [card] -%}
+                                {%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%} {{ ns.out | to_json }}
+                      - type: heading
+                        icon: mdi:motion-sensor
+                        heading: Closed for Presence
+                        heading_style: subtitle
+                        visibility:
+                          - condition: or
+                            conditions:
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.kids_bathroom_closed_presence
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.master_bathroom_closed_presence
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.eleanor_room_closed_presence
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.michael_room_closed_presence
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.guest_bedroom_closed_presence
+                                state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: vertical-stack
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {%- set wanted = "presence" -%} {%- set ns =
+                            namespace(out=[]) -%} {%- for c in states.cover
+                            -%}
+                              {%- set slug = c.entity_id.split('.', 1)[1] -%}
+                              {%- if slug.endswith('_window') -%}
+                                {%- set reason_id = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+                                {%- if c.state in ['closed', 'closing'] and (states(reason_id) | lower == wanted) -%}
+                                  {%- set card =
+                                    {
+                                      "type": "custom:mushroom-cover-card",
+                                      "entity": "cover." ~ slug
+                                    }-%}
+                                  {%- set ns.out = ns.out + [card] -%}
+                                {%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%} {{ ns.out | to_json }}
+                      - type: heading
+                        icon: mdi:television
+                        heading: Closed for Devices
+                        heading_style: subtitle
+                        visibility:
+                          - condition: or
+                            conditions:
+                              - condition: state
+                                entity: binary_sensor.living_room_closed_tv
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.kitchen_closed_hub
+                                state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: vertical-stack
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {%- set wanted = "device" -%} {%- set ns =
+                            namespace(out=[]) -%} {%- for c in states.cover
+                            -%}
+                              {%- set slug = c.entity_id.split('.', 1)[1] -%}
+                              {%- if slug.endswith('_window') -%}
+                                {%- set reason_id = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+                                {%- if c.state in ['closed', 'closing'] and (states(reason_id) | lower == wanted) -%}
+                                  {%- set card =
+                                    {
+                                      "type": "custom:mushroom-cover-card",
+                                      "entity": "cover." ~ slug
+                                    }-%}
+                                  {%- set ns.out = ns.out + [card] -%}
+                                {%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%} {{ ns.out | to_json }}
+                      - type: heading
+                        icon: mdi:gesture-tap-button
+                        heading: Closed by Button
+                        heading_style: subtitle
+                        visibility:
+                          - condition: or
+                            conditions:
+                              - condition: state
+                                entity: binary_sensor.living_room_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.breakfast_room_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.guest_bedroom_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: >-
+                                  binary_sensor.master_bathroom_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.master_bedroom_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.kids_bathroom_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.eleanor_room_closed_button
+                                state: 'on'
+                              - condition: state
+                                entity: binary_sensor.michael_room_closed_button
+                                state: 'on'
+                      - type: custom:auto-entities
+                        card:
+                          type: vertical-stack
+                        card_param: cards
+                        show_empty: false
+                        filter:
+                          template: >-
+                            {%- set wanted = "button" -%} {%- set ns =
+                            namespace(out=[]) -%} {%- for c in states.cover
+                            -%}
+                              {%- set slug = c.entity_id.split('.', 1)[1] -%}
+                              {%- if slug.endswith('_window') -%}
+                                {%- set reason_id = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+                                {%- if c.state in ['closed', 'closing'] and (states(reason_id) | lower == wanted) -%}
+                                  {%- set card =
+                                    {
+                                      "type": "custom:mushroom-cover-card",
+                                      "entity": "cover." ~ slug
+                                    }-%}
+                                  {%- set ns.out = ns.out + [card] -%}
+                                {%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%} {{ ns.out | to_json }}
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 144px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+          - type: custom:button-card
+            name: Presence
+            icon: mdi:account-group
+            show_name: false
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Presence
+                  content:
+                    type: vertical-stack
+                    cards:
+                      - type: grid
+                        columns: 2
+                        square: false
+                        cards:
+                          - type: custom:mushroom-person-card
+                            entity: person.aaron_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.ashley_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.eleanor_watson
+                          - type: custom:mushroom-person-card
+                            entity: person.michael_watson
+                          - type: custom:mushroom-entity-card
+                            entity: input_boolean.someone_is_home
+                          - type: custom:mushroom-entity-card
+                            entity: input_boolean.home_alone
+                          - type: custom:mushroom-entity-card
+                            entity: input_boolean.coming_home
+                          - type: custom:mushroom-entity-card
+                            entity: sensor.people_home_count
+                            icon: mdi:account-group
+            styles:
+              card:
+                - position: fixed
+                - right: 24px
+                - bottom: calc(env(safe-area-inset-bottom, 0px) + 208px)
+                - z-index: 1099
+                - width: 56px
+                - height: 56px
+                - aspect-ratio: 1 / 1
+                - box-sizing: border-box
+                - padding: 0
+                - border-radius: 50%
+                - box-shadow: 0 6px 20px rgba(0,0,0,.25)
+                - background: var(--secondary-background-color)
+                - color: var(--primary-text-color)
+                - transition: opacity .25s ease, transform .25s ease
+              icon:
+                - width: 24px
+                - height: 24px
+                - transform: none !important
+              img_cell:
+                - background: none
+    column_span: 2
+  - type: grid
+    cards:
+      - type: heading
+        heading: New section
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: custom:mushroom-chips-card
+          alignment: center
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: problem
+              state: 'on'
+            - entity_id: binary_sensor.*_leak*
+              state: 'on'
+            - entity_id: binary_sensor.nest_protect_*_smoke_status
+              state: 'on'
+            - entity_id: binary_sensor.nest_protect_*_co_status
+          exclude: []

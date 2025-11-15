@@ -1,0 +1,22 @@
+{# gas_helpers.jinja #}
+{# Defaults:
+    hhv_btu_per_ft3: higher heating value of natural gas (adjust to your utility)
+    m3_per_ft3: exact ft³ → m³
+#}
+{% set hhv_btu_per_ft3 = 1030.0 %}
+{% set m3_per_ft3 = 0.0283168466 %}
+
+{# Rated BTU/h (+ optional efficiency 0..1) -> m³/h #}
+{% macro flow_m3_per_h(btu_per_h, efficiency=1.0, hhv=hhv_btu_per_ft3) -%}
+  {{ ((btu_per_h|float(0) * efficiency|float(1)) / hhv|float(hhv_btu_per_ft3)) * m3_per_ft3 }}
+{%- endmacro %}
+
+{# Convert m³ to CCF and therms (therms via HHV) #}
+{% macro m3_to_ccf(m3) -%}
+  {{ (m3|float(0)) / 2.83168466 }}
+{%- endmacro %}
+
+{% macro m3_to_therms(m3, hhv=hhv_btu_per_ft3) -%}
+  {# m³ -> ft³ -> BTU -> therms (1 therm = 100,000 BTU) #}
+  {{ ((m3|float(0) / 0.0283168466) * hhv|float(hhv_btu_per_ft3)) / 100000.0 }}
+{%- endmacro %}

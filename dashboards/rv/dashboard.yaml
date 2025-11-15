@@ -1,5 +1,0 @@
-# File: dashboards/rv/dashboard.yaml
-# Description: Main RV dashboard configuration
-
-title: RV
-views: !include_dir_list views

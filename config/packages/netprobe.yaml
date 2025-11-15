@@ -1,0 +1,647 @@
+# ============================ Netprobe ingest ============================
+# Assumes your script publishes the JSON you pasted to these topics:
+#   netprobe/home   and   netprobe/rv
+# Edit the topics if yours differ.
+
+mqtt:
+  sensor:
+    # ---------------- Home raw payload holder ----------------
+    - name: Netprobe Home Raw
+      unique_id: netprobe_home_raw
+      state_topic: site/home/devices/netprobe
+      value_template: "{{ value_json.timestamp }}"
+      json_attributes_topic: site/home/devices/netprobe
+      json_attributes_template: "{{ value_json | tojson }}"
+      icon: mdi:lan
+      expire_after: 2400
+      device:
+        identifiers: ["netprobe_home_device"]
+        name: Netprobe Home WAN
+        manufacturer: Netprobe
+        model: iperf3 bash client
+        sw_version: "1.0"
+
+    # ---------------- RV raw payload holder ----------------
+    - name: Netprobe RV Raw
+      unique_id: netprobe_rv_raw
+      state_topic: site/rv/devices/netprobe
+      value_template: "{{ value_json.timestamp }}"
+      json_attributes_topic: site/rv/devices/netprobe
+      json_attributes_template: "{{ value_json | tojson }}"
+      icon: mdi:van-utility
+      expire_after: 4200
+      device:
+        identifiers: ["netprobe_rv_device"]
+        name: Netprobe RV WAN
+        manufacturer: Netprobe
+        model: iperf3 bash client
+        sw_version: "1.0"
+
+# Optional: link capacity knobs for utilization math
+input_number:
+  home_down_capacity_mbps:
+    name: Home Down Capacity
+    min: 1
+    max: 10000
+    step: 1
+    initial: 1000
+    unit_of_measurement: Mbit/s
+    icon: mdi:download
+  home_up_capacity_mbps:
+    name: Home Up Capacity
+    min: 1
+    max: 10000
+    step: 1
+    initial: 50
+    unit_of_measurement: Mbit/s
+    icon: mdi:upload
+  rv_down_capacity_mbps:
+    name: RV Down Capacity
+    min: 1
+    max: 10000
+    step: 1
+    initial: 25
+    unit_of_measurement: Mbit/s
+    icon: mdi:download
+  rv_up_capacity_mbps:
+    name: RV Up Capacity
+    min: 1
+    max: 10000
+    step: 1
+    initial: 25
+    unit_of_measurement: Mbit/s
+    icon: mdi:upload
+
+# ============================ Template sensors ===========================
+template:
+  - sensor:
+      # ---------------- Derived helper macros as inline Jinja ----------------
+      # None needed here; we keep templates simple and direct.
+
+      # ============================ HOME ============================
+      - name: Home Download Rate
+        unique_id: home_download_rate
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:download
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','download_mbps') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','download_mbps') | float }}"
+
+      - name: Home Upload Rate
+        unique_id: home_upload_rate
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:upload
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','upload_mbps') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','upload_mbps') | float }}"
+
+      - name: Home Latency P50
+        unique_id: home_latency_p50
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-sand
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','latency_p50_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','latency_p50_ms') | float }}"
+
+      - name: Home Latency TCP
+        unique_id: home_latency_tcp
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:lan-pending
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','latency_tcp_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','latency_tcp_ms') | float }}"
+
+      - name: Home Latency ICMP
+        unique_id: home_latency_icmp
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:lan-pending
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','latency_icmp_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','latency_icmp_ms') | float }}"
+
+      - name: Home TCP-ICMP Latency Delta
+        unique_id: home_latency_tcp_icmp_delta
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:arrow-expand-vertical
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','latency_tcp_ms') is not none
+              and state_attr('sensor.netprobe_home_raw','latency_icmp_ms') is not none }}
+        state: >-
+          {% set t = state_attr('sensor.netprobe_home_raw','latency_tcp_ms') | float %}
+          {% set i = state_attr('sensor.netprobe_home_raw','latency_icmp_ms') | float %}
+          {{ t - i }}
+
+      - name: Home Jitter UL
+        unique_id: home_jitter_ul
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves-arrow-right
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','jitter_ul_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','jitter_ul_ms') | float }}"
+
+      - name: Home Jitter DL
+        unique_id: home_jitter_dl
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves-arrow-left
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','jitter_dl_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','jitter_dl_ms') | float }}"
+
+      - name: Home Jitter Max
+        unique_id: home_jitter_max
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','jitter_ul_ms') is not none
+              and state_attr('sensor.netprobe_home_raw','jitter_dl_ms') is not none }}
+        state: >-
+          {% set u = state_attr('sensor.netprobe_home_raw','jitter_ul_ms') | float %}
+          {% set d = state_attr('sensor.netprobe_home_raw','jitter_dl_ms') | float %}
+          {{ [u, d] | max }}
+
+      - name: Home Packet Loss UL
+        unique_id: home_loss_ul_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:arrow-up-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','loss_ul_percent') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','loss_ul_percent') | float }}"
+
+      - name: Home Packet Loss DL
+        unique_id: home_loss_dl_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:arrow-down-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','loss_dl_percent') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','loss_dl_percent') | float }}"
+
+      - name: Home Packets UL
+        unique_id: home_packets_ul
+        unit_of_measurement: "packets"
+        state_class: measurement
+        icon: mdi:arrow-up-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and state_attr('sensor.netprobe_home_raw','packets_ul') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','packets_ul') | int }}"
+
+      - name: Home Packets DL
+        unique_id: home_packets_dl
+        unit_of_measurement: "packets"
+        state_class: measurement
+        icon: mdi:arrow-down-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','packets_dl') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','packets_dl') | int }}"
+
+      - name: Home Packet Loss Combined
+        unique_id: home_loss_combined_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:package-variant-closed-remove
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+              and ((state_attr('sensor.netprobe_home_raw','loss_dl_packets') is not none
+              and state_attr('sensor.netprobe_home_raw','loss_dl_packets') is not none
+              and state_attr('sensor.netprobe_home_raw','packets_ul') is not none
+              and state_attr('sensor.netprobe_home_raw','packets_dl') is not none)
+              or (state_attr('sensor.netprobe_home_raw','loss_ul_percent') is not none
+              and state_attr('sensor.netprobe_home_raw','loss_dl_percent') is not none)) }}
+        state: >-
+          {% set lul = state_attr('sensor.netprobe_home_raw','loss_ul_packets') | int %}
+          {% set ldl = state_attr('sensor.netprobe_home_raw','loss_dl_packets') | int %}
+          {% set pul = state_attr('sensor.netprobe_home_raw','packets_ul') | int %}
+          {% set pdl = state_attr('sensor.netprobe_home_raw','packets_dl') | int %}
+          {% set tot = pul + pdl %}
+          {% if tot > 0 %}
+            {{ 100 * (lul + ldl) / tot }}
+          {% else %}
+            {% set a = state_attr('sensor.netprobe_home_raw','loss_ul_percent') | float %}
+            {% set b = state_attr('sensor.netprobe_home_raw','loss_dl_percent') | float %}
+            {{ (a + b) / 2 }}
+          {% endif %}
+
+      - name: Home Ping Success Rate
+        unique_id: home_ping_success_rate_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:check-network
+        availability: "{{ has_value('sensor.home_packet_loss_combined') }}"
+        state: >-
+          {% set loss = states('sensor.home_packet_loss_combined') | float %}
+          {{ [100 - loss, 0] | max }}
+
+      - name: Home Download Utilization
+        unique_id: home_download_utilization_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:download-network
+        availability: "{{ has_value('sensor.home_download_rate') and has_value('input_number.home_down_capacity_mbps') }}"
+        state: >-
+          {% set r = states('sensor.home_download_rate') | float %}
+          {% set c = states('input_number.home_down_capacity_mbps') | float %}
+          {{ 100 * r / c if c > 0 else None }}
+
+      - name: Home Upload Utilization
+        unique_id: home_upload_utilization_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:upload-network
+        availability: "{{ has_value('sensor.home_upload_rate') and has_value('input_number.home_up_capacity_mbps') }}"
+        state: >-
+          {% set r = states('sensor.home_upload_rate') | float %}
+          {% set c = states('input_number.home_up_capacity_mbps') | float %}
+          {{ 100 * r / c if c > 0 else None }}
+
+      - name: Home Link Saturation
+        unique_id: home_link_saturation_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:swap-vertical-bold
+        availability: "{{ has_value('sensor.home_download_utilization') and has_value('sensor.home_upload_utilization') }}"
+        state: >-
+          {% set d = states('sensor.home_download_utilization') | float %}
+          {% set u = states('sensor.home_upload_utilization') | float %}
+          {{ [d, u] | max }}
+
+      - name: Home UDP Bitrate Target
+        unique_id: home_udp_bitrate_target_mbps
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:sine-wave
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_home_raw','schedule') %}
+          {% set raw = s.udp_bitrate if s is mapping else None %}
+          {% if raw %}
+            {% set m = raw | string %}
+            {% if m.endswith('M') %}{{ (m[:-1] | float(0)) }}
+            {% elif m.endswith('K') %}{{ (m[:-1] | float(0)) / 1000 }}
+            {% elif m.endswith('G') %}{{ (m[:-1] | float(0)) * 1000 }}
+            {% else %}{{ (m | float(0)) / 1_000_000 }}{% endif %}
+          {% else %}{{ None }}{% endif %}
+
+      - name: Home Hiccup
+        unique_id: home_hiccup
+        icon: mdi:alert
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','hiccup') is not none }}
+        state: >-
+          {% set v = state_attr('sensor.netprobe_home_raw','hiccup') %}
+          {% if v in [True, 'true', 'True'] %}on{% else %}off{% endif %}
+
+      - name: Home Hiccup Reason
+        unique_id: home_hiccup_reason
+        icon: mdi:alert-circle
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','hiccup_reason') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','hiccup_reason') }}"
+
+      - name: Home Speedtest Error Code
+        unique_id: home_speedtest_error
+        icon: mdi:alert-decagram
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','error') is not none }}
+        state: "{{ state_attr('sensor.netprobe_home_raw','error') }}"
+
+      - name: Home Download Mode
+        unique_id: home_dl_mode
+        icon: mdi:calendar-clock
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_home_raw','schedule') %}
+          {{ s.dl_mode if s is mapping else None }}
+
+      - name: Home Upload Mode
+        unique_id: home_ul_mode
+        icon: mdi:calendar-clock
+        availability: >-
+          {{ has_value('sensor.netprobe_home_raw')
+               and state_attr('sensor.netprobe_home_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_home_raw','schedule') %}
+          {{ s.ul_mode if s is mapping else None }}
+
+      # ============================ RV ============================
+      - name: RV Download Rate
+        unique_id: rv_download_rate
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:download
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','download_mbps') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','download_mbps') | float }}"
+
+      - name: RV Upload Rate
+        unique_id: rv_upload_rate
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:upload
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','upload_mbps') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','upload_mbps') | float }}"
+
+      - name: RV Latency P50
+        unique_id: rv_latency_p50
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-sand
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','latency_p50_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','latency_p50_ms') | float }}"
+
+      - name: RV Latency TCP
+        unique_id: rv_latency_tcp
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:lan-pending
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','latency_tcp_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','latency_tcp_ms') | float }}"
+
+      - name: RV Latency ICMP
+        unique_id: rv_latency_icmp
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:lan-pending
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','latency_icmp_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','latency_icmp_ms') | float }}"
+
+      - name: RV TCP-ICMP Latency Delta
+        unique_id: rv_latency_tcp_icmp_delta
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:arrow-expand-vertical
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','latency_tcp_ms') is not none
+              and state_attr('sensor.netprobe_rv_raw','latency_icmp_ms') is not none }}
+        state: >-
+          {% set t = state_attr('sensor.netprobe_rv_raw','latency_tcp_ms') | float %}
+          {% set i = state_attr('sensor.netprobe_rv_raw','latency_icmp_ms') | float %}
+          {{ t - i }}
+
+      - name: RV Jitter UL
+        unique_id: rv_jitter_ul
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves-arrow-right
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','jitter_ul_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','jitter_ul_ms') | float }}"
+
+      - name: RV Jitter DL
+        unique_id: rv_jitter_dl
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves-arrow-left
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','jitter_dl_ms') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','jitter_dl_ms') | float }}"
+
+      - name: RV Jitter Max
+        unique_id: rv_jitter_max
+        unit_of_measurement: "ms"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:waves
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','jitter_ul_ms') is not none
+              and state_attr('sensor.netprobe_rv_raw','jitter_dl_ms') is not none }}
+        state: >-
+          {% set u = state_attr('sensor.netprobe_rv_raw','jitter_ul_ms') | float %}
+          {% set d = state_attr('sensor.netprobe_rv_raw','jitter_dl_ms') | float %}
+          {{ [u, d] | max }}
+
+      - name: RV Packet Loss UL
+        unique_id: rv_loss_ul_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:arrow-up-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','loss_ul_percent') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','loss_ul_percent') | float }}"
+
+      - name: RV Packet Loss DL
+        unique_id: rv_loss_dl_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:arrow-down-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','loss_dl_percent') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','loss_dl_percent') | float }}"
+
+      - name: RV Packets UL
+        unique_id: rv_packets_ul
+        unit_of_measurement: "packets"
+        state_class: measurement
+        icon: mdi:arrow-up-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and state_attr('sensor.netprobe_rv_raw','packets_ul') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','packets_ul') | int }}"
+
+      - name: RV Packets DL
+        unique_id: rv_packets_dl
+        unit_of_measurement: "packets"
+        state_class: measurement
+        icon: mdi:arrow-down-bold-box
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','packets_dl') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','packets_dl') | int }}"
+
+      - name: RV Packet Loss Combined
+        unique_id: rv_loss_combined_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:package-variant-closed-remove
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+              and ((state_attr('sensor.netprobe_rv_raw','loss_dl_packets') is not none
+              and state_attr('sensor.netprobe_rv_raw','loss_dl_packets') is not none
+              and state_attr('sensor.netprobe_rv_raw','packets_ul') is not none
+              and state_attr('sensor.netprobe_rv_raw','packets_dl') is not none)
+              or (state_attr('sensor.netprobe_rv_raw','loss_ul_percent') is not none
+              and state_attr('sensor.netprobe_rv_raw','loss_dl_percent') is not none)) }}
+        state: >-
+          {% set lul = state_attr('sensor.netprobe_rv_raw','loss_ul_packets') | int %}
+          {% set ldl = state_attr('sensor.netprobe_rv_raw','loss_dl_packets') | int %}
+          {% set pul = state_attr('sensor.netprobe_rv_raw','packets_ul') | int %}
+          {% set pdl = state_attr('sensor.netprobe_rv_raw','packets_dl') | int %}
+          {% set tot = pul + pdl %}
+          {% if tot > 0 %}
+            {{ 100 * (lul + ldl) / tot }}
+          {% else %}
+            {% set a = state_attr('sensor.netprobe_rv_raw','loss_ul_percent') | float %}
+            {% set b = state_attr('sensor.netprobe_rv_raw','loss_dl_percent') | float %}
+            {{ (a + b) / 2 }}
+          {% endif %}
+
+      - name: RV Ping Success Rate
+        unique_id: rv_ping_success_rate_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:check-network
+        availability: "{{ has_value('sensor.rv_packet_loss_combined') }}"
+        state: >-
+          {% set loss = states('sensor.rv_packet_loss_combined') | float %}
+          {{ [100 - loss, 0] | max }}
+
+      - name: RV Download Utilization
+        unique_id: rv_download_utilization_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:download-network
+        availability: "{{ has_value('sensor.rv_download_rate') and has_value('input_number.rv_down_capacity_mbps') }}"
+        state: >-
+          {% set r = states('sensor.rv_download_rate') | float %}
+          {% set c = states('input_number.rv_down_capacity_mbps') | float %}
+          {{ 100 * r / c if c > 0 else None }}
+
+      - name: RV Upload Utilization
+        unique_id: rv_upload_utilization_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:upload-network
+        availability: "{{ has_value('sensor.rv_upload_rate') and has_value('input_number.rv_up_capacity_mbps') }}"
+        state: >-
+          {% set r = states('sensor.rv_upload_rate') | float %}
+          {% set c = states('input_number.rv_up_capacity_mbps') | float %}
+          {{ 100 * r / c if c > 0 else None }}
+
+      - name: RV Link Saturation
+        unique_id: rv_link_saturation_pct
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:swap-vertical-bold
+        availability: "{{ has_value('sensor.rv_download_utilization') and has_value('sensor.rv_upload_utilization') }}"
+        state: >-
+          {% set d = states('sensor.rv_download_utilization') | float %}
+          {% set u = states('sensor.rv_upload_utilization') | float %}
+          {{ [d, u] | max }}
+
+      - name: RV UDP Bitrate Target
+        unique_id: rv_udp_bitrate_target_mbps
+        unit_of_measurement: "Mbit/s"
+        device_class: data_rate
+        state_class: measurement
+        icon: mdi:sine-wave
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_rv_raw','schedule') %}
+          {% set raw = s.udp_bitrate if s is mapping else None %}
+          {% if raw %}
+            {% set m = raw | string %}
+            {% if m.endswith('M') %}{{ (m[:-1] | float(0)) }}
+            {% elif m.endswith('K') %}{{ (m[:-1] | float(0)) / 1000 }}
+            {% elif m.endswith('G') %}{{ (m[:-1] | float(0)) * 1000 }}
+            {% else %}{{ (m | float(0)) / 1_000_000 }}{% endif %}
+          {% else %}{{ None }}{% endif %}
+
+      - name: RV Hiccup
+        unique_id: rv_hiccup
+        icon: mdi:alert
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','hiccup') is not none }}
+        state: >-
+          {% set v = state_attr('sensor.netprobe_rv_raw','hiccup') %}
+          {% if v in [True, 'true', 'True'] %}on{% else %}off{% endif %}
+
+      - name: RV Hiccup Reason
+        unique_id: rv_hiccup_reason
+        icon: mdi:alert-circle
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','hiccup_reason') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','hiccup_reason') }}"
+
+      - name: RV Speedtest Error Code
+        unique_id: rv_speedtest_error
+        icon: mdi:alert-decagram
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','error') is not none }}
+        state: "{{ state_attr('sensor.netprobe_rv_raw','error') }}"
+
+      - name: RV Download Mode
+        unique_id: rv_dl_mode
+        icon: mdi:calendar-clock
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_rv_raw','schedule') %}
+          {{ s.dl_mode if s is mapping else None }}
+
+      - name: RV Upload Mode
+        unique_id: rv_ul_mode
+        icon: mdi:calendar-clock
+        availability: >-
+          {{ has_value('sensor.netprobe_rv_raw')
+               and state_attr('sensor.netprobe_rv_raw','schedule') is not none }}
+        state: >-
+          {% set s = state_attr('sensor.netprobe_rv_raw','schedule') %}
+          {{ s.ul_mode if s is mapping else None }}

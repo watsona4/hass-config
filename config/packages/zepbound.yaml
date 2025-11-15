@@ -1,0 +1,729 @@
+###############################################################################
+# Package: zepbound.yaml (trigger-based; no minute-by-minute now())
+###############################################################################
+
+homeassistant:
+  customize:
+    sensor.zep_residual_mg:
+      friendly_name: Zepbound Residual (mg)
+      icon: mdi:pill
+    sensor.zep_target_residual_mg:
+      friendly_name: Target Residual Before Shot (mg)
+      icon: mdi:target
+    sensor.zep_projected_peak_mg:
+      friendly_name: Projected Peak After Next Shot (mg)
+      icon: mdi:chart-bell-curve
+    sensor.zep_next_ready_timestamp:
+      friendly_name: Next Time Residual Meets Target
+      icon: mdi:clock-outline
+    binary_sensor.zep_ready_to_inject:
+      friendly_name: "Zepbound: Ready To Inject"
+      icon: mdi:needle
+    sensor.zep_current_course_peak_mg:
+      friendly_name: Current Course Upcoming Peak (mg)
+      icon: mdi:chart-bell-curve
+    sensor.zep_current_course_peak_time:
+      friendly_name: Current Course Upcoming Peak Time
+      icon: mdi:clock-outline
+
+###############################################################################
+# INPUTS / HELPERS
+###############################################################################
+input_select:
+  zep_eval_mode:
+    name: ZepBound Evaluation Mode
+    options:
+      - course
+      - steady
+    icon: mdi:swap-horizontal
+
+input_number:
+  zep_desired_peak_mg:
+    name: "Desired Peak (mg)"
+    min: 0
+    max: 50
+    step: 0.1
+    mode: box
+    unit_of_measurement: "mg"
+    icon: mdi:target-variant
+
+  zep_desired_dose_mg:
+    name: "Desired Dose (mg)"
+    min: 0
+    max: 50
+    step: 0.1
+    mode: box
+    unit_of_measurement: "mg"
+    icon: mdi:needle
+
+  zep_weekly_dose_mg:
+    name: "Weekly Dose (mg)"
+    min: 0
+    max: 50
+    step: 0.1
+    mode: box
+    unit_of_measurement: "mg"
+    icon: mdi:needle
+
+  zep_half_life_days:
+    name: "Half-life (days)"
+    min: 1
+    max: 14
+    step: 0.1
+    mode: slider
+    unit_of_measurement: "days"
+    icon: mdi:timer-sand
+    initial: 5.4
+
+  zep_absorption_half_life_hours:
+    name: "Absorption Half-life (hours)"
+    min: 0.5
+    max: 48
+    step: 0.5
+    mode: slider
+    unit_of_measurement: "h"
+    icon: mdi:clock-outline
+    initial: 19
+
+  zep_last_residual_mg:
+    name: "Last Residual Amount (mg)"
+    min: 0
+    max: 50
+    step: 0.01
+    mode: box
+    unit_of_measurement: "mg"
+    icon: mdi:chart-bell-curve
+
+  zep_residual_tolerance_mg:
+    name: "Residual Tolerance (mg)"
+    min: 0
+    max: 5
+    step: 0.05
+    mode: slider
+    unit_of_measurement: "mg"
+    icon: mdi:approximately-equal
+    initial: 0.25
+
+  zep_band_min_mg:
+    name: "Residual Min (mg) – effectiveness floor"
+    min: 0
+    max: 50
+    step: 0.1
+    unit_of_measurement: "mg"
+    icon: mdi:alpha-m-box
+    mode: box
+
+  zep_band_max_mg:
+    name: "Residual Max (mg) – side-effects ceiling"
+    min: 0
+    max: 50
+    step: 0.1
+    unit_of_measurement: "mg"
+    icon: mdi:alpha-m-box-outline
+    mode: box
+
+input_datetime:
+  zep_last_injection:
+    name: Last Injection Time
+    has_time: true
+    has_date: true
+  zep_snooze_until:
+    name: Zepbound Snooze Until
+    has_date: true
+    has_time: true
+
+###############################################################################
+# TEMPLATE: trigger-based sensors to avoid continuous now()
+###############################################################################
+template:
+  # Residual, recomputed every 5 minutes and when key inputs change.
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_half_life_days
+      - platform: homeassistant
+        event: start
+    sensor:
+      - name: zep_residual_mg
+        unit_of_measurement: "mg"
+        availability: >-
+          {{ has_value('input_datetime.zep_last_injection')
+             and has_value('input_number.zep_last_residual_mg')
+             and (states('input_number.zep_half_life_days')|float(0) > 0)
+             and (states('input_number.zep_absorption_half_life_hours')|float(0) > 0) }}
+        state: >-
+          {%- from 'macros/zepbound.jinja' import zep_residual -%}
+          {{ zep_residual(
+               states('input_datetime.zep_last_injection'),
+               states('input_number.zep_last_residual_mg'),
+               states('input_number.zep_weekly_dose_mg'),
+               states('input_number.zep_half_life_days'),
+               states('input_number.zep_absorption_half_life_hours')
+             ) }}
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_half_life_days
+          - input_number.zep_absorption_half_life_hours
+          - input_number.zep_desired_peak_mg
+          - input_number.zep_weekly_dose_mg
+      - platform: homeassistant
+        event: start
+    variables:
+      plan: >-
+        {%- from 'macros/zepbound.jinja' import zep_next_ready -%}
+        {{ zep_next_ready(
+             states('input_datetime.zep_last_injection'),
+             states('input_number.zep_last_residual_mg'),
+             states('input_number.zep_weekly_dose_mg'),
+             states('input_number.zep_half_life_days'),
+             states('input_number.zep_absorption_half_life_hours'),
+             states('input_number.zep_desired_peak_mg')
+           ) | from_json(default={}) }}
+    sensor:
+      - name: zep_current_plan
+        unique_id: zep_current_plan
+        state: "{{ plan.timestamp if plan is mapping else 'unknown' }}"
+        attributes:
+          target: "{{ plan.target if plan is mapping else None }}"
+          peak: "{{ plan.peak if plan is mapping else None }}"
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_half_life_days
+          - input_number.zep_absorption_half_life_hours
+          - input_number.zep_desired_peak_mg
+          - input_number.zep_desired_dose_mg
+      - platform: homeassistant
+        event: start
+    variables:
+      plan: >-
+        {%- from 'macros/zepbound.jinja' import zep_next_ready -%}
+        {{ zep_next_ready(
+             states('input_datetime.zep_last_injection'),
+             states('input_number.zep_last_residual_mg'),
+             states('input_number.zep_desired_dose_mg'),
+             states('input_number.zep_half_life_days'),
+             states('input_number.zep_absorption_half_life_hours'),
+             states('input_number.zep_desired_peak_mg')
+           ) | from_json(default={}) }}
+    sensor:
+      - name: zep_next_plan
+        unique_id: zep_next_plan
+        state: "{{ plan.timestamp if plan is mapping else 'unknown' }}"
+        attributes:
+          target: "{{ plan.target if plan is mapping else None }}"
+          peak: "{{ plan.peak if plan is mapping else None }}"
+
+  - sensor:
+      - name: zep_target_residual_mg
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_current_plan') }}"
+        state: >-
+          {% set t = state_attr('sensor.zep_current_plan','target') %}
+          {{ (t if t is not none else 0) | float | round(3) }}
+
+      - name: zep_projected_peak_mg
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_current_plan') }}"
+        state: >-
+          {% set p = state_attr('sensor.zep_current_plan','peak') %}
+          {{ (p if p is not none else 0) | float | round(3) }}
+
+      - name: zep_next_ready_timestamp
+        unique_id: zep_next_ready_timestamp
+        device_class: timestamp
+        availability: "{{ has_value('sensor.zep_current_plan') }}"
+        state: >-
+          {% set ts = states('sensor.zep_current_plan') %}
+          {% set dt = ts | as_datetime(default=none) %}
+          {{ dt and (dt | as_local).isoformat() or 'unknown' }}
+        attributes:
+          display: >-
+            {%- from 'macros/humanize_future.jinja' import humanize_future -%}
+            {% set ts = states('sensor.zep_current_plan') %}
+            {{ humanize_future(ts) }}
+
+  - sensor:
+      - name: zep_next_target_residual_mg
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_next_plan') }}"
+        state: >-
+          {% set t = state_attr('sensor.zep_next_plan','target') %}
+          {{ (t if t is not none else 0) | float | round(3) }}
+
+      - name: zep_next_projected_peak_mg
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_next_plan') }}"
+        state: >-
+          {% set p = state_attr('sensor.zep_next_plan','peak') %}
+          {{ (p if p is not none else 0) | float | round(3) }}
+
+  - binary_sensor:
+      - name: zep_ready_to_inject
+        unique_id: zep_ready_to_inject
+        availability: >-
+          {{ has_value('sensor.zep_current_plan')
+             and has_value('sensor.zep_residual_mg')
+             and (state_attr('sensor.zep_current_plan','target') is not none) }}
+        state: >-
+          {% set resid = states('sensor.zep_residual_mg') | float(9999) %}
+          {% set target = state_attr('sensor.zep_current_plan','target') | float(9999) %}
+          {% set tol = states('input_number.zep_residual_tolerance_mg') | float(0.25) %}
+          {% set within = resid <= (target + tol) %}
+          {% set ts = states('sensor.zep_current_plan') %}
+          {% set dt = ts | as_datetime(default=none) %}
+          {% set after_planned = (dt is not none) and (now() >= (dt | as_local)) %}
+          {% set phase_past = (states('sensor.zep_current_course_phase') == 'past') %}
+          {{ within and (after_planned or (dt is none and phase_past)) }}
+        attributes:
+          tolerance_mg: "{{ states('input_number.zep_residual_tolerance_mg') }}"
+          residual_mg: "{{ states('sensor.zep_residual_mg') }}"
+          delta_mg: >-
+            {% set resid = states('sensor.zep_residual_mg') | float(0) %}
+            {% set target = state_attr('sensor.zep_current_plan','target') | float(0) %}
+            {{ (resid - target) | round(3) }}
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_half_life_days
+          - input_number.zep_absorption_half_life_hours
+          - input_number.zep_weekly_dose_mg
+      - platform: homeassistant
+        event: start
+    variables:
+      peak: >-
+        {%- from 'macros/zepbound.jinja' import zep_next_peak -%}
+        {{ zep_next_peak(
+             states('input_datetime.zep_last_injection'),
+             states('input_number.zep_last_residual_mg'),
+             states('input_number.zep_weekly_dose_mg'),
+             states('input_number.zep_half_life_days'),
+             states('input_number.zep_absorption_half_life_hours')
+           ) | from_json(default={}) }}
+    sensor:
+      - name: zep_current_peak
+        unique_id: zep_current_peak
+        state: "{{ peak.value if peak is mapping else none }}"
+        attributes:
+          time: "{{ peak.time if peak is mapping else none }}"
+          rising: "{{ peak is mapping and (peak.time | as_datetime(default=none)) is not none and (peak.time | as_datetime(default=none) | as_local) > now() or none }}"
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_half_life_days
+          - input_number.zep_absorption_half_life_hours
+          - input_number.zep_desired_dose_mg
+      - platform: homeassistant
+        event: start
+    variables:
+      peak: >-
+        {%- from 'macros/zepbound.jinja' import zep_next_peak -%}
+        {{ zep_next_peak(
+             states('input_datetime.zep_last_injection'),
+             states('input_number.zep_last_residual_mg'),
+             states('input_number.zep_desired_dose_mg'),
+             states('input_number.zep_half_life_days'),
+             states('input_number.zep_absorption_half_life_hours')
+           ) | from_json(default={}) }}
+    sensor:
+      - name: zep_next_peak
+        unique_id: zep_next_peak
+        state: "{{ peak.value if peak is mapping else none }}"
+        attributes:
+          time: "{{ peak.time if peak is mapping else none }}"
+          rising: "{{ peak is mapping and (peak.time | as_datetime(default=none)) is not none and (peak.time | as_datetime(default=none) | as_local) > now() or none }}"
+
+  - sensor:
+      - name: zep_current_course_peak_mg
+        icon: mdi:chart-bell-curve
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_current_peak') }}"
+        state: >-
+          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
+          {% set peak_value_mg = states('sensor.zep_current_peak') | float(0) | round(3) %}
+          {% if rising %}
+            {{ peak_value_mg }}
+          {% else %}
+            {{ states(this.entity_id) if states(this.entity_id) is number else peak_value_mg }}
+          {% endif %}
+        attributes:
+          peak_time: >-
+            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
+            {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
+            {% if rising %}
+              {{ (peak_dt | as_local).isoformat() }}
+            {% else %}
+              {{ state_attr(this.entity_id, 'peak_time') or (peak_dt and (peak_dt | as_local).isoformat()) or 'unknown' }}
+            {% endif %}
+          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
+          details: >-
+            {%- from 'macros/humanize_future.jinja' import humanize_future -%}
+            {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
+            {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
+            {% if rising %}
+              {{ humanize_future(peak_dt) }}
+            {% else %}
+              Peaked {{ as_datetime(state_attr(this.entity_id,'peak_time')) | as_local | as_timestamp | timestamp_custom('%a %-m/%-d, %-I:%M %p') if state_attr(this.entity_id,'peak_time') not in ['unknown', None] else 'unknown' }}
+            {% endif %}
+
+      - name: zep_current_course_peak_time
+        device_class: timestamp
+        icon: mdi:clock-outline
+        availability: "{{ has_value('sensor.zep_current_peak') }}"
+        state: >-
+          {% set rising = state_attr('sensor.zep_current_peak','rising') | bool(none) %}
+          {% set peak_dt = state_attr('sensor.zep_current_peak','time') | as_datetime(default=none) %}
+          {% if rising %}
+            {{ (peak_dt | as_local).isoformat() }}
+          {% else %}
+            {# keep the last timestamp we had while rising #}
+            {{ states(this.entity_id) if states(this.entity_id) not in ['unknown','unavailable','None'] else ((peak_dt | as_local).isoformat() if peak_dt is not none else 'unknown') }}
+          {% endif %}
+        attributes:
+          phase: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
+
+      - name: zep_current_course_phase
+        availability: "{{ has_value('sensor.zep_current_peak') }}"
+        state: "{{ 'rising' if (state_attr('sensor.zep_current_peak','rising') | bool(none)) else 'past' }}"
+
+  - sensor:
+      - name: zep_next_course_peak_mg
+        icon: mdi:chart-bell-curve
+        unit_of_measurement: "mg"
+        availability: "{{ has_value('sensor.zep_next_peak') }}"
+        state: >-
+          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
+          {% set peak_value_mg = states('sensor.zep_next_peak') | float(0) | round(3) %}
+          {% if rising %}
+            {{ peak_value_mg }}
+          {% else %}
+            {{ states(this.entity_id) if states(this.entity_id) is number else peak_value_mg }}
+          {% endif %}
+        attributes:
+          peak_time: >-
+            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
+            {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
+            {% if rising %}
+              {{ (peak_dt | as_local).isoformat() }}
+            {% else %}
+              {{ state_attr(this.entity_id, 'peak_time') or (peak_dt and (peak_dt | as_local).isoformat()) or 'unknown' }}
+            {% endif %}
+          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool(none)) else 'past' }}"
+          details: >-
+            {%- from 'macros/humanize_future.jinja' import humanize_future -%}
+            {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
+            {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
+            {% if rising %}
+              {{ humanize_future(peak_dt) }}
+            {% else %}
+              Peaked {{ as_datetime(state_attr(this.entity_id,'peak_time')) | as_local | as_timestamp | timestamp_custom('%a %-m/%-d, %-I:%M %p') if state_attr(this.entity_id,'peak_time') not in ['unknown', None] else 'unknown' }}
+            {% endif %}
+
+      - name: zep_next_course_peak_time
+        device_class: timestamp
+        icon: mdi:clock-outline
+        availability: "{{ has_value('sensor.zep_next_peak') }}"
+        state: >-
+          {% set rising = state_attr('sensor.zep_next_peak','rising') | bool(none) %}
+          {% set peak_dt = state_attr('sensor.zep_next_peak','time') | as_datetime(default=none) %}
+          {% if rising %}
+            {{ (peak_dt | as_local).isoformat() }}
+          {% else %}
+            {# keep the last timestamp we had while rising #}
+            {{ states(this.entity_id) if states(this.entity_id) not in ['unknown','unavailable','None'] else ((peak_dt | as_local).isoformat() if peak_dt is not none else 'unknown') }}
+          {% endif %}
+        attributes:
+          phase: "{{ 'rising' if (state_attr('sensor.zep_next_peak','rising') | bool(none)) else 'past' }}"
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id:
+          - input_select.zep_eval_mode
+          - input_datetime.zep_last_injection
+          - input_number.zep_last_residual_mg
+          - input_number.zep_band_min_mg
+          - input_number.zep_band_max_mg
+          - input_number.zep_half_life_days
+          - input_number.zep_absorption_half_life_hours
+        for: "00:00:01"   # small debounce
+      - platform: homeassistant
+        event: start
+
+    variables:
+      mode: "{{ states('input_select.zep_eval_mode') or 'steady' }}"
+      doses: [2.5, 5, 7.5, 10, 12.5, 15]
+
+      # band & kinetics
+      min_r: "{{ states('input_number.zep_band_min_mg') | float(5) }}"
+      max_r: "{{ states('input_number.zep_band_max_mg') | float(12) }}"
+      hl_days: "{{ states('input_number.zep_half_life_days') }}"
+      hl_abs: "{{ states('input_number.zep_absorption_half_life_hours') }}"
+
+      # desired targets (safe default to max_r if the entity name differs)
+      desired_peak: "{{ states('input_number.zep_desired_peak_mg') | float(max_r) }}"
+
+      # current course anchors
+      last_t: "{{ states('input_datetime.zep_last_injection') }}"
+      last_resid: "{{ states('input_number.zep_last_residual') | float(0) }}"
+
+      results: >-
+        {%- from 'macros/zepbound.jinja' import zep_ss_find_interval, zep_next_ready -%}
+        {%- set rows = namespace(out=[]) -%}
+        {%- for d in doses -%}
+          {%- if mode == 'steady' -%}
+            {# steady-state feasibility (bisection version you installed) #}
+            {%- set s = zep_ss_find_interval(d, min_r, max_r, hl_days, hl_abs) | from_json -%}
+            {%- set valid = (s.T_h is not none) -%}
+            {%- set row = dict(
+                  dose=d,
+                  peak=(s.peak if valid else None),
+                  trough=(s.trough if valid else None),
+                  T_h=s.T_h,
+                  weekly_ok=(valid and (s.T_h | float) >= 168.0),
+                  valid=valid,
+                  basis='steady',
+                  basis_detail='band'
+                ) -%}
+            {%- set rows.out = rows.out + [row] -%}
+          {%- else -%}
+            {# course mode: try to hit desired_peak first, else fall back to max_r #}
+            {%- set r_des = zep_next_ready(last_t, last_resid, d, hl_days, hl_abs, desired_peak) | from_json -%}
+            {%- set valid_des = (r_des.timestamp != 'unknown')
+                                 and (r_des.target is not none) and (r_des.target | float >= min_r | float)
+                                 and (r_des.peak   is not none) and (r_des.peak   | float <= max_r | float) -%}
+
+            {%- set use = r_des -%}
+            {%- set basis_detail = 'desired' -%}
+
+            {%- if not valid_des -%}
+              {%- set r_max = zep_next_ready(last_t, last_resid, d, hl_days, hl_abs, max_r) | from_json -%}
+              {%- set use = r_max -%}
+              {%- set basis_detail = 'max' -%}
+            {%- endif -%}
+
+            {%- set valid = (use.timestamp != 'unknown')
+                             and (use.target is not none) and (use.target | float >= min_r | float)
+                             and (use.peak   is not none) and (use.peak   | float <= max_r | float) -%}
+
+            {%- set sched_h = none -%}
+            {%- if valid -%}
+              {%- set sched_h = ((as_timestamp(use.timestamp) - as_timestamp(now())) / 3600.0) | float -%}
+              {%- set sched_h = [sched_h, 0] | max -%}
+            {%- endif -%}
+
+            {%- set row = dict(
+                  dose=d,
+                  peak=(use.peak if valid else None),
+                  trough=(use.target if valid else None),
+                  T_h=sched_h,
+                  weekly_ok=(sched_h is not none and (sched_h | float) >= 168.0),
+                  valid=valid,
+                  basis='course',
+                  basis_detail=basis_detail
+                ) -%}
+            {%- set rows.out = rows.out + [row] -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ rows.out | tojson }}
+
+      # Pick a recommendation according to mode
+      recommend: >-
+        {%- set arr = results | from_json -%}
+        {%- set ok = arr | selectattr('valid','equalto',True) | list -%}
+        {%- set weekly = ok | selectattr('weekly_ok','equalto',True) | list -%}
+        {{ (weekly[0] if weekly|length>0 else (ok[0] if ok|length>0 else dict(dose=None,T_h=None,trough=None,peak=None,weekly_ok=False,valid=False))) | tojson }}
+
+    sensor:
+      - name: "Zep Band Plan"
+        unique_id: zep_band_plan
+        state: >-
+          {%- set rec = recommend | from_json -%}
+          {%- if rec.valid and rec.T_h is not none -%}
+            {{ rec.dose }} mg @ {{ (rec.T_h/24.0) | round(2) }} d
+          {%- else -%}
+            unavailable
+          {%- endif -%}
+        attributes:
+          mode: "{{ mode }}"
+          basis: "{{ (results | from_json)[0].basis if (results | from_json)|length>0 else mode }}"
+          min_residual_mg: "{{ min_r }}"
+          max_residual_mg: "{{ max_r }}"
+          recommended_dose_mg: "{{ (recommend | from_json).dose }}"
+          recommended_interval_h: "{{ (recommend | from_json).T_h }}"
+          recommended_weekly_ok: "{{ (recommend | from_json).weekly_ok }}"
+          recommended_trough_mg: "{{ (recommend | from_json).trough }}"
+          recommended_peak_mg: "{{ (recommend | from_json).peak }}"
+          per_dose: "{{ results | from_json }}"
+
+  - sensor:
+      - name: zep_residual_projection
+        state: "ok"
+        attributes:
+          series: >-
+            {%- from 'macros/zepbound.jinja' import zep_residual_projection -%}
+            {{ zep_residual_projection(
+                 states('input_datetime.zep_last_injection'),
+                 states('input_number.zep_last_residual_mg'),
+                 states('input_number.zep_weekly_dose_mg'),
+                 states('input_number.zep_half_life_days'),
+                 states('input_number.zep_absorption_half_life_hours'),
+                 30, 6
+               ) }}
+
+###############################################################################
+# SCRIPTS
+###############################################################################
+script:
+  zep_ack_taken_now:
+    alias: "Zepbound: Record Taken Now"
+    mode: queued
+    sequence:
+      - variables:
+          resid: "{{ states('sensor.zep_residual_mg') | float(0) }}"
+          dose: "{{ states('input_number.zep_desired_dose_mg') | float(0) }}"
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.zep_last_injection
+        data:
+          datetime: "{{ now().isoformat() }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.zep_last_residual_mg
+        data:
+          value: "{{ resid | round(3) }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.zep_weekly_dose_mg
+        data:
+          value: "{{ dose | round(3) }}"
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.zep_snooze_until
+        data:
+          datetime: "{{ now().isoformat() }}"  # clear snooze
+
+  zep_snooze_hours:
+    alias: "Zepbound: Snooze Reminder (hours)"
+    mode: restart
+    fields:
+      hours:
+        description: Hours to snooze
+        example: 12
+    sequence:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.zep_snooze_until
+        data:
+          datetime: "{{ (now() + timedelta(hours=(hours|int(0)))).isoformat() }}"
+
+###############################################################################
+# AUTOMATIONS
+###############################################################################
+automation:
+  # Hourly or on-ready transition; notify only when available and not snoozed.
+  - id: zep_notify_ready_to_inject
+    alias: "Zepbound: Notify When Ready to Inject"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.zep_ready_to_inject
+        to: "on"
+      - platform: time_pattern
+        hours: "/1"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.zep_ready_to_inject
+        state: "on"
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: binary_sensor.daytime
+            state: "on"
+          - condition: state
+            entity_id: binary_sensor.evening
+            state: "on"
+      # Snooze gate is checked only at trigger time, not every minute.
+      - condition: template
+        value_template: >-
+          {% set s = states('input_datetime.zep_snooze_until') %}
+          {{ not has_value('input_datetime.zep_snooze_until')
+             or as_timestamp(now()) >= as_timestamp(s) }}
+    action:
+      - service: notify.mobile_app_pixel_9_pro_xl
+        data:
+          title: "Zepbound: Time for your shot"
+          message: >-
+            Residual {{ states('sensor.zep_residual_mg') }} mg at/below target
+            {{ states('sensor.zep_target_residual_mg') }} mg. Dose:
+            {{ states('input_number.zep_desired_dose_mg') }} mg. Projected peak:
+            {{ states('sensor.zep_projected_peak_mg') }} mg.
+          data:
+            tag: zep_shot
+            actions:
+              - action: ZEP_TAKEN_NOW
+                title: "Taken"
+                destructive: true
+              - action: ZEP_SNOOZE_12H
+                title: "Snooze 12h"
+              - action: ZEP_SNOOZE_24H
+                title: "Snooze 24h"
+
+  # Handle mobile app notification actions.
+  - id: zep_handle_actions
+    alias: "Zepbound: Handle Notification Actions"
+    mode: parallel
+    trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.action in ['ZEP_TAKEN_NOW','ZEP_SNOOZE_12H','ZEP_SNOOZE_24H'] }}
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.action == 'ZEP_TAKEN_NOW' }}"
+            sequence:
+              - service: script.zep_ack_taken_now
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.action == 'ZEP_SNOOZE_12H' }}"
+            sequence:
+              - service: script.zep_snooze_hours
+                data:
+                  hours: 12
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.action == 'ZEP_SNOOZE_24H' }}"
+            sequence:
+              - service: script.zep_snooze_hours
+                data:
+                  hours: 24

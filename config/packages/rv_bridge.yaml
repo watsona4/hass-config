@@ -1,0 +1,490 @@
+# packages/rv_bridge.yaml
+# Mirrors RV MQTT StateStream -> local read-only entities for dashboards
+
+# -------------------------------------------------------------------
+# Set your RV StateStream base topic once and reuse via YAML anchors.
+# Example if RV StateStream is configured as:
+#   mqtt_statestream:
+#     base_topic: site/rv/statestream
+# -------------------------------------------------------------------
+
+homeassistant:
+  customize:
+    device_tracker.rv_gps:
+      friendly_name: "RV"
+
+mqtt:
+  sensor:
+    # =========================
+    # ELECTRICAL / POWER
+    # =========================
+    - name: "RV Battery SOC"
+      unique_id: 85c9ccea-e698-4f6f-ac53-18fa8d95f2c8
+      state_topic: site/rv/statestream/sensor/rv_battery_soc/state
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: "RV Battery Voltage"
+      unique_id: 7f4ab66d-93f3-40ca-840c-f8ea1518f13f
+      state_topic: site/rv/statestream/sensor/rv_battery_voltage/state
+      unit_of_measurement: V
+      device_class: voltage
+
+    - name: "RV DC Current"
+      unique_id: d7104374-a0f7-4d3c-a5d9-91d483ce144b
+      state_topic: site/rv/statestream/sensor/rv_dc_current/state
+      unit_of_measurement: A
+      device_class: current
+
+    - name: "RV AC Input Amps"
+      unique_id: 95f4c27b-0d77-4769-871f-3b526cb8d7a5
+      state_topic: site/rv/statestream/sensor/rv_total_current/state
+      unit_of_measurement: A
+      device_class: current
+
+    - name: "RV AC Source"
+      unique_id: 19ca91b6-7880-4597-ad9f-0e9e03d9a32a
+      state_topic: site/rv/statestream/sensor/rv_ac_source/state
+      icon: mdi:transmission-tower
+
+    - name: "RV Solar Watts"
+      unique_id: d322ba84-087b-411b-91b9-4e5e18626925
+      state_topic: site/rv/statestream/sensor/rv_solar_watts/state
+      unit_of_measurement: W
+      device_class: power
+
+      # =========================
+      # CLIMATE / WEATHER
+      # =========================
+    - name: "RV Inside Temperature"
+      unique_id: 74e99972-b0e2-477c-b2e0-72fded3efc82
+      state_topic: site/rv/statestream/sensor/zone_0_temperature/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Outside Temperature"
+      unique_id: e32c829a-b0aa-49a3-87b4-b38dda4ce843
+      state_topic: site/rv/statestream/weather/openmeteo_weather/temperature
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Outside Humidity"
+      unique_id: 5452b491-f53e-417f-9c3e-0eb76f8b2ecb
+      state_topic: site/rv/statestream/weather/openmeteo_weather/humidity
+      unit_of_measurement: "%"
+      device_class: humidity
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Wind Speed"
+      unique_id: 64459b7c-2eba-44f6-8c8c-9c6017ac32f9
+      state_topic: site/rv/statestream/weather/openmeteo_weather/wind_speed
+      unit_of_measurement: mph
+      device_class: wind_speed
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Rain Rate"
+      unique_id: b6f8c9e8-c181-45dc-9e8e-922af1967460
+      state_topic: site/rv/statestream/sensor/openmeteo/hourly
+      unit_of_measurement: in/h
+      value_template: "{{ value_json.precipitation[0] | float(default=none) }}"
+      device_class: precipitation_intensity
+
+    - name: "RV Barometric Pressure"
+      unique_id: 476601b3-ac91-4f17-8bb7-1de30ef6f2b8
+      state_topic: site/rv/statestream/weather/openmeteo_weather/pressure
+      unit_of_measurement: inHg
+      device_class: atmospheric_pressure
+      value_template: "{{ value | float(default=none) }}"
+
+      # =========================
+      # TANKS / WATER / PROPANE
+      # =========================
+    - name: "RV Fresh Tank"
+      unique_id: ef5f0044-e280-4933-bd95-d9400a7b86fd
+      state_topic: site/rv/statestream/sensor/rv_fresh_tank/state
+      unit_of_measurement: "%"
+      icon: mdi:water
+
+    - name: "RV Gray Tank"
+      unique_id: d5bf384f-e9f8-4aea-bb73-44c8c5e92b45
+      state_topic: site/rv/statestream/sensor/rv_gray_tank/state
+      unit_of_measurement: "%"
+      icon: mdi:water-sync
+
+    - name: "RV Black Tank"
+      unique_id: 8545d93c-edb4-407a-9fae-a6be3086d525
+      state_topic: site/rv/statestream/sensor/rv_black_tank/state
+      unit_of_measurement: "%"
+      icon: mdi:toilet
+
+    - name: "RV Propane Left"
+      unique_id: 7e7187a1-a73a-4006-8389-a0cc612bdead
+      state_topic: site/rv/statestream/sensor/propane_tank_1_level/state
+      unit_of_measurement: "%"
+      icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Propane Right"
+      unique_id: eaa90a2c-ebaf-4334-9f78-fa7d16e1908d
+      state_topic: site/rv/statestream/sensor/propane_tank_2_level/state
+      unit_of_measurement: "%"
+      icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Propane Pct"
+      unique_id: 4f3e2f0c-1d1e-4c3a-8e2b-1f0e6f3c5bc4
+      state_topic: site/rv/statestream/sensor/propane_total_level/state
+      unit_of_measurement: "%"
+      icon: mdi:gas-cylinder
+      value_template: "{{ value | float(default=none) }}"
+
+    - name: "RV Water Heater Temp"
+      unique_id: 08dff440-94f3-4ab9-aec4-7faffb99a5bb
+      state_topic: site/rv/statestream/sensor/rv_water_heater_temp/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+
+      # =========================
+      # TPMS
+      # =========================
+    - name: "RV Tire FL PSI"
+      unique_id: 319064a5-8ca0-45e0-a258-53525180407f
+      state_topic: site/rv/statestream/sensor/rv_tire_fl_psi/state
+      unit_of_measurement: psi
+      icon: mdi:car-tire-alert
+      device_class: pressure
+    - name: "RV Tire FR PSI"
+      unique_id: 718c1109-e30f-4613-b8cc-cd004c24673f
+      state_topic: site/rv/statestream/sensor/rv_tire_fr_psi/state
+      unit_of_measurement: psi
+      icon: mdi:car-tire-alert
+      device_class: pressure
+    - name: "RV Tire RL PSI"
+      unique_id: e60eb93a-fe98-4676-94a2-72b9a0afce5c
+      state_topic: site/rv/statestream/sensor/rv_tire_rl_psi/state
+      unit_of_measurement: psi
+      icon: mdi:car-tire-alert
+      device_class: pressure
+    - name: "RV Tire RR PSI"
+      unique_id: 811d92c3-1aff-4740-aebd-45d98a9e7211
+      state_topic: site/rv/statestream/sensor/rv_tire_rr_psi/state
+      unit_of_measurement: psi
+      icon: mdi:car-tire-alert
+      device_class: pressure
+
+    - name: "RV Tire FL Temp"
+      unique_id: c9fcd266-e65c-4edb-a876-f4367fac24ea
+      state_topic: site/rv/statestream/sensor/rv_tire_fl_temp/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+    - name: "RV Tire FR Temp"
+      unique_id: c000f65d-51ec-4511-a28f-28673f555744
+      state_topic: site/rv/statestream/sensor/rv_tire_fr_temp/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+    - name: "RV Tire RL Temp"
+      unique_id: f902296d-2bb2-4fc1-ab22-d33690f50f05
+      state_topic: site/rv/statestream/sensor/rv_tire_rl_temp/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+    - name: "RV Tire RR Temp"
+      unique_id: 8f3dbdda-06c7-4739-806e-778873398122
+      state_topic: site/rv/statestream/sensor/rv_tire_rr_temp/state
+      unit_of_measurement: "°F"
+      device_class: temperature
+      value_template: "{{ value | float(default=none) }}"
+
+      # =========================
+      # LOCATION / GPS
+      # =========================
+    - name: "RV Bridge Location Raw"
+      unique_id: 27b26f1e-2a51-4cf3-b44f-a879e4bbc437
+      state_topic: site/rv/bridge/location
+      value_template: "{{ value }}"
+
+  binary_sensor:
+    # =========================
+    # ELECTRICAL / POWER
+    # =========================
+    - name: "RV Inverter Enabled"
+      unique_id: fe8fb1dc-6f62-4a01-bdd5-a4a6debb9080
+      state_topic: site/rv/statestream/binary_sensor/rv_inverter_likely/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: power
+
+    - name: "RV Charger Enabled"
+      unique_id: d4cbbd37-01d9-489f-be5f-0d26158109ae
+      state_topic: site/rv/statestream/binary_sensor/rv_charger_enabled/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: power
+
+    - name: "RV Shore Power"
+      unique_id: 97a62802-19f8-4d69-bf99-ff0a08839438
+      state_topic: site/rv/statestream/binary_sensor/rv_shore_power_likely/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: power
+
+    - name: "RV Water Pump"
+      unique_id: 55397537-f551-4fec-aa51-1f9cb34d8806
+      state_topic: site/rv/statestream/switch/rv_water_pump/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: running
+
+    - name: "RV Water Heater"
+      unique_id: d39ae4f9-fe3a-477d-8fc4-63ea656c2f80
+      state_topic: site/rv/statestream/switch/rv_water_heater/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: power
+
+      # =========================
+      # LIGHTING (read-only mirrors)
+      # =========================
+    - name: "RV Light Living"
+      unique_id: b51e9b06-83c5-4f0b-81b5-ef0f65452458
+      state_topic: site/rv/statestream/light/rv_living_room/state
+      payload_on: "on"
+      payload_off: "off"
+      icon: mdi:lightbulb
+      device_class: light
+
+    - name: "RV Light Kitchen"
+      unique_id: b60a3ce7-f5bc-40ae-a85c-aebf4e1b7ca6
+      state_topic: site/rv/statestream/light/rv_kitchen/state
+      payload_on: "on"
+      payload_off: "off"
+      icon: mdi:lightbulb
+      device_class: light
+
+    - name: "RV Light Bedroom"
+      unique_id: 6312b4f8-6453-444c-b027-69a10b0bbb9c
+      state_topic: site/rv/statestream/light/rv_bedroom/state
+      payload_on: "on"
+      payload_off: "off"
+      icon: mdi:lightbulb
+      device_class: light
+
+      # =========================
+      # SAFETY / ALARMS / SECURITY
+      # =========================
+    - name: "RV Smoke Alarm"
+      unique_id: 23082ac4-561b-4949-8232-18b75f1d59da
+      state_topic: site/rv/statestream/binary_sensor/rv_smoke_alarm/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: smoke
+
+    - name: "RV CO Alarm"
+      unique_id: c4fd8826-11a3-4886-a9dc-9f75f8ebfb05
+      state_topic: site/rv/statestream/binary_sensor/rv_co_alarm/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: carbon_monoxide
+
+    - name: "RV Propane Leak"
+      unique_id: dcced746-cf0a-4fc2-93ed-c226cf61d019
+      state_topic: site/rv/statestream/binary_sensor/rv_propane_leak/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: gas
+
+    - name: "RV Door Open"
+      unique_id: 6f62a200-516d-4d97-845a-361e08363d21
+      state_topic: site/rv/statestream/binary_sensor/rv_door_open/state
+      payload_on: "on"
+      payload_off: "off"
+      device_class: door
+
+  select:
+    # =========================
+    # MODES / SETTINGS
+    # =========================
+    - name: "RV Water Heater Mode"
+      unique_id: 840c231c-0abf-4603-9331-c8dafc0269c3
+      state_topic: site/rv/statestream/select/rv_water_heater_mode/state
+      command_topic: site/rv/cmd/select/rv_water_heater_mode/set
+      icon: mdi:water-boiler
+      options:
+        - "off"
+        - "on"
+        - "auto"
+
+  device_tracker:
+    # =========================
+    # LOCATION / GPS
+    # =========================
+    # RV GPS device_tracker using merged JSON document from above automation
+    # Note: Home Assistant MQTT device_tracker only supports a single topic with JSON payload
+    # See: https://www.home-assistant.io/integrations/mqtt/#device_tracker
+    # See: https://www.home-assistant.io/integrations/device_tracker.mqtt/
+    # Example payload:
+    # {
+    #   "latitude": 37.123456,
+    #   "longitude": -122.123456,
+    #   "gps_accuracy": 5,
+    #   "speed_m_s": 0,
+    #   "heading_deg": 0,
+    #   "altitude_m": 10,
+    #   "time_utc": "2024-01-01T12:00:00Z",
+    #   "fix_mode": 3
+    # }
+    - name: "RV GPS"
+      unique_id: 0ffb7df0-f781-4745-abf8-56638caa2612
+      source_type: gps
+      state_topic: site/rv/bridge/location
+      value_template: home
+      json_attributes_topic: site/rv/bridge/location
+
+template:
+  # =========================
+  # SUMMARY / STATUS
+  # =========================
+  - sensor:
+      - name: "RV Status Summary"
+        unique_id: bc41357c-e590-4fca-869e-a46b88ca5954
+        icon: mdi:rv-truck
+        state: >
+          {% set shore = iif(states('binary_sensor.rv_shore_power') == 'on', 'Shore',
+          'Battery') %}
+          {% set v12   = states('sensor.rv_battery_voltage') %}
+          {% set soc   = states('sensor.rv_battery_soc') %}
+          {% set fresh = states('sensor.rv_fresh_tank') %}
+          {% set gray  = states('sensor.rv_gray_tank') %}
+          {% set black = states('sensor.rv_black_tank') %}
+          {% set lp    = states('sensor.rv_propane_pct') %}
+          {% set temp  = states('sensor.rv_inside_temperature') %}
+          {% set loc   = states('device_tracker.rv_gps') %}
+          {{ shore ~ ' · 12V ' ~ v12 ~ 'V (' ~ soc ~ '%) · Tanks F' ~ fresh ~ ' G' ~ gray
+          ~ ' B' ~ black ~ ' · LP ' ~ lp ~ '% · ' ~ temp ~ '°F · ' ~ loc }}
+        attributes:
+          shore_power: "{{ is_state('binary_sensor.rv_shore_power', 'on') }}"
+          dc_voltage: "{{ states('sensor.rv_12v_bus_voltage') | float(0) }}"
+          battery_soc: "{{ states('sensor.rv_battery_soc') | float(0) }}"
+          tank_fresh_pct: "{{ states('sensor.rv_fresh_tank') | int(0) }}"
+          tank_gray_pct: "{{ states('sensor.rv_gray_tank') | int(0) }}"
+          tank_black_pct: "{{ states('sensor.rv_black_tank') | int(0) }}"
+          propane_pct: "{{ states('sensor.rv_propane_pct') | int(0) }}"
+          interior_temp: "{{ states('sensor.rv_inside_temperature') | float(0) }}"
+          gps_entity: device_tracker.rv_gps
+
+automation:
+  # =========================
+  # LOCATION / GPS
+  # =========================
+  # Merge incoming Statestream GPS attributes into a single JSON document
+  # and publish to a single MQTT topic for use by a Home Assistant MQTT device_tracker
+  # (since Home Assistant MQTT device_tracker only supports a single topic with JSON payload)
+  # Incoming topics are like:
+  #   site/rv/statestream/device_tracker/rv_gps/latitude
+  #   site/rv/statestream/device_tracker/rv_gps/longitude
+  #   site/rv/statestream/device_tracker/rv_gps/gps_accuracy
+  #   site/rv/statestream/device_tracker/rv_gps/speed_m_s
+  #   site/rv/statestream/device_tracker/rv_gps/heading_deg
+  #   site/rv/statestream/device_tracker/rv_gps/altitude_m
+  #   site/rv/statestream/device_tracker/rv_gps/time_utc
+  #   site/rv/statestream/device_tracker/rv_gps/fix_mode
+  # Resulting merged JSON document is published to:
+  #   site/rv/bridge/location
+  # which is then consumed by the MQTT device_tracker below.
+  # The merge logic ensures that only the attributes that have actually changed
+  # are updated in the JSON document, while others retain their previous values.
+  - alias: RV GPS (Statestream) -> merged JSON
+    id: dc86b90d-27c3-4cdb-9c32-b721c5514158
+    description: Merge incoming Statestream GPS attributes into a single JSON document
+    mode: queued
+    max: 100
+    trigger:
+      - platform: mqtt
+        topic: "site/rv/statestream/device_tracker/rv_gps/#"
+    condition: []
+    action:
+      - variables:
+          current: >-
+            {% set raw = states('sensor.rv_bridge_location_raw') %}
+            {{ (raw if has_value('sensor.rv_bridge_location_raw') else '{}') | from_json(default={}) }}
+          src_key: "{{ trigger.topic.split('/')[-1] }}"
+          keymap:
+            latitude: latitude
+            longitude: longitude
+            speed_m_s: speed_m_s
+            heading_deg: heading_deg
+            altitude_m: altitude_m
+            time_utc: time_utc
+            fix_mode: fix_mode
+            gps_accuracy: gps_accuracy
+            gps_accuracy_m: gps_accuracy
+          parsed: >-
+            {% set p = trigger.payload %}
+            {% if p in ['null','None','','"null"','"None"'] %}
+              {{ none }}
+            {% elif p is number %}
+              {{ p }}
+            {% elif p | regex_match('^[-+]?[0-9]*\\.?[0-9]+$') %}
+              {{ p | float }}
+            {% elif p | regex_match('^\\s*".*"\\s*$') %}
+              {{ p | from_json }}
+            {% else %}
+              {{ p }}
+            {% endif %}
+          prelim: >-
+            {% set tgt = keymap.get(src_key) %}
+            {% if tgt %}
+              {{ current | combine( { tgt: parsed } ) }}
+            {% else %}
+              {{ current }}
+            {% endif %}
+          out: >-
+            {% set ga = prelim.gps_accuracy if prelim.gps_accuracy is defined else none %}
+            {% set ga_num = (ga | float(0)) if (ga is number or (ga is string and ga|regex_match('^[-+]?[0-9]*\\.?[0-9]+$'))) else 0 %}
+            {{
+              {
+                'latitude':    prelim.latitude if prelim.latitude is defined else none,
+                'longitude':   prelim.longitude if prelim.longitude is defined else none,
+                'speed_m_s':   prelim.speed_m_s if prelim.speed_m_s is defined else none,
+                'heading_deg': prelim.heading_deg if prelim.heading_deg is defined else none,
+                'altitude_m':  prelim.altitude_m if prelim.altitude_m is defined else none,
+                'time_utc':    prelim.time_utc if prelim.time_utc is defined else none,
+                'fix_mode':    (prelim.fix_mode | int) if (prelim.fix_mode is defined and prelim.fix_mode is number) else (prelim.fix_mode if prelim.fix_mode is defined else none),
+                'gps_accuracy': ga_num
+              }
+            }}
+      - choose:
+          - conditions: "{{ keymap.get(src_key) is defined }}"
+            sequence:
+              - service: mqtt.publish
+                data:
+                  topic: site/rv/bridge/location
+                  retain: true
+                  payload: "{{ out | tojson }}"
+
+  - alias: RV GPS, publish throttled tracker
+    id: 3e5f4c1e-2b1c-4f4a-8f3e-9c1e2d3f4a5b
+    description: Publish throttled GPS updates to the MQTT device_tracker
+    trigger:
+      - platform: time_pattern
+        seconds: "/59"
+    condition:
+      - condition: template
+        value_template: >
+          {% set lat = state_attr('device_tracker.rv_gps','latitude') %}
+          {% set lon = state_attr('device_tracker.rv_gps','longitude') %}
+          {{ lat is number and lon is number
+             and -90 <= lat <= 90 and -180 <= lon <= 180 }}
+    action:
+      - service: device_tracker.see
+        data:
+          dev_id: rv_gps_map
+          source_type: gps
+          gps:
+            - "{{ state_attr('device_tracker.rv_gps','latitude') | float }}"
+            - "{{ state_attr('device_tracker.rv_gps','longitude') | float }}"
+          gps_accuracy: "{{ state_attr('device_tracker.rv_gps','gps_accuracy') | int(default=10) }}"

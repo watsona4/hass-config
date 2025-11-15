@@ -1,0 +1,612 @@
+{# Severity definitions for generic status measurements (HA device_class: none) #}
+
+{% from 'units/base.jinja' import u_humanize_entity %}
+{% import 'helpers.jinja' as H %}
+
+{% set lookup_unit = none %}
+{% set levels = {
+    "generic": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Very Low",
+            "short_desc": "Low",
+            "long_desc": "Very Low Value",
+            "icon": "mdi:arrow-collapse-down",
+            "color": "#7e0023",
+            "full_desc": "Reading is at the very low end of the scale; may indicate insufficient levels or inactive state."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low Value",
+            "icon": "mdi:chevron-down",
+            "color": "#ff9933",
+            "full_desc": "Reading is lower than normal; monitor for changes or possible issues."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Medium",
+            "short_desc": "Med",
+            "long_desc": "Medium Value",
+            "icon": "mdi:menu",
+            "color": "#ffde33",
+            "full_desc": "Reading is within a typical mid-range; no immediate action required."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High Value",
+            "icon": "mdi:chevron-up",
+            "color": "#00e400",
+            "full_desc": "Reading is above average; system or process operating strongly."
+        },
+        {
+            "min_value": 100,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very High Value",
+            "icon": "mdi:arrow-collapse-up",
+            "color": "#009966",
+            "full_desc": "Reading is at the top end of the scale; may indicate maximum capacity or potential overload."
+        }
+    ],
+    "count_pending": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Count sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Count not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "None Pending",
+            "short_desc": "0",
+            "long_desc": "No items pending",
+            "icon": "mdi:check-circle-outline",
+            "color": "#22c55e",
+            "full_desc": "No pending items."
+        },
+        {
+            "min_value": 1,
+            "default_desc": "One Pending",
+            "short_desc": "1",
+            "long_desc": "One item pending",
+            "icon": "mdi:counter",
+            "color": "#84cc16",
+            "full_desc": "A single pending item."
+        },
+        {
+            "min_value": 2,
+            "default_desc": "Few Pending",
+            "short_desc": "2–4",
+            "long_desc": "Few items pending",
+            "icon": "mdi:counter",
+            "color": "#ffde33",
+            "full_desc": "A small number of items are pending."
+        },
+        {
+            "min_value": 5,
+            "default_desc": "Several Pending",
+            "short_desc": "5–9",
+            "long_desc": "Several items pending",
+            "icon": "mdi:counter",
+            "color": "#ff9933",
+            "full_desc": "Several items are waiting for attention."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Many Pending",
+            "short_desc": "10–24",
+            "long_desc": "Many items pending",
+            "icon": "mdi:counter",
+            "color": "#a20000",
+            "full_desc": "Many items pending; consider taking action."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Backlog",
+            "short_desc": "25+",
+            "long_desc": "Large backlog",
+            "icon": "mdi:alert-circle",
+            "color": "#7e0023",
+            "full_desc": "Large backlog of items; immediate action recommended."
+        }
+    ],
+    "uv_index": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "badge": "mdi:numeric-0-circle",
+            "default_desc": "Low UV",
+            "short_desc": "Low UV",
+            "long_desc": "Low UV Exposure",
+            "icon": "mdi:white-balance-sunny",
+            "color": "#146814",
+            "full_desc": "No protection needed. You can safely remain outdoors with minimal sun protection. If you will be outside for extended periods, a light sunscreen and sunglasses are sensible but not essential."
+        },
+        {
+            "min_value": 2,
+            "badge": "mdi:numeric-2-circle",
+            "default_desc": "Moderate UV",
+            "short_desc": "Mod UV",
+            "long_desc": "Moderate UV Exposure",
+            "icon": "mdi:sunglasses",
+            "color": "#e0e005",
+            "full_desc": "Protection is recommended. The sun’s rays can cause damage, particularly around midday. Stay in the shade during late morning through mid-afternoon, wear sunglasses and protective clothing, and apply broad-spectrum sunscreen of at least SPF-15 to exposed skin."
+        },
+        {
+            "min_value": 5,
+            "badge": "mdi:numeric-5-circle",
+            "default_desc": "High UV",
+            "short_desc": "High UV",
+            "long_desc": "High UV Exposure",
+            "icon": "mdi:weather-sunny-alert",
+            "color": "#e19509",
+            "full_desc": "Protection is essential. Reduce your time in the sun between 10 a.m. and 4 p.m. Apply broad-spectrum SPF-30 or higher every 2 hours, even on cloudy days. Wear long sleeves, a wide-brimmed hat, and UV-blocking sunglasses."
+        },
+        {
+            "min_value": 7,
+            "badge": "mdi:numeric-7-circle",
+            "default_desc": "Very High UV",
+            "short_desc": "VHigh UV",
+            "long_desc": "Very High UV Exposure",
+            "icon": "mdi:umbrella-beach",
+            "color": "#a20000",
+            "full_desc": "Extra protection is needed. Minimize time outdoors during midday hours. If your shadow is shorter than you are, the sun’s rays are strong—seek shade, cover up with protective clothing, wear a wide-brimmed hat and sunglasses, and reapply high-SPF sunscreen frequently."
+        },
+        {
+            "min_value": 10,
+            "badge": "mdi:numeric-10-circle",
+            "default_desc": "Extreme UV",
+            "short_desc": "Extrm UV",
+            "long_desc": "Extreme UV Exposure",
+            "icon": "mdi:alert-decagram",
+            "color": "#593f62",
+            "full_desc": "Take all precautions. Unprotected skin and eyes can burn in minutes. Avoid going outside during peak sun hours. If unavoidable, seek shade, wear long protective clothing, a broad hat, wrap-around UV-blocking sunglasses, and apply SPF-50+ sunscreen generously and often."
+        }
+    ],
+    "presence_count": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Presence count unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No count available."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Away",
+            "short_desc":"0",
+            "long_desc":"No one home",
+            "icon":"mdi:home-outline",
+            "color":"#9ca3af",
+            "full_desc":"House is empty."
+        },
+        {
+            "min_value": 1,
+            "default_desc":"One Home",
+            "short_desc":"1",
+            "long_desc":"One person home",
+            "icon":"mdi:home-account",
+            "color":"#22c55e",
+            "full_desc":"Single occupant present."
+        },
+        {
+            "min_value": 2,
+            "default_desc":"Two Home",
+            "short_desc":"2",
+            "long_desc":"Two people home",
+            "icon":"mdi:home-group",
+            "color":"#16a34a",
+            "full_desc":"Two occupants present."
+        },
+        {
+            "min_value": 3,
+            "default_desc":"Several Home",
+            "short_desc":"3+",
+            "long_desc":"Three or more home",
+            "icon":"mdi:account-group",
+            "color":"#15803d",
+            "full_desc":"Three or more occupants present."
+        }
+    ],
+    "cpu_utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "CPU sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "CPU utilization data not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "CPU Idle",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#009966",
+            "full_desc": "CPU is mostly idle, with minimal processing load."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Light Load",
+            "short_desc": "Light",
+            "long_desc": "Light CPU Utilization",
+            "icon": "mdi:cpu-32-bit",
+            "color": "#00e400",
+            "full_desc": "CPU is lightly loaded; system performance should be optimal."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Moderate Load",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate CPU Utilization",
+            "icon": "mdi:chip",
+            "color": "#ffde33",
+            "full_desc": "CPU utilization is moderate; system is handling tasks normally."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High Load",
+            "short_desc": "High",
+            "long_desc": "High CPU Utilization",
+            "icon": "mdi:chart-bell-curve",
+            "color": "#ff9933",
+            "full_desc": "CPU is under heavy load; monitor performance to avoid slowdowns."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical Load",
+            "short_desc": "Critical",
+            "long_desc": "Critical CPU Utilization",
+            "icon": "mdi:alert-circle",
+            "color": "#7e0023",
+            "full_desc": "CPU is near maximum capacity; may indicate overload or bottlenecks."
+        }
+    ],
+    "memory_utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "Low Memory Use",
+            "icon": "mdi:memory",
+            "color": "#22c55e",
+            "full_desc": "Plenty of free memory; system is under little to no load."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate Memory Use",
+            "icon": "mdi:memory",
+            "color": "#eab308",
+            "full_desc": "About half of memory in use; normal for most workloads."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High Memory Use",
+            "icon": "mdi:memory",
+            "color": "#f97316",
+            "full_desc": "Memory pressure is increasing; performance may degrade."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical Memory Use",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Memory almost exhausted; risk of out-of-memory errors."
+        }
+    ],
+    "disk_utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Empty",
+            "short_desc": "Empty",
+            "long_desc": "Disk Mostly Empty",
+            "icon": "mdi:harddisk",
+            "color": "#22c55e",
+            "full_desc": "Ample free disk space available."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Half Full",
+            "short_desc": "Half",
+            "long_desc": "Disk About Half Full",
+            "icon": "mdi:harddisk",
+            "color": "#eab308",
+            "full_desc": "Roughly half of disk capacity in use."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "Low Space",
+            "short_desc": "Low",
+            "long_desc": "Disk Space Low",
+            "icon": "mdi:harddisk",
+            "color": "#f97316",
+            "full_desc": "Most of the disk is used; free space is shrinking."
+        },
+        {
+            "min_value": 90,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Disk Critically Full",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Disk nearly full; immediate cleanup or expansion required."
+        }
+    ],
+    "cpu_load": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Idle",
+            "short_desc": "Idle",
+            "long_desc": "CPU Idle",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#22c55e",
+            "full_desc": "Very low load; most cores are idle."
+        },
+        {
+            "min_value": 0.5,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#84cc16",
+            "full_desc": "Light utilization; system responsive, plenty of headroom."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#eab308",
+            "full_desc": "CPU moderately loaded; nearing saturation on a single-core equivalent."
+        },
+        {
+            "min_value": 2.0,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High CPU Load",
+            "icon": "mdi:cpu-64-bit",
+            "color": "#f97316",
+            "full_desc": "CPU load exceeds number of cores; processes waiting for CPU time."
+        },
+        {
+            "min_value": 4.0,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical CPU Load",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Sustained overload; severe performance degradation expected."
+        }
+    ],
+    "core_factor": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Core factor unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No reading from core factor sensor."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc":"Idle",
+            "short_desc":"Idle",
+            "long_desc":"Factor ~0",
+            "icon":"mdi:gauge-empty",
+            "color":"#9ca3af",
+            "full_desc":"No effective workload or scaling factor."
+        },
+        {
+            "min_value": 0.5,
+            "default_desc":"Low",
+            "short_desc":"Low",
+            "long_desc":"Low factor",
+            "icon":"mdi:gauge-low",
+            "color":"#84cc16",
+            "full_desc":"Scaling factor ~0.5; partial load."
+        },
+        {
+            "min_value": 1.0,
+            "default_desc":"Nominal",
+            "short_desc":"Nominal",
+            "long_desc":"Nominal factor",
+            "icon":"mdi:gauge",
+            "color":"#22c55e",
+            "full_desc":"Scaling factor ~1.0; expected baseline performance."
+        },
+        {
+            "min_value": 1.5,
+            "default_desc":"High",
+            "short_desc":"High",
+            "long_desc":"High factor",
+            "icon":"mdi:gauge-full",
+            "color":"#eab308",
+            "full_desc":"Scaling factor >1.0; boosted beyond nominal."
+        },
+        {
+            "min_value": 2.0,
+            "default_desc":"Extreme",
+            "short_desc":"Extreme",
+            "long_desc":"Extreme factor",
+            "icon":"mdi:alert-octagon",
+            "color":"#dc2626",
+            "full_desc":"Scaling factor >2.0; may indicate reporting anomaly or unsafe conditions."
+        }
+    ],
+    "pollen": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Low Pollen",
+            "short_desc": "LowPol",
+            "long_desc": "Low Pollen Count",
+            "icon": "mdi:flower-tulip-outline",
+            "color": "#009966",
+            "full_desc": "Low pollen count. No special precautions needed."
+        },
+        {
+            "min_value": 2.5,
+            "default_desc": "Moderate Pol",
+            "short_desc": "ModPol",
+            "long_desc": "Moderate Pollen Count",
+            "icon": "mdi:flower-tulip",
+            "color": "#ffde33",
+            "full_desc": "Moderate pollen count. Individuals who are sensitive to pollen may experience mild symptoms."
+        },
+        {
+            "min_value": 4.0,
+            "default_desc": "High Pollen",
+            "short_desc": "HighPol",
+            "long_desc": "High Pollen Count",
+            "icon": "mdi:flower-poppy",
+            "color": "#ff9933",
+            "full_desc": "High pollen count. Sensitive individuals may experience more severe symptoms. Consider limiting outdoor activities."
+        },
+        {
+            "min_value": 9.7,
+            "default_desc": "Very High Pollen",
+            "short_desc": "VHighPol",
+            "long_desc": "Very High Pollen Count",
+            "icon": "mdi:flower-shamrock",
+            "color": "#cc0033",
+            "full_desc": "Very high pollen count. Sensitive individuals should take extra precautions, such as staying indoors and using air purifiers."
+        },
+    ],
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}
+
+{% macro get_value(value, app, options) %}
+    {%- if app != 'count_pending' -%}
+        {{- H.get_value(value, app, options) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) %}
+    {%- set ns = namespace(pre_text='', post_text='', desc='default') -%}
+    {%- set desc = {
+        'default':  H.get_default_desc(value, app, options),
+        'short':    H.get_short_desc(value, app, options),
+        'long':     H.get_long_desc(value, app, options),
+        'full':     H.get_full_desc(value, app, options),
+        } -%}
+    {%- set delim = options.get('delim', '\n') if options is mapping else '\n' -%}
+
+    {%- if app == 'cpu_utilization' and options.load is defined -%}
+        {%- set load = states(options.load) | float(0) -%}
+        {%- set ns.pre_text = 'Load: ' ~ load ~ delim -%}
+        {%- set ns.desc = "long" -%}
+
+    {%- elif app == 'cpu_load' and options.cores is defined -%}
+        {%- set cores = states(options.cores) | int(0) -%}
+        {%- if cores > 0 -%}
+            {%- set ns.post_text = ' • ' ~ cores ~ ' cores' -%}
+        {%- endif -%}
+
+    {%- elif app == 'memory_utilization' and options.used is defined -%}
+        {%- set used = u_humanize_entity(options.used) -%}
+        {%- set ns.pre_text = 'Used: ' ~ used ~ delim -%}
+        {%- set ns.desc = "long" -%}
+
+    {%- elif app == 'disk_utilization' and options.free is defined -%}
+        {%- set free = u_humanize_entity(options.free) -%}
+        {%- set ns.pre_text = 'Free: ' ~ free ~ delim -%}
+        {%- set ns.desc = "long" -%}
+
+    {%- elif app == 'count_pending' -%}
+        {%- set pending = value | int(0) -%}
+        {%- if pending >= 5 -%}
+            {%- set ns.post_text = ' (' ~ pending ~ ')' -%}
+            {%- set ns.desc = "long" -%}
+        {%- endif -%}
+    {%- endif -%}
+
+    {{- ns.pre_text ~ desc[ns.desc] ~ ns.post_text -}}
+{% endmacro %}
+
+{% macro get_short_desc(value, app, options) %}
+    {%- set ns = namespace(pre_text='', post_text='') -%}
+    {%- if app == 'cpu_load' and options.cores is defined -%}
+        {%- set cores = states(options.cores) | int(0) -%}
+        {%- if cores > 0 -%}
+            {%- set ns.post_text = ' • ' ~ cores ~ ' cores' -%}
+        {%- endif -%}
+    {%- endif -%}
+    {{- ns.pre_text ~ H.get_short_desc(value, app, options) ~ ns.post_text -}}
+{% endmacro %}

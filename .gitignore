@@ -3,117 +3,119 @@
 ############################
 
 # --- Core state, caches, runtime ---
-.homeassistant_v2.db
-home-assistant.db
-home-assistant_v2.db
-home-assistant_v2.db-*
-home-assistant.log
-home-assistant.log.*
-*.log*
-*.db
-*.db-journal
-.HA_VERSION
-.storage/
-.cloud/
-tts/
-deps/
-lib/
-ssh/
-.uuid
-.timeline
-.vacuum
-SERVICE_ACCOUNT.JSON
+config/.homeassistant_v2.db
+config/home-assistant.db
+config/home-assistant_v2.db
+config/home-assistant_v2.db-*
+config/home-assistant.log
+config/home-assistant.log.*
+config/*.log*
+config/*.db
+config/*.db-journal
+config/.HA_VERSION
+config/.storage/
+config/.cloud/
+config/tts/
+config/deps/
+config/lib/
+config/ssh/
+config/.uuid
+config/.timeline
+config/.vacuum
+config/SERVICE_ACCOUNT.JSON
 
-dashboards/spaces/views/
-dashboards/environment/plant_sections
-packages/plants
-zwift_access_token.txt
-zwift_id_token.txt
-zwift_refresh_token.txt
-packages/strava.yaml
-packages/xert_activities.yaml
+config/dashboards/spaces/views/
+config/dashboards/environment/plant_sections
+config/packages/plants
+config/zwift_access_token.txt
+config/zwift_id_token.txt
+config/zwift_refresh_token.txt
+config/packages/strava.yaml
+config/packages/xert_activities.yaml
 
 # Ignore heavy binary assets, allow config assets
-www/community 
-www/**/*.jpg
-www/**/*.jpeg
-www/**/*.png
-www/**/*.gif
-www/**/*.mp4
-www/**/*.mp3
-www/**/*.wav
-www/**/*.zip
-www/**/*.tar
-www/**/*.gz
-www/**/*.pdf
-www/**/*.avif
-!www/**/*.js
-!www/**/*.css
-!www/**/*.yaml
-!www/**/*.json
+config/www/community 
+config/www/**/*.jpg
+config/www/**/*.jpeg
+config/www/**/*.png
+config/www/**/*.gif
+config/www/**/*.mp4
+config/www/**/*.mp3
+config/www/**/*.wav
+config/www/**/*.zip
+config/www/**/*.tar
+config/www/**/*.gz
+config/www/**/*.pdf
+config/www/**/*.avif
+!config/www/**/*.js
+!config/www/**/*.css
+!config/www/**/*.yaml
+!config/www/**/*.json
+config/www/ride/*.json
+config/www/zwift/latest_ride.jpg
 
 # Old OpenZWave / OZW logs and DBs
-ozw_log.txt
-pyozw.sqlite
+config/ozw_log.txt
+config/pyozw.sqlite
 
 # iOS app & push registrations
-.ios.conf
-.ios*
-html5_push_registrations.conf
+config/.ios.conf
+config/.ios*
+config/html5_push_registrations.conf
 
 # Device/Integration local artifacts
-google_calendars.yaml
-google_calendars.yaml.*
-google_calendars/
-icloud/
-ip_bans.yaml
-known_devices.yaml
-phue.conf
-plex.conf
-tradfri.conf
-webostv.conf
-harmony_media_room.conf
+config/google_calendars.yaml
+config/google_calendars.yaml.*
+config/google_calendars/
+config/icloud/
+config/ip_bans.yaml
+config/known_devices.yaml
+config/phue.conf
+config/plex.conf
+config/tradfri.conf
+config/webostv.conf
+config/harmony_media_room.conf
 
 # --- Secrets & credentials ---
 # Keep live secrets out of Git. If you use encrypted secrets,
 # you can add a negation rule (see note below).
-secrets.yaml
-secrets/*.yaml
-*.key
-*.pem
-*.p12
-*.crt
-*.csr
-*.gpg
-*.age
+config/secrets.yaml
+config/secrets/*.yaml
+config/*.key
+config/*.pem
+config/*.p12
+config/*.crt
+config/*.csr
+config/*.gpg
+config/*.age
 
 # If using encrypted secrets tracked in Git, uncomment one:
-# !secrets.enc.yaml
-# !secrets.sops.yaml
+# !config/secrets.enc.yaml
+# !config/secrets.sops.yaml
 
 # --- Temporary / build noise ---
-*.pid
-**/__pycache__/
-.custom_components/**/__pycache__/
+config/*.pid
+config/**/__pycache__/
+config/.custom_components/**/__pycache__/
 
 # --- Backups/exports ---
-backups/
-*.tar
-*.zip
+config/backups/
+config/*.tar
+config/*.zip
 
 # --- OS / editor junk ---
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-.idea/
-.vscode/
+config/.DS_Store
+config/Thumbs.db
+config/*.swp
+config/*.swo
+config/.idea/
+config/.vscode/
 
 ############################
 # Optional: Development
 ############################
 # If you do NOT want to track local custom components, uncomment:
-# custom_components/
+# config/custom_components/
 
 # If you keep diagrams or images that are generated, ignore them:
-# image/
+# config/image/

@@ -1,0 +1,6 @@
+# File: dashboards/overview/dashboard.yaml
+# Description: Main Overview dashboard configuration
+
+title: Overview
+decluttering_templates: !include dashboards/decluttering.yaml
+views: !include_dir_list dashboards/overview/views

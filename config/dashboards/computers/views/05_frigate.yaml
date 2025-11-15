@@ -1,0 +1,517 @@
+title: Frigate Server
+type: sections
+max_columns: 3
+cards: []
+
+badges:
+  - type: custom:decluttering-card
+    template: template_badge
+    variables:
+      - name: Status
+      - entity: binary_sensor.frigate_status_alarm
+      - app: alarm
+      - options: 'summary=sensor.frigate_overall_status_summary'
+  - type: custom:decluttering-card
+    template: template_badge
+    variables:
+      - name: CPU Load
+      - entity: sensor.frigate_cpu_load_1m
+      - app: cpu_load
+      - options: 'cores=sensor.frigate_cpu_cores'
+  - type: custom:decluttering-card
+    template: template_badge
+    variables:
+      - name: CPU
+      - entity: sensor.frigate_cpu_utilization
+      - app: cpu_utilization
+  - type: custom:decluttering-card
+    template: template_badge
+    variables:
+      - name: CPU Temp
+      - entity: sensor.frigate_cpu_temp_package_id_0
+      - app: cpu
+  - type: custom:decluttering-card
+    template: template_badge
+    variables:
+      - name: Memory
+      - entity: sensor.frigate_memory_percent
+      - app: memory_utilization
+
+sections:
+  - type: grid
+    columns: 3
+    grid_options:
+      columns: full
+    column_span: 3
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # CPU & Memory Section
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: CPU & Memory
+              - subtitle: Utilization and system load
+
+          # CPU Load
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_cpu_load_1m
+            primary: CPU Load (1m/5m/15m)
+            secondary: >-
+              {%- set m1 = states(entity)|float(0) -%}
+              {%- set m5 = states('sensor.frigate_cpu_load_5m')|float(0) -%}
+              {%- set m15 = states('sensor.frigate_cpu_load_15m')|float(0) -%}
+              {%- set c = states('sensor.frigate_cpu_cores')|int(0) -%}
+              {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'cpu_load') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'cpu_load') -}}
+            tap_action:
+              action: more-info
+
+          # Memory Usage
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_memory_percent
+            primary: Memory
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set mem_pct = u_humanize_entity(entity) -%}
+              {%- set mem_used = u_humanize_entity('sensor.frigate_memory_used') -%}
+              {%- set mem_total = u_humanize_entity('sensor.frigate_memory_total') -%}
+              {%- set mem_free = u_humanize_entity('sensor.frigate_memory_available') -%}
+              {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'memory_utilization') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'memory_utilization') -}}
+            tap_action:
+              action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # CPU Temperatures
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: CPU Temperatures
+              - subtitle: Thermal status and cooling headroom
+
+          # CPU Package Temp
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Package Temp
+              - entity: sensor.frigate_cpu_temp_package_id_0
+              - app: cpu
+
+          # CPU Composite Temp
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Composite Temp
+              - entity: sensor.frigate_cpu_temp_composite
+              - app: cpu
+
+          # CPU Temp Core 0
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Temp Core 0
+              - entity: sensor.frigate_cpu_temp_core_0
+              - app: cpu
+
+          # CPU Temp Core 1
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Temp Core 1
+              - entity: sensor.frigate_cpu_temp_core_1
+              - app: cpu
+
+          # CPU Temp Core 2
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Temp Core 2
+              - entity: sensor.frigate_cpu_temp_core_2
+              - app: cpu
+
+          # CPU Temp Core 3
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - name: CPU Temp Core 3
+              - entity: sensor.frigate_cpu_temp_core_3
+              - app: cpu
+
+      - type: vertical-stack
+        cards:
+
+          # Network Section
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: Network
+              - subtitle: Connectivity, latency, and throughput
+
+          # Active Network Interface
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_network_active_name
+            primary: Active NIC
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set nic = states(entity) -%}
+              {%- set ip = states('sensor.frigate_network_active_ipv4') -%}
+              {%- set up = u_humanize_entity('sensor.frigate_network_active_up') -%}
+              {%- set down = u_humanize_entity('sensor.frigate_network_active_down') -%}
+              {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
+            icon: mdi:lan-check
+            icon_color: blue
+            tap_action:
+              action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # Filesystem Section
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: Filesystems
+              - subtitle: Storage capacity and usage
+
+          # / Usage
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_fs_percent
+            primary: /
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set total = u_humanize_entity('sensor.frigate_fs_total') -%}
+              {%- set used = u_humanize_entity('sensor.frigate_fs_used') -%}
+              {%- set pct = u_humanize_entity(entity) -%}
+              {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'disk_utilization') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'disk_utilization') -}}
+            tap_action:
+              action: more-info
+
+          # /home Usage
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_fs_home_percent
+            primary: /home
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set total = u_humanize_entity('sensor.frigate_fs_home_total') -%}
+              {%- set used = u_humanize_entity('sensor.frigate_fs_home_used') -%}
+              {%- set pct = u_humanize_entity(entity) -%}
+              {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'disk_utilization') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'disk_utilization') -}}
+            tap_action:
+              action: more-info
+
+          # /data Usage
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_fs_data_percent
+            primary: /data
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set total = u_humanize_entity('sensor.frigate_fs_data_total') -%}
+              {%- set used = u_humanize_entity('sensor.frigate_fs_data_used') -%}
+              {%- set pct = u_humanize_entity(entity) -%}
+              {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'disk_utilization') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'disk_utilization') -}}
+            tap_action:
+              action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # Disk Info Section
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: Disk I/O
+              - subtitle: Read/write activity and performance
+
+          # nvme0n1 I/O
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_nvme0n1_data_rate
+            primary: nvme0n1 I/O Rates
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set read_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1_read_rate') -%}
+              {%- set write_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1_write_rate') -%}
+              {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1_read_bytes') -%}
+              {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1_write_bytes') -%}
+              {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'drive_data_rate') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'drive_data_rate') -}}
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+
+          # sda I/O
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_sda_data_rate
+            primary: sda I/O Rates
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set read_bps = u_humanize_entity('sensor.frigate_disk_sda_read_rate') -%}
+              {%- set write_bps = u_humanize_entity('sensor.frigate_disk_sda_write_rate') -%}
+              {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_sda_read_bytes') -%}
+              {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_sda_write_bytes') -%}
+              {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+            icon: >-
+              {%- from 'main.jinja' import get_icon -%}
+              {{- get_icon(entity, 'drive_data_rate') -}}
+            icon_color: |-
+              {%- from 'main.jinja' import get_color -%}
+              {{- get_color(entity, 'drive_data_rate') -}}
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # SMART Monitor Section
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: SMART Monitors
+              - subtitle: Drive health and diagnostics
+
+          # SMART Info for /dev/sda
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.frigate_smart_dev_nvme0n1_health
+            primary: Health / Temp / Life (/dev/nvme0n1)
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set ok = is_state(entity,'on') %} 
+              {%- set temp = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_temperature') -%}
+              {%- set has_life_pct = has_value('sensor.frigate_smart_dev_nvme0n1_percentage_used') -%}
+              {%- set poh = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_power_on_hours') -%}
+              {%- set read = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_total_bytes_read') -%}
+              {%- set written = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_total_bytes_written') -%}
+              {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+              {%- set ns = namespace(life_pct_str='') -%}
+              {%- if has_life_pct -%}
+                {%- set life_pct = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_percentage_used') -%}
+                {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+              {%- endif -%}
+              {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+            multiline_secondary: true
+            icon: >-
+              {{- 'mdi:heart-pulse' if is_state(entity,'on') else 'mdi:heart-broken' -}}
+            icon_color: >-
+              {{- 'green' if is_state(entity,'on') else 'red' -}}
+            tap_action:
+              action: more-info
+
+          # SMART Info for /dev/sdb
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.frigate_smart_dev_sda_health
+            primary: Health / Temp / Life (/dev/sda)
+            secondary: >-
+              {%- from 'units/base.jinja' import u_humanize_entity -%}
+              {%- set ok = is_state(entity,'on') %} 
+              {%- set temp = u_humanize_entity('sensor.frigate_smart_dev_sda_temperature') -%}
+              {%- set has_life_pct = has_value('sensor.frigate_smart_dev_sda_percentage_used') -%}
+              {%- set poh = u_humanize_entity('sensor.frigate_smart_dev_sda_power_on_hours') -%}
+              {%- set read = u_humanize_entity('sensor.frigate_smart_dev_sda_total_bytes_read') -%}
+              {%- set written = u_humanize_entity('sensor.frigate_smart_dev_sda_total_bytes_written') -%}
+              {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+              {%- set ns = namespace(life_pct_str='') -%}
+              {%- if has_life_pct -%}
+                {%- set life_pct = u_humanize_entity('sensor.frigate_smart_dev_sda_percentage_used') -%}
+                {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+              {%- endif -%}
+              {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+            multiline_secondary: true
+            icon: >-
+              {{- 'mdi:heart-pulse' if is_state(entity,'on') else 'mdi:heart-broken' -}}
+            icon_color: >-
+              {{- 'green' if is_state(entity,'on') else 'red' -}}
+            tap_action:
+              action: more-info
+
+      - type: vertical-stack
+        cards:
+
+          # Borg Backup
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: Borg Backup
+              - subtitle: Archive status, sizes, and runtime history
+
+          # Last Run
+          - type: custom:mushroom-template-card
+            primary: Last Run
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {% set last_run = (states('sensor.frigate_borg_last_run_utc')|as_datetime(default=None)|default(now()))|as_local|relative_time %}
+              {% set archives = states('sensor.frigate_borg_archives_count') %}
+              {% set runtime = u_humanize_entity('sensor.frigate_borg_last_duration') %}
+              {{ last_run ~ ' ago • ' ~ archives ~ ' archives • Runtime: ' ~ runtime }}
+            icon: >-
+              {{ 'mdi:cloud-check' if is_state('binary_sensor.frigate_borg_last_run_success','on') else 'mdi:cloud-alert' }}
+            icon_color: >-
+              {{ 'green' if is_state('binary_sensor.frigate_borg_last_run_success','on') else 'red' }}
+            layout: horizontal
+
+          # Borg Repository
+          - type: custom:mushroom-template-card
+            primary: Borg Repository
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {% set repo = states('sensor.frigate_borg_repo') %}
+              {% set unique = u_humanize_entity('sensor.frigate_borg_repo_unique_bytes') %}
+              {% set archives = states('sensor.frigate_borg_archives_count') %}
+              {{ repo ~ ' • Unique ' ~ unique ~ ' • Archives ' ~ archives }}
+            icon: mdi:server
+            icon_color: blue
+            layout: horizontal
+
+          # Last Backup
+          - type: custom:mushroom-template-card
+            primary: Last Backup
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity %}
+              {% set last_run = (states('sensor.frigate_borg_last_run_utc')|as_datetime|as_local).strftime('%c') %}
+              {% set last_archive = states('sensor.frigate_borg_last_archive') %}
+              {% set original = u_humanize_entity('sensor.frigate_borg_size_original') %}
+              {% set compressed = u_humanize_entity('sensor.frigate_borg_size_compressed') %}
+              {% set deduplicated = u_humanize_entity('sensor.frigate_borg_size_deduplicated') %}
+              {{ last_run ~ ' • ' ~ last_archive }}
+              {{ '\n' ~ original ~ ' ➝ ' ~ compressed ~ ' ➝ ' ~ deduplicated }}
+            icon: >-
+              {{ 'mdi:cloud-check' if is_state('binary_sensor.frigate_borg_success','on') else 'mdi:cloud-alert' }}
+            icon_color: >-
+              {% if is_state('binary_sensor.frigate_borg_last_run_success','on') %}
+                {% if is_state('binary_sensor.frigate_borg_warnings','on') %}
+                  orange
+                {% else %}
+                  green
+                {% endif %}
+              {% else %}
+                red
+              {% endif %}
+            layout: horizontal
+            multiline_secondary: true
+
+      - type: vertical-stack
+        cards:
+
+          # Coral TPU
+          - type: custom:decluttering-card
+            template: title_card
+            variables:
+              - title: Coral TPU
+              - subtitle: Temperature monitoring and throttle controls
+
+          # Thermal Setpoints
+          - type: custom:mushroom-template-card
+            entity: sensor.frigate_coral_apex_0_temp
+            primary: Thermal Setpoints
+            secondary: >-
+              {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+              {% set temp = u_humanize_entity(entity) %}
+              {% set warn2 = u_humanize_entity('number.frigate_coral_apex_0_hw_temp_warn2') %}
+              {% set warn2_on = 'on' if is_state('switch.frigate_coral_apex_0_hw_temp_warn2_en','on') else 'off' %}
+              {% set point0 = u_humanize_entity('number.frigate_coral_apex_0_trip_point0_temp') %}
+              {% set point1 = u_humanize_entity('number.frigate_coral_apex_0_trip_point1_temp') %}
+              {% set point2 = u_humanize_entity('number.frigate_coral_apex_0_trip_point2_temp') %}
+              {{ 'Now: ' ~ temp ~ ' • Warn2: ' ~ warn2 ~ ' (' ~ warn2_on ~ ')' }}
+              {{ '\n    TP0: ' ~ point0 ~ ' — mild throttling begins' }}
+              {{ '\n    TP1: ' ~ point1 ~ ' — stronger throttling' }}
+              {{ '\n    TP2: ' ~ point2 ~ ' — critical; device may reset/disable' }}
+            icon: >-
+              {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+              {% set t = u_convert_entity(entity,"c")|float(none) %}
+              {% set tp0 = states('number.frigate_coral_apex_0_trip_point0_temp')|float(0) %}
+              {% set tp1 = states('number.frigate_coral_apex_0_trip_point1_temp')|float(0) %}
+              {% set tp2 = states('number.frigate_coral_apex_0_trip_point2_temp')|float(0) %}
+              {% if tp2 > 0 and t >= tp2 %}
+                mdi:thermometer-alert
+              {% elif tp1 > 0 and t >= tp1 %}
+                mdi:thermometer-high
+              {% elif tp0 > 0 and t >= tp0 %}
+                mdi:thermometer
+              {% else %}
+                mdi:thermometer-low
+              {% endif %}
+            icon_color: >-
+              {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+              {% set t = u_convert_entity(entity,"c")|float(none) %}
+              {% set tp0 = states('number.frigate_coral_apex_0_trip_point0_temp')|float(0) %}
+              {% set tp1 = states('number.frigate_coral_apex_0_trip_point1_temp')|float(0) %}
+              {% set tp2 = states('number.frigate_coral_apex_0_trip_point2_temp')|float(0) %}
+              {% if tp2 > 0 and t >= tp2 %}
+                red
+              {% elif tp1 > 0 and t >= tp1 %}
+                orange
+              {% elif tp0 > 0 and t >= tp0 %}
+                amber
+              {% else %}
+                green
+              {% endif %}
+            layout: horizontal
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+
+  - type: grid
+    cards:
+
+      # LibreHardwareMonitor CPU Section
+      - type: custom:mushroom-title-card
+        title: CPU Metrics
+        subtitle: Core utilization, system load, and clock speeds
+
+      # LibreHardwareMonitor Cards
+      - type: custom:decluttering-card
+        template: lhm_card_stack
+        variables:
+          - machine_match: frigate
+          - root_match: CPU
+          
+  - type: grid
+    cards:
+
+      # LibreHardwareMonitor Network Section
+      - type: custom:mushroom-title-card
+        title: Network Connection Metrics
+        subtitle: Interfaces, throughput, and latency monitoring
+
+      # LibreHardwareMonitor Cards
+      - type: custom:decluttering-card
+        template: lhm_card_stack
+        variables:
+          - machine_match: frigate
+          - root_match: Network

@@ -1,0 +1,205 @@
+{# # File: config/custom_templates/metrics/weather/weather_codes.jinja ## #}
+{# Beefed-up WMO weather-code helpers: names, icons, types, intensity, hazard, and booleans.
+   Defaults use Home Assistant weather icon names (e.g., 'rainy', 'clear-night').
+   Pass is_day=true for day/night variants where applicable. #}
+
+{# -------------------- Groups by WMO code -------------------- #}
+{# Ref: WMO 4680 present-weather codes commonly used by APIs like Open-Meteo #}
+{% set G_CLEAR = [0, 1] %}
+{% set G_PARTLY = [2] %}
+{% set G_OVERCAST = [3] %}
+{% set G_FOG = [45, 48] %}
+{% set G_DRIZZLE_L = [51] %}
+{% set G_DRIZZLE_M = [53] %}
+{% set G_DRIZZLE_H = [55] %}
+{% set G_FDRIZZLE_L = [56] %}
+{% set G_FDRIZZLE_H = [57] %}
+{% set G_RAIN_L = [61] %}
+{% set G_RAIN_M = [63] %}
+{% set G_RAIN_H = [65] %}
+{% set G_FRAIN_L = [66] %}
+{% set G_FRAIN_H = [67] %}
+{% set G_SNOW_L = [71, 85] %}
+{% set G_SNOW_M = [73] %}
+{% set G_SNOW_H = [75, 86] %}
+{% set G_SNOW_GRAINS = [77] %}
+{% set G_SHOWER_L = [80] %}
+{% set G_SHOWER_M = [81] %}
+{% set G_SHOWER_V = [82] %}
+{% set G_TSTORM = [95, 96, 99] %}
+
+{# Helper to test membership #}
+{% macro _in(code, group) -%}
+    {{ code in group }}
+{%- endmacro %}
+
+{# -------------------- Core: condition icon (HA weather icon names) -------------------- #}
+{%- macro condition(code, is_day=true) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_CLEAR -%}
+        {{ 'sunny' if is_day else 'clear-night' }}
+    {%- elif c in G_PARTLY -%}partlycloudy
+    {%- elif c in G_OVERCAST -%}cloudy
+    {%- elif c in G_FOG -%}fog
+    {%- elif c in G_DRIZZLE_L + G_DRIZZLE_M -%}rainy
+    {%- elif c in G_DRIZZLE_H -%}pouring
+    {%- elif c in G_FDRIZZLE_L + G_FDRIZZLE_H -%}snowy-rainy
+    {%- elif c in G_RAIN_L + G_SHOWER_L -%}rainy
+    {%- elif c in G_RAIN_M + G_SHOWER_M -%}rainy
+    {%- elif c in G_RAIN_H + G_SHOWER_V -%}pouring
+    {%- elif c in G_FRAIN_L + G_FRAIN_H -%}snowy-rainy
+    {%- elif c in G_SNOW_L + G_SNOW_GRAINS -%}snowy
+    {%- elif c in G_SNOW_M -%}snowy
+    {%- elif c in G_SNOW_H -%}snowy-heavy
+    {%- elif c in G_TSTORM -%}lightning-rainy
+    {%- else -%}unknown
+    {%- endif -%}
+{%- endmacro %}
+
+{# Material Design Icons equivalent (mdi:*). Useful for non-weather entities. #}
+{%- macro condition_mdi(code, is_day=true) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_CLEAR -%}
+        {{ 'mdi:weather-sunny' if is_day else 'mdi:weather-night' }}
+    {%- elif c in G_PARTLY -%}'mdi:weather-partly-cloudy'
+    {%- elif c in G_OVERCAST -%}'mdi:weather-cloudy'
+    {%- elif c in G_FOG -%}'mdi:weather-fog'
+    {%- elif c in G_DRIZZLE_L + G_DRIZZLE_M -%}'mdi:weather-rainy'
+    {%- elif c in G_DRIZZLE_H -%}'mdi:weather-pouring'
+    {%- elif c in G_FDRIZZLE_L + G_FDRIZZLE_H -%}'mdi:weather-snowy-rainy'
+    {%- elif c in G_RAIN_L + G_SHOWER_L -%}'mdi:weather-rainy'
+    {%- elif c in G_RAIN_M + G_SHOWER_M -%}'mdi:weather-rainy'
+    {%- elif c in G_RAIN_H + G_SHOWER_V -%}'mdi:weather-pouring'
+    {%- elif c in G_FRAIN_L + G_FRAIN_H -%}'mdi:weather-snowy-rainy'
+    {%- elif c in G_SNOW_L + G_SNOW_GRAINS -%}'mdi:weather-snowy'
+    {%- elif c in G_SNOW_M -%}'mdi:weather-snowy'
+    {%- elif c in G_SNOW_H -%}'mdi:weather-snowy-heavy'
+    {%- elif c in G_TSTORM -%}'mdi:weather-lightning-rainy'
+    {%- else -%}'mdi:help-circle-outline'
+    {%- endif -%}
+{%- endmacro %}
+
+{# Human-readable condition name #}
+{%- macro condition_name(code) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_CLEAR -%}Clear
+    {%- elif c in G_PARTLY -%}Partly Cloudy
+    {%- elif c in G_OVERCAST -%}Overcast
+    {%- elif c in G_FOG -%}Fog
+    {%- elif c in G_DRIZZLE_L -%}Light Drizzle
+    {%- elif c in G_DRIZZLE_M -%}Drizzle
+    {%- elif c in G_DRIZZLE_H -%}Heavy Drizzle
+    {%- elif c in G_FDRIZZLE_L -%}Light Freezing Drizzle
+    {%- elif c in G_FDRIZZLE_H -%}Freezing Drizzle
+    {%- elif c in G_RAIN_L -%}Light Rain
+    {%- elif c in G_RAIN_M -%}Rain
+    {%- elif c in G_RAIN_H -%}Heavy Rain
+    {%- elif c in G_FRAIN_L -%}Light Freezing Rain
+    {%- elif c in G_FRAIN_H -%}Freezing Rain
+    {%- elif c in G_SNOW_L -%}Light Snow
+    {%- elif c in G_SNOW_M -%}Snow
+    {%- elif c in G_SNOW_H -%}Heavy Snow
+    {%- elif c in G_SNOW_GRAINS -%}Snow Grains
+    {%- elif c in G_SHOWER_L -%}Light Rain Showers
+    {%- elif c in G_SHOWER_M -%}Rain Showers
+    {%- elif c in G_SHOWER_V -%}Violent Rain Showers
+    {%- elif c in G_TSTORM -%}Thunderstorm
+    {%- else -%}Unknown
+    {%- endif -%}
+{%- endmacro %}
+
+{# Precipitation type #}
+{%- macro precip_type(code) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_DRIZZLE_L + G_DRIZZLE_M + G_DRIZZLE_H + G_RAIN_L + G_RAIN_M + G_RAIN_H + G_SHOWER_L + G_SHOWER_M + G_SHOWER_V -%}rain
+    {%- elif c in G_FDRIZZLE_L + G_FDRIZZLE_H + G_FRAIN_L + G_FRAIN_H -%}freezing_rain
+    {%- elif c in G_SNOW_L + G_SNOW_M + G_SNOW_H + G_SNOW_GRAINS + G_SNOW_L + G_SNOW_H -%}snow
+    {%- elif c in G_TSTORM -%}thunderstorm
+    {%- elif c in G_FOG -%}fog
+    {%- else -%}none
+    {%- endif -%}
+{%- endmacro %}
+
+{# Precipitation intensity #}
+{%- macro precip_intensity(code) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_DRIZZLE_L + G_RAIN_L + G_SNOW_L + G_SHOWER_L -%}light
+    {%- elif c in G_DRIZZLE_M + G_RAIN_M + G_SNOW_M + G_SHOWER_M -%}moderate
+    {%- elif c in G_DRIZZLE_H + G_RAIN_H + G_SNOW_H -%}heavy
+    {%- elif c in G_SHOWER_V -%}violent
+    {%- elif c in G_TSTORM -%}storm
+    {%- else -%}none
+    {%- endif -%}
+{%- endmacro %}
+
+{# Simple hazard level 1..5 and helpers. Focus on icing and convection. #}
+{%- macro hazard_level(code) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_TSTORM -%}5
+    {%- elif c in G_FRAIN_H + G_FDRIZZLE_H -%}4
+    {%- elif c in G_RAIN_H + G_SNOW_H + G_SHOWER_V -%}3
+    {%- elif c in G_FRAIN_L + G_FDRIZZLE_L + G_RAIN_M + G_SNOW_M -%}2
+    {%- elif c in G_FOG + G_RAIN_L + G_SNOW_L -%}1
+    {%- else -%}0
+    {%- endif -%}
+{%- endmacro %}
+
+{%- macro is_precipitating(code) -%}
+    {{ precip_type(code) in ['rain','freezing_rain','snow','thunderstorm'] }}
+{%- endmacro %}
+
+{%- macro is_frozen_precip(code) -%}
+    {{ precip_type(code) in ['freezing_rain','snow'] }}
+{%- endmacro %}
+
+{%- macro is_thunderstorm(code) -%}
+    {{ code|int(0) in G_TSTORM }}
+{%- endmacro %}
+
+{%- macro is_fog(code) -%}
+    {{ code|int(0) in G_FOG }}
+{%- endmacro %}
+
+{# Color suggestions for chips/badges #}
+{%- macro condition_color(code) -%}
+    {%- set c = code|int(0) -%}
+    {%- if c in G_CLEAR -%}#10b981
+    {%- elif c in G_PARTLY -%}#84cc16
+    {%- elif c in G_OVERCAST -%}#9ca3af
+    {%- elif c in G_FOG -%}#94a3b8
+    {%- elif c in G_DRIZZLE_L + G_RAIN_L + G_SHOWER_L -%}#60a5fa
+    {%- elif c in G_DRIZZLE_M + G_RAIN_M + G_SHOWER_M -%}#3b82f6
+    {%- elif c in G_DRIZZLE_H + G_RAIN_H + G_SHOWER_V -%}#2563eb
+    {%- elif c in G_FDRIZZLE_L + G_FDRIZZLE_H + G_FRAIN_L + G_FRAIN_H -%}#38bdf8
+    {%- elif c in G_SNOW_L + G_SNOW_M -%}#e5e7eb
+    {%- elif c in G_SNOW_H -%}#cbd5e1
+    {%- elif c in G_TSTORM -%}#f59e0b
+    {%- else -%}'disabled'
+    {%- endif -%}
+{%- endmacro %}
+
+{# Brief guidance string #}
+{%- macro advice(code) -%}
+    {%- set p = precip_type(code) -%}
+    {%- set i = precip_intensity(code) -%}
+    {%- if p == 'none' -%}
+        {{ 'Good conditions.' if code in G_CLEAR + G_PARTLY else 'No precipitation expected.' }}
+    {%- elif p == 'rain' -%}
+        {{ 'Umbrella recommended.' if i in ['moderate','heavy','violent'] else 'Light rain possible.' }}
+    {%- elif p == 'freezing_rain' -%}
+        Use caution for ice on roads and walkways.
+    {%- elif p == 'snow' -%}
+        {{ 'Snow likely. Plan extra travel time.' if i != 'light' else 'Light snow possible.' }}
+    {%- elif p == 'thunderstorm' -%}
+        Thunderstorms possible. Seek shelter and avoid exposed areas.
+    {%- elif p == 'fog' -%}
+        Reduced visibility. Use low beams and increase following distance.
+    {%- else -%}
+        Be prepared for changing weather.
+    {%- endif -%}
+{%- endmacro %}
+
+{# Composite label, e.g., "Rain Showers • Moderate" #}
+{%- macro label(code) -%}
+    {{ condition_name(code) ~ ' • ' ~ (precip_intensity(code)|capitalize) if is_precipitating(code) else condition_name(code) }}
+{%- endmacro %}

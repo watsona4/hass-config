@@ -1,0 +1,63 @@
+# =========================
+# 4) TANKS + WATER
+# =========================
+title: Tanks
+icon: mdi:water-percent
+path: tanks
+type: masonry
+cards:
+  - type: custom:mushroom-title-card
+    title: Fresh, gray, black, propane
+    subtitle: Levels and controls
+
+  - type: grid
+    columns: 4
+    square: false
+    cards:
+      - type: gauge
+        name: Fresh
+        entity: sensor.rv_fresh_tank
+        min: 0
+        max: 100
+      - type: gauge
+        name: Gray
+        entity: sensor.rv_gray_tank
+        min: 0
+        max: 100
+      - type: gauge
+        name: Black
+        entity: sensor.rv_black_tank
+        min: 0
+        max: 100
+      - type: entity
+        name: Pump
+        entity: switch.rv_water_pump
+
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      - type: entity
+        name: Water heater
+        entity: switch.rv_water_heater
+      - type: entity
+        name: Heater mode
+        entity: select.rv_water_heater_mode   # Gas, Electric, Both
+      - type: entity
+        name: Water temp
+        entity: sensor.rv_water_heater_temp
+
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: gauge
+        name: Propane Left
+        entity: sensor.rv_propane_left
+        min: 0
+        max: 100
+      - type: gauge
+        name: Propane Right
+        entity: sensor.rv_propane_right
+        min: 0
+        max: 100

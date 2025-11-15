@@ -1,0 +1,68 @@
+{# Severity definitions for power factor #}
+{# Device: Ratio of real power to apparent power #}
+{# Typical applications: AC loads, power quality #}
+
+{% set lookup_unit = "" %}
+{% set levels = {
+    "ac_loads": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0.0,
+            "default_desc": "Reactive",
+            "short_desc": "React",
+            "long_desc": "Very low PF",
+            "icon": "mdi:sine-wave",
+            "color": "#dc2626",
+            "full_desc": "Mostly reactive power."
+        },
+        {
+            "min_value": 0.6,
+            "default_desc": "Poor",
+            "short_desc": "Poor",
+            "long_desc": "Poor PF",
+            "icon": "mdi:sine-wave",
+            "color": "#f97316",
+            "full_desc": "Inefficient draw."
+        },
+        {
+            "min_value": 0.8,
+            "default_desc": "Fair",
+            "short_desc": "Fair",
+            "long_desc": "Fair PF",
+            "icon": "mdi:sine-wave",
+            "color": "#eab308",
+            "full_desc": "Acceptable."
+        },
+        {
+            "min_value": 0.95,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Good PF",
+            "icon": "mdi:sine-wave",
+            "color": "#22c55e",
+            "full_desc": "Efficient load."
+        },
+        {
+            "min_value": 0.99,
+            "default_desc": "Excellent",
+            "short_desc": "Excel",
+            "long_desc": "Near unity",
+            "icon": "mdi:sine-wave",
+            "color": "#10b981",
+            "full_desc": "Power factor corrected."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

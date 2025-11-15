@@ -1,4 +1,4 @@
-FROM ghcr.io/home-assistant/home-assistant:stable
+FROM ghcr.io/home-assistant/home-assistant:latest
 
 RUN apk update && \
     apk add --no-cache \
@@ -28,6 +28,3 @@ RUN apk update && \
 
 COPY prestart/ /prestart/
 RUN chmod +x /prestart/entrypoint.sh /prestart/run_prestart_tasks.py
-
-ENTRYPOINT ["/prestart/entrypoint.sh"]
-LABEL org.opencontainers.image.source=https://github.com/watsona4/hass-config

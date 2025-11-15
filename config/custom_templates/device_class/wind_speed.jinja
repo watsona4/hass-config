@@ -1,0 +1,233 @@
+{# Severity definitions for wind speed measurements (HA device_class: wind_speed) #}
+
+{% import 'helpers.jinja' as H with context %}
+{% from 'units/base.jinja' import u_convert_entity, u_humanize_value %}
+
+{% set lookup_unit = "mph" %}
+{% set levels = {
+    "default": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "badge": "mdi:numeric-0-circle",
+            "default_desc": "Calm",
+            "short_desc": "Calm",
+            "long_desc": "Completely still conditions",
+            "icon": "mdi:weather-windy",
+            "color": "#10b981",
+            "full_desc": "Air is still; smoke rises straight up and water surfaces are mirror-like."
+        },
+        {
+            "min_value": 1,
+            "badge": "mdi:numeric-1-circle",
+            "default_desc": "Light Air",
+            "short_desc": "L Air",
+            "long_desc": "Barely perceptible movement",
+            "icon": "mdi:flag-variant",
+            "color": "#22c55e",
+            "full_desc": "Smoke drifts slowly; little effect on surroundings."
+        },
+        {
+            "min_value": 4,
+            "badge": "mdi:numeric-2-circle",
+            "default_desc": "Light Breeze",
+            "short_desc": "L Breeze",
+            "long_desc": "Soft breeze on the face",
+            "icon": "mdi:flag-variant",
+            "color": "#84cc16",
+            "full_desc": "Leaves rustle and weather vanes begin to move."
+        },
+        {
+            "min_value": 8,
+            "badge": "mdi:numeric-3-circle",
+            "default_desc": "Gentle Breeze",
+            "short_desc": "Gent Breeze",
+            "long_desc": "Noticeable but mild breeze",
+            "icon": "mdi:windsock",
+            "color": "#a3e635",
+            "full_desc": "Leaves and twigs in constant motion; small flags extend."
+        },
+        {
+            "min_value": 13,
+            "badge": "mdi:numeric-4-circle",
+            "default_desc": "Moderate Breeze",
+            "short_desc": "Mod Breeze",
+            "long_desc": "Fresh, steady wind",
+            "icon": "mdi:windsock",
+            "color": "#facc15",
+            "full_desc": "Small branches sway; loose paper and dust lifted from the ground."
+        },
+        {
+            "min_value": 19,
+            "badge": "mdi:numeric-5-circle",
+            "default_desc": "Fresh Breeze",
+            "short_desc": "Fresh",
+            "long_desc": "Lively wind with whitecaps",
+            "icon": "mdi:weather-windy",
+            "color": "#f59e0b",
+            "full_desc": "Small trees sway noticeably; moderate waves form with many whitecaps."
+        },
+        {
+            "min_value": 25,
+            "badge": "mdi:numeric-6-circle",
+            "default_desc": "Strong Breeze",
+            "short_desc": "Strong",
+            "long_desc": "Powerful, steady wind",
+            "icon": "mdi:weather-windy-variant",
+            "color": "#f97316",
+            "full_desc": "Large branches move; overhead wires whistle and umbrellas are difficult to use."
+        },
+        {
+            "min_value": 32,
+            "badge": "mdi:numeric-7-circle",
+            "default_desc": "Near Gale",
+            "short_desc": "Near Gale",
+            "long_desc": "Forceful wind difficult to resist",
+            "icon": "mdi:weather-windy-variant",
+            "color": "#fb923c",
+            "full_desc": "Whole trees in motion; walking against the wind is challenging."
+        },
+        {
+            "min_value": 39,
+            "badge": "mdi:numeric-8-circle",
+            "default_desc": "Gale",
+            "short_desc": "Gale",
+            "long_desc": "Damaging, strong wind",
+            "icon": "mdi:weather-windy-variant",
+            "color": "#ef4444",
+            "full_desc": "Twigs and small limbs break off; progress on foot is severely hampered."
+        },
+        {
+            "min_value": 47,
+            "badge": "mdi:numeric-9-circle",
+            "default_desc": "Strong Gale",
+            "short_desc": "Str Gale",
+            "long_desc": "Very damaging winds",
+            "icon": "mdi:weather-windy-variant",
+            "color": "#dc2626",
+            "full_desc": "Considerable structural damage; shallow-rooted trees may be blown over."
+        },
+        {
+            "min_value": 55,
+            "badge": "mdi:numeric-9-plus-circle",
+            "default_desc": "Storm",
+            "short_desc": "Storm",
+            "long_desc": "Severe storm-force wind",
+            "icon": "mdi:weather-windy-variant",
+            "color": "#b91c1c",
+            "full_desc": "Trees uprooted; widespread damage to roofs, fences, and structures."
+        },
+        {
+            "min_value": 64,
+            "badge": "mdi:numeric-9-plus-circle",
+            "default_desc": "Violent Storm",
+            "short_desc": "Violent",
+            "long_desc": "Extremely destructive wind",
+            "icon": "mdi:tornado",
+            "color": "#7c3aed",
+            "full_desc": "Exceptional damage on land; very rare outside severe storms."
+        },
+        {
+            "min_value": 73,
+            "badge": "mdi:numeric-9-plus-circle",
+            "default_desc": "Hurricane",
+            "short_desc": "Hurricane",
+            "long_desc": "Catastrophic hurricane-force wind",
+            "icon": "mdi:weather-hurricane",
+            "color": "#581c87",
+            "full_desc": "Devastating, catastrophic damage; take shelter immediately."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
+{% endmacro %}
+
+{% macro get_name(value, app, options) -%}
+    {{- 'Wind • ' ~ H.get_default_desc(value, app, options) -}}
+{%- endmacro %}
+
+{% macro get_label(value, app, options) %}
+  {# --- only override if wind-specific options are present --- #}
+  {%- set has_dir = options is mapping and 'direction' in options -%}
+  {%- set has_gust = options is mapping and 'gusts' in options -%}
+  {%- if not has_dir and not has_gust -%}
+    {{- '' -}}
+  {%- else -%}
+    {%- set ns = namespace(deg=none, dir_label=none, gust_val=none, gust_uom=none, parts=[]) -%}
+
+    {#- ---- units & layout ---- -#}
+    {%- set display = options.get('display_unit', lookup_unit) -%}
+    {%- set layout = options.get('layout', 'horizontal') -%}
+    {%- set delim = options.get('delim', ' • ') -%}
+    {%- set vert_delim = options.get('vert_delim', '\n') -%}
+    {%- set sep = (vert_delim if layout == 'vertical' else delim) -%}
+    {%- set show_deg = options.get('show_deg', true) -%}
+
+    {#- ---- direction -> compass (and optional degrees) ---- -#}
+    {%- set dir_ent = options.direction if has_dir else none -%}
+    {%- set dir_is_entity = (dir_ent is string) and ('.' in dir_ent) -%}
+
+    {%- if dir_is_entity -%}
+      {%- set ns.deg = states(dir_ent) | float(none) -%}
+    {%- else -%}
+      {%- set ns.deg = dir_ent | float(none) -%}
+    {%- endif -%}
+    {%- set dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'] -%}
+    {%- set dirtxt = (dirs[((ns.deg % 360) / 22.5) | round(0,'floor') | int(0) % 16]) if ns.deg is number else none -%}
+    {%- set deg_txt = ((ns.deg | round(0) | int(0)) ~ '°') if (show_deg and ns.deg is number) else none -%}
+
+    {%- if dirtxt and deg_txt -%}
+      {#- Horizontal: "NW 305°"; Vertical: same line to keep it compact -#}
+      {%- set ns.dir_label = dirtxt ~ ' ' ~ deg_txt -%}
+    {%- elif dirtxt -%}
+      {%- set ns.dir_label = dirtxt -%}
+    {%- elif deg_txt -%}
+      {%- set ns.dir_label = deg_txt -%}
+    {%- endif -%}
+
+    {#- ---- main speed text via helpers ---- -#}
+    {%- set opt2 = (options | combine({'display_unit': display})) if options is mapping else {'display_unit': display} -%}
+    {%- set speed_txt = H.get_value(value, app, opt2) -%}
+
+    {#- ---- gusts (entity or literal), guarantee value+uom ---- -#}
+    {%- set gust_ent = options.gusts if has_gust else none -%}
+    {%- set gust_is_entity = (gust_ent is string) and ('.' in gust_ent) -%}
+    {%- if gust_is_entity -%}
+      {%- set gconv = u_convert_entity(gust_ent, display) -%}
+      {%- if gconv is mapping and 'uom' in gconv -%}
+        {%- set ns.gust_val = gconv.value | float(0) -%}
+        {%- set ns.gust_uom = gconv.uom -%}
+      {%- else -%}
+        {%- set ns.gust_val = states(gust_ent) | float(0) -%}
+        {%- set ns.gust_uom = state_attr(gust_ent,'unit_of_measurement') | default(display) -%}
+      {%- endif -%}
+    {%- elif has_gust -%}
+      {%- set ns.gust_val = gust_ent | float(0) -%}
+      {%- set ns.gust_uom = display -%}
+    {%- else -%}
+      {%- set ns.gust_val = none -%}
+      {%- set ns.gust_uom = display -%}
+    {%- endif -%}
+    {%- set gust_txt = (' (Gusts ' ~ (ns.gust_val | round(1)) ~ ' ' ~ ns.gust_uom ~ ')') if ns.gust_val is number and ns.gust_val > 0 else '' -%}
+
+    {#- ---- compose ---- -#}
+    {%- if ns.dir_label %}
+        {% set ns.parts = ns.parts + [ns.dir_label] %}
+    {% endif -%}
+    {%- if speed_txt|trim %}
+        {% set ns.parts = ns.parts + [speed_txt] %}
+    {% endif -%}
+    {{- (ns.parts | join(' ')) ~ gust_txt -}}
+  {%- endif -%}
+{% endmacro %}

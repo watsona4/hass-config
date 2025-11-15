@@ -1,0 +1,295 @@
+# File: dashboards/_shared/decluttering.yaml
+# Description: Shared decluttering templates for dashboards
+
+# =====================================================================================
+# Title Card
+title_card:
+  card:
+    type: custom:mushroom-title-card
+    title: '[[title]]'
+    subtitle: '[[subtitle]]'
+
+# =====================================================================================
+# Climate Card
+climate_card:
+  card:
+    type: custom:mushroom-climate-card
+    entity: '[[entity]]'
+    name: '[[name]]'
+    tap_action:
+      action: more-info
+
+# =====================================================================================
+# Humidifier Card
+humidifier_card:
+  card:
+    type: custom:mushroom-humidifier-card
+    entity: '[[entity]]'
+    name: '[[name]]'
+    tap_action:
+      action: more-info
+
+# =====================================================================================
+# Template Card
+template_card:
+  default:
+    - name: default
+    - width: default
+    - layout: horizontal
+    - app: default
+    - options: ''
+    - multiline_secondary: false
+    - tap_action:
+        action: more-info
+    - icon_tap_action:
+        action: nothing
+    - grid_options:
+        columns: 12
+        rows: auto
+  card:
+    type: custom:mushroom-template-card
+    entity: '[[entity]]'
+    icon: >-
+      {%- from 'main.jinja' import get_icon -%}
+      {{- get_icon(entity, '[[app]]', '[[options]]') -}}
+    icon_color: >-
+      {%- from 'main.jinja' import get_color -%}
+      {{- get_color(entity, '[[app]]', '[[options]]') -}}
+    primary: >-
+      {%- from 'main.jinja' import get_name -%}
+      {%- if '[[name]]' == 'default' -%}
+        {{- get_name(entity, '[[app]]', '[[options]]') -}}
+      {%- else -%}
+        {{- '[[name]]' -}}
+      {%- endif -%}
+    secondary: >-
+      {%- import 'main.jinja' as main -%}
+      {%- if '[[width]]' == 'narrow' -%}
+        {{- main.get_short_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+      {%- elif '[[width]]' == 'wide' -%}
+        {{- main.get_long_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+      {%- else -%}
+        {{- main.get_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+      {%- endif -%}
+    badge_icon: >-
+      {%- from 'main.jinja' import get_badge -%}
+      {{- get_badge(entity, '[[app]]', '[[options]]') -}}
+    badge_color: >-
+      {%- from 'main.jinja' import get_badge_color -%}
+      {{- get_badge_color(entity, '[[app]]', '[[options]]') -}}
+    layout: '[[layout]]'
+    multiline_secondary: '[[multiline_secondary]]'
+    tap_action: '[[tap_action]]'
+    icon_tap_action: '[[icon_tap_action]]'
+    grid_options: '[[grid_options]]'
+
+# =====================================================================================
+# Template Badge
+template_badge:
+  default:
+    - name: default
+    - app: default
+    - options: ''
+    - multiline_secondary: false
+    - tap_action:
+        action: more-info
+    - icon_tap_action:
+        action: nothing
+  card:
+    type: custom:mushroom-template-badge
+    entity: '[[entity]]'
+    icon: >-
+      {%- from 'main.jinja' import get_icon -%}
+      {{- get_icon(entity, '[[app]]', '[[options]]') -}}
+    color: >-
+      {%- from 'main.jinja' import get_color -%}
+      {{- get_color(entity, '[[app]]', '[[options]]') -}}
+    label: >-
+      {%- from 'main.jinja' import get_name -%}
+      {%- if '[[name]]' == 'default' -%}
+        {{- get_name(entity, '[[app]]', '[[options]]') -}}
+      {%- else -%}
+        {{- '[[name]]' -}}
+      {%- endif -%}
+    content: >-
+      {%- from 'main.jinja' import get_short_label -%}
+      {{- get_short_label(entity, '[[app]]', '[[options]]') -}}
+    tap_action:
+      action: more-info
+
+# =====================================================================================
+# Machine Summary Card
+machine_summary:
+  card:
+    type: vertical-stack
+    cards:
+
+      # Header
+      - type: custom:decluttering-card
+        template: title_card
+        variables:
+          - title: '[[i_name]]'
+          - subtitle: "{{ states('[[i_status]]') }}"
+
+      # Summary
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_uptime]]'
+              - name: Uptime
+              - app: uptime
+              - options: 'device_class=duration;uom=s'
+              - layout: vertical
+              - multiline_secondary: true
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_updates]]'
+              - name: Updates
+              - app: count_pending
+              - layout: vertical
+              - multiline_secondary: true
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_alerts_any]]'
+              - name: Status
+              - app: alarm
+              - layout: vertical
+              - multiline_secondary: true
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_cpu_pct]]'
+              - name: CPU
+              - app: cpu_utilization
+              - options: 'load=[[i_load1]]'
+              - multiline_secondary: true
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_mem_pct]]'
+              - name: Memory
+              - app: memory_utilization
+              - options: 'used=[[i_mem_used]]'
+              - multiline_secondary: true
+      - type: horizontal-stack
+        cards:
+          - type: custom:decluttering-card
+            template: template_card
+            variables:
+              - entity: '[[i_disk_pct]]'
+              - name: Disk
+              - app: disk_utilization
+              - options: 'free=[[i_disk_free]]'
+              - multiline_secondary: true
+          - type: vertical-stack
+            cards:
+              - type: custom:decluttering-card
+                template: template_card
+                variables:
+                  - entity: '[[i_temp]]'
+                  - name: Temp
+                  - app: cpu
+                  - device_class: temperature
+                  - multiline_secondary: true
+              - type: custom:decluttering-card
+                template: template_card
+                visibility:
+                  - condition: state
+                    entity: '[[i_gpu_pct]]'
+                    state_not: unknown
+                variables:
+                  - entity: '[[i_gpu_pct]]'
+                  - name: GPU
+                  - app: cpu_utilization
+                  - multiline_secondary: true
+              - type: custom:decluttering-card
+                template: template_card
+                visibility:
+                  - condition: state
+                    entity: '[[i_tpu_temp]]'
+                    state_not: unknown
+                variables:
+                  - entity: '[[i_tpu_temp]]'
+                  - name: TPU
+                  - app: cpu
+                  - device_class: temperature
+                  - multiline_secondary: true
+      - type: custom:mushroom-title-card
+        subtitle: Stopped Services
+        visibility:
+          - condition: state
+            entity: '[[i_services_display]]'
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: custom:mushroom-chips-card
+          alignment: start
+        card_param: chips
+        filter:
+          include:
+            - entity_id: '[[i_services_glob]]'
+              state: 'off'
+              options:
+                type: template
+                entity: this.entity_id
+                icon: |
+                  {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                icon_color: |
+                  {{- 'green' if is_state(entity,'on') else 'red' -}}
+                content: >
+                  {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                  {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                tap_action: none
+          exclude: []
+        sort:
+          method: name
+      - type: custom:mushroom-title-card
+        subtitle: Stopped Containers
+        visibility:
+          - condition: state
+            entity: '[[i_containers_display]]'
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: custom:mushroom-chips-card
+          alignment: start
+        card_param: chips
+        filter:
+          include:
+            - entity_id: '[[i_containers_glob]]'
+              state: 'off'
+              options:
+                type: template
+                entity: this.entity_id
+                icon: >
+                  {{- 'mdi:server' if is_state(entity,'on') else 'mdi:server-off' -}}
+                icon_color: |
+                  {{- 'green' if is_state(entity,'on') else 'red' -}}
+                content: >
+                  {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                  {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
+                tap_action: none
+          exclude: []
+        sort:
+          method: name
+
+# =====================================================================================
+# LibreHardwareMonitor Card Stack
+lhm_card_stack:
+  default:
+    - columns: 2
+  card:
+    type: custom:auto-entities
+    card:
+      type: vertical-stack
+    card_param: cards
+    filter:
+      template: >-
+        {%- from 'macros/libre_hardware_monitor.jinja' import lhm_card_stack -%}
+        {{- lhm_card_stack('[[machine_match]]', '[[root_match]]', [[columns]]) -}}

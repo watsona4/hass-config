@@ -1,0 +1,155 @@
+{# Severity definitions for enumerated states #}
+{# Device: Generic enumerated values represented as integers #}
+{# Typical applications: Binary states mapped to severity, multi-state equipment modes #}
+
+{% set lookup_unit = "" %}
+{% set levels = {
+    "binary_state": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "State off",
+            "icon": "mdi:toggle-switch-off-outline",
+            "color": "#9ca3af",
+            "full_desc": "Inactive"
+        },
+        {
+            "min_value": 1,
+            "default_desc": "On",
+            "short_desc": "On",
+            "long_desc": "State on",
+            "icon": "mdi:toggle-switch",
+            "color": "#22c55e",
+            "full_desc": "Active"
+        }
+    ],
+    "hvac_mode": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Off",
+            "short_desc": "Off",
+            "long_desc": "System off",
+            "icon": "mdi:power",
+            "color": "#9ca3af",
+            "full_desc": "No conditioning"
+        },
+        {
+            "min_value": 1,
+            "default_desc": "Fan",
+            "short_desc": "Fan",
+            "long_desc": "Fan only",
+            "icon": "mdi:fan",
+            "color": "#60a5fa",
+            "full_desc": "Air circulation"
+        },
+        {
+            "min_value": 2,
+            "default_desc": "Cool",
+            "short_desc": "Cool",
+            "long_desc": "Cooling active",
+            "icon": "mdi:snowflake",
+            "color": "#22c55e",
+            "full_desc": "Cooling"
+        },
+        {
+            "min_value": 3,
+            "default_desc": "Heat",
+            "short_desc": "Heat",
+            "long_desc": "Heating active",
+            "icon": "mdi:fire",
+            "color": "#f97316",
+            "full_desc": "Heating"
+        },
+        {
+            "min_value": 4,
+            "default_desc": "Auto",
+            "short_desc": "Auto",
+            "long_desc": "Auto mode",
+            "icon": "mdi:cached",
+            "color": "#10b981",
+            "full_desc": "Automatic control"
+        },
+        {
+            "min_value": 5,
+            "default_desc": "Emerg",
+            "short_desc": "Emerg",
+            "long_desc": "Emergency heat",
+            "icon": "mdi:alert",
+            "color": "#dc2626",
+            "full_desc": "Emergency operation"
+        }
+    ],
+    "device_health": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Unknown",
+            "short_desc": "Unk",
+            "long_desc": "Unknown",
+            "icon": "mdi:help-circle-outline",
+            "color": "#9ca3af",
+            "full_desc": "No status"
+        },
+        {
+            "min_value": 1,
+            "default_desc": "OK",
+            "short_desc": "OK",
+            "long_desc": "Operating",
+            "icon": "mdi:check-circle",
+            "color": "#22c55e",
+            "full_desc": "Healthy"
+        },
+        {
+            "min_value": 2,
+            "default_desc": "Degraded",
+            "short_desc": "Degr",
+            "long_desc": "Degraded",
+            "icon": "mdi:alert-circle",
+            "color": "#eab308",
+            "full_desc": "Performance affected"
+        },
+        {
+            "min_value": 3,
+            "default_desc": "Fault",
+            "short_desc": "Fault",
+            "long_desc": "Faulted",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Needs attention"
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

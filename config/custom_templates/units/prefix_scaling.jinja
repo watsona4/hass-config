@@ -1,0 +1,116 @@
+{# Prefix helpers; longest-prefix wins to avoid "m" vs "Mi" mixups #}
+
+{# djlint:off #}
+{% set SI_PREFIXES = {
+    'Y': 24, 'Z': 21, 'E': 18, 'P': 15, 'T': 12, 'G': 9, 'M': 6, 'k': 3,
+    '': 0, 'm': -3, 'µ': -6, 'n': -9, 'p': -12, 'f': -15, 'a': -18, 'z': -21, 'y': -24
+} %}
+
+{% set IEC_PREFIXES = { 'Yi': 80, 'Zi':70, 'Ei':60, 'Pi':50, 'Ti':40, 'Gi':30, 'Mi':20, 'Ki':10, '':0 } %}
+
+{% set SPECIAL = {
+    "%": {"prefix": "", "base": "%"},
+    "None": {"prefix": "", "base": "%"},
+    "ft³": {"prefix": "", "base": "ft³"},
+    "m": {"prefix": "", "base": "m"},
+    "mi": {"prefix": "", "base": "mi"},
+    "mi/h": {"prefix": "", "base": "mi/h"},
+    "min": {"prefix": "", "base": "min"},
+    "mph": {"prefix": "", "base": "mph"},
+    "ms": {"prefix": "m", "base": "s"},
+    "m³": {"prefix": "", "base": "m³"},
+    "nmi": {"prefix": "", "base": "nmi"},
+} %}
+{# djlint:on #}
+
+{% macro split_prefix_unit(unit_str) %}
+    {%- set u = unit_str | string -%}
+    {%- set u_l = u | lower -%}
+    {%- if u_l in ['mile','miles'] -%}
+        {{- {'prefix':'','base':'mi'} | tojson -}}
+    {%- elif u_l in ['meter','meters','metre','metres'] -%}
+        {{- {'prefix':'','base':'m'} | tojson -}}
+    {%- elif u in SPECIAL -%}
+        {{- SPECIAL[u] | tojson -}}
+    {%- else -%}
+        {#- try IEC first (two letters), then SI -#}
+        {%- set ns = namespace(_=none) -%}
+        {%- for p in IEC_PREFIXES if p != '' -%}
+            {%- if u.startswith(p) -%}
+                {{- {'prefix': p, 'base': u[p | length:]} | tojson -}}
+                {%- set ns._ = 1 -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if ns._ is none -%}
+            {%- for p in SI_PREFIXES if p != '' -%}
+                {# skip 'm' as a prefix when followed by 'in' to avoid mistaking 'min' (minute) for milli-n #}
+                {%- set remainder = u[p|length:] -%}
+                {%- if p == 'm' and remainder.startswith('in') -%}
+                    {%- continue -%}
+                {%- endif -%}
+                {%- if u.startswith(p) -%}
+                    {{- {'prefix': p, 'base': remainder} | tojson -}}
+                    {%- set ns._ = 1 -%}
+                    {%- break -%}
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+        {%- if ns._ is none -%}
+            {{- {'prefix':'', 'base': u} | tojson -}}
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro scale_value(value, from_prefix, to_prefix, system='SI') %}
+    {%- set v = value | float(none) -%}
+    {%- if v is none -%}
+        {{- none -}}
+    {%- else -%}
+    {%- if system == 'IEC' -%}
+        {%- set from_e = IEC_PREFIXES[from_prefix] -%}
+        {%- set to_e = IEC_PREFIXES[to_prefix] -%}
+        {{- v * (2 ** (from_e - to_e)) -}}
+    {%- else -%}
+        {%- set from_e = SI_PREFIXES[from_prefix] -%}
+        {%- set to_e = SI_PREFIXES[to_prefix] -%}
+        {{- v * (10 ** (from_e - to_e)) -}}
+    {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro autoscale_prefix(value, system='SI', upper=1000) %}
+    {%- set v = value|float(none) -%}
+    {%- if v == 0 -%}
+        {{- {'value':0.0,'prefix':'','exponent':0}|tojson -}}
+    {%- else -%}
+        {%- set t = IEC_PREFIXES if system == 'IEC' else SI_PREFIXES -%}
+        {%- set b = 2 if system == 'IEC' else 10 -%}
+        {%- set s = 1 if v >= 0 else -1 -%}
+        {%- set x = v*s -%}
+        {%- set ns = namespace(items=[]) -%}
+        {%- for k in t %}
+            {%- set ns.items = ns.items + [{'p':k,'e':t[k]}] -%}
+        {%- endfor -%}
+        {%- set items = ns.items|sort(attribute='e', reverse=true) -%}
+        {%- set best = namespace(p='', e=0, val=x) -%}
+        {%- for it in items -%}
+            {%- set y = x / (b ** it.e) -%}
+            {%- if 1 <= y < upper -%}
+                {%- set best.p = it.p -%}
+                {%- set best.e = it.e -%}
+                {%- set best.val = y -%}
+                {%- break -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if best.p == '' and best.e == 0 and not (1 <= x < upper) -%}
+            {%- set lo = (items|sort(attribute='e'))|first -%}
+            {%- set hi = items|first -%}
+            {%- set pick = lo if x < 1 else hi -%}
+            {%- set best.p = pick.p -%}
+            {%- set best.e = pick.e -%}
+            {%- set best.val = x / (b ** pick.e) -%}
+        {%- endif -%}
+        {{- {'value': s*best.val, 'prefix': best.p, 'exponent': best.e} | tojson -}}
+    {%- endif -%}
+{% endmacro %}

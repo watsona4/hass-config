@@ -1,0 +1,97 @@
+# Next replacement (epoch) computed directly from the raw date sensors
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.nest_protect_upstairs_replace_by
+        - sensor.nest_protect_kids_room_eleanor_replace_by
+        - sensor.nest_protect_kids_room_michael_replace_by
+        - sensor.nest_protect_family_room_replace_by
+        - sensor.nest_protect_hallway_replace_by
+        - sensor.nest_protect_guest_room_replace_by
+        - sensor.nest_protect_gym_replace_by
+        - sensor.nest_protect_living_room_replace_by
+    - platform: time
+      at: "00:00:15"
+    - platform: homeassistant
+      event: start
+
+  variables:
+    
+    srcs: >
+      {{ [
+        'sensor.nest_protect_upstairs_replace_by',
+        'sensor.nest_protect_kids_room_eleanor_replace_by',
+        'sensor.nest_protect_kids_room_michael_replace_by',
+        'sensor.nest_protect_family_room_replace_by',
+        'sensor.nest_protect_hallway_replace_by',
+        'sensor.nest_protect_guest_room_replace_by',
+        'sensor.nest_protect_gym_replace_by',
+        'sensor.nest_protect_living_room_replace_by'
+      ] }}
+    
+    best_id: >-
+      {% set b = namespace(id=None, ts=None) %}
+      {% for e in srcs if has_value(e) %}
+        {% set ts = as_timestamp(states(e), default=None) %}
+        {% if ts is not none and (b.ts is none or ts < b.ts) %}
+          {% set b.id = e %}
+          {% set b.ts = ts %}
+        {% endif %}
+      {% endfor %}
+      {{ b.id }}
+    
+    best_ts: >-
+      {% set b = namespace(id=None, ts=None) %}
+      {% for e in srcs if has_value(e) %}
+        {% set ts = as_timestamp(states(e), default=None) %}
+        {% if ts is not none and (b.ts is none or ts < b.ts) %}
+          {% set b.id = e %}
+          {% set b.ts = ts %}
+        {% endif %}
+      {% endfor %}
+      {{ b.ts }}
+
+  sensor:
+    - name: Nest Protect Next Replacement Source
+      unique_id: nest_protect_next_replacement_source
+      availability: >-
+        {{ best_id is not none }}
+      state: >-
+        {{ state_attr(best_id,'friendly_name') if best_id is not none else '' }}
+
+    - name: Nest Protect Next Replacement Epoch
+      unique_id: nest_protect_next_replacement_epoch
+      unit_of_measurement: s
+      state_class: measurement
+      availability: >-
+        {{ best_ts is not none }}
+      state: >-
+        {{ best_ts | float(0) }}
+
+    - name: Nest Protect Next Replacement
+      unique_id: nest_protect_next_replacement_timestamp
+      device_class: timestamp
+      availability: >-
+        {{ best_ts is not none }}
+      state: >-
+        {{ (as_datetime(best_ts | float) | as_local).isoformat() }}
+
+    - name: Nest Protect Time Until Next Replacement
+      unique_id: nest_protect_time_until_next_replacement
+      icon: mdi:calendar-clock
+      availability: >-
+        {{ best_ts is not none }}
+      state: >-
+        {% set dt = as_datetime(best_ts | float) %}
+        {% set days = ((dt - now()).total_seconds() // 86400) | int %}
+        {% set m = (days // 30) | int %}
+        {% set d = (days % 30)  | int %}
+        {% if days < 0 %}
+          overdue {{ (days | abs) // 30 }} mo {{ (days | abs) % 30 }} d
+        {% else %}
+          {{ m }} mo {{ d }} d
+        {% endif %}
+      attributes:
+        total_days: >-
+          {% set dt = as_datetime(best_ts | float) %}
+          {{ ((dt - now()).total_seconds() // 86400) | int }}

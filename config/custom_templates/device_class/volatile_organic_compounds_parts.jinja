@@ -1,0 +1,68 @@
+{# Severity definitions for VOC concentration #}
+{# Device: Total volatile organic compounds #}
+{# Typical applications: Indoor air quality #}
+
+{% set lookup_unit = "ppb" %}
+{% set levels = {
+    "indoor_air": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Excellent",
+            "short_desc": "Excel",
+            "long_desc": "Very low VOC",
+            "icon": "mdi:home",
+            "color": "#22c55e",
+            "full_desc": "Clean indoor air."
+        },
+        {
+            "min_value": 200,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Good",
+            "icon": "mdi:home",
+            "color": "#10b981",
+            "full_desc": "Acceptable."
+        },
+        {
+            "min_value": 500,
+            "default_desc": "Moderate",
+            "short_desc": "Mod",
+            "long_desc": "Moderate",
+            "icon": "mdi:air-filter",
+            "color": "#eab308",
+            "full_desc": "Ventilate room."
+        },
+        {
+            "min_value": 1000,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High",
+            "icon": "mdi:alert",
+            "color": "#f97316",
+            "full_desc": "Possible sources present."
+        },
+        {
+            "min_value": 3000,
+            "default_desc": "Very High",
+            "short_desc": "V High",
+            "long_desc": "Very high",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Investigate immediately."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}

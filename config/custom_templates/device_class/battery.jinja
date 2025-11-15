@@ -1,0 +1,196 @@
+{# Severity definitions for battery measurements (HA device_class: battery) #}
+
+{% from 'helpers.jinja' import find_matching_level %}
+
+{# Battery levels based on percentage #}
+{% set lookup_unit = none %}
+{% set levels = {
+    "discharging": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Empty",
+            "short_desc": "Empty",
+            "long_desc": "Battery Empty",
+            "icon": "mdi:battery-alert",
+            "color": "#dc2626",
+            "full_desc": "Battery depleted; device will power off or is already off."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical Battery",
+            "icon": "mdi:battery-10",
+            "color": "#ef4444",
+            "full_desc": "Critical battery level; plug in immediately."
+        },
+        {
+            "min_value": 20,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Low Battery",
+            "icon": "mdi:battery-20",
+            "color": "#f97316",
+            "full_desc": "Battery is low; device may shut down soon without charging."
+        },
+        {
+            "min_value": 40,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate Battery",
+            "icon": "mdi:battery-50",
+            "color": "#eab308",
+            "full_desc": "Moderate charge level; usable but not ideal for long sessions."
+        },
+        {
+            "min_value": 60,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Good Battery",
+            "icon": "mdi:battery-70",
+            "color": "#84cc16",
+            "full_desc": "Good charge; device ready for normal use."
+        },
+        {
+            "min_value": 80,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "High Battery",
+            "icon": "mdi:battery-90",
+            "color": "#22c55e",
+            "full_desc": "Battery mostly full; ideal for portability."
+        },
+        {
+            "min_value": 95,
+            "default_desc": "Full",
+            "short_desc": "Full",
+            "long_desc": "Full Battery",
+            "icon": "mdi:battery",
+            "color": "#10b981",
+            "full_desc": "Battery fully charged."
+        }
+    ],
+    "charging": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Empty",
+            "short_desc": "Empty",
+            "long_desc": "Charging (Empty)",
+            "icon": "mdi:battery-charging-outline",
+            "color": "#dc2626",
+            "full_desc": "Battery starting to charge from empty."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Charging (Critical)",
+            "icon": "mdi:battery-charging-10",
+            "color": "#ef4444",
+            "full_desc": "Battery charging but still critically low."
+        },
+        {
+            "min_value": 20,
+            "default_desc": "Low",
+            "short_desc": "Low",
+            "long_desc": "Charging (Low)",
+            "icon": "mdi:battery-charging-20",
+            "color": "#f97316",
+            "full_desc": "Battery charging; still low."
+        },
+        {
+            "min_value": 40,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Charging (Moderate)",
+            "icon": "mdi:battery-charging-50",
+            "color": "#eab308",
+            "full_desc": "Battery charging; moderate charge reached."
+        },
+        {
+            "min_value": 60,
+            "default_desc": "Good",
+            "short_desc": "Good",
+            "long_desc": "Charging (Good)",
+            "icon": "mdi:battery-charging-70",
+            "color": "#84cc16",
+            "full_desc": "Battery charging; charge level is good."
+        },
+        {
+            "min_value": 80,
+            "default_desc": "High",
+            "short_desc": "High",
+            "long_desc": "Charging (High)",
+            "icon": "mdi:battery-charging-90",
+            "color": "#22c55e",
+            "full_desc": "Battery nearly full and charging."
+        },
+        {
+            "min_value": 95,
+            "default_desc": "Full",
+            "short_desc": "Full",
+            "long_desc": "Charging (Full)",
+            "icon": "mdi:battery-charging",
+            "color": "#10b981",
+            "full_desc": "Battery fully charged and plugged in."
+        }
+    ]
+} %}
+
+{% macro get_dc_context() %}
+    {{ {'lookup_unit': lookup_unit, 'levels': levels} | tojson }}
+{% endmacro %}
+
+{% import 'helpers.jinja' as H %}
+
+{% macro get_charging_state(options) %}
+    {%- set ns = namespace(app='charging') -%}
+    {%- if options.charging_entity is defined and is_state(options.charging_entity, 'on') -%}
+        {%- set ns.app = "charging" -%}
+    {%- endif -%}
+    {{- ns.app -}}
+{% endmacro %}
+
+{% macro get_default_desc(value, app, options) %}
+    {{- H.get_default_desc(value, get_charging_state(options) , options) -}}
+{% endmacro %}
+
+{% macro get_short_desc(value, app, options) %}
+    {{- H.get_short_desc(value, get_charging_state(options) , options) -}}
+{% endmacro %}
+
+{% macro get_long_desc(value, app, options) %}
+    {{- H.get_long_desc(value, get_charging_state(options) , options) -}}
+{% endmacro %}
+
+{% macro get_full_desc(value, app, options) %}
+    {{- H.get_full_desc(value, get_charging_state(options) , options) -}}
+{% endmacro %}
+
+{% macro get_icon(value, app, options) %}
+    {{- H.get_icon(value, get_charging_state(options) , options) -}}
+{% endmacro %}
+
+{% macro get_color(value, app, options) %}
+    {{- H.get_color(value, get_charging_state(options) , options) -}}
+{% endmacro %}

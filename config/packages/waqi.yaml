@@ -1,0 +1,864 @@
+# =============================================================================
+#                                   WAQI (All Locations)
+#   - REST sensors: Nearby / Home / RV
+#   - Template sensors: per-location AQI + IAQI breakouts + 5-day forecast tiles
+#   - Helpers: per-location category / severity / "bad air" boolean
+#   - Rollups: worst AQI + any-location bad boolean
+#
+#   Requires Jinja macros:
+#     - templates/env/geo.jinja     (nearby/home/rv coords + waqi_url)
+#     - templates/metrics/air_quality/helpers.jinja    (aqi parsing, iaqi(), forecast_days(), etc.)
+# =============================================================================
+
+###############################################################################
+# REST commands: WAQI (Nearby / Home / RV)
+# - We build the full URL (including the token query param) in the command.
+# - Token is injected by the automation using !secret.
+###############################################################################
+rest_command:
+  waqi_nearby_fetch:
+    url: >-
+      {%- from 'macros/rest_helpers.jinja' import nearby_lat, nearby_lon, nearby_is_valid, waqi_url -%}
+      {%- set lat = nearby_lat() | float(0) -%}
+      {%- set lon = nearby_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
+    timeout: 15
+    headers:
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  waqi_home_fetch:
+    url: >-
+      {%- from 'macros/rest_helpers.jinja' import home_lat, home_lon, home_is_valid, waqi_url -%}
+      {%- set lat = home_lat() | float(0) -%}
+      {%- set lon = home_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
+    timeout: 15
+    headers:
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+  waqi_rv_fetch:
+    url: >-
+      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon, rv_is_valid, waqi_url -%}
+      {%- set lat = rv_lat() | float(0) -%}
+      {%- set lon = rv_lon() | float(0) -%}
+      {%- set base = waqi_url(lat, lon) if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
+      {%- if base.startswith('http://127.0.0.1') -%}
+        {{ base }}
+      {%- else -%}
+        {{ base }}{{ '&' if '?' in base else '?' }}token={{ token }}
+      {%- endif -%}
+    method: GET
+    timeout: 15
+    headers:
+      Accept: application/json
+      User-Agent: HomeAssistant
+      Cache-Control: no-cache
+
+###############################################################################
+# Event-driven base sensors that mirror the original three WAQI REST sensors
+# - Same names and unique_ids
+# - Same state logic via aqi_state_from_payload()
+# - Same attributes (taken from $.data): idx, attributions, city, dominentpol, iaqi, time, forecast
+###############################################################################
+template:
+  # Nearby
+  - trigger:
+      - platform: event
+        event_type: waqi_nearby_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI Nearby
+        unique_id: waqi_nearby
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
+
+  # Home
+  - trigger:
+      - platform: event
+        event_type: waqi_home_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI Home
+        unique_id: waqi_home
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
+
+  # RV
+  - trigger:
+      - platform: event
+        event_type: waqi_rv_update
+    variables:
+      root: >-
+        {{ trigger.event.data.parsed if trigger.event.data.parsed is mapping
+          else (trigger.event.data.parsed | default('') | from_json(default={})) }}
+    sensor:
+      - name: WAQI RV
+        unique_id: waqi_rv
+        state_class: measurement
+        availability: "{{ trigger.event.data.available | default(false) }}"
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
+          {{- aqi_state_from_payload(root, this.entity_id) -}}
+        attributes:
+          idx: >-
+            {{ (root.get('data') or {}).get('idx') }}
+          attributions: >-
+            {{ (root.get('attributions') or {}).get('idx') }}
+          city: >-
+            {{ (root.get('city') or {}).get('idx') }}
+          dominentpol: >-
+            {{ (root.get('dominentpol') or {}).get('idx') }}
+          iaqi: >-
+            {{ (root.get('iaqi') or {}).get('idx') }}
+          time: >-
+            {{ (root.get('time') or {}).get('idx') }}
+          forecast: >-
+            {{ (root.get('forecast') or {}).get('idx') }}
+
+  # -------------------- Nearby block --------------------
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_nearby
+    variables:
+      src: sensor.waqi_nearby
+    sensor:
+      - name: WAQI Nearby AQI
+        unique_id: waqi_nearby_aqi
+        device_class: aqi
+        state_class: measurement
+        availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
+        state: "{{ states(src) | int(default=none) }}"
+        attributes:
+          station: "{{ (state_attr(src,'city') or {}).get('name') }}"
+          dominentpol: "{{ state_attr(src,'dominentpol') }}"
+          last_update: "{{ (state_attr(src,'time') or {}).get('s') }}"
+          attributions: "{{ state_attr(src,'attributions') }}"
+
+      # IAQI helpers (reused via macro)
+      - name: WAQI Nearby PM2.5
+        unique_id: waqi_nearby_pm2_5
+        device_class: pm25
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'pm25') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'pm25') | float(default=none) -}}
+
+      - name: WAQI Nearby Temperature
+        unique_id: waqi_nearby_temperature
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'t') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'t') | float(default=none) -}}
+
+      - name: WAQI Nearby Humidity
+        unique_id: waqi_nearby_humidity
+        device_class: humidity
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'h') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'h') | float(default=none) -}}
+
+      - name: WAQI Nearby Wind Speed
+        unique_id: waqi_nearby_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'w') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'w') | float(default=none) -}}
+
+      - name: WAQI Nearby Wind Gust
+        unique_id: waqi_nearby_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'wg') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'wg') | float(default=none) -}}
+
+      - name: WAQI Nearby O3
+        unique_id: waqi_nearby_o3
+        device_class: ozone
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'o3') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'o3') | float(default=none) -}}
+
+      - name: WAQI Nearby CO
+        unique_id: waqi_nearby_co
+        device_class: carbon_monoxide
+        unit_of_measurement: "ppm"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'co') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'co') | float(default=none) -}}
+
+      - name: WAQI Nearby PM10
+        unique_id: waqi_nearby_pm10
+        device_class: pm10
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'pm10') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'pm10') | float(default=none) -}}
+
+      - name: WAQI Nearby NO2
+        unique_id: waqi_nearby_no2
+        device_class: nitrogen_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'no2') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'no2') | float(default=none) -}}
+
+      - name: WAQI Nearby SO2
+        unique_id: waqi_nearby_so2
+        device_class: sulphur_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- (iaqi(src,'so2') | float(none)) is not none -}}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}
+          {{- iaqi(src,'so2') | float(default=none) -}}
+
+  # Forecast tiles for Nearby (recompute on WAQI change or at midnight)
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.waqi_nearby
+          - sensor.date
+      - platform: time
+        at: "00:00:15"
+    variables:
+      src: "sensor.waqi_nearby"
+      aqi_days: >-
+        {%- from 'metrics/air_quality/helpers.jinja' import forecast_days -%}
+        {{- forecast_days(src) -}}
+    sensor:
+      - name: AQI Forecast Nearby Day 0
+        unique_id: aqi_forecast_nearby_day_0
+        icon: mdi:calendar-today
+        availability: "{{ (aqi_days|count) > 0 and ((aqi_days[0] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[0] or {}).get('date') }}"
+          title: "{{ (aqi_days[0] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
+
+      - name: AQI Forecast Nearby Day 1
+        unique_id: aqi_forecast_nearby_day_1
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 1 and ((aqi_days[1] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[1] or {}).get('date') }}"
+          title: "{{ (aqi_days[1] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
+
+      - name: AQI Forecast Nearby Day 2
+        unique_id: aqi_forecast_nearby_day_2
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 2 and ((aqi_days[2] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[2] or {}).get('date') }}"
+          title: "{{ (aqi_days[2] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
+
+      - name: AQI Forecast Nearby Day 3
+        unique_id: aqi_forecast_nearby_day_3
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 3 and ((aqi_days[3] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[3] or {}).get('date') }}"
+          title: "{{ (aqi_days[3] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
+
+      - name: AQI Forecast Nearby Day 4
+        unique_id: aqi_forecast_nearby_day_4
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 4 and ((aqi_days[4] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[4] or {}).get('date') }}"
+          title: "{{ (aqi_days[4] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"
+
+  # -------------------- Home block --------------------
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_home
+    variables:
+      src: sensor.waqi_home
+    sensor:
+      - name: WAQI Home AQI
+        unique_id: waqi_home_aqi
+        device_class: aqi
+        state_class: measurement
+        availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
+        state: "{{ states(src) | int(default=none) }}"
+        attributes:
+          station: "{{ (state_attr(src,'city') or {}).get('name') }}"
+          dominentpol: "{{ state_attr(src,'dominentpol') }}"
+          last_update: "{{ (state_attr(src,'time') or {}).get('s') }}"
+          attributions: "{{ state_attr(src,'attributions') }}"
+
+      - name: WAQI Home PM2.5
+        unique_id: waqi_home_pm2_5
+        device_class: pm25
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'pm25') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'pm25') | float(default=none) }}
+
+      - name: WAQI Home Temperature
+        unique_id: waqi_home_temperature
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'t') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'t') | float(default=none) }}
+
+      - name: WAQI Home Humidity
+        unique_id: waqi_home_humidity
+        device_class: humidity
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'h') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'h') | float(default=none) }}
+
+      - name: WAQI Home Wind Speed
+        unique_id: waqi_home_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'w') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'w') | float(default=none) }}
+
+      - name: WAQI Home Wind Gust
+        unique_id: waqi_home_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'wg') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'wg') | float(default=none) }}
+
+      - name: WAQI Home O3
+        unique_id: waqi_home_o3
+        device_class: ozone
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'o3') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'o3') | float(default=none) }}
+
+      - name: WAQI Home CO
+        unique_id: waqi_home_co
+        device_class: carbon_monoxide
+        unit_of_measurement: "ppm"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'co') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'co') | float(default=none) }}
+
+      - name: WAQI Home PM10
+        unique_id: waqi_home_pm10
+        device_class: pm10
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'pm10') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'pm10') | float(default=none) }}
+
+      - name: WAQI Home NO2
+        unique_id: waqi_home_no2
+        device_class: nitrogen_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'no2') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'no2') | float(default=none) }}
+
+      - name: WAQI Home SO2
+        unique_id: waqi_home_so2
+        device_class: sulphur_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'so2') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'so2') | float(default=none) }}
+
+  # Forecast tiles for Home
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.waqi_home
+          - sensor.date
+    variables:
+      src: "sensor.waqi_home"
+      aqi_days: >-
+        {%- from 'metrics/air_quality/helpers.jinja' import forecast_days -%}
+        {{- forecast_days(src) -}}
+    sensor:
+      - name: AQI Forecast Home Day 0
+        unique_id: aqi_forecast_home_day_0
+        icon: mdi:calendar-today
+        availability: "{{ (aqi_days|count) > 0 and ((aqi_days[0] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[0] or {}).get('date') }}"
+          title: "{{ (aqi_days[0] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
+
+      - name: AQI Forecast Home Day 1
+        unique_id: aqi_forecast_home_day_1
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 1 and ((aqi_days[1] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[1] or {}).get('date') }}"
+          title: "{{ (aqi_days[1] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
+
+      - name: AQI Forecast Home Day 2
+        unique_id: aqi_forecast_home_day_2
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 2 and ((aqi_days[2] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[2] or {}).get('date') }}"
+          title: "{{ (aqi_days[2] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
+
+      - name: AQI Forecast Home Day 3
+        unique_id: aqi_forecast_home_day_3
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 3 and ((aqi_days[3] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[3] or {}).get('date') }}"
+          title: "{{ (aqi_days[3] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
+
+      - name: AQI Forecast Home Day 4
+        unique_id: aqi_forecast_home_day_4
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 4 and ((aqi_days[4] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[4] or {}).get('date') }}"
+          title: "{{ (aqi_days[4] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"
+
+  # -------------------- RV block --------------------
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_rv
+    variables:
+      src: sensor.waqi_rv
+    sensor:
+      - name: WAQI RV AQI
+        unique_id: waqi_rv_aqi
+        device_class: aqi
+        state_class: measurement
+        availability: "{{ has_value(src) and (states(src) | float(none)) is not none }}"
+        state: "{{ states(src) | int(default=none) }}"
+        attributes:
+          station: "{{ (state_attr(src,'city') or {}).get('name') }}"
+          dominentpol: "{{ state_attr(src,'dominentpol') }}"
+          last_update: "{{ (state_attr(src,'time') or {}).get('s') }}"
+          attributions: "{{ state_attr(src,'attributions') }}"
+
+      - name: WAQI RV PM2.5
+        unique_id: waqi_rv_pm2_5
+        device_class: pm25
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'pm25') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'pm25') | float(default=none) }}
+
+      - name: WAQI RV Temperature
+        unique_id: waqi_rv_temperature
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'t') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'t') | float(default=none) }}
+
+      - name: WAQI RV Humidity
+        unique_id: waqi_rv_humidity
+        device_class: humidity
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'h') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'h') | float(default=none) }}
+
+      - name: WAQI RV Wind Speed
+        unique_id: waqi_rv_wind_speed
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'w') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'w') | float(default=none) }}
+
+      - name: WAQI RV Wind Gust
+        unique_id: waqi_rv_wind_gust
+        device_class: wind_speed
+        unit_of_measurement: "m/s"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'wg') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'wg') | float(default=none) }}
+
+      - name: WAQI RV O3
+        unique_id: waqi_rv_o3
+        device_class: ozone
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'o3') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'o3') | float(default=none) }}
+
+      - name: WAQI RV CO
+        unique_id: waqi_rv_co
+        device_class: carbon_monoxide
+        unit_of_measurement: "ppm"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'co') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'co') | float(default=none) }}
+
+      - name: WAQI RV PM10
+        unique_id: waqi_rv_pm10
+        device_class: pm10
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'pm10') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'pm10') | float(default=none) }}
+
+      - name: WAQI RV NO2
+        unique_id: waqi_rv_no2
+        device_class: nitrogen_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'no2') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'no2') | float(default=none) }}
+
+      - name: WAQI RV SO2
+        unique_id: waqi_rv_so2
+        device_class: sulphur_dioxide
+        unit_of_measurement: "µg/m³"
+        state_class: measurement
+        availability: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ (iaqi(src,'so2') | float(none)) is not none }}
+        state: >-
+          {%- from 'metrics/air_quality/helpers.jinja' import iaqi -%}{{ iaqi(src,'so2') | float(default=none) }}
+
+  # Forecast tiles for RV
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.waqi_rv
+          - sensor.date
+    variables:
+      src: "sensor.waqi_rv"
+      aqi_days: >-
+        {%- from 'metrics/air_quality/helpers.jinja' import forecast_days -%}
+        {{- forecast_days(src) -}}
+    sensor:
+      - name: AQI Forecast RV Day 0
+        unique_id: aqi_forecast_rv_day_0
+        icon: mdi:calendar-today
+        availability: "{{ (aqi_days|count) > 0 and ((aqi_days[0] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[0] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[0] or {}).get('date') }}"
+          title: "{{ (aqi_days[0] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[0] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[0] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[0] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[0] or {}).get('icon') }}"
+
+      - name: AQI Forecast RV Day 1
+        unique_id: aqi_forecast_rv_day_1
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 1 and ((aqi_days[1] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[1] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[1] or {}).get('date') }}"
+          title: "{{ (aqi_days[1] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[1] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[1] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[1] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[1] or {}).get('icon') }}"
+
+      - name: AQI Forecast RV Day 2
+        unique_id: aqi_forecast_rv_day_2
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 2 and ((aqi_days[2] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[2] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[2] or {}).get('date') }}"
+          title: "{{ (aqi_days[2] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[2] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[2] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[2] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[2] or {}).get('icon') }}"
+
+      - name: AQI Forecast RV Day 3
+        unique_id: aqi_forecast_rv_day_3
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 3 and ((aqi_days[3] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[3] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[3] or {}).get('date') }}"
+          title: "{{ (aqi_days[3] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[3] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[3] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[3] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[3] or {}).get('icon') }}"
+
+      - name: AQI Forecast RV Day 4
+        unique_id: aqi_forecast_rv_day_4
+        icon: mdi:calendar
+        availability: "{{ (aqi_days|count) > 4 and ((aqi_days[4] or {}).get('exists')) }}"
+        state: "{{ (aqi_days[4] or {}).get('state') or 'unknown' }}"
+        attributes:
+          date:  "{{ (aqi_days[4] or {}).get('date') }}"
+          title: "{{ (aqi_days[4] or {}).get('title') }}"
+          aqi:   "{{ (aqi_days[4] or {}).get('aqi') }}"
+          hex:   "{{ (aqi_days[4] or {}).get('hex') }}"
+          badge: "{{ (aqi_days[4] or {}).get('badge') }}"
+          icon: "{{ (aqi_days[4] or {}).get('icon') }}"
+
+###############################################################################
+# Automations: call rest_command every 60s with per-location jitter
+# - Staggered offsets: Nearby early, Home middle, RV late
+# - Pass waqi token from secrets via data (templated into URL)
+# - Normalize resp.content whether mapping or string; send JSON via tojson
+###############################################################################
+automation:
+  # Nearby
+  - id: waqi_nearby_refresh_via_rest_command
+    alias: WAQI Nearby, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ range(0, 10) | random | int }}"
+      - service: rest_command.waqi_nearby_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_nearby_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
+
+  # Home
+  - id: waqi_home_refresh_via_rest_command
+    alias: WAQI Home, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ 10 + (range(0, 10) | random | int) }}"
+      - service: rest_command.waqi_home_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_home_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
+
+  # RV
+  - id: waqi_rv_refresh_via_rest_command
+    alias: WAQI RV, refresh via REST command
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - delay:
+          seconds: "{{ 20 + (range(0, 10) | random | int) }}"
+      - service: rest_command.waqi_rv_fetch
+        data:
+          token: !secret waqi_token
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+               else (resp.content | default('') | string | from_json(default={})) }}
+      - event: waqi_rv_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"

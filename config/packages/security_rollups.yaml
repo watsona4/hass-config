@@ -1,0 +1,43 @@
+group:
+  doors_all:
+    name: All Doors
+    entities:
+      - binary_sensor.kitchen_door_contact
+      - binary_sensor.living_room_door_contact
+      - binary_sensor.playroom_door_contact
+
+  smokes_all:
+    name: All Smoke Detectors
+    entities:
+      - binary_sensor.nest_protect_back_hallway_smoke_status
+      - binary_sensor.nest_protect_family_room_smoke_status
+      - binary_sensor.nest_protect_guest_room_smoke_status
+      - binary_sensor.nest_protect_gym_smoke_status
+      - binary_sensor.nest_protect_kids_room_eleanor_smoke_status
+      - binary_sensor.nest_protect_kids_room_michael_smoke_status
+      - binary_sensor.nest_protect_living_room_smoke_status
+      - binary_sensor.nest_protect_upstairs_smoke_status
+
+template:
+  - binary_sensor:
+      - name: Any Door Open
+        unique_id: any_door_open
+        device_class: opening
+        state: >
+          {{ expand('group.doors_all') | selectattr('state','eq','on') | list | count > 0 }}
+        attributes:
+          open_count: >
+            {{ expand('group.doors_all') | selectattr('state','eq','on') | list | count }}
+          open_list: >
+            {{ expand('group.doors_all') | selectattr('state','eq','on') | map(attribute='name') | list }}
+
+      - name: Any Smoke Detected
+        unique_id: any_smoke_detected
+        device_class: smoke
+        state: >
+          {{ expand('group.smokes_all') | selectattr('state','eq','on') | list | count > 0 }}
+        attributes:
+          alarm_count: >
+            {{ expand('group.smokes_all') | selectattr('state','eq','on') | list | count }}
+          alarm_list: >
+            {{ expand('group.smokes_all') | selectattr('state','eq','on') | map(attribute='name') | list }}

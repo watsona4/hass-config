@@ -1,0 +1,6 @@
+- name: Living Room Dehumidifier
+  unique_id: living_room_dehumidifier_hygrostat
+  device_class: dehumidifier
+  humidifier: switch.living_room_dehumidifier
+  target_sensor: sensor.humidifier_humidity_state
+  min_cycle_duration: "0:05:00"

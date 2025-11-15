@@ -1,0 +1,29 @@
+# =========================
+# 6) TIRES + SAFETY
+# =========================
+title: Tires
+icon: mdi:car-tire-alert
+path: tires
+type: masonry
+cards:
+  - type: custom:mushroom-title-card
+    title: Tire pressure and temperature
+    subtitle: TPMS overview
+
+  # Auto pulls any sensor ending with _psi or _temp in the rv_tire domain
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: TPMS sensors
+    filter:
+      include:
+        - entity_id: sensor.rv_tire_*_psi
+        - entity_id: sensor.rv_tire_*_temp
+
+  - type: entities
+    title: Safety
+    entities:
+      - binary_sensor.rv_smoke_alarm
+      - binary_sensor.rv_co_alarm
+      - binary_sensor.rv_propane_leak
+      - binary_sensor.rv_door_open
