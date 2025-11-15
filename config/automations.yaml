@@ -4925,6 +4925,9 @@
     to: 'on'
     trigger: state
     id: Daytime On
+  - trigger: time
+    at: 06:30:00
+    id: Daytime On
   - entity_id:
     - schedule.daytime
     to: 'off'
