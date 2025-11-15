@@ -1,4 +1,4 @@
-FROM ghcr.io/home-assistant/home-assistant:stable
+FROM ghcr.io/home-assistant/home-assistant:latest
 
 RUN apk update && \
     apk add --no-cache \
