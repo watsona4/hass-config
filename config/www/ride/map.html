@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Ride Route</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="leaflet.css" />
+    <style>
+      html, body, #map {
+        height: 100%;
+        margin: 0;
+        background: #0f172a;
+        color: #e2e8f0;
+        font: 500 13px/1.45 "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .leaflet-control-attribution {
+        background: rgba(15, 23, 42, 0.7);
+        color: #cbd5f5;
+      }
+      .leaflet-control-scale-line {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        color: #e2e8f0;
+      }
+      .legend {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .legend div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .legend div:last-child {
+        margin-bottom: 0;
+      }
+      .legend span.swatch {
+        width: 18px;
+        height: 8px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div class="legend" id="legend">
+      <div><span class="swatch" style="background:#43a047"></span>Easy</div>
+      <div><span class="swatch" style="background:#f9a825"></span>Tempo</div>
+      <div><span class="swatch" style="background:#e53935"></span>Hard</div>
+    </div>
+    <script src="leaflet.js"></script>
+    <script>
+      const JSON_URL = 'route.json';
+      let map, routeLayer, startMarker, endMarker, lapLayers = [];
+      let lastVersion = null;
+      let worldRouteLayers = null;
+      let worldBounds = null;
+      let currentWorldSlug = null;
+
+      function colorForPower(p) {
+        if (p == null || Number.isNaN(p)) return '#1976d2';
+        if (p < 150) return '#43a047';
+        if (p < 250) return '#f9a825';
+        return '#e53935';
+      }
+
+      function makePolyline(latlngs) {
+        if (!Array.isArray(latlngs) || latlngs.length < 2) {
+          return L.layerGroup();
+        }
+        return L.polyline(latlngs, { weight: 4, color: '#38bdf8' });
+      }
+
+      function lapMarker(map, lap) {
+        if (!lap || typeof lap.lat !== 'number' || typeof lap.lon !== 'number') return null;
+        return L.circleMarker([lap.lat, lap.lon], {
+          radius: 5,
+          color: '#22d3ee',
+          fillColor: '#22d3ee',
+          fillOpacity: 0.85,
+          weight: 1,
+        }).bindPopup(lap.label || 'Lap');
+      }
+
+      async function fetchRoute(cacheBust = true) {
+        const url = cacheBust ? `${JSON_URL}?_=${Date.now()}` : JSON_URL;
+        const res = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Failed to load route: ${res.status}`);
+        return res.json();
+      }
+
+      function removeLayer(layer) {
+        if (!map || !layer) return;
+        if (typeof map.hasLayer === 'function' && map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        } else if (typeof layer.remove === 'function') {
+          layer.remove();
+        }
+      }
+
+      function normalizeWorldSlug(slug) {
+        if (typeof slug !== 'string') return null;
+        const trimmed = slug.trim().toLowerCase();
+        return trimmed.length ? trimmed : null;
+      }
+
+      function extractWorldSlug(data) {
+        if (!data || !data.world) return null;
+        if (typeof data.world === 'string') return data.world;
+        if (typeof data.world.slug === 'string') return data.world.slug;
+        if (typeof data.world.name === 'string') return data.world.name;
+        return null;
+      }
+
+      function applyRoute(data) {
+        const latlngsRaw = (data.points || []).filter(
+          (row) => Array.isArray(row) && row.length === 2 && Number.isFinite(row[0]) && Number.isFinite(row[1])
+        );
+        const latlngs = latlngsRaw.map(([lat, lon]) => L.latLng(lat, lon));
+        const powerSeries = data.power_w || null;
+        const desiredWorldSlug = normalizeWorldSlug(extractWorldSlug(data));
+        if (desiredWorldSlug) {
+          loadWorldRoutesLayer(desiredWorldSlug);
+        }
+
+        if (routeLayer) {
+          removeLayer(routeLayer);
+          routeLayer = null;
+        }
+        if (startMarker) {
+          removeLayer(startMarker);
+          startMarker = null;
+        }
+        if (endMarker) {
+          removeLayer(endMarker);
+          endMarker = null;
+        }
+        if (lapLayers.length) {
+          lapLayers.forEach(removeLayer);
+          lapLayers = [];
+        }
+
+        if (!latlngs.length) {
+          if (Array.isArray(data.start) && data.start.length === 2) {
+            startMarker = L.marker(data.start, { title: 'Start' }).addTo(map);
+            map.setView(L.latLng(data.start[0], data.start[1]), 15);
+          }
+          if (Array.isArray(data.end) && data.end.length === 2) {
+            endMarker = L.marker(data.end, { title: 'Finish' }).addTo(map);
+          }
+          return;
+        }
+
+        routeLayer = makePolyline(latlngs);
+        if (routeLayer && typeof routeLayer.addTo === 'function') {
+          routeLayer.addTo(map);
+        }
+
+        if (Array.isArray(data.laps)) {
+          data.laps.forEach(lap => {
+            const marker = lapMarker(map, lap);
+            if (marker) {
+              marker.addTo(map);
+              lapLayers.push(marker);
+            }
+          });
+        }
+
+        if (Array.isArray(data.start) && data.start.length === 2) {
+          startMarker = L.marker(data.start, { title: 'Start' }).addTo(map);
+        }
+        if (Array.isArray(data.end) && data.end.length === 2) {
+          endMarker = L.marker(data.end, { title: 'Finish' }).addTo(map);
+        }
+
+        if (latlngs.length >= 2) {
+          const bounds = L.latLngBounds(latlngs);
+          const targetBounds = worldBounds && worldBounds.isValid()
+            ? bounds.extend(worldBounds)
+            : bounds;
+          map.fitBounds(targetBounds, { padding: [20, 20] });
+        } else if (latlngs.length === 1) {
+          map.setView(latlngs[0], 15);
+        }
+      }
+
+      async function initialise() {
+        if (typeof L === 'undefined') {
+          console.error('Leaflet library is missing');
+          return;
+        }
+        map = L.map('map', { preferCanvas: true });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors & CARTO',
+        }).addTo(map);
+        map.addControl(L.control.scale({ imperial: false }));
+        loadWorldRoutesLayer('watopia');
+
+        try {
+          const data = await fetchRoute();
+          lastVersion = data.version || null;
+          applyRoute(data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function refresh() {
+        if (!map) return;
+        try {
+          const data = await fetchRoute();
+          if (lastVersion !== null && data.version && data.version === lastVersion) return;
+          lastVersion = data.version || lastVersion;
+          applyRoute(data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function loadWorldRoutesLayer(worldSlug) {
+        if (!map) return;
+        const normalizedSlug = normalizeWorldSlug(worldSlug);
+        if (!normalizedSlug) return;
+        if (currentWorldSlug === normalizedSlug && worldRouteLayers) {
+          return;
+        }
+        if (worldRouteLayers) {
+          worldRouteLayers.remove();
+          worldRouteLayers = null;
+        }
+        worldBounds = null;
+        try {
+          const geojsonPath = `/local/zwift/geojson/${normalizedSlug}.geojson`;
+          const response = await fetch(geojsonPath, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`Failed to load ${geojsonPath}: ${response.status}`);
+          const payload = await response.json();
+          worldRouteLayers = L.geoJSON(payload, {
+            style: () => ({
+              color: '#5eead4',
+              weight: 2,
+              opacity: 0.45,
+            }),
+            onEachFeature: (feature, layer) => {
+              const props = feature.properties || {};
+              const name = props.name || props.slug || 'Route';
+              const distance = typeof props.distance_km === 'number'
+                ? `${Number(props.distance_km).toFixed(1)} km`
+                : '';
+              layer.bindPopup(`<strong>${name}</strong>${distance ? `<br>${distance}` : ''}`);
+            },
+          });
+          worldRouteLayers.addTo(map);
+          const bounds = worldRouteLayers.getBounds();
+          if (bounds.isValid()) {
+            worldBounds = bounds;
+          }
+          currentWorldSlug = normalizedSlug;
+        } catch (error) {
+          console.warn('Failed to load Zwift world overlay:', error);
+          currentWorldSlug = null;
+        }
+      }
+
+      initialise().then(() => window.setInterval(refresh, 10000));
+    </script>
+  </body>
+</html>
