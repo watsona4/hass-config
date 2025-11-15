@@ -84,6 +84,9 @@ input_boolean:
   returning_home_from_camper_latch:
     name: Returning home from camper (latched)
     icon: mdi:home-import-outline
+  someone_is_home_raw:
+    name: Someone is Home (raw)
+    icon: mdi:home-account
 
 ############################
 # OVERRIDES (optional, adjust or remove)
@@ -261,6 +264,73 @@ template:
           rv_enabled: >-
             {{ distance('zone.home','device_tracker.rv_gps')|float(0) >=
               states('input_number.rv_min_distance_home_mi')|float(20) }}
+
+  - binary_sensor:
+      - name: "Truck away"
+        unique_id: truck_away_reliable
+        state: >
+          {{ is_state('device_tracker.truck_ibeacon', 'not_home') }}
+
+      - name: "Minivan away"
+        unique_id: minivan_away_reliable
+        state: >
+          {{ is_state('device_tracker.minivan_ibeacon', 'not_home') }}
+
+      - name: "Any vehicle away"
+        unique_id: any_vehicle_away
+        state: >
+          {{ is_state('binary_sensor.truck_away', 'on')
+             or is_state('binary_sensor.minivan_away', 'on') }}
+
+automation:
+  - id: aggregate_someone_is_home
+    alias: Aggregate Someone is Home
+    description: "Apply vehicle override to someone_is_home_raw"
+    mode: single
+
+    trigger:
+      - platform: state
+        entity_id:
+          - input_boolean.someone_is_home_raw
+          - person.aaron_watson
+          - person.ashley_watson
+          - binary_sensor.any_vehicle_away
+
+    condition: []
+
+    action:
+      - variables:
+          raw_on: "{{ is_state('input_boolean.someone_is_home_raw', 'on') }}"
+          any_vehicle_away: "{{ is_state('binary_sensor.any_vehicle_away', 'on') }}"
+          aaron_home: "{{ is_state('person.aaron_watson', 'home') }}"
+          ashley_home: "{{ is_state('person.ashley_watson', 'home') }}"
+
+          # "Fake presence" case:
+          # - Your presence logic thinks someone is home (raw_on)
+          # - Your phone says you are home (aaron_home)
+          # - Ashley is not home
+          # - At least one vehicle is away
+          fake_presence: >
+            {{ raw_on
+              and aaron_home
+              and not ashley_home
+              and any_vehicle_away }}
+
+          # Final, vehicle aware someone_is_home
+          aggregated_on: "{{ raw_on and not fake_presence }}"
+
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ aggregated_on }}"
+            sequence:
+              - service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.someone_is_home
+        default:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.someone_is_home
 
 ############################
 # SANE DEFAULTS

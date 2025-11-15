@@ -3006,7 +3006,7 @@
     - action: input_boolean.turn_on
       metadata: {}
       target:
-        entity_id: input_boolean.someone_is_home
+        entity_id: input_boolean.someone_is_home_raw
       data: {}
     - action: input_boolean.turn_off
       metadata: {}
@@ -3127,7 +3127,7 @@
     else:
     - action: input_boolean.turn_off
       target:
-        entity_id: input_boolean.someone_is_home
+        entity_id: input_boolean.someone_is_home_raw
       data: {}
   mode: single
   trace:
