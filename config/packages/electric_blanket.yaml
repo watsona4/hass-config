@@ -6,7 +6,7 @@
 
 input_number:
   electric_blanket_warmup_hours:
-    name: Electric Blanket Warmup Hours
+    name: "Electric Blanket Warmup Hours"
     min: 1
     max: 8
     step: 0.5
@@ -16,7 +16,7 @@ input_number:
 
   # Power thresholds for detecting “blanket is running”
   electric_blanket_on_watts:
-    name: Electric Blanket ON threshold (W)
+    name: "Electric Blanket ON threshold (W)"
     min: 1
     max: 200
     step: 1
@@ -24,105 +24,65 @@ input_number:
     icon: mdi:flash
 
   electric_blanket_off_watts:
-    name: Electric Blanket OFF threshold (W)
+    name: "Electric Blanket OFF threshold (W)"
     min: 0
     max: 200
     step: 1
     unit_of_measurement: W
     icon: mdi:flash-off
 
-timer:
-  electric_blanket_warmup:
-    name: Electric Blanket Warmup
-    restore: false
-
 template:
   # Stable binary sensor with hysteresis and debounce.
   # Turns ON when power rises above ON threshold, stays ON until it falls below OFF threshold.
   - binary_sensor:
-      - name: Electric Blanket Drawing Power
-        unique_id: electric_blanket_drawing_power
-        state: >
-          {% set p = states('sensor.electric_blanket_power')|float(0) %}
-          {% set on_w  = states('input_number.electric_blanket_on_watts')|float(20) %}
-          {% set off_w = states('input_number.electric_blanket_off_watts')|float(10) %}
-          {% if this.state == 'on' %}
-            {{ p > off_w }}
-          {% else %}
-            {{ p > on_w }}
-          {% endif %}
-        availability: >
-          {{ states('sensor.electric_blanket_power') not in ['unknown','unavailable','none',''] }}
+      - name: "Electric Blanket Drawing Power"
+        unique_id: 9345ed8d-3bd0-4a46-8608-7f8c26677a74
+        state: >-
+          {%- set p = states('sensor.electric_blanket_power') | float(0) -%}
+          {%- set on_w  = states('input_number.electric_blanket_on_watts') | float(20) -%}
+          {%- set off_w = states('input_number.electric_blanket_off_watts') | float(10) -%}
+          {%- if this.state == 'on' -%}
+            {{- p > off_w -}}
+          {%- else -%}
+            {{- p > on_w -}}
+          {%- endif -%}
+        availability: "{{ states('sensor.electric_blanket_power') not in ['unknown','unavailable','none',''] }}"
         delay_on: "00:00:20"
         delay_off: "00:10:00"
-        icon: >
-          {{ 'mdi:radiator' if this.state == 'on' else 'mdi:radiator-disabled' }}
+        icon: "{{ 'mdi:radiator' if this.state == 'on' else 'mdi:radiator-disabled' }}"
 
 automation:
-  # 1) Night use detected: start the warmup timer.
-  - alias: Electric Blanket, start warmup when drawing power at night
-    id: electric_blanket_start_warmup_at_night_power_based
+  - alias: Electric Blanket
+    id: 38068c7d-4bf8-4966-b94e-9cc385b876aa
     mode: restart
     trigger:
       - platform: state
         entity_id: binary_sensor.electric_blanket_drawing_power
         to: "on"
+        id: blanket_started
     action:
-      - variables:
-          hours: "{{ states('input_number.electric_blanket_warmup_hours') | float(4) }}"
-          seconds: "{{ (hours * 3600) | int }}"
-      - service: timer.start
-        target:
-          entity_id: timer.electric_blanket_warmup
-        data:
-          duration: "{{ seconds }}"
-
-  # 2) If you turn the blanket off yourself, cancel the timer.
-  - alias: Electric Blanket, cancel timer when power stops
-    id: electric_blanket_cancel_timer_when_power_stops
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.electric_blanket_drawing_power
-        to: "off"
-        for: "00:20:00"
-    action:
-      - service: timer.cancel
-        target:
-          entity_id: timer.electric_blanket_warmup
-
-  # 3) Timer finished: cut power, then restore plug power so blanket stays OFF
-  #    but the outlet is energized in case you want to turn it on again.
-  - alias: Electric Blanket, power cycle plug when timer finishes
-    id: electric_blanket_power_cycle_on_timer_finish
-    trigger:
-      - platform: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.electric_blanket_warmup
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.electric_blanket_plug
-      - delay: "00:00:10"
-      - service: switch.turn_on
-        target:
-          entity_id: switch.electric_blanket_plug
-      - service: timer.cancel
-        target:
-          entity_id: timer.electric_blanket_warmup
-
-  # 4) Morning: ensure the plug has power available during the day.
-  - alias: Electric Blanket, ensure power in the morning
-    id: electric_blanket_restore_power_in_morning
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.daytime
-        from: "off"
-        to: "on"
-    action:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.electric_blanket_plug
-      - service: timer.cancel
-        target:
-          entity_id: timer.electric_blanket_warmup
+      - if:
+          - condition: trigger
+            id: blanket_started
+        then:
+          - variables:
+              hours: "{{ states('input_number.electric_blanket_warmup_hours') | float(4) }}"
+              seconds: "{{ (hours * 3600) | int }}"
+          - wait_for_trigger:
+              - platform: state
+                entity_id: binary_sensor.electric_blanket_drawing_power
+                to: "off"
+                for: "00:20:00"
+                id: blanket_stopped
+            timeout: "{{ seconds }}"
+            continue_on_timeout: true
+          - if:
+              - "{{ wait.trigger is none }}"
+            then:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.electric_blanket_plug
+              - delay: "00:00:10"
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.electric_blanket_plug
