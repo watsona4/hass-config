@@ -88,7 +88,7 @@ template:
 
       # Presence rules, kept for the binary presence sensor
       present_via_beacon: >-
-        {{ beacon_on or (beacon_last_seen_age_m <= beacon_recent_minutes) }}
+        {{ beacon_on or (beacon_last_seen_age_m|float(0) <= beacon_recent_minutes) }}
       present_via_grace: "{{ door_grace_active }}"
       present_hint_via_ipad: "{{ ipad_home }}"  # not used for away, only positive hint
 
@@ -98,7 +98,7 @@ template:
 
       # Away: beacon truly absent for a while AND no room motion recently
       is_away: >-
-        {{ (beacon_last_seen_age_m >= beacon_absence_minutes) and (not motion_recent) }}
+        {{ (beacon_last_seen_age_m|float(0) >= beacon_absence_minutes) and (not motion_recent) }}
 
       # Backpack state for downstream use:
       #   home     = actively seen or seen recently
