@@ -127,7 +127,7 @@ automation:
         from: "on"
         to: "off"
     variables:
-      minutes: "{{ states('sensor.last_ride_elapsed_time_min')|float(0) }}"
+      minutes: "{{ states('sensor.last_ride_duration')|float(0) }}"
     action:
       - service: input_number.set_value
         target:

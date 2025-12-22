@@ -391,10 +391,10 @@ sections:
           - id: load
             opposite: true
             min: 0
-            max: 20
+            max: 50
             decimals: 0
             apex_config:
-              stepSize: 2
+              stepSize: 5
               title:
                 text: Training/Recovery Load
         series:
