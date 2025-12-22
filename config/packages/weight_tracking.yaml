@@ -340,3 +340,19 @@ automation:
           who: "aaron"
           metric: "bodyfat"
           entity_id: "{{ trigger.entity_id }}"
+
+  - id: send_weight_parameters_to_google_sheets
+    alias: "Send weight parameters to Google Sheets"
+    trigger:
+      - platform: state
+        entity_id: sensor.aaron_weight_params
+    action:
+      - action: google_sheets.append_sheet
+        data:
+          config_entry: 01KABQHJ4RVAN2JT0EQY67W1X7
+          data: >-
+            {% set t0 = state_attr('sensor.aaron_weight_params', 't0') %}
+            {% set winf = state_attr('sensor.aaron_weight_params', 'winf') %}
+            {% set params = state_attr('sensor.aaron_weight_params', 'params') %}
+            {% set latest = state_attr('sensor.aaron_weight_latest', 'latest') %}
+            {{ {'t0': t0, 'winf': winf} | combine(params) | combine({'latest': latest['y']}) }}
