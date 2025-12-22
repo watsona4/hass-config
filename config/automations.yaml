@@ -1293,56 +1293,197 @@
   trace:
     stored_traces: 100
 - id: '1698837376885'
-  alias: Christmas Lights
-  description: ''
+  alias: Christmas Lights and Music
+  description: 'One automation that controls Christmas lights and Sonos based on daytime,
+    presence, supper time, Christmas season, relinquishing control on manual adjustment
+    and recovering control after announcements.
+
+    '
   triggers:
   - trigger: state
     entity_id:
     - binary_sensor.daytime
-    - binary_sensor.evening
     - input_boolean.someone_is_home
-  - trigger: state
-    entity_id:
     - media_player.parlor
-    attribute: Content ID
-    id: Music
+    id: StateChange
+    to:
+  - trigger: time
+    at: '18:00:00'
+    id: Tick
+  - trigger: time
+    at: '19:30:00'
+    id: Tick
   conditions:
   - condition: template
-    value_template: '{% set month = now().strftime("%m") | int %}
+    value_template: '{% set y = now().year %}
 
-      {{ month == 12 }}'
+      {% set nov1 = now().replace(month=11, day=1, hour=0, minute=0, second=0, microsecond=0)
+      %}
+
+      {% set days_to_thu = (3 - nov1.weekday()) % 7 %}
+
+      {% set first_thu = nov1 + timedelta(days=days_to_thu) %}
+
+      {% set thanksgiving = first_thu + timedelta(weeks=3) %}
+
+      {% set start = (thanksgiving + timedelta(days=1)).date() %}
+
+      {% set end   = now().replace(year=y+1, month=1, day=1).date() %}
+
+      {{ start <= now().date() < end }}'
   actions:
-  - if:
-    - condition: or
-      conditions:
+  - variables:
+      tree_switches:
+      - switch.family_christmas_tree_socket_1
+      - switch.formal_christmas_tree_socket_1
+      - switch.playroom_christmas_tree_socket_1
+      player: media_player.parlor
+      base_vol: 0.2
+      supper_vol: 0.4
+      supper_time: '{{ today_at(''18:00'') <= now() < today_at(''19:30'') }}'
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: StateChange
       - condition: state
         entity_id: binary_sensor.daytime
         state: 'on'
       - condition: state
+        entity_id: input_boolean.someone_is_home
         state: 'on'
-        entity_id: binary_sensor.evening
-    - condition: state
-      entity_id: input_boolean.someone_is_home
-      state: 'on'
-    then:
-    - action: script.turn_on
-      data: {}
-      target:
-        entity_id: script.christmas_lights_on
-    else:
-    - action: script.turn_on
-      data: {}
-      target:
-        entity_id: script.christmas_lights_off
-  - if:
-    - condition: trigger
-      id:
-      - Music
-    then:
-    - action: input_boolean.turn_off
-      data: {}
-      target:
+      sequence:
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: media_player.parlor
+            state:
+            - 'off'
+            - idle
+            - paused
+          - condition: template
+            value_template: '{{ state_attr(''media_player.parlor'', ''is_volume_muted'')
+              }}'
+        - condition: state
+          entity_id: input_boolean.christmas_music
+          state: 'off'
+        then:
+        - action: media_player.volume_set
+          target:
+            entity_id: '{{ player }}'
+          data:
+            volume_level: '{{ supper_vol if supper_time else base_vol }}'
+        - action: media_player.play_media
+          target:
+            entity_id: '{{ player }}'
+          data:
+            media:
+              media_content_id: FV:2/19
+              media_content_type: favorite_item_id
+        - action: media_player.volume_mute
+          metadata: {}
+          target:
+            entity_id: media_player.parlor
+          data:
+            is_volume_muted: false
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.christmas_music
+      - action: switch.turn_on
+        target:
+          entity_id: '{{ tree_switches }}'
+        data: {}
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.daytime
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.someone_is_home
+          state: 'off'
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: '{{ tree_switches }}'
+      - action: media_player.media_stop
+        target:
+          entity_id: '{{ player }}'
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.christmas_music
+    - conditions:
+      - condition: trigger
+        id: Tick
+      - condition: template
+        value_template: '{{ supper_time == ''True'' }}'
+      - condition: state
         entity_id: input_boolean.christmas_music
+        state: 'on'
+      - condition: state
+        entity_id: media_player.parlor
+        state: playing
+      sequence:
+      - variables:
+          current_vol: '{{ state_attr(player, ''volume_level'') | float(0) }}'
+      - if:
+        - condition: template
+          value_template: '{{ current_vol < (supper_vol - 0.01) }}'
+        then:
+        - action: media_player.volume_set
+          target:
+            entity_id: '{{ player }}'
+          data:
+            volume_level: '{{ supper_vol }}'
+    - conditions:
+      - condition: trigger
+        id: StateChange
+      - condition: state
+        entity_id: input_boolean.christmas_music
+        state: 'on'
+      - condition: template
+        value_template: "{% set old = trigger.from_state %} {% set new = trigger.to_state
+          %} {% if not old or not new %}\n  False\n{% else %}\n  {{ old.attributes.get('volume_level')
+          != new.attributes.get('volume_level')\n     or old.attributes.get('Content
+          ID') != new.attributes.get('Content ID') }}\n{% endif %}\n"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.christmas_music
+    - conditions:
+      - condition: trigger
+        id: StateChange
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.someone_is_home
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.christmas_music
+        state: 'off'
+      - condition: state
+        entity_id: media_player.parlor
+        state:
+        - idle
+        - paused
+        - 'off'
+      sequence:
+      - action: media_player.volume_set
+        target:
+          entity_id: '{{ player }}'
+        data:
+          volume_level: '{{ supper_vol if supper_time else base_vol }}'
+      - action: media_player.play_media
+        target:
+          entity_id: '{{ player }}'
+        data:
+          media:
+            media_content_id: FV:2/19
+            media_content_type: favorite_item_id
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.christmas_music
   mode: single
   trace:
     stored_traces: 100
