@@ -5550,15 +5550,17 @@
       sequence:
       - action: climate.turn_off
         target:
-          entity_id: climate.chicken_heat_lamp
+          entity_id: climate.study_space_heater
     - conditions:
       - condition: trigger
         id:
         - Power Low
       sequence:
       - action: climate.turn_on
+        metadata: {}
         target:
-          entity_id: climate.chicken_heat_lamp
+          entity_id: climate.study_space_heater
+        data: {}
   mode: single
 - id: '1737448864796'
   alias: Xiaomi Thermometer Battery Level
