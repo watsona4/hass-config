@@ -3091,32 +3091,48 @@
     trigger: state
   - entity_id:
     - person.ashley_watson
-    from: not_home
-    to: home
-    for: 00:00:10
+    to:
+    - home
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
     trigger: state
     id: Ashley
+    from:
   - entity_id:
     - person.aaron_watson
-    from: not_home
-    to: home
-    for: 00:00:10
+    from:
+    to:
+    - home
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
     trigger: state
     id: Aaron
   - trigger: state
     entity_id:
     - person.eleanor_watson
-    from: not_home
-    to: home
-    for: 00:00:10
+    from:
+    to:
+    - home
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
     id: Eleanor
     enabled: true
   - trigger: state
     entity_id:
     - person.michael_watson
-    from: not_home
-    to: home
-    for: 00:00:10
+    from:
+    to:
+    - home
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
     id: Michael
   - entity_id:
     - person.ashley_watson
