@@ -89,21 +89,6 @@ input_boolean:
     icon: mdi:home-account
 
 ############################
-# OVERRIDES (optional, adjust or remove)
-############################
-binary_sensor:
-  - platform: template
-    sensors:
-      home_presence_override:
-        friendly_name: Home presence override
-        value_template: >-
-          {{
-            is_state('person.aaron_watson','home') or
-            is_state('person.ashley_watson','home')
-          }}
-        icon_template: mdi:home
-
-############################
 # CORE LOGIC
 ############################
 # Proximity sensors produced by the GUI integration, as you listed:
@@ -119,7 +104,13 @@ binary_sensor:
 #
 # We convert feet->miles for thresholds.
 template:
+
   - binary_sensor:
+      # OVERRIDES (optional, adjust or remove)
+      - name: Home presence override
+        icon: mdi:home
+        state: "{{ is_state('person.aaron_watson','home') or is_state('person.ashley_watson','home') }}"
+
       # Simple away flag for the house
       - name: Home Away Mode
         unique_id: 3c8d5d5f-8a7c-4f7a-a9b8-1df6d2d02a01
@@ -145,6 +136,7 @@ template:
 
       - name: Returning Home From Camper
         unique_id: 7ad26ed5-18a4-4f8b-b343-1325a00a9932
+        availability: "{{ has_value('device_tracker.rv_gps') }}"
         state: "{{ is_state('input_boolean.returning_home_from_camper_latch','on') }}"
         icon: >-
           {{ 'mdi:home-import-outline' if is_state('binary_sensor.returning_home_from_camper','on') else 'mdi:home-outline' }}

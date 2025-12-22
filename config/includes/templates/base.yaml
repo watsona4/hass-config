@@ -597,14 +597,34 @@
     - name: Home Latitude
       unique_id: home_latitude
       icon: mdi:home-map-marker
-      availability: "{{ state_attr('zone.home','latitude') is not none }}"
-      state: "{{ state_attr('zone.home','latitude') | float(0) }}"
+      state_class: measurement
+      availability: "{{ has_value('sensor.gps_raspi4_home_arpa_latitude') }}"
+      state: "{{ states('sensor.gps_raspi4_home_arpa_latitude')|float }}"
 
     - name: Home Longitude
       unique_id: home_longitude
       icon: mdi:home-map-marker
-      availability: "{{ state_attr('zone.home','longitude') is not none }}"
-      state: "{{ state_attr('zone.home','longitude') | float(0) }}"
+      state_class: measurement
+      availability: "{{ has_value('sensor.gps_raspi4_home_arpa_longitude') }}"
+      state: "{{ states('sensor.gps_raspi4_home_arpa_longitude')|float }}"
+
+    - name: Home Elevation
+      unique_id: 6a3a6764-63ee-4018-b56b-5ca0e0f1d867
+      icon: mdi:elevation-rise
+      device_class: distance
+      unit_of_measurement: ft
+      state_class: measurement
+      availability: "{{ has_value('sensor.gps_raspi4_home_arpa_elevation') }}"
+      state: "{{ states('sensor.gps_raspi4_home_arpa_elevation')|float }}"
+
+    - name: Home Elevation (m)
+      unique_id: cc063f7a-2ac4-464a-ae00-b58468920df6
+      icon: mdi:elevation-rise
+      device_class: distance
+      unit_of_measurement: m
+      state_class: measurement
+      availability: "{{ has_value('sensor.gps_raspi4_home_arpa_elevation') }}"
+      state: "{{ states('sensor.gps_raspi4_home_arpa_elevation')|float * 0.3048 }}"
 
     - name: Aaron Latitude
       unique_id: aaron_latitude

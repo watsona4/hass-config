@@ -29,7 +29,7 @@
 {% endmacro %}
 
 {% macro home_alt() %}
-    {{- states("input_number.home_altitude") | float(0) -}}
+    {{- states("sensor.home_elevation_m") | float(0) -}}
 {% endmacro %}
 
 {% macro home_is_valid() %}

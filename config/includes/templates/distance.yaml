@@ -10,9 +10,8 @@
     # distance() returns KM; convert to miles here
     _d_user_home_km: >-
       {% set a = 'person.aaron_watson' %}
-      {% set b = 'zone.home' %}
-      {% if state_attr(a, 'latitude') is not none and state_attr(b, 'latitude') is not none %}
-        {{ distance(a, b) | float(0) }}
+      {% if state_attr(a, 'latitude') is not none and state_attr(a, 'longitude') is not none %}
+        {{ distance(a) | float }}
       {% else %}
         {{ none }}
       {% endif %}
@@ -20,15 +19,14 @@
       {% set a = 'person.aaron_watson' %}
       {% set b = 'device_tracker.rv_gps' %}
       {% if state_attr(a, 'latitude') is not none and state_attr(b, 'latitude') is not none %}
-        {{ distance(a, b) | float(0) }}
+        {{ distance(a, b) | float }}
       {% else %}
         {{ none }}
       {% endif %}
     _d_rv_home_km: >-
       {% set a = 'device_tracker.rv_gps' %}
-      {% set b = 'zone.home' %}
-      {% if state_attr(a, 'latitude') is not none and state_attr(b, 'latitude') is not none %}
-        {{ distance(a, b) | float(0) }}
+      {% if state_attr(a, 'latitude') is not none and state_attr(a, 'longitude') is not none %}
+        {{ distance(a) | float }}
       {% else %}
         {{ none }}
       {% endif %}
