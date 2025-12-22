@@ -43,83 +43,63 @@
     to: 'on'
     id: Obstruction
   - trigger: state
-    entity_id: binary_sensor.ratgdov25i_f6128e_motion
-    to: 'on'
-    id: Motion
-  - trigger: state
     entity_id:
     - device_tracker.ashley_iphone
     - device_tracker.aaron_helper_tracker
     from: not_home
     to: home
     id: Coming Home
+  - trigger: state
+    entity_id:
+    - binary_sensor.garage_camera_motion
+    - binary_sensor.garage_camera_person_occupancy
+    - binary_sensor.ratgdov25i_f6128e_motion
+    id: Motion
+    to:
+    - 'on'
   - trigger: event
     event_type: timer.finished
     event_data:
       entity_id: timer.garage_door_delay
     id: Timer
-  - trigger: mqtt
-    topic: site/home/devices/frigate/events
-    id: Motion
   conditions: []
   actions:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: Opened
-      sequence:
-      - action: timer.start
-        data:
-          duration: 00:03:00
-        target:
-          entity_id: timer.garage_door_delay
-    default: []
-  - choose:
-    - conditions:
-      - condition: trigger
-        id:
-        - Weather
-      - condition: state
-        entity_id: binary_sensor.windy
-        state: 'on'
+  - if:
+    - condition: trigger
+      id: Opened
+    then:
+    - action: timer.start
+      data:
+        duration: 00:03:00
+      target:
+        entity_id: timer.garage_door_delay
+  - if:
+    - condition: trigger
+      id:
+      - Weather
+    - condition: state
+      entity_id: binary_sensor.windy
+      state: 'on'
+    - condition: state
+      entity_id: cover.ratgdov25i_f6128e_door
+      state: open
+    - condition: not
+      conditions:
       - condition: state
         entity_id: cover.ratgdov25i_f6128e_door
-        state: open
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: cover.ratgdov25i_f6128e_door
-          state: opening
-        - condition: state
-          entity_id: cover.ratgdov25i_f6128e_door
-          state: closing
-      sequence:
-      - action: cover.close_cover
-        target:
-          entity_id: cover.ratgdov25i_f6128e_door
-      - stop:
-    default: []
+        state: opening
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: closing
+    then:
+    - action: cover.close_cover
+      target:
+        entity_id: cover.ratgdov25i_f6128e_door
+    - stop: Windy so closing door
   - wait_template: '{{ is_state(''timer.garage_door_delay'', ''idle'') }}'
     continue_on_timeout: false
     timeout: 00:10:00
   - choose:
-    - conditions:
-      - condition: trigger
-        id: Obstruction
-      sequence:
-      - if:
-        - condition: state
-          entity_id: cover.ratgdov25i_f6128e_door
-          state: closing
-        then:
-        - action: notify.aaron_and_ashley_phones
-          data:
-            title: Garage Door
-            message: Garage door obstruction detected!
-            data:
-              push:
-                ttl: 0
-                priority: high
     - conditions:
       - condition: trigger
         id: Motion
@@ -131,10 +111,22 @@
         - condition: state
           entity_id: cover.ratgdov25i_f6128e_door
           state: closed
-        - condition: template
-          value_template: '{% set after = trigger.payload_json[''after''] if ''payload_json''
-            in trigger else none %} {{ after is none or after.camera == ''garage_camera''
-            }}'
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.ratgdov25i_f6128e_motion
+            state:
+            - 'on'
+          - condition: and
+            conditions:
+            - condition: state
+              entity_id: binary_sensor.garage_camera_motion
+              state:
+              - 'on'
+            - condition: state
+              entity_id: binary_sensor.garage_camera_person_occupancy
+              state:
+              - 'on'
         then:
         - action: cover.open_cover
           target:
@@ -164,7 +156,27 @@
             entity_id: cover.ratgdov25i_f6128e_door
     - conditions:
       - condition: trigger
+        id: Obstruction
+      sequence:
+      - if:
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: closing
+        then:
+        - action: notify.aaron_and_ashley_phones
+          data:
+            title: Garage Door
+            message: Garage door obstruction detected!
+            data:
+              push:
+                ttl: 0
+                priority: high
+    - conditions:
+      - condition: trigger
         id: Coming Home
+      - condition: template
+        value_template: '{{ trigger.from_state.attributes.source_type is not none
+          }}'
       - condition: not
         conditions:
         - condition: state
@@ -247,7 +259,7 @@
     then:
     - action: timer.start
       data:
-        duration: 00:03:00
+        duration: 00:01:00
       target:
         entity_id: timer.garage_door_delay
   mode: restart
