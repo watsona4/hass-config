@@ -736,10 +736,12 @@
     entity_id:
     - person.aaron_watson
     to: home
+    id: Aaron Home
   - trigger: state
     entity_id:
     - person.ashley_watson
     to: home
+    id: Ashley Home
   - entity_id:
     - sensor.outside_temperature_state
     above: 44.9
@@ -763,6 +765,35 @@
     entity_id: binary_sensor.daytime
     state: 'on'
   actions:
+  - if:
+    - condition: trigger
+      id:
+      - Aaron Home
+      - Ashley Home
+    then:
+    - if:
+      - condition: or
+        conditions:
+        - condition: and
+          conditions:
+          - condition: trigger
+            id:
+            - Aaron Home
+          - condition: state
+            entity_id: person.ashley_watson
+            state:
+            - home
+        - condition: and
+          conditions:
+          - condition: trigger
+            id:
+            - Ashley Home
+          - condition: state
+            entity_id: person.aaron_watson
+            state:
+            - home
+      then:
+      - stop: Someone already home
   - if:
     - condition: and
       conditions:
