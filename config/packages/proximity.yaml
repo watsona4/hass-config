@@ -144,13 +144,13 @@ template:
           family_distance_home_mi: >-
             {{ (states('sensor.home_nearest_distance')|float(0) * 0.000189393939) }}
           family_dir: "{{ states('sensor.home_nearest_direction_of_travel') or 'unknown' }}"
-          rv_distance_home_mi: "{{ distance('zone.home','device_tracker.rv_gps')|float(0) }}"
+          rv_distance_home_mi: "{{ distance('device_tracker.rv_gps')|float(0) }}"
           fraction_threshold: "{{ states('input_number.homeward_fraction_camper')|float(0.5) }}"
           halfway_threshold_mi: >-
-            {{ (distance('zone.home','device_tracker.rv_gps')|float(0) *
+            {{ (distance('device_tracker.rv_gps')|float(0) *
                 states('input_number.homeward_fraction_camper')|float(0.5))|round(2) }}
           rv_enabled: >-
-            {{ distance('zone.home','device_tracker.rv_gps')|float(0) >=
+            {{ distance('device_tracker.rv_gps')|float(0) >=
               states('input_number.rv_min_distance_home_mi')|float(20) }}
 
   - binary_sensor:
@@ -194,6 +194,11 @@ automation:
           - input_number.homeward_fraction_camper
           - input_number.stability_min
 
+    condition:
+      - condition: template
+        value_template: >
+          {{ has_value('device_tracker.rv_gps') }}
+
     actions:
       - variables:
           _ft_to_mi: 0.000189393939
@@ -208,7 +213,7 @@ automation:
           aar_pre: "{{ states('input_number.work_preheat_radius_aaron_mi')|float(10) }}"
           ash_pre: "{{ states('input_number.work_preheat_radius_ashley_mi')|float(0.6) }}"
           home_override: "{{ is_state('binary_sensor.home_presence_override','on') }}"
-          d_home_rv_mi: "{{ distance('zone.home','device_tracker.rv_gps')|float(0) }}"
+          d_home_rv_mi: "{{ distance('device_tracker.rv_gps')|float(0) }}"
           rv_min_home: "{{ states('input_number.rv_min_distance_home_mi')|float(20) }}"
           camper_enabled: "{{ d_home_rv_mi >= rv_min_home }}"
           frac_camper: "{{ states('input_number.homeward_fraction_camper')|float(0.5) }}"

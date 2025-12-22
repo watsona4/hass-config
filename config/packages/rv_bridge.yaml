@@ -340,9 +340,14 @@ mqtt:
     - name: "RV GPS"
       unique_id: 0ffb7df0-f781-4745-abf8-56638caa2612
       source_type: gps
-      state_topic: site/rv/bridge/location
-      value_template: home
       json_attributes_topic: site/rv/bridge/location
+      json_attributes_template: >
+        {% set v = value_json %}
+        {% if v.latitude is not none and v.longitude is not none and v.gps_accuracy|float(0) > 0 %}
+          {{ v | tojson }}
+        {% else %}
+          {{ {} | tojson }}
+        {% endif %}
 
 template:
   # =========================

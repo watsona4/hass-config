@@ -153,7 +153,7 @@ template:
       - name: WAQI RV
         unique_id: waqi_rv
         state_class: measurement
-        availability: "{{ trigger.event.data.available | default(false) }}"
+        availability: "{{ trigger.event.data.available | default(false) and has_value('device_tracker.rv_gps') }}"
         state: >-
           {%- from 'metrics/air_quality/helpers.jinja' import aqi_state_from_payload -%}
           {{- aqi_state_from_payload(root, this.entity_id) -}}
@@ -846,6 +846,9 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/15"
+    conditions:
+      - condition: template
+        value_template: "{{ has_value('device_tracker.rv_gps') }}"
     action:
       - delay:
           seconds: "{{ 20 + (range(0, 10) | random | int) }}"

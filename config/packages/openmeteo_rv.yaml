@@ -29,36 +29,35 @@ rest_command:
       User-Agent: HomeAssistant
       Cache-Control: no-cache
 
-weather:
-  - platform: template
-    name: OpenMeteo Weather RV
-    unique_id: openmeteo_weather_rv
-    condition_template: >
-      {%- from 'metrics/weather/forecasts.jinja' import current_condition -%}
-      {{- current_condition('sensor.openmeteo_rv') -}}
-    apparent_temperature_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') -}}"
-    cloud_coverage_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') -}}"
-    dew_point_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('dew_point_2m') -}}"
-    humidity_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('relative_humidity_2m') -}}"
-    pressure_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('surface_pressure') -}}"
-    temperature_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('temperature_2m') -}}"
-    visibility_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('visibility') -}}"
-    wind_bearing_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_direction_10m') -}}"
-    wind_gust_speed_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_gusts_10m') -}}"
-    wind_speed_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_speed_10m') -}}"
-    precipitation_unit: "in"
-    pressure_unit: "hPa"
-    temperature_unit: "°F"
-    visibility_unit: "m"
-    wind_speed_unit: "mph"
-    forecast_daily_template: >
-      {%- from 'metrics/weather/forecasts.jinja' import forecast_daily -%}
-      {{- forecast_daily('sensor.openmeteo_rv') | from_json(default={}) -}}
-    forecast_hourly_template: >
-      {%- from 'metrics/weather/forecasts.jinja' import forecast_hourly -%}
-      {{- forecast_hourly('sensor.openmeteo_rv') | from_json(default={}) -}}
-
 template:
+
+  - weather:
+      - name: OpenMeteo Weather RV
+        unique_id: openmeteo_weather_rv
+        condition_template: >
+          {%- from 'metrics/weather/forecasts.jinja' import current_condition -%}
+          {{- current_condition('sensor.openmeteo_rv') -}}
+        apparent_temperature_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') -}}"
+        cloud_coverage_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') -}}"
+        dew_point_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('dew_point_2m') -}}"
+        humidity_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('relative_humidity_2m') -}}"
+        pressure_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('surface_pressure') -}}"
+        temperature_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('temperature_2m') -}}"
+        visibility_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('visibility') -}}"
+        wind_bearing_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_direction_10m') -}}"
+        wind_gust_speed_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_gusts_10m') -}}"
+        wind_speed_template: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_speed_10m') -}}"
+        precipitation_unit: "in"
+        pressure_unit: "hPa"
+        temperature_unit: "°F"
+        visibility_unit: "m"
+        wind_speed_unit: "mph"
+        forecast_daily_template: >
+          {%- from 'metrics/weather/forecasts.jinja' import forecast_daily -%}
+          {{- forecast_daily('sensor.openmeteo_rv') | from_json(default={}) -}}
+        forecast_hourly_template: >
+          {%- from 'metrics/weather/forecasts.jinja' import forecast_hourly -%}
+          {{- forecast_hourly('sensor.openmeteo_rv') | from_json(default={}) -}}
 
   - trigger:
       - platform: event
@@ -73,7 +72,8 @@ template:
           {{ trigger is not none
              and trigger.event is not none
              and trigger.event.data is mapping
-             and (trigger.event.data.available | default(false)) }}
+             and (trigger.event.data.available | default(false))
+             and has_value('device_tracker.rv_gps') }}
         state: >-
           {%- set data = trigger.event.data.parsed if trigger and trigger.event and trigger.event.data.parsed is mapping else {} -%}
           {%- set cur = data.get('current') or {} -%}
@@ -503,6 +503,9 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/5"
+    conditions:
+      - condition: template
+        value_template: "{{ has_value('device_tracker.rv_gps') }}"
     variables:
       rv_valid: >-
         {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}

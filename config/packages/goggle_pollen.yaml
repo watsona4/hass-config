@@ -129,7 +129,7 @@ template:
     sensor:
       - name: Google Pollen RV
         unique_id: google_pollen_rv
-        availability: "{{ trigger.event.data.available | default(false) }}"
+        availability: "{{ trigger.event.data.available | default(false) and has_value('device_tracker.rv_gps') }}"
         state: >-
           {%- set data =
                 trigger.event.data.parsed
@@ -823,6 +823,9 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/10"
+    conditions:
+      - condition: template
+        value_template: "{{ has_value('device_tracker.rv_gps') }}"
     variables:
       rv_valid: >-
         {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
