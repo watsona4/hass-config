@@ -30,9 +30,6 @@ services:
     restart: unless-stopped
     privileged: true
     network_mode: host
-    dns:
-      - 1.1.1.1
-      - 1.0.0.1
     environment:
       UMASK: 002
       TZ: America/New_York

@@ -3,11 +3,13 @@
 default_config:
 
 homeassistant:
+  external_url: "https://hass.battenkillwoodworks.com"
+  internal_url: "http://frigate.home.arpa:8123"
   auth_providers:
     - type: homeassistant
     - type: trusted_networks
       trusted_networks:
-        - 192.168.1.0/24
+        - 10.10.10.0/24
   auth_mfa_modules:
     - type: totp
   packages: !include_dir_named packages
@@ -15,7 +17,9 @@ homeassistant:
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 192.168.1.1
+    - 10.10.10.1
+    - 127.0.0.1
+    - 2603:7080:8a00:5b00::/64
   ip_ban_enabled: true
   login_attempts_threshold: 5
 
@@ -149,11 +153,6 @@ lovelace:
       icon: mdi:home-automation
       show_in_sidebar: true
       filename: dashboards/systems/dashboard.yaml
-
-sonos:
-  media_player:
-    hosts:
-      - 192.168.3.20
 
 zone:
   - name: Home
