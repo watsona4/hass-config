@@ -1551,8 +1551,8 @@
   conditions: []
   actions:
   - variables:
-      furnace_temp: '{{ states(''input_number.furnace_temperature'') if not is_state(''input_boolean.wood_stove'',
-        ''on'') else 63 }}'
+      furnace_temp: '{{ (states(''input_number.furnace_temperature'')|float) - (0
+        if not is_state(''input_boolean.wood_stove'', ''on'') else 5) }}'
       downstairs: "{% set temp = states('input_number.downstairs_temperature')|float(72)
         %} {% set upstairs_temp = state_attr('climate.upstairs_thermostat', 'current_temperature')|float(temp+1)
         %} {% set upstairs_action = state_attr('climate.upstairs_thermostat', 'hvac_action')
