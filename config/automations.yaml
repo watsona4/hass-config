@@ -996,8 +996,6 @@
   alias: Wood Stove
   description: ''
   triggers:
-  - trigger: time_pattern
-    minutes: /15
   - trigger: state
     entity_id: schedule.daytime
     to:
@@ -1007,6 +1005,10 @@
     - automation.fire
     - input_boolean.someone_is_home
     to:
+  - trigger: state
+    entity_id:
+    - climate.downstairs_thermostat
+    attribute: current_temperature
   conditions:
   - condition: state
     entity_id: input_boolean.wood_stove
@@ -1101,7 +1103,7 @@
         - action: notify.mobile_app_pixel_9_pro_xl
           data:
             title: Wood Stove
-            message: Put wood on then fire!
+            message: Put wood on the fire!
             data:
               push:
                 ttl: 0
