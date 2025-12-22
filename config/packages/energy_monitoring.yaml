@@ -60,16 +60,26 @@ homeassistant:
       meter: daily
     sensor.basement_energy_today:
       meter: daily
-    sensor.furnace_gas_today:
+    sensor.furnace_gas_energy_today:
       meter: daily
-    sensor.dryer_gas_today:
+    sensor.dryer_gas_energy_today:
       meter: daily
-    sensor.water_heater_gas_today:
+    sensor.water_heater_gas_energy_today:
       meter: daily
-    sensor.gas_stove_gas_today:
+    sensor.gas_stove_gas_energy_today:
       meter: daily
-    sensor.shop_furnace_gas_today:
+    sensor.shop_furnace_gas_energy_today:
       meter: daily
+    sensor.furnace_gas_meter:
+      device_class: gas
+    sensor.dryer_gas_meter:
+      device_class: gas
+    sensor.water_heater_gas_meter:
+      device_class: gas
+    sensor.gas_stove_gas_meter:
+      device_class: gas
+    sensor.shop_furnace_gas_meter:
+      device_class: gas
     sensor.gas_daily:
       meter: daily_total
     sensor.water_daily:
@@ -415,14 +425,15 @@ template:
         unit_of_measurement: "CCF"
         state_class: total_increasing
         state: >-
-          {{ ([
+          {% set state = ([
               states('sensor.furnace_gas_meter') | float(0),
               states('sensor.dryer_gas_meter') | float(0),
               states('sensor.water_heater_gas_meter') | float(0),
               states('sensor.gas_stove_gas_meter') | float(0),
               states('sensor.shop_furnace_gas_meter') | float(0)
             ] | sum) / 100
-          }}
+          %}
+          {{ this.state if state < (this.state | float(0)) else state }}
 
       - name: "Gas Therms Total"
         unique_id: 65f9db01-f783-4f1c-b99a-c6cad60bb262
@@ -838,6 +849,32 @@ utility_meter:
     unique_id: 6b9e660b-aec0-45ea-acd7-664009b73984
     name: "Shop Furnace Gas Energy Today"
     source: sensor.shop_furnace_gas_energy_total
+    cycle: daily
+
+  furnace_gas_meter_today:
+    unique_id: 07b922dd-8e17-420a-96c1-f2114c7b0ac1
+    name: "Furnace Gas Meter Today"
+    source: sensor.furnace_gas_meter
+    cycle: daily
+  dryer_gas_meter_today:
+    unique_id: abe3b4ee-292d-4645-9f93-9ad4317f62fb
+    name: "Dryer Gas Meter Today"
+    source: sensor.dryer_gas_meter
+    cycle: daily
+  water_heater_gas_meter_today:
+    unique_id: 5c5daa22-6fec-4d80-96d8-274b8da3af8f
+    name: "Water Heater Gas Meter Today"
+    source: sensor.water_heater_gas_meter
+    cycle: daily
+  gas_stove_gas_meter_today:
+    unique_id: 248263fa-a38e-436e-b0ad-3265826a7c9f
+    name: "Gas Stove Gas Meter Today"
+    source: sensor.gas_stove_gas_meter
+    cycle: daily
+  shop_furnace_gas_meter_today:
+    unique_id: 36eec78d-497e-45de-b44a-ce9ad11c86d5
+    name: "Shop Furnace Gas Meter Today"
+    source: sensor.shop_furnace_gas_meter
     cycle: daily
 
   # -----------------------------------------------------------------------------
