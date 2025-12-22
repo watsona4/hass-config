@@ -6,6 +6,7 @@
 # Auto-rebuilds on startup and when registries change.
 
 import builtins
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List
@@ -13,9 +14,17 @@ from typing import Dict, List
 import yaml
 from homeassistant.helpers import area_registry, device_registry, entity_registry
 
-OUT_DIR = "/config/dashboards/spaces/views"
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,  # Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Customize log message format
+)
+logger = logging.getLogger(__name__)  # This gets the logger for your script
 
-VIEW_DEFS: Dict[str, Dict[str, List[str]]] = {
+OUT_DIR = "/config/dashboards/spaces/views"
+SYSTEMS_OUT_DIR = "/config/dashboards/systems/views"
+
+VIEW_DEFS: Dict[str, Dict] = {
     "01_downstairs": {
         "title": "Downstairs",
         "areas": [
@@ -72,6 +81,62 @@ VIEW_DEFS: Dict[str, Dict[str, List[str]]] = {
         ],
     },
 }
+
+SYSTEM_DEFS: Dict[str, Dict] = {
+    "10_lighting": {
+        "title": "Lighting",
+        "domains": ["light"],
+    },
+    "11_switches": {
+        "title": "Switches & Outlets",
+        "domains": ["switch"],
+    },
+    "12_climate": {
+        "title": "Climate",
+        "domains": ["climate", "humidifier"],
+    },
+    "13_fans": {
+        "title": "Fans",
+        "domains": ["fan"],
+    },
+    "14_covers": {
+        "title": "Shades & Covers",
+        "domains": ["cover"],
+    },
+    "15_locks": {
+        "title": "Locks",
+        "domains": ["lock"],
+    },
+    "16_media": {
+        "title": "Media Players",
+        "domains": ["media_player"],
+    },
+    "17_cameras": {
+        "title": "Cameras",
+        "domains": ["camera"],
+    },
+    # Sensors split by “type” so you do not end up with one massive Sensors page
+    "30_temp": {
+        "title": "Temperature Sensors",
+        "domains": ["sensor"],
+        "device_classes": ["temperature"],
+    },
+    "31_humidity": {
+        "title": "Humidity Sensors",
+        "domains": ["sensor"],
+        "device_classes": ["humidity"],
+    },
+    "32_power": {
+        "title": "Power & Energy Sensors",
+        "domains": ["sensor"],
+        "device_classes": ["power", "energy", "gas", "volume_flow_rate"],
+    },
+    "40_binary": {
+        "title": "Binary Sensors",
+        "domains": ["binary_sensor"],
+    },
+}
+
 # --------------------------------------------------------------------
 
 # ----- helpers --------------------------------------------------------
@@ -124,6 +189,38 @@ def _grid(cards: List[dict], cols: int = 2) -> dict:
 
 def _title(subtitle: str, title: str = "") -> dict:
     return {"type": "custom:mushroom-title-card", "title": title, "subtitle": subtitle}
+
+
+def _preferred_area_order() -> List[str]:
+    """All areas in the order implied by VIEW_DEFS, plus any others appended alphabetically."""
+    preferred: List[str] = []
+    seen = set()
+
+    for _, v in VIEW_DEFS.items():
+        for a in v["areas"]:
+            if a not in seen:
+                preferred.append(a)
+                seen.add(a)
+
+    return preferred
+
+
+async def _all_areas_in_order() -> List[str]:
+    ar = await area_registry.async_get(hass)
+    preferred = _preferred_area_order()
+    preferred_set = set(preferred)
+
+    # Add any areas not already in VIEW_DEFS, sorted by display name
+    others = [a.id for a in ar.async_list_areas() if a.id not in preferred_set]
+    others.sort(key=lambda aid: (_area_friendly_name(aid) or aid).lower())
+
+    return preferred + others
+
+
+def _area_friendly_name(area_id: str) -> str:
+    # safe sync accessor by id via hass registries is not available here,
+    # so we fall back to id for sorting; display name is handled in cards below.
+    return area_id
 
 
 # ----- area → cards ---------------------------------------------------
@@ -305,6 +402,13 @@ async def _cards_for_area(area_name: str) -> List[dict]:
         ]
 
     # Utility Meters
+    logger.debug(f"Entities being processed: {eids}")
+    for e in eids:
+        entity = hass.states.get(e)
+        if entity:
+            device_class = entity.attributes.get("device_class")
+            meter = entity.attributes.get("meter")
+            logger.debug(f"Entity: {e}, Device Class: {device_class}, Meter: {meter}")
     gas_daily = [
         e
         for e in eids
@@ -329,14 +433,18 @@ async def _cards_for_area(area_name: str) -> List[dict]:
     if gas_daily or energy_daily:
         sec_cards = []
         for e in _sorted(gas_daily):
-            app = "energy_daily_house" if hass.states.get(e).attributes.get("meter") == "daily" else "daily_appliance"
+            app = "daily" if hass.states.get(e).attributes.get("meter") == "daily" else "daily_appliance"
             sec_cards.append({
                 "type": "custom:decluttering-card",
                 "template": "template_card",
                 "variables": [{"entity": e}, {"app": app}, {"project_daily": "true"}] + vertical_opts,
             })
         for e in _sorted(energy_daily):
-            app = "energy_daily_house" if hass.states.get(e).attributes.get("meter") == "daily_total" else "energy_daily_area"
+            app = (
+                "energy_daily_house"
+                if hass.states.get(e).attributes.get("meter") == "daily_total"
+                else "energy_daily_area"
+            )
             sec_cards.append({
                 "type": "custom:decluttering-card",
                 "template": "template_card",
@@ -480,6 +588,11 @@ async def _cards_for_area(area_name: str) -> List[dict]:
                     if hass.states.get(e).attributes.get("unit_of_measurement") == "Wh"
                     else "return x;"
                 ),
+                "type": "column",
+                "group_by": {
+                    "duration": "1d",
+                    "func": "max",
+                },
             }
             for e in energy_daily
         ] + [
@@ -495,6 +608,11 @@ async def _cards_for_area(area_name: str) -> List[dict]:
                         else "return x;"
                     )
                 ),
+                "type": "column",
+                "group_by": {
+                    "duration": "1d",
+                    "func": "max",
+                },
             }
             for e in gas_daily
         ]
@@ -532,6 +650,88 @@ async def _cards_for_area(area_name: str) -> List[dict]:
 
     return cards
 
+async def _area_display_name(area_id: str) -> str:
+    ar = await area_registry.async_get(hass)
+    a = await _find_area_by_name(ar, area_id)
+    return (a and a.name) or area_id
+
+
+def _card_for_entity_system(eid: str) -> dict:
+    dom = _dom(eid)
+
+    if dom == "light":
+        return {"type": "custom:mushroom-light-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+
+    if dom == "switch":
+        return {"type": "custom:mushroom-entity-card", "entity": eid, "tap_action": {"action": "more-info"}}
+
+    if dom == "fan":
+        return {"type": "custom:mushroom-fan-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+
+    if dom == "cover":
+        return {"type": "custom:mushroom-cover-card", "entity": eid, "tap_action": {"action": "more-info"}}
+
+    if dom == "lock":
+        return {"type": "custom:mushroom-lock-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+
+    if dom == "media_player":
+        return {"type": "custom:mushroom-media-player-card", "entity": eid, "tap_action": {"action": "more-info"}}
+
+    if dom == "climate":
+        return {"type": "custom:mushroom-climate-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+
+    if dom == "humidifier":
+        return {"type": "custom:mushroom-humidifier-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+
+    if dom == "camera":
+        # Keep it lightweight; swap to picture-entity if you want live thumbnails
+        return {"type": "custom:mushroom-entity-card", "entity": eid, "tap_action": {"action": "more-info"}}
+
+    # Sensors and binary_sensors, reuse your decluttering template_card so names/icons/colors stay consistent
+    if dom in ["sensor", "binary_sensor"]:
+        st = hass.states.get(eid)
+        dc = (st and st.attributes.get("device_class")) or "default"
+        vertical_opts = [{"layout": "vertical"}, {"multiline_secondary": False}, {"options": "vert_delim= • "}]
+
+        return {
+            "type": "custom:decluttering-card",
+            "template": "template_card",
+            "variables": [{"entity": eid}, {"app": dc}] + vertical_opts,
+        }
+
+    # Fallback
+    return {"type": "custom:mushroom-entity-card", "entity": eid, "tap_action": {"action": "more-info"}}
+
+
+async def _cards_for_area_system(area_id: str, sys_def: Dict) -> List[dict]:
+    eids = await _entities_in_area(area_id)
+
+    domains = set(sys_def.get("domains", []))
+    device_classes = set(sys_def.get("device_classes", [])) if sys_def.get("device_classes") else None
+
+    filtered: List[str] = []
+    for e in eids:
+        if _dom(e) not in domains:
+            continue
+        if device_classes is not None:
+            st = hass.states.get(e)
+            dc = (st and st.attributes.get("device_class")) or None
+            if dc not in device_classes:
+                continue
+        filtered.append(e)
+
+    if not filtered:
+        return []
+
+    area_name = await _area_display_name(area_id)
+
+    cards: List[dict] = []
+    cards.append({"type": "custom:mushroom-title-card", "title": area_name})
+
+    # Grid feels best for most “device type” pages
+    cards.append(_grid([_card_for_entity_system(e) for e in _sorted(filtered)], cols=2))
+
+    return cards
 
 # ----- view builder ---------------------------------------------------
 
@@ -578,6 +778,62 @@ async def _write_view_file(view_key: str, view_title: str, areas: List[str]) -> 
 
     log.info(f"[area-views] wrote {path} ({len(view_cards)} area blocks)")
 
+async def _write_system_view_file(view_key: str, view_title: str, sys_def: Dict) -> None:
+    view_cards: List[dict] = []
+
+    areas = await _all_areas_in_order()
+
+    for area_id in areas:
+        try:
+            area_cards = await _cards_for_area_system(area_id, sys_def)
+        except Exception as e:
+            log.error(f"[system-views] building cards failed for '{area_id}': {e}")
+            area_cards = [{"type": "markdown", "content": f"**Error building area '{area_id}':** `{e}`"}]
+
+        if not area_cards:
+            continue  # skip empty areas to keep the page tight
+
+        view_cards.append({
+            "type": "custom:stack-in-card",
+            "mode": "vertical",
+            "keep": {"background": True, "box_shadow": True, "border_radius": True},
+            "card_mod": {
+                "style": (
+                    "ha-card { border-radius: 12px; background: var(--card-background-color);"
+                    " box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px; }"
+                ),
+            },
+            "cards": area_cards,
+        })
+
+    await task.executor(os.makedirs, SYSTEMS_OUT_DIR, 0o777, True)
+
+    yaml_str = yaml.safe_dump({"title": view_title, "type": "masonry", "cards": view_cards}, sort_keys=False)
+    path = f"{SYSTEMS_OUT_DIR}/{view_key}.yaml"
+    await task.executor(Path(path).write_text, yaml_str, "utf-8")
+
+    log.info(f"[system-views] wrote {path} ({len(view_cards)} area blocks)")
+
+
+async def _build_all_system_views() -> None:
+    for key, sys_def in SYSTEM_DEFS.items():
+        try:
+            await _write_system_view_file(key, sys_def["title"], sys_def)
+        except Exception as e:
+            log.error(f"[system-views] failed writing {key}: {e}")
+
+
+@service
+async def build_system_views(view: str = None):
+    """Manual rebuild. Call with view='10_lighting' or empty to build all."""
+    if view:
+        sys_def = SYSTEM_DEFS.get(view)
+        if not sys_def:
+            log.error(f"[system-views] unknown view '{view}'")
+            return
+        await _write_system_view_file(view, sys_def["title"], sys_def)
+    else:
+        await _build_all_system_views()
 
 # ----- triggers & service --------------------------------------------
 
@@ -592,6 +848,7 @@ async def build_all_on_change(**kwargs):
             await _write_view_file(key, val["title"], val["areas"])
         except Exception as e:
             log.error(f"[area-views] failed writing {key}: {e}")
+    await _build_all_system_views()
 
 
 @service
