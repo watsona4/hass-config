@@ -920,3 +920,38 @@
       unit_of_measurement: "%"
       availability: "{{ (humid_val | float(none)) is not none }}"
       state: "{{ humid_val | float }}"
+
+- fan:
+    - name: Attic Duct Fan
+      availability: "{{ has_value('switch.attic_duct_fan_switch_0') }}"
+      state: "{{ is_state('switch.attic_duct_fan_switch_0', 'on') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.attic_duct_fan_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.attic_duct_fan_switch_0
+    - name: Gym Floor Fan
+      availability: "{{ has_value('switch.floor_fan_outlet') }}"
+      state: "{{ is_state('switch.floor_fan_outlet', 'on') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.floor_fan_outlet
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.floor_fan_outlet
+    - name: Gym Pedestal Fan
+      availability: "{{ has_value('switch.pedestal_fan') }}"
+      state: "{{ is_state('switch.pedestal_fan', 'on') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.pedestal_fan
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.pedestal_fan
