@@ -659,6 +659,17 @@
   actions:
   - parallel:
     - sequence:
+      - target:
+          entity_id:
+          - switch.parlor_table_lamp
+        data: {}
+        action: switch.turn_off
+    - if:
+      - condition: state
+        entity_id: input_boolean.living_room_occupied
+        state:
+        - 'off'
+      then:
       - wait_template: "{% if has_value('binary_sensor.everything_presence_one_6dbad0_occupancy')
           %}\n  {{\n    not (states('binary_sensor.everything_presence_one_6dbad0_occupancy')
           | bool)\n    and (now() - states.binary_sensor.everything_presence_one_6dbad0_occupancy.last_changed).total_seconds()
@@ -667,7 +678,6 @@
         continue_on_timeout: true
       - target:
           entity_id:
-          - switch.parlor_table_lamp
           - switch.living_room_end_table_lamp
         data: {}
         action: switch.turn_off

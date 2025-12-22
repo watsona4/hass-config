@@ -599,19 +599,25 @@ turn_off_interior_lights:
             - condition: template
               value_template: '{{ repeat.index < 10 and is_state(''switch.parlor_table_lamp'',''on'')
                 }}'
-        - repeat:
-            sequence:
-            - target:
-                entity_id:
-                - switch.living_room_end_table_lamp
-              data: {}
-              action: switch.turn_off
-            - delay:
-                seconds: 30
-            while:
-            - condition: template
-              value_template: '{{ repeat.index < 10 and is_state(''switch.living_room_end_table_lamp'',''on'')
-                }}'
+        - if:
+          - condition: state
+            entity_id: input_boolean.living_room_occupied
+            state:
+            - 'off'
+          then:
+          - repeat:
+              sequence:
+              - target:
+                  entity_id:
+                  - switch.living_room_end_table_lamp
+                data: {}
+                action: switch.turn_off
+              - delay:
+                  seconds: 30
+              while:
+              - condition: template
+                value_template: '{{ repeat.index < 10 and is_state(''switch.living_room_end_table_lamp'',''on'')
+                  }}'
     - if:
       - condition: state
         entity_id: input_boolean.guest_bedroom_occupied
