@@ -3647,14 +3647,9 @@
     payload: single
     trigger: mqtt
   conditions:
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: binary_sensor.daytime
-      state: 'on'
-    - condition: state
-      state: 'on'
-      entity_id: binary_sensor.evening
+  - condition: state
+    entity_id: input_boolean.all_windows
+    state: 'on'
   actions:
   - data:
       duration: '1:00:00'
@@ -3708,7 +3703,10 @@
     type: action
     subtype: single
     trigger: device
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.all_windows
+    state: 'on'
   actions:
   - data:
       duration: '1:00:00'
@@ -3839,7 +3837,10 @@
   - topic: site/home/devices/zigbee2mqtt/Guest Bedroom Window Button/action
     payload: single
     trigger: mqtt
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.all_windows
+    state: 'on'
   actions:
   - target:
       entity_id: input_boolean.guest_bedroom_window_button_active
@@ -3938,7 +3939,10 @@
   - topic: site/home/devices/zigbee2mqtt/Eleanor Room Window Button/action
     payload: single
     trigger: mqtt
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.kids_windows
+    state: 'on'
   actions:
   - data:
       duration: '1:00:00'
@@ -3990,7 +3994,11 @@
   - topic: site/home/devices/zigbee2mqtt/Michael Room Window Button/action
     payload: single
     trigger: mqtt
-  conditions: []
+  conditions:
+  - condition: state
+    state:
+    - 'on'
+    entity_id: input_boolean.kids_windows
   actions:
   - data:
       duration: '1:00:00'
@@ -4040,14 +4048,10 @@
     payload: single
     trigger: mqtt
   conditions:
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: binary_sensor.daytime
-      state: 'on'
-    - condition: state
-      state: 'on'
-      entity_id: binary_sensor.evening
+  - condition: state
+    entity_id: input_boolean.kids_windows
+    state:
+    - 'on'
   actions:
   - data:
       duration: '1:00:00'
@@ -4101,7 +4105,7 @@
     trigger: mqtt
   conditions:
   - condition: state
-    entity_id: binary_sensor.daytime
+    entity_id: input_boolean.all_windows
     state: 'on'
   actions:
   - data:
@@ -4162,14 +4166,9 @@
     payload: single
     trigger: mqtt
   conditions:
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: binary_sensor.daytime
-      state: 'on'
-    - condition: state
-      state: 'on'
-      entity_id: binary_sensor.evening
+  - condition: state
+    entity_id: input_boolean.all_windows
+    state: 'on'
   actions:
   - data:
       duration: '1:00:00'
