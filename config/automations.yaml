@@ -4632,9 +4632,17 @@
   - trigger: state
     entity_id:
     - switch.dishwasher_power
-    to: unavailable
+    to:
+    - unavailable
     id: Reload
     enabled: true
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  - trigger: time
+    at: '20:30:00'
+    id: Door Check
   conditions: []
   actions:
   - choose:
@@ -4676,29 +4684,6 @@
         entity_id: input_boolean.dishwasher_ready
         state: 'on'
       sequence:
-      - if:
-        - condition: state
-          entity_id: sensor.dishwasher_door
-          state: open
-        then:
-        - action: notify.mobile_app_pixel_9_pro_xl
-          data:
-            title: Dishwasher
-            message: Dishwasher door is open!
-            data:
-              push:
-                interruption-level: critical
-                ttl: 0
-                priority: high
-        - action: notify.mobile_app_ashleys_iphone
-          data:
-            title: Dishwasher
-            message: Dishwasher door is open!
-            data:
-              push:
-                interruption-level: critical
-                ttl: 0
-                priority: high
       - wait_template: '{{ is_state(''sensor.dishwasher_door'', ''closed'') }}'
         continue_on_timeout: true
         timeout: 0:30:00
@@ -4713,12 +4698,13 @@
         - delay: 00:01:00
         - wait_template: '{{ is_state(''switch.dishwasher_power'', ''on'') }}'
           continue_on_timeout: true
+      - delay: 00:05:00
       - action: select.select_option
         target:
           entity_id: select.dishwasher_active_program
         data:
           option: dishcare_dishwasher_program_auto_2
-      - delay: 00:05:00
+      - delay: 00:01:00
       - if:
         - condition: not
           conditions:
@@ -4791,6 +4777,34 @@
       - action: timer.start
         target:
           entity_id: timer.dishwasher_reload
+    - conditions:
+      - condition: trigger
+        id:
+        - Door Check
+      sequence:
+      - if:
+        - condition: state
+          entity_id: sensor.dishwasher_door
+          state: open
+        then:
+        - action: notify.mobile_app_pixel_9_pro_xl
+          data:
+            title: Dishwasher
+            message: Dishwasher door is open!
+            data:
+              push:
+                interruption-level: critical
+                ttl: 0
+                priority: high
+        - action: notify.mobile_app_ashleys_iphone
+          data:
+            title: Dishwasher
+            message: Dishwasher door is open!
+            data:
+              push:
+                interruption-level: critical
+                ttl: 0
+                priority: high
   mode: queued
   trace:
     stored_traces: 1000
