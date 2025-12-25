@@ -5979,3 +5979,35 @@
     target:
       entity_id: switch.water_heater_boost
   mode: single
+- id: '1766596867661'
+  alias: Sync Home Location to GPSD
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.gps_raspi4_home_arpa_latitude
+    - sensor.gps_raspi4_home_arpa_longitude
+    to:
+  conditions:
+  - condition: template
+    value_template: '{{ has_value(lat_ent) and has_value(lon_ent) }}'
+  - condition: template
+    value_template: '{{ float(dist_ft) > float(dist_tol_ft) }}'
+  actions:
+  - action: homeassistant.set_location
+    data:
+      latitude: '{{ lat }}'
+      longitude: '{{ lon }}'
+      elevation: '{{ elv_m | round }}'
+  variables:
+    lat_ent: sensor.gps_raspi4_home_arpa_latitude
+    lon_ent: sensor.gps_raspi4_home_arpa_longitude
+    lat: '{{ states(lat_ent) }}'
+    lon: '{{ states(lon_ent) }}'
+    dist_mi: '{{ distance(lat, lon) | float(0) }}'
+    dist_ft: '{{ float(dist_mi) * 5280 }}'
+    dist_tol_ft: 1
+    elv_ft: '{{ states(''sensor.gps_raspi4_home_arpa_elevation'') | float(118*3.281)
+      }}'
+    elv_m: '{{ float(elv_ft) / 3.281 }}'
+  mode: single

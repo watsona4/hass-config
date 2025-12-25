@@ -510,30 +510,22 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/5"
-    variables:
-      home_valid: >-
-        {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
-        {{ home_is_valid() | bool }}
-    condition: []
+    conditions:
+      - condition: template
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
+          {{ home_is_valid() | bool }}
     action:
       - delay:
           seconds: "{{ range(0, 60) | random | int }}"
-      - choose:
-          - conditions: "{{ home_valid }}"
-            sequence:
-              - service: rest_command.openmeteo_home_fetch
-                response_variable: resp
-              - variables:
-                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 }}"
-                  parsed_obj: >-
-                    {{ resp.content if resp is mapping and resp.content is mapping
-                       else (resp.content | default('') | string | from_json(default={})) }}
-              - event: openmeteo_home_update
-                event_data:
-                  available: "{{ ok }}"
-                  parsed: "{{ parsed_obj | tojson }}"
-        default:
-          - event: openmeteo_home_update
-            event_data:
-              available: false
-              parsed: {}
+      - service: rest_command.openmeteo_home_fetch
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+                else (resp.content | default('') | string | from_json(default={})) }}
+      - event: openmeteo_home_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"

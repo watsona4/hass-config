@@ -749,35 +749,28 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/10"
-    variables:
-      nearby_valid: >-
-        {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
-        {{ nearby_is_valid() | bool }}
+    conditions:
+      - condition: template
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
+          {{ nearby_is_valid() | bool }}
     action:
       # early window jitter
       - delay:
           seconds: "{{ range(0, 20) | random | int }}"
-      - choose:
-          - conditions: "{{ nearby_valid }}"
-            sequence:
-              - service: rest_command.google_pollen_nearby_fetch
-                data:
-                  api_key: !secret google_pollen_api_key
-                response_variable: resp
-              - variables:
-                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
-                  parsed_obj: >-
-                    {{ resp.content if resp is mapping and resp.content is mapping
-                       else (resp.content | default('') | string | from_json(default={})) }}
-              - event: google_pollen_nearby_update
-                event_data:
-                  available: "{{ ok }}"
-                  parsed: "{{ parsed_obj | tojson }}"
-        default:
-          - event: google_pollen_nearby_update
-            event_data:
-              available: false
-              parsed: "{}"
+      - service: rest_command.google_pollen_nearby_fetch
+        data:
+          api_key: !secret google_pollen_api_key
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+                else (resp.content | default('') | string | from_json(default={})) }}
+      - event: google_pollen_nearby_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
   # Home
   - id: google_pollen_home_refresh_via_rest_command
@@ -786,35 +779,28 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/10"
-    variables:
-      home_valid: >-
-        {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
-        {{ home_is_valid() | bool }}
+    conditions:
+      - condition: template
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
+          {{ home_is_valid() | bool }}
     action:
       # mid window jitter, stagger vs Nearby
       - delay:
           seconds: "{{ 20 + (range(0, 20) | random | int) }}"
-      - choose:
-          - conditions: "{{ home_valid }}"
-            sequence:
-              - service: rest_command.google_pollen_home_fetch
-                data:
-                  api_key: !secret google_pollen_api_key
-                response_variable: resp
-              - variables:
-                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
-                  parsed_obj: >-
-                    {{ resp.content if resp is mapping and resp.content is mapping
-                       else (resp.content | default('') | string | from_json(default={})) }}
-              - event: google_pollen_home_update
-                event_data:
-                  available: "{{ ok }}"
-                  parsed: "{{ parsed_obj | tojson }}"
-        default:
-          - event: google_pollen_home_update
-            event_data:
-              available: false
-              parsed: "{}"
+      - service: rest_command.google_pollen_home_fetch
+        data:
+          api_key: !secret google_pollen_api_key
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+                else (resp.content | default('') | string | from_json(default={})) }}
+      - event: google_pollen_home_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
 
   # RV
   - id: google_pollen_rv_refresh_via_rest_command
@@ -825,33 +811,22 @@ automation:
         minutes: "/10"
     conditions:
       - condition: template
-        value_template: "{{ has_value('device_tracker.rv_gps') }}"
-    variables:
-      rv_valid: >-
-        {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
-        {{ rv_is_valid() | bool }}
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
+          {{- rv_is_valid() | bool -}}
     action:
-      # late window jitter, stagger vs Nearby/Home
       - delay:
           seconds: "{{ 40 + (range(0, 20) | random | int) }}"
-      - choose:
-          - conditions: "{{ rv_valid }}"
-            sequence:
-              - service: rest_command.google_pollen_rv_fetch
-                data:
-                  api_key: !secret google_pollen_api_key
-                response_variable: resp
-              - variables:
-                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
-                  parsed_obj: >-
-                    {{ resp.content if resp is mapping and resp.content is mapping
-                       else (resp.content | default('') | string | from_json(default={})) }}
-              - event: google_pollen_rv_update
-                event_data:
-                  available: "{{ ok }}"
-                  parsed: "{{ parsed_obj | tojson }}"
-        default:
-          - event: google_pollen_rv_update
-            event_data:
-              available: false
-              parsed: "{}"
+      - service: rest_command.google_pollen_rv_fetch
+        data:
+          api_key: !secret google_pollen_api_key
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+                else (resp.content | default('') | string | from_json(default={})) }}
+      - event: google_pollen_rv_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"

@@ -798,6 +798,11 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/15"
+    conditions:
+      - condition: template
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
+          {{- nearby_is_valid() | bool -}}
     action:
       - delay:
           seconds: "{{ range(0, 10) | random | int }}"
@@ -822,6 +827,11 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/15"
+    conditions:
+      - condition: template
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
+          {{- home_is_valid() | bool -}}
     action:
       - delay:
           seconds: "{{ 10 + (range(0, 10) | random | int) }}"
@@ -848,7 +858,9 @@ automation:
         minutes: "/15"
     conditions:
       - condition: template
-        value_template: "{{ has_value('device_tracker.rv_gps') }}"
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
+          {{- rv_is_valid() | bool -}}
     action:
       - delay:
           seconds: "{{ 20 + (range(0, 10) | random | int) }}"

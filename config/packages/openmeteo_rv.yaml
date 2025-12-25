@@ -505,31 +505,21 @@ automation:
         minutes: "/5"
     conditions:
       - condition: template
-        value_template: "{{ has_value('device_tracker.rv_gps') }}"
-    variables:
-      rv_valid: >-
-        {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
-        {{ rv_is_valid() | bool }}
+        value_template: >-
+          {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
+          {{- rv_is_valid() | bool -}}
     action:
       # add a small random delay so instances do not align
       - delay:
           seconds: "{{ range(0, 60) | random | int }}"
-      - choose:
-          - conditions: "{{ rv_valid }}"
-            sequence:
-              - service: rest_command.openmeteo_rv_fetch
-                response_variable: resp
-              - variables:
-                  ok: "{{ resp is mapping and (resp.status | int(0)) == 200 }}"
-                  parsed_obj: >-
-                    {{ resp.content if resp is mapping and resp.content is mapping
-                       else (resp.content | default('') | string | from_json(default={})) }}
-              - event: openmeteo_rv_update
-                event_data:
-                  available: "{{ ok }}"
-                  parsed: "{{ parsed_obj | tojson }}"
-        default:
-          - event: openmeteo_rv_update
-            event_data:
-              available: false
-              parsed: {}
+      - service: rest_command.openmeteo_rv_fetch
+        response_variable: resp
+      - variables:
+          ok: "{{ resp is mapping and (resp.status | int(0)) == 200 }}"
+          parsed_obj: >-
+            {{ resp.content if resp is mapping and resp.content is mapping
+                else (resp.content | default('') | string | from_json(default={})) }}
+      - event: openmeteo_rv_update
+        event_data:
+          available: "{{ ok }}"
+          parsed: "{{ parsed_obj | tojson }}"
