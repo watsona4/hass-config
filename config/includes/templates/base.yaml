@@ -929,6 +929,7 @@
 
 - fan:
     - name: Attic Duct Fan
+      unique_id: 01b63b7d-c0ab-47f4-80b8-51ff4b81542d
       availability: "{{ has_value('switch.attic_duct_fan_switch_0') }}"
       state: "{{ is_state('switch.attic_duct_fan_switch_0', 'on') }}"
       turn_on:
@@ -940,6 +941,7 @@
         target:
           entity_id: switch.attic_duct_fan_switch_0
     - name: Gym Floor Fan
+      unique_id: fd2a4345-e299-46ea-b403-87345159994a
       availability: "{{ has_value('switch.floor_fan_outlet') }}"
       state: "{{ is_state('switch.floor_fan_outlet', 'on') }}"
       turn_on:
@@ -951,6 +953,7 @@
         target:
           entity_id: switch.floor_fan_outlet
     - name: Gym Pedestal Fan
+      unique_id: 751e188b-8ea4-40cb-9b63-20eaf3340fe0
       availability: "{{ has_value('switch.pedestal_fan') }}"
       state: "{{ is_state('switch.pedestal_fan', 'on') }}"
       turn_on:
