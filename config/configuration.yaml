@@ -42,10 +42,14 @@ logger:
 
 recorder:
   db_url: "mysql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant?charset=utf8mb4"
-  purge_keep_days: 365
+  purge_keep_days: 30
   auto_purge: true
-  commit_interval: 3
+  auto_repack: true
+  commit_interval: 10
   exclude:
+    domains:
+      - updater
+      - sun
     event_types:
       - strava_activities_update
       - strava_activity_detail_update
@@ -57,7 +61,16 @@ recorder:
       - device_tracker.rv_gps
       - sensor.strava_activities_raw
       - sensor.zwift_activity_data
+      - automation.rv_gps_statestream_merged_json
+      - script.single_window
+      - script.window_position
+      - sensor.rv_bridge_location_raw
     entity_globs:
+      - sensor.*_rssi
+      - sensor.*_linkquality
+      - sensor.*_uptime
+      - sensor.*_last_seen
+      - sensor.*_signal_strength
       - sensor.*_weight_projection
       - sensor.*_bodyfat_projection
       - sensor.*_weight_events
@@ -66,6 +79,8 @@ recorder:
       - sensor.openmeteo_*
       - sensor.pollen_species_list_*_today
       - sensor.pollen_forecast_*_day_*
+      - sensor.*_lhm_*
+      - binary_sensor.webcam_running
 
 pyscript:
   allow_all_imports: true

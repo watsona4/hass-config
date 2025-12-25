@@ -2,6 +2,11 @@ services:
   mariadb:
     image: mariadb:10.11
     restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+        - seccomp=unconfined
+        - apparmor=unconfined
     environment:
       MYSQL_DATABASE: homeassistant
       MYSQL_USER: ha
@@ -17,7 +22,10 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --skip-name-resolve
       --innodb_flush_log_at_trx_commit=2
-      --innodb_buffer_pool_size=1G
+      --innodb_buffer_pool_size=6G
+      --innodb_flush_method=O_DIRECT
+      --max_connections=100
+      --binlog-expire-logs-seconds=0
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "ha", "-pufEOx3ZH8NBwD2HEfnJquHbk"]
       interval: 10s
@@ -38,9 +46,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
     stop_grace_period: 60s
-    cpus: 3.0
-    mem_limit: 2g
-    cpu_shares: 2048
     depends_on:
       mariadb:
         condition: service_healthy
