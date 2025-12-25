@@ -291,7 +291,8 @@ automation:
       - condition: template
         value_template: "{{ has_value('input_text.strava_auth_code') }}"
     action:
-      - delay: "00:00:05"
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
       - service: rest_command.strava_token_fetch
         data:
           strava_auth_code: "{{ states('input_text.strava_auth_code') }}"
@@ -336,6 +337,8 @@ automation:
       exp_epoch: "{{ states('input_number.strava_token_expires_epoch')|int(0) }}"
     condition: "{{ exp_epoch > 0 and now_epoch >= exp_epoch }}"
     action:
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
       - service: rest_command.strava_token_refresh
         response_variable: resp
       - variables:
@@ -382,6 +385,8 @@ automation:
       - condition: template
         value_template: "{{ now_epoch >= next_allowed }}"
     action:
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
       - service: rest_command.strava_activities_fetch
         response_variable: resp
       - variables:
@@ -451,6 +456,8 @@ automation:
       - condition: template
         value_template: "{{ states('input_text.strava_access_token')|length > 0 }}"
     action:
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
       - variables:
           available: "{{ trigger.event.data.available | default(false) }}"
           root: "{{ trigger.event.data.parsed | default([]) }}"
@@ -509,6 +516,8 @@ automation:
           {{ latest_id != 0
              and (states('sensor.strava_rate_limit_15m')|int(0)) > 0 }}
     action:
+      - delay:
+          seconds: "{{ range(5, 15) | random | int }}"
       - service: input_text.set_value
         target:
           entity_id: input_text.strava_latest_ride_id

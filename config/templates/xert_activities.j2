@@ -3,7 +3,7 @@ rest_command:
   xert_activity_detail_fetch_{{ i }}:
     url: "{% raw %}{{ 'https://www.xertonline.com/oauth/activity/' ~ states('sensor.xert_activity_{% endraw %}{{ i }}{% raw %}_path') }}{%- endraw %}"
     method: GET
-    timeout: 20
+    timeout: 60
     headers:
       Authorization: "{% raw %}Bearer {{ states('input_text.xert_access_token') }}{% endraw %}"
       Accept: application/json

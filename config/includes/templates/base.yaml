@@ -327,8 +327,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.everything_presence_one_6dbad0_illuminance
-    - platform: time_pattern
-      minutes: "/5"          # periodic refresh for staleness check
   variables:
     src: sensor.everything_presence_one_6dbad0_illuminance
     keep_sec: 1800           # consider cached value valid for 30 minutes
@@ -354,8 +352,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_temperature
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.acurite_tower_a_11075_temperature
     keep_sec: 1800
@@ -381,8 +377,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.acurite_tower_a_11075_humidity
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.acurite_tower_a_11075_humidity
     keep_sec: 1800
@@ -408,8 +402,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_temperature
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.outside_water_temperature
     keep_sec: 1800
@@ -435,8 +427,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_humidity
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.outside_water_humidity
     keep_sec: 1800
@@ -462,8 +452,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.outside_water_pressure
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.outside_water_pressure
     keep_sec: 1800
@@ -489,8 +477,6 @@
 - trigger:
     - platform: state
       entity_id: sensor.chicken_coop_thermometer_temperature
-    - platform: time_pattern
-      minutes: "/5"
   variables:
     src: sensor.chicken_coop_thermometer_temperature
     keep_sec: 1800

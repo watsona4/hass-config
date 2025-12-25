@@ -319,9 +319,6 @@
     trigger: state
     from: 'off'
     to: 'on'
-  - trigger: time_pattern
-    minutes: /1
-    id: Refresh
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -332,7 +329,6 @@
       - condition: trigger
         id:
         - Front Hallway
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -356,7 +352,6 @@
       - condition: trigger
         id:
         - Study South
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -392,7 +387,6 @@
       - condition: trigger
         id:
         - Study West
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -426,7 +420,6 @@
       - condition: trigger
         id:
         - Guest South
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -455,7 +448,6 @@
       - condition: trigger
         id:
         - West
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2684,9 +2676,6 @@
     trigger: state
     from: 'on'
     to: 'off'
-  - trigger: time_pattern
-    id: Refresh
-    minutes: /1
   conditions:
   - condition: state
     entity_id: input_boolean.all_windows
@@ -2697,7 +2686,6 @@
       - condition: trigger
         id:
         - Breakfast Room
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2724,7 +2712,6 @@
       - condition: trigger
         id:
         - Kitchen
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2750,7 +2737,6 @@
       - condition: trigger
         id:
         - Living Room
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2782,7 +2768,6 @@
       - condition: trigger
         id:
         - Study South
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2820,7 +2805,6 @@
       - condition: trigger
         id:
         - Study West
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2856,7 +2840,6 @@
       - condition: trigger
         id:
         - Laundry Room
-        - Refresh
       sequence:
       - if:
         - condition: state
@@ -2951,8 +2934,6 @@
     - schedule.kids_daytime
     id: Kids Daytime
     trigger: state
-  - trigger: time_pattern
-    minutes: /1
   conditions: []
   actions:
   - wait_template: '{{ is_state(''timer.all_windows_timer'', ''idle'') }}'
