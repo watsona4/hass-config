@@ -1,0 +1,270 @@
+title: Covers, Locks, Media, Cameras
+type: masonry
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Covers
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.breakfast_room_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.kitchen_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.kitchen_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.laundry_room_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.living_room_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.living_room_right_window
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.back_hallway_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.front_hallway_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.guest_bedroom_south_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bathroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bathroom_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bedroom_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.master_bedroom_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.michael_room_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.study_left_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.study_right_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-cover-card
+      entity: cover.study_west_window
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-cover-card
+      entity: cover.ratgdov25i_f6128e_door
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Locks
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-lock-card
+      entity: lock.side_door
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Media Players
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-media-player-card
+      entity: media_player.kitchen_hub
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.un50j5500
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.samsung_7_series_55_2
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.parlor
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-media-player-card
+      entity: media_player.study
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-media-player-card
+      entity: media_player.85_crystal_uhd_2
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.gym
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.samsung_7_series_55
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.play_room_hub
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-media-player-card
+      entity: media_player.85_crystal_uhd
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Cameras
+    heading_style: title
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: camera.backyard_camera
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: camera.doorbell_camera
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: camera.driveway_camera
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: camera.rv_camera
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: camera.side_yard_camera
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: camera.garage_camera
+      tap_action:
+        action: more-info

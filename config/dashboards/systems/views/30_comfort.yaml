@@ -1,0 +1,360 @@
+title: Comfort Sensors
+type: masonry
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Temperature
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.downstairs_thermostat_current_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kitchen_door_device_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.laundry_room_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.everything_presence_one_6dbad0_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.living_room_door_device_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.pantry_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.parlor_humidifier_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.parlor_thermometer_temperature
+      - app: ambient
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.upstairs_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_presence_living_room_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_presence_living_room_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_thermometer_temperature
+      - app: ambient
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.chicken_coop_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.acurite_tower_a_11075_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_temperature_c80330c7b898
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.soil_surface_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.soil_temperature_at_10cm
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.ambientweather_wh31e_1_167_temperature
+      - app: ambient
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.shop_thermometer_temperature
+      - app: ambient
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_temperature_d1f2020f4a37
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_temperature_f1d21c499c25
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.playroom_door_device_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.everything_presence_one_6dbdf0_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_temperature_d820c5b61d47
+      - app: ambient
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.dehumidifier_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.freezer_temperature_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.outside_water_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.water_heater_temperature
+      - app: ambient
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Humidity
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.downstairs_thermostat_current_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.laundry_room_thermometer_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.living_room_presence_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.pantry_thermometer_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.humidifier_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.parlor_thermometer_humidity
+      - app: indoor
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.upstairs_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_presence_living_room_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_presence_living_room_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_thermometer_humidity
+      - app: indoor
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.chicken_coop_thermometer_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.acurite_tower_a_11075_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_humidity_c80330c7b898
+      - app: indoor
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.shop_thermometer_humidity
+      - app: indoor
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_humidity_d1f2020f4a37
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_humidity_f1d21c499c25
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.everything_presence_one_6dbdf0_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.both_humidity_d820c5b61d47
+      - app: indoor
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.dehumidifier_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.freezer_temperature_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.mold_indicator
+      - app: indoor

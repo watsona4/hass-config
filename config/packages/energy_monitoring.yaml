@@ -70,6 +70,21 @@ homeassistant:
       meter: daily
     sensor.shop_furnace_gas_energy_today:
       meter: daily
+    sensor.furnace_gas_meter_today:
+      meter: daily
+      device_class: gas
+    sensor.dryer_gas_meter_today:
+      meter: daily
+      device_class: gas
+    sensor.water_heater_gas_meter_today:
+      meter: daily
+      device_class: gas
+    sensor.gas_stove_gas_meter_today:
+      meter: daily
+      device_class: gas
+    sensor.shop_furnace_gas_meter_today:
+      meter: daily
+      device_class: gas
     sensor.furnace_gas_meter:
       device_class: gas
     sensor.dryer_gas_meter:
@@ -84,7 +99,7 @@ homeassistant:
       meter: daily_total
     sensor.water_daily:
       meter: daily_total
-    sensor.energy_daily:
+    sensor.electric_daily:
       meter: daily_total
 
 # -----------------------------------------------------------------------------

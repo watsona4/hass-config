@@ -1,0 +1,229 @@
+title: Lighting, Fans, Outlets
+type: masonry
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Lighting
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.fish_tank_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.parlor_lamp
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.parlor_table_lamp
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.guest_bedroom_lamp
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.study_lamp
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.back_porch_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.chicken_coop_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.front_porch_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.garage_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.kitchen_porch_light
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.ratgdov25i_f6128e_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.shop_lights
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-light-card
+      entity: light.playroom_lights
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Airflow
+    heading_style: title
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-fan-card
+      entity: fan.gym_floor_fan
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-fan-card
+      entity: fan.gym_pedestal_fan
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Attic
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-fan-card
+      entity: fan.attic_duct_fan
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-fan-card
+      entity: fan.dehumidifier_fan
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Outlets
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.family_christmas_tree_socket_1
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.formal_christmas_tree_socket_1
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.chicken_coop_outlet
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.chicken_coop_outlet_2
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.playroom_christmas_tree_socket_1
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.dehumidifier_outlet
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.freezer_outlet
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.water_heater_outlet
+      tap_action:
+        action: more-info

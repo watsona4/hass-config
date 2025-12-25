@@ -1,2 +1,3 @@
 title: Systems
-views: !include_dir_list ./views
+decluttering_templates: !include ../decluttering.yaml
+views: !include_dir_list views

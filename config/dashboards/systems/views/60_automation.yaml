@@ -1,0 +1,489 @@
+title: Automations & Scripts
+type: masonry
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Automations
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.christmas_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.dishwasher
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.fish_tank_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.fish_water
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.gas_stove
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.kitchen_hub_playing
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.humidifiers
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.kitchen_door
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.living_room_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.living_room_tv
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.side_door_lock
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.mouse_trap
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.wind_clock
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.living_room_windows_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.breakfast_room_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.fire
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.battery_backup_restart
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.daytime_override
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.electric_blanket
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.sync_home_location_to_gpsd_2
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.guests_arrived
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.master_bedroom_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.nightly_reboot
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.study_light_off
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.teams_meeting
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.updater
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.upstairs_duct_fan
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.weight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.guest_bedroom_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.master_bathroom_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.eleanor_room_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.michael_room_window_button
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.kids_bathroom_window_button
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.aaron_location_tracker
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.all_windows
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.blind_tilt_battery_level
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.chicken_roosting_box
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.chicken_water
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.close_windows_brightness
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.close_windows_temperature
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.new_automation
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.chicken_coop_decrease_temp
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.exterior_lights_off
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.google_pollen_home_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.google_pollen_nearby_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.google_pollen_rv_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.chicken_coop_heater_sync
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.home_alone
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.interior_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.late_night_out
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.nest_protect_battery_level
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.notify_of_events
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.open_windows_timers
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.openmeteo_home_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.openmeteo_nearby_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.openmeteo_rv_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.outdoor_thermometer_battery_ok
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.outlet_alarms
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.power_outage
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.prevent_circuit_breaker
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.rv_gps_publish_throttled_tracker
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.rv_notify_when_mqtt_offline
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.rv_remote_reboot_on_stale_heartbeat_via_mqtt
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.someone_is_home
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.temperature_target
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.thermostats
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.waqi_home_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.waqi_nearby_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.waqi_rv_refresh_via_rest_command
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.chicken_water_thermometer_battery_ok
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.thermometer_battery_level
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.close_garage_door
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.plants_inside
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.platform_battery
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.shop_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.workshop_virtual_hvac_publish_state
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.playroom_door
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.gym_event_loop
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.playroom_lights
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Attic
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.rain_sensor_unavailable
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: automation.water_heater_boost
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.water_meter_reset
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Scripts
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: script.christmas_lights_off
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.christmas_lights_on
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.turn_off_interior_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.turn_on_interior_lights
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: script.announce
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.announce_door
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: script.close_all_windows
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.open_all_windows
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.kids_windows_closed
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.open_kids_windows
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.notify_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.single_window
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.turn_off_exterior_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.turn_on_exterior_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: script.window_position
+      tap_action:
+        action: more-info

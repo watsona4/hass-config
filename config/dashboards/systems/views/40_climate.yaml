@@ -1,0 +1,120 @@
+title: Climate
+type: masonry
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Thermostats
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-climate-card
+      entity: climate.downstairs_thermostat
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-climate-card
+      entity: climate.study_space_heater
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-climate-card
+      entity: climate.upstairs_thermostat
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-climate-card
+      entity: climate.chicken_heat_lamp
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-climate-card
+      entity: climate.workshop_hvac_virtual
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-climate-card
+      entity: climate.gym_minisplit_setall_gym_minisplit
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-climate-card
+      entity: climate.playroom_minisplit_setall_playroom_minisplit
+      tap_action:
+        action: more-info
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Humidifiers
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-humidifier-card
+      entity: humidifier.living_room_dehumidifier
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-humidifier-card
+      entity: humidifier.humidifier
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-humidifier-card
+      entity: humidifier.dehumidifier
+      tap_action:
+        action: more-info

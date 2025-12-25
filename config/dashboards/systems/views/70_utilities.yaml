@@ -1,0 +1,417 @@
+title: Utility Meters
+type: masonry
+cards:
+- type: statistics-graph
+  chart_type: line
+  period: day
+  days_to_show: 14
+  stat_types:
+  - state
+  hide_legend: true
+  title: Electric Daily
+  entities:
+  - sensor.attic_energy_today
+  - sensor.back_hallway_energy_today
+  - sensor.basement_energy_today
+  - sensor.breakfast_room_energy_today
+  - sensor.chicken_coop_energy_today
+  - sensor.dining_room_energy_today
+  - sensor.dryer_gas_energy_today
+  - sensor.eleanor_s_room_energy_today
+  - sensor.electric_daily
+  - sensor.exercise_room_energy_today
+  - sensor.front_hallway_energy_today
+  - sensor.furnace_gas_energy_today
+  - sensor.garage_energy_today
+  - sensor.gas_stove_gas_energy_today
+  - sensor.guest_bedroom_energy_today
+  - sensor.kids_bathroom_energy_today
+  - sensor.kitchen_energy_today
+  - sensor.laundry_room_energy_today
+  - sensor.living_room_energy_today
+  - sensor.master_bathroom_energy_today
+  - sensor.master_bedroom_energy_today
+  - sensor.michael_s_room_energy_today
+  - sensor.pantry_energy_today
+  - sensor.parlor_energy_today
+  - sensor.playroom_energy_today
+  - sensor.rv_energy_today
+  - sensor.shop_energy_today
+  - sensor.shop_furnace_gas_energy_today
+  - sensor.study_energy_today
+  - sensor.water_heater_gas_energy_today
+- type: statistics-graph
+  chart_type: line
+  period: month
+  days_to_show: 365
+  stat_types:
+  - state
+  hide_legend: true
+  title: Electric Monthly
+  entities:
+  - sensor.attic_energy_today
+  - sensor.back_hallway_energy_today
+  - sensor.basement_energy_today
+  - sensor.breakfast_room_energy_today
+  - sensor.chicken_coop_energy_today
+  - sensor.dining_room_energy_today
+  - sensor.dryer_gas_energy_today
+  - sensor.eleanor_s_room_energy_today
+  - sensor.electric_daily
+  - sensor.exercise_room_energy_today
+  - sensor.front_hallway_energy_today
+  - sensor.furnace_gas_energy_today
+  - sensor.garage_energy_today
+  - sensor.gas_stove_gas_energy_today
+  - sensor.guest_bedroom_energy_today
+  - sensor.kids_bathroom_energy_today
+  - sensor.kitchen_energy_today
+  - sensor.laundry_room_energy_today
+  - sensor.living_room_energy_today
+  - sensor.master_bathroom_energy_today
+  - sensor.master_bedroom_energy_today
+  - sensor.michael_s_room_energy_today
+  - sensor.pantry_energy_today
+  - sensor.parlor_energy_today
+  - sensor.playroom_energy_today
+  - sensor.rv_energy_today
+  - sensor.shop_energy_today
+  - sensor.shop_furnace_gas_energy_today
+  - sensor.study_energy_today
+  - sensor.water_heater_gas_energy_today
+- type: statistics-graph
+  chart_type: line
+  period: day
+  days_to_show: 30
+  stat_types:
+  - state
+  hide_legend: true
+  title: Gas Daily
+  entities:
+  - sensor.dryer_gas_meter_today
+  - sensor.furnace_gas_meter_today
+  - sensor.gas_daily
+  - sensor.gas_stove_gas_meter_today
+  - sensor.shop_furnace_gas_meter_today
+  - sensor.water_heater_gas_meter_today
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Electric Meters
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.breakfast_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.dining_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.dryer_gas_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.furnace_gas_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.gas_stove_gas_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kitchen_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.laundry_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.living_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.pantry_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.parlor_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.back_hallway_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.eleanor_s_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.front_hallway_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.guest_bedroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.kids_bathroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bathroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.master_bedroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.michael_s_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.study_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.chicken_coop_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.electric_daily
+      - app: energy_daily_house
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.rv_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.garage_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.shop_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.shop_furnace_gas_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.exercise_room_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.playroom_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Attic
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.attic_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.basement_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.water_heater_gas_energy_today
+      - app: energy_daily_area
+      - project_daily: 'true'
+- type: custom:stack-in-card
+  mode: vertical
+  keep:
+    background: true
+    box_shadow: true
+    border_radius: true
+  card_mod:
+    style: 'ha-card { border-radius: 12px; background: var(--card-background-color);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px;
+      }'
+  cards:
+  - type: heading
+    heading: Gas Meters
+    heading_style: title
+  - type: heading
+    heading: Downstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.dryer_gas_meter_today
+      - app: daily
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.furnace_gas_meter_today
+      - app: daily
+      - project_daily: 'true'
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.gas_stove_gas_meter_today
+      - app: daily
+      - project_daily: 'true'
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.gas_daily
+      - app: daily_appliance
+      - project_daily: 'true'
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.shop_furnace_gas_meter_today
+      - app: daily
+      - project_daily: 'true'
+  - type: heading
+    heading: Basement
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.water_heater_gas_meter_today
+      - app: daily
+      - project_daily: 'true'

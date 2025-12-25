@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import yaml
-from homeassistant.helpers import area_registry, device_registry, entity_registry
+from homeassistant.helpers import area_registry, device_registry, entity_registry, floor_registry
 
 # Set up logging
 logging.basicConfig(
@@ -83,59 +83,122 @@ VIEW_DEFS: Dict[str, Dict] = {
 }
 
 SYSTEM_DEFS: Dict[str, Dict] = {
-    "10_lighting": {
-        "title": "Lighting",
-        "domains": ["light"],
+    # Broader pages; each page contains multiple device-type sections.
+    "10_power": {
+        "title": "Lighting, Fans, Outlets",
+        "groups": [
+            {"title": "Lighting", "domains": ["light"]},
+            {"title": "Airflow", "domains": ["fan"]},
+            {"title": "Outlets", "domains": ["switch"], "outlets_only": True},
+        ],
     },
-    "11_switches": {
-        "title": "Switches & Outlets",
-        "domains": ["switch"],
+    "20_switch_status": {
+        "title": "Switches & Status",
+        "groups": [
+            {"title": "Switches", "domains": ["switch"], "exclude_outlets": True},
+            {"title": "Binary Sensors", "domains": ["binary_sensor"]},
+        ],
     },
-    "12_climate": {
+    "30_comfort": {
+        "title": "Comfort Sensors",
+        "groups": [
+            {"title": "Temperature", "domains": ["sensor"], "device_classes": ["temperature"], "app": "ambient"},
+            {"title": "Humidity", "domains": ["sensor"], "device_classes": ["humidity"], "app": "indoor"},
+        ],
+    },
+    "40_climate": {
         "title": "Climate",
-        "domains": ["climate", "humidifier"],
+        "groups": [
+            {"title": "Thermostats", "domains": ["climate"]},
+            {"title": "Humidifiers", "domains": ["humidifier"]},
+        ],
     },
-    "13_fans": {
-        "title": "Fans",
-        "domains": ["fan"],
+    "50_access_media": {
+        "title": "Covers, Locks, Media, Cameras",
+        "groups": [
+            {"title": "Covers", "domains": ["cover"]},
+            {"title": "Locks", "domains": ["lock"]},
+            {"title": "Media Players", "domains": ["media_player"]},
+            {"title": "Cameras", "domains": ["camera"]},
+        ],
     },
-    "14_covers": {
-        "title": "Shades & Covers",
-        "domains": ["cover"],
+    "60_automation": {
+        "title": "Automations & Scripts",
+        "groups": [
+            {"title": "Automations", "domains": ["automation"]},
+            {"title": "Scripts", "domains": ["script"]},
+        ],
     },
-    "15_locks": {
-        "title": "Locks",
-        "domains": ["lock"],
-    },
-    "16_media": {
-        "title": "Media Players",
-        "domains": ["media_player"],
-    },
-    "17_cameras": {
-        "title": "Cameras",
-        "domains": ["camera"],
-    },
-    # Sensors split by “type” so you do not end up with one massive Sensors page
-    "30_temp": {
-        "title": "Temperature Sensors",
-        "domains": ["sensor"],
-        "device_classes": ["temperature"],
-    },
-    "31_humidity": {
-        "title": "Humidity Sensors",
-        "domains": ["sensor"],
-        "device_classes": ["humidity"],
-    },
-    "32_power": {
-        "title": "Power & Energy Sensors",
-        "domains": ["sensor"],
-        "device_classes": ["power", "energy", "gas", "volume_flow_rate"],
-    },
-    "40_binary": {
-        "title": "Binary Sensors",
-        "domains": ["binary_sensor"],
+    "70_utilities": {
+        "title": "Utility Meters",
+        "charts": [
+            {
+                "title": "Electric Daily",
+                "domains": ["sensor"],
+                "device_classes": ["energy"],
+                "utility_meter_only": True,
+                "card": {
+                    "type": "statistics-graph",
+                    "chart_type": "line",
+                    "period": "day",
+                    "days_to_show": 14,
+                    "stat_types": ["state"],
+                    "hide_legend": True,
+                },
+            },
+            {
+                "title": "Electric Monthly",
+                "domains": ["sensor"],
+                "device_classes": ["energy"],
+                "utility_meter_only": True,
+                "card": {
+                    "type": "statistics-graph",
+                    "chart_type": "line",
+                    "period": "month",
+                    "days_to_show": 365,
+                    "stat_types": ["state"],
+                    "hide_legend": True,
+                },
+            },
+            {
+                "title": "Gas Daily",
+                "domains": ["sensor"],
+                "device_classes": ["gas"],
+                "utility_meter_only": True,
+                "card": {
+                    "type": "statistics-graph",
+                    "chart_type": "line",
+                    "period": "day",
+                    "days_to_show": 30,
+                    "stat_types": ["state"],
+                    "hide_legend": True,
+                },
+            },
+        ],
+        "groups": [
+            {
+                "title": "Electric Meters",
+                "domains": ["sensor"],
+                "device_classes": ["energy"],
+                "utility_meter_only": True,
+                "app": "ambient",
+            },
+            {
+                "title": "Gas Meters",
+                "domains": ["sensor"],
+                "device_classes": ["gas"],
+                "utility_meter_only": True,
+                "app": "ambient",
+            },
+        ],
     },
 }
+
+APP_TABLES: Dict[str, Dict[str, str]] = {
+    "gas": {"daily_total": "daily_appliance", "daily": "daily"},
+    # add more special cases here
+}
+APP_DEFAULT: Dict[str, str] = {"daily_total": "energy_daily_house", "daily": "energy_daily_area"}
 
 # --------------------------------------------------------------------
 
@@ -177,10 +240,42 @@ def _fname(eid: str) -> str:
     return (st and st.attributes.get("friendly_name")) or eid
 
 
+def _device_class(eid: str) -> str:
+    st = hass.states.get(eid)
+    return (st and st.attributes.get("device_class")) or ""
+
+
+def _is_utility_meter_sensor(eid: str) -> bool:
+    """Heuristic: utility_meter sensors commonly expose last_period and/or meter_period attributes."""
+    if _dom(eid) != "sensor":
+        return False
+    st = hass.states.get(eid)
+    if not st:
+        return False
+    attrs = st.attributes or {}
+    return ("last_period" in attrs) or ("meter_period" in attrs)
+
+
+def _is_outlet_switch(eid: str) -> bool:
+    # Prefer device_class when present, fall back to name heuristics.
+    if _dom(eid) != "switch":
+        return False
+    dc = _device_class(eid)
+    if dc == "outlet":
+        return True
+    n = _fname(eid).lower()
+    return ("outlet" in n) or ("plug" in n)
+
+
 def _sorted(eids: List[str]) -> List[str]:
     pairs = [(_fname(e).lower(), e) for e in eids]
     pairs.sort(key=lambda p: p[0])
     return [e for _, e in pairs]
+
+
+def _dedupe_preserve_order(items: List[str]) -> List[str]:
+    seen = set()
+    return [i for i in items if not (i in seen or seen.add(i))]
 
 
 def _grid(cards: List[dict], cols: int = 2) -> dict:
@@ -188,6 +283,10 @@ def _grid(cards: List[dict], cols: int = 2) -> dict:
 
 
 def _title(subtitle: str, title: str = "") -> dict:
+    if title and not subtitle:
+        return {"type": "heading", "heading": title, "heading_style": "title"}
+    if not title and subtitle:
+        return {"type": "heading", "heading": subtitle, "heading_style": "subtitle"}
     return {"type": "custom:mushroom-title-card", "title": title, "subtitle": subtitle}
 
 
@@ -221,6 +320,44 @@ def _area_friendly_name(area_id: str) -> str:
     # safe sync accessor by id via hass registries is not available here,
     # so we fall back to id for sorting; display name is handled in cards below.
     return area_id
+
+
+async def _floor_lookup() -> Dict[str, str]:
+    """Return {floor_id: floor_name}. Handles either id or floor_id attributes."""
+    fr = await floor_registry.async_get(hass)
+    lookup: Dict[str, str] = {}
+    for f in fr.async_list_floors():
+        fid = getattr(f, "floor_id", None) or getattr(f, "id", None)
+        if not fid:
+            continue
+        lookup[fid] = getattr(f, "name", fid) or fid
+    return lookup
+
+
+async def _areas_grouped_by_floor(area_ids: List[str]) -> List[Dict]:
+    """Group areas by floor while preserving the order provided by area_ids."""
+    ar = await area_registry.async_get(hass)
+    floor_names = await _floor_lookup()
+
+    ordering: List[str] = []
+    grouped: Dict[str, Dict] = {}
+
+    for aid in area_ids:
+        area = await _find_area_by_name(ar, aid)
+        floor_id = getattr(area, "floor_id", None) if area else None
+        key = floor_id or "__unassigned__"
+
+        if key not in grouped:
+            ordering.append(key)
+            grouped[key] = {
+                "floor_id": floor_id,
+                "floor_name": floor_names.get(floor_id) if floor_id else "Other Areas",
+                "areas": [],
+            }
+
+        grouped[key]["areas"].append(aid)
+
+    return [grouped[k] for k in ordering]
 
 
 # ----- area → cards ---------------------------------------------------
@@ -546,7 +683,7 @@ async def _cards_for_area(area_name: str) -> List[dict]:
         ] + [{"entity": e, "yaxis_id": "hum"} for e in hum]
 
         cards += [
-            _title("Climate Trends (24 hours)"),
+            _title("Climate Trends"),
             {
                 "type": "custom:apexcharts-card",
                 "graph_span": "24h",
@@ -618,7 +755,7 @@ async def _cards_for_area(area_name: str) -> List[dict]:
         ]
 
         cards += [
-            _title("Utility Trends (7 days)"),
+            _title("Utility Trends"),
             {
                 "type": "custom:apexcharts-card",
                 "graph_span": "7d",
@@ -650,38 +787,53 @@ async def _cards_for_area(area_name: str) -> List[dict]:
 
     return cards
 
-async def _area_display_name(area_id: str) -> str:
-    ar = await area_registry.async_get(hass)
-    a = await _find_area_by_name(ar, area_id)
-    return (a and a.name) or area_id
 
-
-def _card_for_entity_system(eid: str) -> dict:
+def _card_for_entity_system(eid: str, app_override: str = None) -> dict:
     dom = _dom(eid)
 
     if dom == "light":
-        return {"type": "custom:mushroom-light-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+        return {
+            "type": "custom:mushroom-light-card",
+            "entity": eid,
+            "tap_action": {"action": "more-info"},
+        }
 
     if dom == "switch":
         return {"type": "custom:mushroom-entity-card", "entity": eid, "tap_action": {"action": "more-info"}}
 
     if dom == "fan":
-        return {"type": "custom:mushroom-fan-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+        return {
+            "type": "custom:mushroom-fan-card",
+            "entity": eid,
+            "tap_action": {"action": "more-info"},
+        }
 
     if dom == "cover":
         return {"type": "custom:mushroom-cover-card", "entity": eid, "tap_action": {"action": "more-info"}}
 
     if dom == "lock":
-        return {"type": "custom:mushroom-lock-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+        return {
+            "type": "custom:mushroom-lock-card",
+            "entity": eid,
+            "tap_action": {"action": "more-info"},
+        }
 
     if dom == "media_player":
         return {"type": "custom:mushroom-media-player-card", "entity": eid, "tap_action": {"action": "more-info"}}
 
     if dom == "climate":
-        return {"type": "custom:mushroom-climate-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+        return {
+            "type": "custom:mushroom-climate-card",
+            "entity": eid,
+            "tap_action": {"action": "more-info"},
+        }
 
     if dom == "humidifier":
-        return {"type": "custom:mushroom-humidifier-card", "entity": eid, "layout": "vertical", "tap_action": {"action": "more-info"}}
+        return {
+            "type": "custom:mushroom-humidifier-card",
+            "entity": eid,
+            "tap_action": {"action": "more-info"},
+        }
 
     if dom == "camera":
         # Keep it lightweight; swap to picture-entity if you want live thumbnails
@@ -691,47 +843,115 @@ def _card_for_entity_system(eid: str) -> dict:
     if dom in ["sensor", "binary_sensor"]:
         st = hass.states.get(eid)
         dc = (st and st.attributes.get("device_class")) or "default"
-        vertical_opts = [{"layout": "vertical"}, {"multiline_secondary": False}, {"options": "vert_delim= • "}]
+        mt = (st and st.attributes.get("meter")) or None
+        vertical_opts = []
+
+        if mt:
+            app_override = APP_TABLES.get(dc, APP_DEFAULT)[mt]
+            vertical_opts.append({"project_daily": "true"})
 
         return {
             "type": "custom:decluttering-card",
             "template": "template_card",
-            "variables": [{"entity": eid}, {"app": dc}] + vertical_opts,
+            "variables": [{"entity": eid}, {"app": app_override or dc}] + vertical_opts,
         }
 
     # Fallback
     return {"type": "custom:mushroom-entity-card", "entity": eid, "tap_action": {"action": "more-info"}}
 
 
-async def _cards_for_area_system(area_id: str, sys_def: Dict) -> List[dict]:
-    eids = await _entities_in_area(area_id)
+def _statistics_graph_card(title: str, entities: List[str], card_opts: Dict) -> dict:
+    # card_opts should contain the keys supported by statistics-graph, e.g. chart_type/period/days_to_show/stat_types
+    c = dict(card_opts)
+    c["title"] = title
+    c["entities"] = entities
+    return c
 
-    domains = set(sys_def.get("domains", []))
-    device_classes = set(sys_def.get("device_classes", [])) if sys_def.get("device_classes") else None
 
-    filtered: List[str] = []
-    for e in eids:
-        if _dom(e) not in domains:
+def _filter_entities(all_eids: List[str], rule: Dict) -> List[str]:
+    domains = set(rule.get("domains", []))
+    dclasses = set(rule.get("device_classes", [])) if rule.get("device_classes") else None
+
+    out: List[str] = []
+    for e in all_eids:
+        if domains and _dom(e) not in domains:
             continue
-        if device_classes is not None:
-            st = hass.states.get(e)
-            dc = (st and st.attributes.get("device_class")) or None
-            if dc not in device_classes:
+        if dclasses is not None and _device_class(e) not in dclasses:
+            continue
+        if rule.get("outlets_only") and not _is_outlet_switch(e):
+            continue
+        if rule.get("exclude_outlets") and _is_outlet_switch(e):
+            continue
+        if rule.get("utility_meter_only") and not _is_utility_meter_sensor(e):
+            continue
+        out.append(e)
+    return _sorted(out)
+
+
+async def _cards_for_system_groups(sys_def: Dict) -> List[dict]:
+    """Systems dashboard: sections per device type, with floor subsections."""
+    areas = await _all_areas_in_order()
+    floor_groups = await _areas_grouped_by_floor(areas)
+
+    # Collect all entities across all areas for shared charts
+    all_eids: List[str] = []
+    for area_id in areas:
+        all_eids.extend(await _entities_in_area(area_id))
+
+    all_eids = _dedupe_preserve_order(all_eids)
+
+    view_cards: List[dict] = []
+
+    # Optional charts at top of the view (used for Utility Meters)
+    for ch in sys_def.get("charts", []):
+        ents = _filter_entities(all_eids, ch)
+        if not ents:
+            continue
+        view_cards += [
+            _statistics_graph_card(ch["title"], ents, ch["card"]),
+        ]
+
+    # Device-type groupings, organized with per-floor subsections
+    for g in sys_def.get("groups", []):
+        group_cards: List[dict] = []
+
+        for fg in floor_groups:
+            floor_eids: List[str] = []
+            for area_id in fg["areas"]:
+                floor_eids.extend(await _entities_in_area(area_id))
+            floor_eids = _dedupe_preserve_order(floor_eids)
+
+            filtered = _filter_entities(floor_eids, g)
+            if not filtered:
                 continue
-        filtered.append(e)
 
-    if not filtered:
-        return []
+            group_cards += [
+                _title(fg["floor_name"]),
+                _grid([_card_for_entity_system(e, app_override=g.get("app")) for e in _sorted(filtered)], cols=2),
+            ]
 
-    area_name = await _area_display_name(area_id)
+        if group_cards:
+            group_cards = [_title("", g["title"])] + group_cards
+            view_cards.append({
+                "type": "custom:stack-in-card",
+                "mode": "vertical",
+                "keep": {
+                    "background": True,
+                    "box_shadow": True,
+                    "border_radius": True,
+                },
+                "card_mod": {
+                    "style": (
+                        "ha-card { border-radius: 12px; background: var(--card-background-color);"
+                        " box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding:"
+                        " 8px; }"
+                    ),
+                },
+                "cards": group_cards,
+            })
 
-    cards: List[dict] = []
-    cards.append({"type": "custom:mushroom-title-card", "title": area_name})
+    return view_cards
 
-    # Grid feels best for most “device type” pages
-    cards.append(_grid([_card_for_entity_system(e) for e in _sorted(filtered)], cols=2))
-
-    return cards
 
 # ----- view builder ---------------------------------------------------
 
@@ -744,10 +964,9 @@ async def _write_view_file(view_key: str, view_title: str, areas: List[str]) -> 
         try:
             area_cards = await _cards_for_area(area)
         except Exception as e:
-            log.error(f"[area-views] building cards failed for '{area}': {e}")
+            logger.error(f"[area-views] building cards failed for '{area}': {e}")
             area_cards = [{"type": "markdown", "content": f"**Error building area '{area}':** `{e}`"}]
 
-        # if you use a mod wrapper:
         view_cards.append({
             "type": "custom:stack-in-card",
             "mode": "vertical",
@@ -776,35 +995,16 @@ async def _write_view_file(view_key: str, view_title: str, areas: List[str]) -> 
     path = f"{OUT_DIR}/{view_key}.yaml"
     await task.executor(Path(path).write_text, yaml_str, "utf-8")
 
-    log.info(f"[area-views] wrote {path} ({len(view_cards)} area blocks)")
+    area_count = len(areas)
+    logger.info(f"[area-views] wrote {path} ({area_count} area blocks)")
+
 
 async def _write_system_view_file(view_key: str, view_title: str, sys_def: Dict) -> None:
-    view_cards: List[dict] = []
-
-    areas = await _all_areas_in_order()
-
-    for area_id in areas:
-        try:
-            area_cards = await _cards_for_area_system(area_id, sys_def)
-        except Exception as e:
-            log.error(f"[system-views] building cards failed for '{area_id}': {e}")
-            area_cards = [{"type": "markdown", "content": f"**Error building area '{area_id}':** `{e}`"}]
-
-        if not area_cards:
-            continue  # skip empty areas to keep the page tight
-
-        view_cards.append({
-            "type": "custom:stack-in-card",
-            "mode": "vertical",
-            "keep": {"background": True, "box_shadow": True, "border_radius": True},
-            "card_mod": {
-                "style": (
-                    "ha-card { border-radius: 12px; background: var(--card-background-color);"
-                    " box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,.2)); padding: 8px; }"
-                ),
-            },
-            "cards": area_cards,
-        })
+    try:
+        view_cards = await _cards_for_system_groups(sys_def)
+    except Exception as e:
+        logger.error(f"[system-views] building cards failed for '{view_key}': {e}")
+        view_cards = [{"type": "markdown", "content": f"**Error building view '{view_key}':** `{e}`"}]
 
     await task.executor(os.makedirs, SYSTEMS_OUT_DIR, 0o777, True)
 
@@ -812,7 +1012,7 @@ async def _write_system_view_file(view_key: str, view_title: str, sys_def: Dict)
     path = f"{SYSTEMS_OUT_DIR}/{view_key}.yaml"
     await task.executor(Path(path).write_text, yaml_str, "utf-8")
 
-    log.info(f"[system-views] wrote {path} ({len(view_cards)} area blocks)")
+    logger.info(f"[system-views] wrote {path} ({len(view_cards)} cards)")
 
 
 async def _build_all_system_views() -> None:
@@ -820,7 +1020,7 @@ async def _build_all_system_views() -> None:
         try:
             await _write_system_view_file(key, sys_def["title"], sys_def)
         except Exception as e:
-            log.error(f"[system-views] failed writing {key}: {e}")
+            logger.error(f"[system-views] failed writing {key}: {e}")
 
 
 @service
@@ -829,25 +1029,23 @@ async def build_system_views(view: str = None):
     if view:
         sys_def = SYSTEM_DEFS.get(view)
         if not sys_def:
-            log.error(f"[system-views] unknown view '{view}'")
+            logger.error(f"[system-views] unknown view '{view}'")
             return
         await _write_system_view_file(view, sys_def["title"], sys_def)
     else:
         await _build_all_system_views()
 
+
 # ----- triggers & service --------------------------------------------
 
 
 @time_trigger("startup")
-@event_trigger("area_registry_updated")
-@event_trigger("device_registry_updated")
-@event_trigger("entity_registry_updated")
 async def build_all_on_change(**kwargs):
     for key, val in VIEW_DEFS.items():
         try:
             await _write_view_file(key, val["title"], val["areas"])
         except Exception as e:
-            log.error(f"[area-views] failed writing {key}: {e}")
+            logger.error(f"[area-views] failed writing {key}: {e}")
     await _build_all_system_views()
 
 
@@ -857,7 +1055,7 @@ async def build_area_views(view: str = None):
     if view:
         val = VIEW_DEFS.get(view)
         if not val:
-            log.error(f"[area-views] unknown view '{view}'")
+            logger.error(f"[area-views] unknown view '{view}'")
             return
         await _write_view_file(view, val["title"], val["areas"])
     else:
