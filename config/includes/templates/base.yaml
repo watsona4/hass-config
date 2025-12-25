@@ -975,3 +975,113 @@
         action: switch.turn_off
         target:
           entity_id: switch.pedestal_fan
+
+- light:
+    - name: Living Room End Table Lamp
+      unique_id: 37b83b97-a844-41cc-856e-66833f495143
+      availability: "{{ has_value('switch.living_room_end_table_lamp') }}"
+      state: "{{ states('switch.living_room_end_table_lamp') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.living_room_end_table_lamp
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.living_room_end_table_lamp
+    - name: Front Porch Light
+      unique_id: e7bca486-1358-45e3-9328-724a11463e90
+      availability: "{{ has_value('switch.front_porch_switch_0') }}"
+      state: "{{ states('switch.front_porch_switch_0') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.front_porch_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.front_porch_switch_0
+    - name: Kitchen Porch Light
+      unique_id: 898993d5-7f26-4d0f-bc3e-fe4e5b3a8ad1
+      availability: "{{ has_value('switch.kitchen_porch_switch_0') }}"
+      state: "{{ states('switch.kitchen_porch_switch_0') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.kitchen_porch_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.kitchen_porch_switch_0
+    - name: Back Porch Lights
+      unique_id: f7432bde-d9dd-427a-958b-921d5de76cd5
+      availability: "{{ has_value('switch.back_porch_switch_0') }}"
+      state: "{{ states('switch.back_porch_switch_0') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.back_porch_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.back_porch_switch_0
+    - name: Garage Lights
+      unique_id: 61843113-e4f8-425c-baff-f16d0084b28b
+      availability: "{{ has_value('switch.garage_lights_switch_0') }}"
+      state: "{{ states('switch.garage_lights_switch_0') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.garage_lights_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.garage_lights_switch_0
+    - name: Shop Lights
+      unique_id: 1dca5c6e-e873-46de-be47-17375b1cb5e9
+      availability: "{{ has_value('switch.shop_lights_switch_0') }}"
+      state: "{{ states('switch.shop_lights_switch_0') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.shop_lights_switch_0
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.shop_lights_switch_0
+    - name: Fish Tank Light
+      unique_id: 63542a76-b0ff-4528-98fa-7f18755826a6
+      availability: "{{ has_value('switch.fish_tank_light_outlet') }}"
+      state: "{{ states('switch.fish_tank_light_outlet') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.fish_tank_light_outlet
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.fish_tank_light_outlet
+    - name: Parlor Table Lamp
+      unique_id: 09e98d14-c5a2-4230-8d35-393e16bf692d
+      availability: "{{ has_value('switch.parlor_table_lamp') }}"
+      state: "{{ states('switch.parlor_table_lamp') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.parlor_table_lamp
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.parlor_table_lamp
+    - name: Guest Bedroom Lamp
+      unique_id: 4d58326b-e561-4834-ac6f-4aa97fea0490
+      availability: "{{ has_value('switch.guest_bedroom_lamp_socket_1') }}"
+      state: "{{ states('switch.guest_bedroom_lamp_socket_1') }}"
+      turn_on:
+        action: switch.turn_on
+        target:
+          entity_id: switch.guest_bedroom_lamp_socket_1
+      turn_off:
+        action: switch.turn_off
+        target:
+          entity_id: switch.guest_bedroom_lamp_socket_1
