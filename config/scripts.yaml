@@ -840,6 +840,12 @@ single_window:
   variables:
     reason: '{{ reason | default('''') }}'
   sequence:
+  - if:
+    - condition: template
+      value_template: '{{ (now() - states(''sensor.uptime'') | as_datetime).total_seconds()
+        < 300 }}'
+    then:
+    - stop: Too soon since restart
   - choose:
     - conditions:
       - condition: template
