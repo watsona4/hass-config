@@ -58,3 +58,6 @@ zwift/**
 
 pyscript/**
 !pyscript/.gitkeep
+
+obihai/**
+!obihai/.gitkeep
