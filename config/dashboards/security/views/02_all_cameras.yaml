@@ -10,10 +10,6 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.doorbell_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -21,10 +17,6 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.garage_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -32,10 +24,6 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.backyard_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -43,10 +31,6 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.driveway_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -54,10 +38,6 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.rv_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc
   - type: grid
     cards:
       - type: custom:mushroom-title-card
@@ -65,7 +45,3 @@ sections:
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.side_yard_camera
-            live_provider: go2rtc
-            go2rtc:
-              modes:
-                - webrtc

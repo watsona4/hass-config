@@ -110,6 +110,8 @@ lovelace:
       type: module
     - url: /local/community/lovelace-state-switch/state-switch.js
       type: module
+    - url: /local/community/advanced-camera-card/advanced-camera-card.js
+      type: module
   dashboards:
     lovelace-health:
       mode: yaml
