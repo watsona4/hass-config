@@ -361,7 +361,6 @@ sections:
                 tap_action:
                   action: more-info
           exclude:
-            - entity_id: /^.*\.browser_mod_/
             - entity_id: light.ratgdov25i_f6128e_light
 
       # Doors and Windows Open
@@ -431,7 +430,6 @@ sections:
             - entity_id: /^.*\..*_no2$/
             - entity_id: /^.*\..*_pm10$/
             - entity_id: /^.*\..*_so2$/
-            - entity_id: /^.*\.browser_mod_/
             - entity_id: /^sensor\.double_take_/
             - entity_id: binary_sensor.remote_ui
             - integration: dlna_dmr
