@@ -899,11 +899,6 @@ single_window:
       - data:
           window: '{{ window }}'
         action: script.notify_window
-  - if:
-    - condition: template
-      value_template: '{{ window == ''cover.eleanor_room_window'' }}'
-    then:
-    - stop: Eleanor's window disabled
   mode: parallel
   max: 100
 timer_add_time:
