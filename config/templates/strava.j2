@@ -36,6 +36,9 @@ input_text:
   strava_latest_ride_id:
     name: "Strava Latest Ride ID"
     max: 32
+  strava_detail_cache:
+    name: "Strava Enriched Activity Cache"
+    max: 2048
 
 rest_command:
   strava_token_fetch:
@@ -447,8 +450,7 @@ automation:
 
   - id: strava_activity_details_enrich
     alias: "Strava: enrich first N activities with /activities/{id}"
-    mode: parallel
-    max: 10
+    mode: queued
     trigger:
       - platform: event
         event_type: strava_activities_update
@@ -467,19 +469,35 @@ automation:
             | sort(attribute='start_date', reverse=true)
             | list }}
           n: {% endraw %}{{ count }}{% raw %}
+          cache_list: >-
+            {% set raw = states('input_text.strava_detail_cache')|default('[]') %}
+            {% set parsed = raw|from_json(default=[]) %}
+            {{ parsed if parsed is sequence else [] }}
           ids_top: >-
             {{ (acts | selectattr('id','defined') | map(attribute='id') | list)[:n] }}
+          ids_to_enrich: >-
+            {{ ids_top | reject('in', cache_list) | list }}
       - repeat:
-          for_each: "{{ ids_top }}"
+          for_each: "{{ ids_to_enrich }}"
           sequence:
+            - variables:
+                guard_epoch: "{{ states('input_number.strava_next_allowed_fetch_epoch')|int(0) }}"
+                now_epoch: "{{ now().timestamp()|int(0) }}"
+                guard_active: "{{ guard_epoch > now_epoch }}"
+                rate_remaining: "{{ states('sensor.strava_rate_limit_15m')|int(0) }}"
+            - choose:
+                - conditions: "{{ guard_active or rate_remaining <= 0 }}"
+                  sequence:
+                    - stop: "Strava detail enrich paused due to rate limit guard."
             - delay:
-                seconds: "{{ ((repeat.index - 1) * 2) + (range(0, 2)|random|int) }}"
+                seconds: "{{ ((repeat.index - 1) * 5) + (range(2, 5)|random|int) }}"
             - service: rest_command.strava_activity_detail_fetch
               data:
                 activity_id: "{{ repeat.item }}"
               response_variable: resp_d
             - variables:
                 ok_d: "{{ resp_d is mapping and (resp_d.status|int(0)) == 200 and (resp_d.content is mapping or resp_d.content is sequence or resp_d.content|string != '') }}"
+                status429: "{{ resp_d is mapping and (resp_d.status|int(0)) == 429 }}"
                 parsed_d: >-
                   {% set c = resp_d.content if resp_d is mapping else none %}
                   {% if c is mapping or c is sequence %}
@@ -493,6 +511,26 @@ automation:
                 parsed: "{{ parsed_d | tojson }}"
                 activity_id: "{{ repeat.item }}"
                 index: "{{ repeat.index }}"
+            - choose:
+                - conditions: "{{ status429 }}"
+                  sequence:
+                    - service: input_number.set_value
+                      target:
+                        entity_id: input_number.strava_next_allowed_fetch_epoch
+                      data:
+                        value: "{{ now().timestamp()|int(0) + 16*60 }}"
+                    - stop: "Strava detail enrich stopped due to HTTP 429."
+                - conditions: "{{ ok_d }}"
+                  sequence:
+                    - service: input_text.set_value
+                      target:
+                        entity_id: input_text.strava_detail_cache
+                      data:
+                        value: >-
+                          {% set raw = states('input_text.strava_detail_cache')|default('[]') %}
+                          {% set cached = raw|from_json(default=[]) %}
+                          {% set updated = (cached + [repeat.item]) | unique | list %}
+                          {{ (updated[-50:] if updated|length > 50 else updated) | tojson }}
 
   - id: strava_fetch_latest_ride_photos
     alias: "Strava: fetch photos for latest cycling activity"
