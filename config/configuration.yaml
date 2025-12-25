@@ -36,6 +36,9 @@ logger:
     homeassistant.components.bluetooth.manager: critical
     homeassistant.components.recorder: info
     sqlalchemy.engine.Engine: warning
+    homeassistant.core: info
+    homeassistant.helpers.event: info
+    homeassistant.components.rest_command: info
   filters:
     homeassistant.components.mqtt.entity:
       - "deprecated option `object_id`"
