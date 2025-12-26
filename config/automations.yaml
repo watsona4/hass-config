@@ -3371,16 +3371,16 @@
 - id: '1713825401607'
   alias: Battery Backup Restart
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
+  triggers:
+  - entity_id:
     - sensor.cyberpower850_battery_charge
     below: 20
-  - platform: homeassistant
-    event: start
+    trigger: numeric_state
+  - event: start
     id: Startup
-  condition: []
-  action:
+    trigger: homeassistant
+  conditions: []
+  actions:
   - choose:
     - conditions:
       - condition: state
@@ -3390,12 +3390,12 @@
         entity_id: sensor.cyberpower850_battery_charge
         below: 20
       sequence:
-      - service: input_boolean.turn_on
-        target:
+      - target:
           entity_id:
           - input_boolean.reboot_needed
         data: {}
-      - service: hassio.host_shutdown
+        action: input_boolean.turn_on
+      - action: homeassistant.stop
         metadata: {}
         data: {}
     - conditions:
@@ -3406,19 +3406,19 @@
         entity_id: input_boolean.reboot_needed
         state: 'on'
       sequence:
-      - service: input_boolean.turn_off
-        target:
+      - target:
           entity_id:
           - input_boolean.reboot_needed
         data: {}
+        action: input_boolean.turn_off
       - delay:
           hours: 0
           minutes: 5
           seconds: 0
           milliseconds: 0
-      - service: hassio.host_reboot
-        metadata: {}
+      - metadata: {}
         data: {}
+        action: homeassistant.restart
   mode: single
 - id: '1714036816380'
   alias: Platform Battery
