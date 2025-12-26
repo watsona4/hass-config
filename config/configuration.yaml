@@ -2,6 +2,9 @@
 # Loads default set of integrations. Do not remove.
 default_config:
 
+go2rtc:
+  url: http://127.0.0.1:1984
+
 homeassistant:
   external_url: "https://hass.battenkillwoodworks.com"
   internal_url: "http://frigate.home.arpa:8123"
