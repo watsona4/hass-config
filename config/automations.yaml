@@ -3831,10 +3831,6 @@
     entity_id: input_boolean.all_windows
     state: 'on'
   actions:
-  - target:
-      entity_id: input_boolean.guest_bedroom_window_button_active
-    action: input_boolean.turn_on
-    data: {}
   - action: timer.start
     data:
       duration: '1:00:00'
@@ -3915,11 +3911,6 @@
             - cover.guest_bedroom_right_window
             action: Open
           action: script.window_position
-  - delay: 00:00:02
-  - target:
-      entity_id: input_boolean.guest_bedroom_window_button_active
-    action: input_boolean.turn_off
-    data: {}
   mode: single
 - id: '1717499080551'
   alias: Eleanor Room Window Button
