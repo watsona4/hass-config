@@ -35,7 +35,7 @@
 - id: '1692813231007'
   name: Exterior Lights Off
   entities:
-    light.back_porch:
+    light.back_porch_lights:
       supported_color_modes:
       - onoff
       color_mode:
@@ -43,7 +43,7 @@
       friendly_name: Back Porch Lights
       supported_features: 0
       state: 'off'
-    light.front_porch:
+    light.front_porch_light:
       supported_color_modes:
       - onoff
       color_mode:
@@ -51,7 +51,7 @@
       friendly_name: Front Porch Lights
       supported_features: 0
       state: 'off'
-    light.garage:
+    light.garage_lights:
       supported_color_modes:
       - onoff
       color_mode:
@@ -59,7 +59,7 @@
       friendly_name: Lights
       supported_features: 0
       state: 'off'
-    light.kitchen_porch:
+    light.kitchen_porch_light:
       supported_color_modes:
       - onoff
       color_mode:
@@ -67,7 +67,7 @@
       friendly_name: Kitchen Porch Lights
       supported_features: 0
       state: 'off'
-    light.study:
+    light.study_lamp:
       supported_color_modes:
       - brightness
       color_mode:
@@ -76,7 +76,7 @@
       friendly_name: Study Lamp
       supported_features: 0
       state: 'off'
-    light.floor_lamp:
+    light.parlor_lamp:
       supported_color_modes:
       - brightness
       color_mode:
@@ -91,7 +91,7 @@
 - id: '1692813295351'
   name: Exterior Lights On
   entities:
-    light.front_porch:
+    light.front_porch_light:
       supported_color_modes:
       - onoff
       color_mode: onoff
@@ -99,7 +99,7 @@
       friendly_name: Front Porch Lights
       supported_features: 0
       state: 'on'
-    light.back_porch:
+    light.back_porch_lights:
       supported_color_modes:
       - onoff
       color_mode: onoff
@@ -107,7 +107,7 @@
       friendly_name: Back Porch Lights
       supported_features: 0
       state: 'on'
-    light.garage:
+    light.garage_lights:
       supported_color_modes:
       - onoff
       color_mode: onoff
@@ -115,7 +115,7 @@
       friendly_name: Lights
       supported_features: 0
       state: 'on'
-    light.kitchen_porch:
+    light.kitchen_porch_light:
       supported_color_modes:
       - onoff
       color_mode: onoff
@@ -123,7 +123,7 @@
       friendly_name: Kitchen Porch Lights
       supported_features: 0
       state: 'on'
-    light.study:
+    light.study_lamp:
       supported_color_modes:
       - brightness
       color_mode: brightness
@@ -132,7 +132,7 @@
       friendly_name: Study Lamp
       supported_features: 0
       state: 'on'
-    light.floor_lamp:
+    light.parlor_lamp:
       supported_color_modes:
       - brightness
       color_mode: brightness
