@@ -2934,6 +2934,14 @@
     - schedule.kids_daytime
     id: Kids Daytime
     trigger: state
+  - trigger: numeric_state
+    entity_id:
+    - sensor.light_sensor_illuminance
+    above: 100
+  - trigger: numeric_state
+    entity_id:
+    - sensor.light_sensor_illuminance
+    below: 100
   conditions: []
   actions:
   - wait_template: '{{ is_state(''timer.all_windows_timer'', ''idle'') }}'
