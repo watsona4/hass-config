@@ -139,7 +139,7 @@ template:
   # Residual, recomputed every 5 minutes and when key inputs change.
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_datetime.zep_last_injection
@@ -167,7 +167,7 @@ template:
 
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_datetime.zep_last_injection
@@ -199,7 +199,7 @@ template:
 
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_datetime.zep_last_injection
@@ -300,7 +300,7 @@ template:
 
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_datetime.zep_last_injection
@@ -330,7 +330,7 @@ template:
 
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_datetime.zep_last_injection
@@ -462,7 +462,7 @@ template:
 
   - trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
       - platform: state
         entity_id:
           - input_select.zep_eval_mode
