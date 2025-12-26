@@ -751,21 +751,21 @@ template:
       - name: "Zwift Level"
         unique_id: 8621b878-0105-41f4-9f1a-f2bea550c60c
         icon: "mdi:stairs"
-        state: "{{ state_attr('sensor.zwift_profile_data','achievement_level')|int // 100 }}"
+        state: "{{ state_attr('sensor.zwift_profile_data','achievement_level')|int(0) // 100 }}"
       - name: "Zwift Run Level"
         unique_id: 6c6555cc-aed0-473b-993f-23cc014e4f88
         icon: "mdi:run-fast"
-        state: "{{ state_attr('sensor.zwift_profile_data','run_achievement_level')|int // 100 }}"
+        state: "{{ state_attr('sensor.zwift_profile_data','run_achievement_level')|int(0) // 100 }}"
       - name: "Zwift Cycle Progress"
         unique_id: a41389ae-f2de-4d43-a530-71ca4845b3cd
         unit_of_measurement: "%"
         icon: "mdi:transfer-right"
-        state: "{{ state_attr('sensor.zwift_profile_data','achievement_level')|int % 100 }}"
+        state: "{{ state_attr('sensor.zwift_profile_data','achievement_level')|int(0) % 100 }}"
       - name: "Zwift Run Progress"
         unique_id: 0a44c701-c86f-484e-b34d-6f64af840744
         unit_of_measurement: "%"
         icon: "mdi:transfer-right"
-        state: "{{ state_attr('sensor.zwift_profile_data','run_achievement_level')|int % 100 }}"
+        state: "{{ state_attr('sensor.zwift_profile_data','run_achievement_level')|int(0) % 100 }}"
 
 # Weekly stats like before
 sensor:
