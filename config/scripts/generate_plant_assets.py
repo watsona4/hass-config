@@ -602,22 +602,22 @@ def build_router_package(rows: List[Dict[str, Any]], mif_temp: str, mif_lux: str
       - name: "{pid} Temperature Routed"
         unique_id: {slug}_temperature_routed
         state: "{{{{ states('{mif_temp}') }}}}"
-        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') }}}}"
+        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') and has_value('{mif_temp}') }}}}"
         unit_of_measurement: "°F"
       - name: "{pid} Illuminance Routed"
         unique_id: {slug}_illuminance_routed
         state: "{{{{ states('{mif_lux}') }}}}"
-        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') }}}}"
+        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') and has_value('{mif_lux}') }}}}"
         unit_of_measurement: "lx"
       - name: "{pid} Moisture Routed"
         unique_id: {slug}_moisture_routed
         state: "{{{{ states('{mif_moist}') }}}}"
-        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') }}}}"
+        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') and has_value('{mif_moist}') }}}}"
         unit_of_measurement: "%"
       - name: "{pid} Conductivity Routed"
         unique_id: {slug}_conductivity_routed
         state: "{{{{ states('{mif_ec}') }}}}"
-        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') }}}}"
+        availability: "{{{{ is_state('input_select.plant_sensor_location','{sel}') and has_value('{mif_ec}') }}}}"
         unit_of_measurement: "µS/cm"
 """
 
@@ -640,18 +640,22 @@ template:
       # Optional mirrors of raw MiFlora sensors (keep, edit, or remove)
       - name: "MiFlora Temperature F"
         unique_id: miflora_temperature_f
+        availability: "{{{{ has_value('{mif_temp}') }}}}"
         state: "{{{{ states('{mif_temp}') }}}}"
         unit_of_measurement: "°F"
       - name: "MiFlora Illuminance"
         unique_id: miflora_illuminance
+        availability: "{{{{ has_value('{mif_lux}') }}}}"
         state: "{{{{ states('{mif_lux}') }}}}"
         unit_of_measurement: "lx"
       - name: "MiFlora Moisture"
         unique_id: miflora_moisture
+        availability: "{{{{ has_value('{mif_moist}') }}}}"
         state: "{{{{ states('{mif_moist}') }}}}"
         unit_of_measurement: "%"
       - name: "MiFlora Conductivity"
         unique_id: miflora_conductivity
+        availability: "{{{{ has_value('{mif_ec}') }}}}"
         state: "{{{{ states('{mif_ec}') }}}}"
         unit_of_measurement: "µS/cm"
 
