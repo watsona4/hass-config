@@ -277,6 +277,10 @@ template:
         icon: mdi:heart
         unit_of_measurement: score
         state_class: measurement
+        availability: >-
+          {{- has_value('sensor.pixel_9_pro_xl_heart_rate_variability')
+          and has_value('sensor.pixel_9_pro_xl_resting_heart_rate')
+          and has_value('sensor.pixel_9_pro_xl_respiratory_rate') -}}
         state: >-
           {# Normalize HRV, RHR, RR into 0..100 bands and average #}
           {% set s = namespace(
