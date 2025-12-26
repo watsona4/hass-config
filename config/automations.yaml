@@ -5575,8 +5575,9 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.outdoor_thermometer_battery
-    to: 'on'
+    - binary_sensor.acurite_tower_a_11075_battery
+    to:
+    - 'on'
     for:
       hours: 0
       minutes: 10
