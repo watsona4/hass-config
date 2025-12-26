@@ -94,10 +94,10 @@ input_boolean:
 # Proximity sensors produced by the GUI integration, as you listed:
 #   sensor.home_nearest_distance (ft)
 #   sensor.home_nearest_direction_of_travel
-#   sensor.home_aaron_watson_distance (ft)
-#   sensor.home_aaron_watson_direction_of_travel
-#   sensor.home_ashley_watson_distance (ft)
-#   sensor.home_ashley_watson_direction_of_travel
+#   sensor.home_aaron_michael_distance (ft)
+#   sensor.home_aaron_michael_direction_of_travel
+#   sensor.home_ashley_lynne_distance (ft)
+#   sensor.home_ashley_lynne_direction_of_travel
 #
 # Camper GPS device:
 #   device_tracker.rv_gps  (from statestream)
@@ -126,11 +126,11 @@ template:
           {{ 'mdi:home-import-outline' if is_state('binary_sensor.returning_home_from_work','on') else 'mdi:home-outline' }}
         attributes:
           aaron_distance_home_mi: >-
-            {{ (states('sensor.home_aaron_watson_distance')|float(0) * 0.000189393939) }}
-          aaron_dir: "{{ states('sensor.home_aaron_watson_direction_of_travel') or 'unknown' }}"
+            {{ (states('sensor.home_aaron_michael_distance')|float(0) * 0.000189393939) }}
+          aaron_dir: "{{ states('sensor.home_aaron_michael_direction_of_travel') or 'unknown' }}"
           ashley_distance_home_mi: >-
-            {{ (states('sensor.home_ashley_watson_distance')|float(0) * 0.000189393939) }}
-          ashley_dir: "{{ states('sensor.home_ashley_watson_direction_of_travel') or 'unknown' }}"
+            {{ (states('sensor.home_ashley_lynne_distance')|float(0) * 0.000189393939) }}
+          ashley_dir: "{{ states('sensor.home_ashley_lynne_direction_of_travel') or 'unknown' }}"
           aaron_preheat_radius_mi: "{{ states('input_number.work_preheat_radius_aaron_mi')|float(10) }}"
           ashley_preheat_radius_mi: "{{ states('input_number.work_preheat_radius_ashley_mi')|float(0.6) }}"
 
@@ -180,10 +180,10 @@ automation:
         entity_id:
           - sensor.home_nearest_distance
           - sensor.home_nearest_direction_of_travel
-          - sensor.home_aaron_watson_distance
-          - sensor.home_aaron_watson_direction_of_travel
-          - sensor.home_ashley_watson_distance
-          - sensor.home_ashley_watson_direction_of_travel
+          - sensor.home_aaron_michael_distance
+          - sensor.home_aaron_michael_direction_of_travel
+          - sensor.home_ashley_lynne_distance
+          - sensor.home_ashley_lynne_direction_of_travel
           - device_tracker.rv_gps
           - binary_sensor.home_presence_override
           - input_number.home_arrive_radius_mi
@@ -206,10 +206,10 @@ automation:
           home_dep: "{{ states('input_number.home_depart_radius_mi')|float(1.2) }}"
           fam_d_mi: "{{ (states('sensor.home_nearest_distance')|float(999999) * _ft_to_mi)|float(9999) }}"
           fam_dir: "{{ states('sensor.home_nearest_direction_of_travel') or 'unknown' }}"
-          aar_d_mi: "{{ (states('sensor.home_aaron_watson_distance')|float(999999) * _ft_to_mi)|float(9999) }}"
-          aar_dir: "{{ states('sensor.home_aaron_watson_direction_of_travel') or 'unknown' }}"
-          ash_d_mi: "{{ (states('sensor.home_ashley_watson_distance')|float(999999) * _ft_to_mi)|float(9999) }}"
-          ash_dir: "{{ states('sensor.home_ashley_watson_direction_of_travel') or 'unknown' }}"
+          aar_d_mi: "{{ (states('sensor.home_aaron_michael_distance')|float(999999) * _ft_to_mi)|float(9999) }}"
+          aar_dir: "{{ states('sensor.home_aaron_michael_direction_of_travel') or 'unknown' }}"
+          ash_d_mi: "{{ (states('sensor.home_ashley_lynne_distance')|float(999999) * _ft_to_mi)|float(9999) }}"
+          ash_dir: "{{ states('sensor.home_ashley_lynne_direction_of_travel') or 'unknown' }}"
           aar_pre: "{{ states('input_number.work_preheat_radius_aaron_mi')|float(10) }}"
           ash_pre: "{{ states('input_number.work_preheat_radius_ashley_mi')|float(0.6) }}"
           home_override: "{{ is_state('binary_sensor.home_presence_override','on') }}"
