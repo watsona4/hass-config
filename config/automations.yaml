@@ -5628,19 +5628,6 @@
           priority: high
     action: notify.mobile_app_pixel_9_pro_xl
   mode: single
-- id: '1740620470289'
-  alias: Nightly Reboot
-  description: ''
-  triggers:
-  - trigger: time_pattern
-    hours: '0'
-    minutes: '30'
-  conditions: []
-  actions:
-  - action: hassio.host_reboot
-    metadata: {}
-    data: {}
-  mode: single
 - id: '1743974906486'
   alias: Teams Meeting
   description: 'Sets meeting state automatically based on webcam activity, with manual

@@ -118,10 +118,6 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.nightly_reboot
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
       entity: automation.study_light_off
       tap_action:
         action: more-info
