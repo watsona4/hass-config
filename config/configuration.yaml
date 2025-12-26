@@ -44,7 +44,7 @@ logger:
       - "deprecated option `object_id`"
 
 recorder:
-  db_url: "mysql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant?charset=utf8mb4"
+  db_url: "postgresql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant_db"
   purge_keep_days: 30
   auto_purge: true
   auto_repack: true
