@@ -95,19 +95,19 @@ template:
           {{- aqi_state_from_payload(root, this.entity_id) -}}
         attributes:
           idx: >-
-            {{ (root.get('data') or {}).get('idx') }}
+            {{ root.get('data',{}).get('idx') }}
           attributions: >-
-            {{ (root.get('attributions') or {}).get('idx') }}
+            {{ root.get('data',{}).get('attributions') }}
           city: >-
-            {{ (root.get('city') or {}).get('idx') }}
+            {{ root.get('data',{}).get('city') }}
           dominentpol: >-
-            {{ (root.get('dominentpol') or {}).get('idx') }}
+            {{ root.get('data',{}).get('dominentpol') }}
           iaqi: >-
-            {{ (root.get('iaqi') or {}).get('idx') }}
+            {{ root.get('data',{}).get('iaqi') }}
           time: >-
-            {{ (root.get('time') or {}).get('idx') }}
+            {{ root.get('data',{}).get('time') }}
           forecast: >-
-            {{ (root.get('forecast') or {}).get('idx') }}
+            {{ root.get('data',{}).get('forecast') }}
 
   # Home
   - trigger:
@@ -127,19 +127,19 @@ template:
           {{- aqi_state_from_payload(root, this.entity_id) -}}
         attributes:
           idx: >-
-            {{ (root.get('data') or {}).get('idx') }}
+            {{ root.get('data',{}).get('idx') }}
           attributions: >-
-            {{ (root.get('attributions') or {}).get('idx') }}
+            {{ root.get('data',{}).get('attributions') }}
           city: >-
-            {{ (root.get('city') or {}).get('idx') }}
+            {{ root.get('data',{}).get('city') }}
           dominentpol: >-
-            {{ (root.get('dominentpol') or {}).get('idx') }}
+            {{ root.get('data',{}).get('dominentpol') }}
           iaqi: >-
-            {{ (root.get('iaqi') or {}).get('idx') }}
+            {{ root.get('data',{}).get('iaqi') }}
           time: >-
-            {{ (root.get('time') or {}).get('idx') }}
+            {{ root.get('data',{}).get('time') }}
           forecast: >-
-            {{ (root.get('forecast') or {}).get('idx') }}
+            {{ root.get('data',{}).get('forecast') }}
 
   # RV
   - trigger:
@@ -159,19 +159,19 @@ template:
           {{- aqi_state_from_payload(root, this.entity_id) -}}
         attributes:
           idx: >-
-            {{ (root.get('data') or {}).get('idx') }}
+            {{ root.get('data',{}).get('idx') }}
           attributions: >-
-            {{ (root.get('attributions') or {}).get('idx') }}
+            {{ root.get('data',{}).get('attributions') }}
           city: >-
-            {{ (root.get('city') or {}).get('idx') }}
+            {{ root.get('data',{}).get('city') }}
           dominentpol: >-
-            {{ (root.get('dominentpol') or {}).get('idx') }}
+            {{ root.get('data',{}).get('dominentpol') }}
           iaqi: >-
-            {{ (root.get('iaqi') or {}).get('idx') }}
+            {{ root.get('data',{}).get('iaqi') }}
           time: >-
-            {{ (root.get('time') or {}).get('idx') }}
+            {{ root.get('data',{}).get('time') }}
           forecast: >-
-            {{ (root.get('forecast') or {}).get('idx') }}
+            {{ root.get('data',{}).get('forecast') }}
 
   # -------------------- Nearby block --------------------
   - trigger:

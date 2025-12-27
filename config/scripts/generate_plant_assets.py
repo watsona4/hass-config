@@ -4,7 +4,7 @@ generate_plant_assets.py — generate HA plant packages and dashboard sections
 (Bodhi-style sections)
 
 - Title uses the common name (alias) when available; subtitle shows scientific name
-- Local images: /local/images/<scientific_slug>.jpg
+- Local images: /local/Images/<scientific_slug>.jpg
 - Gauge 'max' Jinja is quoted
 - Multiline-safe YAML attributes + mojibake repair
 """
@@ -443,8 +443,8 @@ def build_dashboard_section(row: Dict[str, Any]) -> str:
     # Entity slug
     slug = slugify(pid)
 
-    # Match your Bodhi example image path style: local/images/<scientific name>.jpg (spaces kept, no leading slash)
-    image_path = f"local/images/{pid}.jpg"
+    # Match your Bodhi example image path style: local/Images/<scientific name>.jpg (spaces kept, no leading slash)
+    image_path = f"local/Images/{pid}.jpg"
 
     # Escape helpers for YAML double-quoted strings
     def _dq(text: str) -> str:
