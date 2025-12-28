@@ -6,6 +6,7 @@
 
     {#- Parse options if given as a string -#}
     {%- set options = H.parse_options_kv(options) | from_json if options is string else options -%}
+    {%- set options = options | combine(kwargs, recursive=True) if kwargs else options -%}
 
     {#- domain convenience (when an entity_id is provided); else '' -#}
     {%- set domain = (entity_id.split('.', 1)[0] if entity_id and '.' in entity_id else '') -%}
@@ -250,31 +251,12 @@
 {% macro get_badge_color(entity_id, app='default', options={}) %}
     {{- get_attribute(entity_id, app, 'badge_color', options) -}}
 {% endmacro %}
-
-{#- ---- labels now use helpers for fallback formatting ---- -#}
 {% macro get_label(entity_id, app='default', options={}) %}
-    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-    {%- if info.label and info.label|trim != '' -%}
-        {{- info.label -}}
-    {%- else -%}
-        {{- H.format_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
-    {%- endif -%}
+    {{- get_attribute(entity_id, app, 'label', options) -}}
 {% endmacro %}
-
 {% macro get_short_label(entity_id, app='default', options={}) %}
-    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-    {%- if info.short_label and info.short_label|trim != '' -%}
-        {{- info.short_label -}}
-    {%- else -%}
-        {{- H.format_short_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
-    {%- endif -%}
+    {{- get_attribute(entity_id, app, 'short_label', options) -}}
 {% endmacro %}
-
 {% macro get_long_label(entity_id, app='default', options={}) %}
-    {%- set info = get_device_state_info(entity_id, app, options) | from_json -%}
-    {%- if info.long_label and info.long_label|trim != '' -%}
-        {{- info.long_label -}}
-    {%- else -%}
-        {{- H.format_long_label(info.value, info.default_desc, info.is_unavail, info.long_desc) -}}
-    {%- endif -%}
+    {{- get_attribute(entity_id, app, 'long_label', options) -}}
 {% endmacro %}

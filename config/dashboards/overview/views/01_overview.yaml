@@ -10,11 +10,9 @@ sections:
     cards:
 
       # Climate and Quick Setpoints
-      - type: custom:decluttering-card
-        template: title_card
-        variables:
-          - title: "Home Status"
-          - subtitle: "Presence • Climate • Connectivity • Usage"
+      - type: custom:mushroom-title-card
+        title: Home Status
+        subtitle: Presence • Climate • Connectivity • Usage
 
       # Climate States
       - type: custom:mushroom-chips-card
@@ -22,81 +20,62 @@ sections:
         chips:
           - type: template
             entity: input_boolean.someone_is_home
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='someone_home') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='someone_home') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='someone_home') -}}
+            content: "{{ state_attr('sensor.ui_someone_is_home_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_someone_is_home_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_someone_is_home_chip', 'color') }}"
             tap_action:
               action: more-info
           - type: template
             entity: input_boolean.home_alone
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='home_alone') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='home_alone') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='home_alone') -}}
+            content: "{{ state_attr('sensor.ui_home_alone_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_home_alone_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_home_alone_chip', 'color') }}"
             tap_action:
               action: more-info
           - type: template
             entity: input_boolean.coming_home
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='returning_home') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='returning_home') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='returning_home') -}}
+            content: "{{ state_attr('sensor.ui_coming_home_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_coming_home_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_coming_home_chip', 'color') }}"
             tap_action:
               action: more-info
 
       # Climate Cards
       - type: horizontal-stack
         cards:
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.downstairs_thermostat
-              - name: Downstairs
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.upstairs_thermostat
-              - name: Upstairs
+          - type: custom:mushroom-climate-card
+            entity: climate.downstairs_thermostat
+            name: Downstairs
+          - type: custom:mushroom-climate-card
+            entity: climate.upstairs_thermostat
+            name: Upstairs
       
       # Network Status
       - type: horizontal-stack
         cards:
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.home_download_rate
+              - ui_entity: sensor.ui_home_download_rate
               - name: Download
               - app: download
               - layout: vertical
               - multiline_secondary: true
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.home_upload_rate
+              - ui_entity: sensor.ui_home_upload_rate
               - name: Upload
               - app: upload
               - layout: vertical
               - multiline_secondary: true
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.home_latency_icmp
+              - ui_entity: sensor.ui_home_latency_icmp
               - name: Latency
               - app: latency
               - layout: vertical
@@ -132,72 +111,30 @@ sections:
         chips:
           - type: template
             entity: binary_sensor.sunny
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {%- if is_state(entity, 'on') -%}
-                {{- get_label(entity, app='sunny') -}}
-              {%- elif is_state('binary_sensor.dark_outside','on') -%}
-                {{- get_label('binary_sensor.dark_outside', app='dark_outside') -}}
-              {%- else -%}
-                {{- get_label(entity, app='sunny') -}}
-              {%- endif -%}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {%- if is_state(entity, 'on') -%}
-                {{- get_icon(entity, app='sunny') -}}
-              {%- elif is_state('binary_sensor.dark_outside','on') -%}
-                {{- get_icon('binary_sensor.dark_outside', app='dark_outside') -}}
-              {%- else -%}
-                {{- get_icon(entity, app='sunny') -}}
-              {%- endif -%}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {%- if is_state(entity, 'on') -%}
-                {{- get_color(entity, app='sunny') -}}
-              {%- elif is_state('binary_sensor.dark_outside','on') -%}
-                {{- get_color('binary_sensor.dark_outside', app='dark_outside') -}}
-              {%- else -%}
-                {{- get_color(entity, app='sunny') -}}
-              {%- endif -%}
+            content: "{{ state_attr('sensor.ui_sunny_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_sunny_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_sunny_chip', 'color') }}"
             tap_action:
               action: more-info
           - type: template
             entity: binary_sensor.rainy
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='rainy') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='rainy') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='rainy') -}}
+            content: "{{ state_attr('sensor.ui_rainy_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_rainy_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rainy_chip', 'color') }}"
             tap_action:
               action: more-info
           - type: template
             entity: binary_sensor.windy
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='windy') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='windy') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='windy') -}}
+            content: "{{ state_attr('sensor.ui_windy_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_windy_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_windy_chip', 'color') }}"
             tap_action:
               action: more-info
           - type: template
             entity: binary_sensor.hot_inside
-            content: >-
-              {%- from 'main.jinja' import get_label -%}
-              {{- get_label(entity, app='hot_inside') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, app='hot_inside') -}}
-            icon_color: >-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, app='hot_inside') -}}
+            content: "{{ state_attr('sensor.ui_hot_inside_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_hot_inside_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_hot_inside_chip', 'color') }}"
             tap_action:
               action: more-info
 
@@ -208,55 +145,61 @@ sections:
 
           # Temperature and Humidity
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.outside_temperature_state
+              - ui_entity: sensor.ui_outside_temperature_state
               - name: Outside Temp
               - app: ambient
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.outside_humidity_state
+              - ui_entity: sensor.ui_outside_humidity_state
               - name: Outside Humidity
               - app: outdoor
 
           # Sunlight and UV Index
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.light_sensor_illuminance
+              - ui_entity: sensor.ui_light_sensor_illuminance
               - name: Illuminance
               - app: outdoor
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.nearby_uv_index
+              - ui_entity: sensor.ui_nearby_uv_index
               - name: UV Index
               - app: uv_index
-              - options: "uom="
+              - options: uom=
 
           # Wind and Precipitation
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.nearby_wind_speed
-              - options: "direction=sensor.nearby_wind_direction;gusts=sensor.nearby_wind_gust;show_deg=false"
+              - ui_entity: sensor.ui_nearby_wind_speed
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.nearby_today_precip_sum
-              - options: "prob=sensor.nearby_today_precip_prob_max"
+              - ui_entity: sensor.ui_nearby_today_precip_sum
 
           # Air Quality and Dew Point
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.waqi_nearby_aqi
+              - ui_entity: sensor.ui_waqi_nearby_aqi
               - name: Air Quality Index
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.nearby_dew_point
+              - ui_entity: sensor.ui_nearby_dew_point
               - name: Dew Point
               - app: dew_point
 
@@ -264,9 +207,10 @@ sections:
       - type: horizontal-stack
         cards:
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.electric_daily
+              - ui_entity: sensor.ui_electric_daily
               - app: energy_daily_house
               - layout: vertical
               - multiline_secondary: true
@@ -277,9 +221,10 @@ sections:
               - icon_tap_action:
                   action: more-info
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.water_daily
+              - ui_entity: sensor.ui_water_daily
               - app: daily
               - layout: vertical
               - multiline_secondary: true
@@ -290,9 +235,10 @@ sections:
               - icon_tap_action:
                   action: more-info
           - type: custom:decluttering-card
-            template: template_card
+            template: ui_template_card
             variables:
               - entity: sensor.gas_daily
+              - ui_entity: sensor.ui_gas_daily
               - app: daily
               - layout: vertical
               - multiline_secondary: true
@@ -415,7 +361,13 @@ sections:
           square: false
         card_param: cards
         filter:
-          template: "{% from 'macros/unavailable_devices.jinja' import generate %}{{ generate() }}"
+          template: >-
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_unavailable_devices','devices') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
           exclude:
             - device: Dishwasher
             - device: Shop Lights
@@ -493,51 +445,33 @@ sections:
         cards:
 
           # Climate and Humidity Cards
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.downstairs_thermostat
-              - name: Downstairs
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.upstairs_thermostat
-              - name: Upstairs
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.playroom_minisplit_setall_playroom_minisplit
-              - name: Playroom
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.gym_minisplit_setall_gym_minisplit
-              - name: Gym
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.chicken_heat_lamp
-              - name: Chicken Coop
-          - type: custom:decluttering-card
-            template: climate_card
-            variables:
-              - entity: climate.study_space_heater
-              - name: Study Space Heater
-          - type: custom:decluttering-card
-            template: humidifier_card
-            variables:
-              - entity: humidifier.living_room_dehumidifier
-              - name: Living Room Dehumidifier
-          - type: custom:decluttering-card
-            template: humidifier_card
-            variables:
-              - entity: humidifier.dehumidifier
-              - name: Basement Dehumidifier
-          - type: custom:decluttering-card
-            template: humidifier_card
-            variables:
-              - entity: humidifier.humidifier
-              - name: Parlor Humidifier
+          - type: custom:mushroom-climate-card
+            entity: climate.downstairs_thermostat
+            name: Downstairs
+          - type: custom:mushroom-climate-card
+            entity: climate.upstairs_thermostat
+            name: Upstairs
+          - type: custom:mushroom-climate-card
+            entity: climate.playroom_minisplit_setall_playroom_minisplit
+            name: Playroom
+          - type: custom:mushroom-climate-card
+            entity: climate.gym_minisplit_setall_gym_minisplit
+            name: Gym
+          - type: custom:mushroom-climate-card
+            entity: climate.chicken_heat_lamp
+            name: Chicken Coop
+          - type: custom:mushroom-climate-card
+            entity: climate.study_space_heater
+            name: Study Space Heater
+          - type: custom:mushroom-humidifier-card
+            entity: humidifier.living_room_dehumidifier
+            name: Living Room Dehumidifier
+          - type: custom:mushroom-humidifier-card
+            entity: humidifier.dehumidifier
+            name: Basement Dehumidifier
+          - type: custom:mushroom-humidifier-card
+            entity: humidifier.humidifier
+            name: Parlor Humidifier
 
   # Blinds Details
   - type: grid
@@ -568,8 +502,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('brightness') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_brightness','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed for Temperature
       - type: heading
@@ -589,8 +527,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('temperature') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_temperature','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed for Presence
       - type: heading
@@ -610,8 +552,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('presence') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_presence','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed for Devices
       - type: heading
@@ -631,8 +577,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('device') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_device','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed by Button
       - type: heading
@@ -652,8 +602,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('button') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_button','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed by Nighttime
       - type: heading
@@ -673,8 +627,12 @@ sections:
         show_empty: false
         filter:
           template: >-
-            {% from 'macros/pop_up_blinds.jinja' import build_blind_cards %}
-            {{ build_blind_cards('nighttime') | from_json }}
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_nighttime','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
         styles:
           card:
             - position: fixed

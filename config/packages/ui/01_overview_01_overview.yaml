@@ -1,0 +1,381 @@
+homeassistant:
+  customize:
+    anchor_container:
+      .variables: &variables
+        app: 'default'
+        state_info: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+        state_info_vertical: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(trigger.entity_id, app, layout='vertical') | from_json }}
+      .attributes: &attributes
+        value: "{{ state_info.value }}"
+        name: "{{ state_info.name }}"
+        default_desc: "{{ state_info.default_desc }}"
+        short_desc: "{{ state_info.short_desc }}"
+        long_desc: "{{ state_info.long_desc }}"
+        full_desc: "{{ state_info.full_desc }}"
+        icon: "{{ state_info.icon }}"
+        color: "{{ state_info.color }}"
+        badge: "{{ state_info.badge }}"
+        badge_color: "{{ state_info.badge_color }}"
+        label: "{{ state_info.label }}"
+        short_label: "{{ state_info.short_label }}"
+        long_label: "{{ state_info.long_label }}"
+        label_vertical: "{{ state_info_vertical.label }}"
+        short_label_vertical: "{{ state_info_vertical.short_label }}"
+        long_label_vertical: "{{ state_info_vertical.long_label }}"
+      .sensor: &sensor
+        state: "{{ states(trigger.entity_id) }}"
+        attributes: *attributes
+
+template:
+
+  - trigger:
+      - platform: state
+        entity_id: input_boolean.someone_is_home
+    variables:
+      <<: *variables
+      app: 'someone_home'
+    sensor:
+      - <<: *sensor
+        name: ui_someone_is_home_chip
+
+  - trigger:
+      - platform: state
+        entity_id: input_boolean.home_alone
+    variables:
+      <<: *variables
+      app: 'home_alone'
+    sensor:
+      - <<: *sensor
+        name: ui_home_alone_chip
+
+  - trigger:
+      - platform: state
+        entity_id: input_boolean.coming_home
+    variables:
+      <<: *variables
+      app: 'returning_home'
+    sensor:
+      - <<: *sensor
+        name: ui_coming_home_chip
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.home_download_rate
+    variables:
+      <<: *variables
+      app: 'download'
+    sensor:
+      - <<: *sensor
+        name: ui_home_download_rate
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.home_upload_rate
+    variables:
+      <<: *variables
+      app: 'upload'
+    sensor:
+      - <<: *sensor
+        name: ui_home_upload_rate
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.home_latency_icmp
+    variables:
+      <<: *variables
+      app: 'latency'
+    sensor:
+      - <<: *sensor
+        name: ui_home_latency_icmp
+
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.sunny
+    variables:
+      <<: *variables
+      app: 'sunny'
+      is_sunny: "{{ is_state('binary_sensor.sunny','on') or not is_state('binary_sensor.dark_outside','on') }}"
+      dark_state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info('binary_sensor.dark_outside', 'dark_outside') | from_json }}
+    sensor:
+      - <<: *sensor
+        name: ui_sunny_chip
+        attributes:
+          label: "{{ (state_info if is_sunny|bool else dark_state_info).label }}"
+          icon: "{{ (state_info if is_sunny|bool else dark_state_info).icon }}"
+          color: "{{ (state_info if is_sunny|bool else dark_state_info).color }}"
+
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.rainy
+    variables:
+      <<: *variables
+      app: 'rainy'
+    sensor:
+      - <<: *sensor
+        name: ui_rainy_chip
+
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.windy
+    variables:
+      <<: *variables
+      app: 'windy'
+    sensor:
+      - <<: *sensor
+        name: ui_windy_chip
+
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.hot_inside
+    variables:
+      <<: *variables
+      app: 'hot_inside'
+    sensor:
+      - <<: *sensor
+        name: ui_hot_inside_chip
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.outside_temperature_state
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_outside_temperature_state
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.outside_humidity_state
+    variables:
+      <<: *variables
+      app: 'outdoor'
+    sensor:
+      - <<: *sensor
+        name: ui_outside_humidity_state
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.light_sensor_illuminance
+    variables:
+      <<: *variables
+      app: 'outdoor'
+    sensor:
+      - <<: *sensor
+        name: ui_light_sensor_illuminance
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_uv_index
+    variables:
+      <<: *variables
+      app: 'uv_index'
+    sensor:
+      - <<: *sensor
+        name: ui_nearby_uv_index
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_wind_speed
+    variables:
+      <<: *variables
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app, direction='sensor.nearby_wind_direction',
+          gusts='sensor.nearby_wind_gust', show_deg=False) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app, layout='vertical',
+          direction='sensor.nearby_wind_direction', gusts='sensor.nearby_wind_gust', show_deg=False) | from_json }}
+    sensor:
+      - <<: *sensor
+        name: ui_nearby_wind_speed
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_today_precip_sum
+    variables:
+      <<: *variables
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app, prob='sensor.nearby_today_precip_prob_max') | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app, layout='vertical',
+          prob='sensor.nearby_today_precip_prob_max') | from_json }}
+    sensor:
+      - <<: *sensor
+        name: ui_nearby_today_precip_sum
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_nearby_aqi
+    variables: *variables
+    sensor:
+      - <<: *sensor
+        name: ui_waqi_nearby_aqi
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_dew_point
+    variables:
+      <<: *variables
+      app: 'dew_point'
+    sensor:
+      - <<: *sensor
+        name: ui_nearby_dew_point
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.electric_daily
+    variables:
+      <<: *variables
+      app: 'energy_daily_house'
+    sensor:
+      - <<: *sensor
+        name: ui_electric_daily
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.water_daily
+    variables:
+      <<: *variables
+      app: 'daily'
+    sensor:
+      - <<: *sensor
+        name: ui_water_daily
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.gas_daily
+    variables:
+      <<: *variables
+      app: 'daily'
+    sensor:
+      - <<: *sensor
+        name: ui_gas_daily
+
+  - sensor:
+      - name: ui_unavailable_devices_count
+        state: >-
+          {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
+          {{ count_unavailable_devices() | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_unavailable_devices_count
+    sensor:
+      - name: ui_unavailable_devices
+        state: "{{ states('sensor.ui_unavailable_devices_count') }}"
+        attributes:
+          devices: >-
+            {%- from 'macros/unavailable_devices.jinja' import generate -%}
+            {{ generate() | from_json }}
+
+  - sensor:
+      - name: ui_blinds_brightness_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('brightness') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_brightness_count
+    sensor:
+      - name: ui_blinds_brightness
+        state: "{{ states('sensor.ui_blinds_brightness_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('brightness') | from_json }}
+
+  - sensor:
+      - name: ui_blinds_temperature_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('temperature') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_temperature_count
+    sensor:
+      - name: ui_blinds_temperature
+        state: "{{ states('sensor.ui_blinds_temperature_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('temperature') | from_json }}
+
+  - sensor:
+      - name: ui_blinds_presence_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('presence') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_presence_count
+    sensor:
+      - name: ui_blinds_presence
+        state: "{{ states('sensor.ui_blinds_presence_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('presence') | from_json }}
+
+  - sensor:
+      - name: ui_blinds_device_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('device') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_device_count
+    sensor:
+      - name: ui_blinds_device
+        state: "{{ states('sensor.ui_blinds_device_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('device') | from_json }}
+
+  - sensor:
+      - name: ui_blinds_button_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('button') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_button_count
+    sensor:
+      - name: ui_blinds_button
+        state: "{{ states('sensor.ui_blinds_button_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('button') | from_json }}
+
+  - sensor:
+      - name: ui_blinds_nighttime_count
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
+          {{ count_blinds_closed('nighttime') | int(0) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.ui_blinds_nighttime_count
+    sensor:
+      - name: ui_blinds_nighttime
+        state: "{{ states('sensor.ui_blinds_nighttime_count') }}"
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
+            {{ build_blind_cards('nighttime') | from_json }}

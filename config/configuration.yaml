@@ -73,6 +73,7 @@ recorder:
       - script.window_position
       - sensor.rv_bridge_location_raw
     entity_globs:
+      - sensor.ui_*
       - sensor.*_rssi
       - sensor.*_linkquality
       - sensor.*_uptime

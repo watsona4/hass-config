@@ -84,6 +84,53 @@ template_card:
     grid_options: '[[grid_options]]'
 
 # =====================================================================================
+# Template UI Badge
+ui_template_card:
+  default:
+    - name: default
+    - width: default
+    - layout: horizontal
+    - multiline_secondary: false
+    - tap_action:
+        action: more-info
+    - icon_tap_action:
+        action: nothing
+    - grid_options:
+        columns: 12
+        rows: auto
+  card:
+      type: custom:mushroom-template-card
+      entity: '[[entity]]'
+      icon: "{{- state_attr('[[ui_entity]]', 'icon') }}"
+      icon_color: "{{- state_attr('[[ui_entity]]', 'color') }}"
+      primary: >-
+        {%- if '[[name]]' == 'default' -%}
+          {{ state_attr('[[ui_entity]]', 'name') }}
+        {%- else -%}
+          {{ '[[name]]' }}
+        {%- endif -%}
+      secondary: >-
+        {%- set lookup = '' -%}
+        {%- if '[[width]]' == 'narrow' -%}
+          {%- set lookup = 'short_label' -%}
+        {%- elif '[[width]]' == 'wide' -%}
+          {%- set lookup = 'long_label' -%}
+        {%- else -%}
+          {%- set lookup = 'label' -%}
+        {%- endif -%}
+        {%- if '[[layout]]' == 'vertical' -%}
+          {%- set lookup = lookup + '_vertical' -%}
+        {%- endif -%}
+        {{ state_attr('[[ui_entity]]', lookup) }}
+      badge_icon: "{{ state_attr('[[ui_entity]]', 'badge') }}"
+      badge_color: "{{ state_attr('[[ui_entity]]', 'badge_color') }}"
+      layout: '[[layout]]'
+      multiline_secondary: '[[multiline_secondary]]'
+      tap_action: '[[tap_action]]'
+      icon_tap_action: '[[icon_tap_action]]'
+      grid_options: '[[grid_options]]'
+
+# =====================================================================================
 # Template Badge
 template_badge:
   default:

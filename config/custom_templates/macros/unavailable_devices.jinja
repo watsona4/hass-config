@@ -1,5 +1,17 @@
 {# Unavailable Devices Macro #}
 
+{% macro count_unavailable_devices() %}
+  {%- set ns = namespace(seen=[], count=0) -%}
+  {%- for s in states if s.state == 'unavailable' and device_id(s.entity_id) -%}
+    {%- set did = device_id(s.entity_id) -%}
+    {%- if did not in ns.seen -%}
+      {%- set ns.seen = ns.seen + [did] -%}
+      {%- set ns.count = ns.count + 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{- ns.count -}}
+{% endmacro %}
+
 {% macro generate() %}
 
     {%- set ns = namespace(seen=[], dom_count=none, integ=none, out=[]) -%}
@@ -67,7 +79,6 @@
 
             {# djlint:off #}
             {%- set ns.out = ns.out + [dict(
-                type='custom:mushroom-template-card',
                 entity=rep,
                 primary=dev,
                 secondary=area,
@@ -82,5 +93,5 @@
 
         {%- endif -%}
     {%- endfor -%}
-    {{- ns.out -}}
+    {{- ns.out | tojson -}}
 {% endmacro %}
