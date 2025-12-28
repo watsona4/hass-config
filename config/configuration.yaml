@@ -42,6 +42,7 @@ logger:
     homeassistant.core: info
     homeassistant.helpers.event: info
     homeassistant.components.rest_command: info
+    annotatedyaml.constructors: error
   filters:
     homeassistant.components.mqtt.entity:
       - "deprecated option `object_id`"
