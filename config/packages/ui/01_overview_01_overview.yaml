@@ -261,11 +261,30 @@ template:
       - <<: *sensor
         name: ui_gas_daily
 
-  - sensor:
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: event
+        event_type: state_changed
+    sensor:
       - name: ui_unavailable_devices_count
         state: >-
-          {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
-          {{ count_unavailable_devices() | int(0) }}
+          {%- set eid = (trigger.event.data.entity_id if trigger.platform == 'event' else '') -%}
+          {%- if eid in ['sensor.ui_unavailable_devices_count', 'sensor.ui_unavailable_devices'] -%}
+            {{ this.state | int(0) }}
+          {%- elif trigger.platform == 'homeassistant' -%}
+            {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
+            {{ count_unavailable_devices() | int(0) }}
+          {%- else -%}
+            {%- set old = (trigger.event.data.old_state.state if trigger.event.data.old_state is not none else none) -%}
+            {%- set new = (trigger.event.data.new_state.state if trigger.event.data.new_state is not none else none) -%}
+            {%- if old in ['unavailable','unknown'] or new in ['unavailable','unknown'] -%}
+              {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
+              {{ count_unavailable_devices() | int(0) }}
+            {%- else -%}
+              {{ this.state | int(0) }}
+            {%- endif -%}
+          {%- endif -%}
 
   - trigger:
       - platform: state

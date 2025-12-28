@@ -1,8 +1,9 @@
 {# Unavailable Devices Macro #}
 
-{% macro count_unavailable_devices() %}
+{% macro count_unavailable_devices(exclude=[]) %}
+  {%- set exclude = exclude if exclude is iterable and exclude is not string else [exclude] -%}
   {%- set ns = namespace(seen=[], count=0) -%}
-  {%- for s in states if s.state == 'unavailable' and device_id(s.entity_id) -%}
+  {%- for s in states if s.state == 'unavailable' and device_id(s.entity_id) and s.entity_id not in exclude -%}
     {%- set did = device_id(s.entity_id) -%}
     {%- if did not in ns.seen -%}
       {%- set ns.seen = ns.seen + [did] -%}
