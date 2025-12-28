@@ -1,0 +1,994 @@
+homeassistant:
+  customize:
+    anchor_container:
+      .variables: &variables
+        app: 'default'
+        state_info: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+        state_info_vertical: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(trigger.entity_id, app, layout='vertical') | from_json }}
+      .attributes: &attributes
+        value: "{{ state_info.value }}"
+        name: "{{ state_info.name }}"
+        default_desc: "{{ state_info.default_desc }}"
+        short_desc: "{{ state_info.short_desc }}"
+        long_desc: "{{ state_info.long_desc }}"
+        full_desc: "{{ state_info.full_desc }}"
+        icon: "{{ state_info.icon }}"
+        color: "{{ state_info.color }}"
+        badge: "{{ state_info.badge }}"
+        badge_color: "{{ state_info.badge_color }}"
+        label: "{{ state_info.label }}"
+        short_label: "{{ state_info.short_label }}"
+        long_label: "{{ state_info.long_label }}"
+        label_vertical: "{{ state_info_vertical.label }}"
+        short_label_vertical: "{{ state_info_vertical.short_label }}"
+        long_label_vertical: "{{ state_info_vertical.long_label }}"
+      .sensor: &sensor
+        state: "{{ states(trigger.entity_id) }}"
+        attributes: *attributes
+
+template:
+
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.nearby_uv_protection
+    sensor:
+      - name: ui_nearby_uv_protection_badge
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          color: >-
+            {% from 'metrics/uv/protection_window.jinja' import uv_badge_color %}
+            {{ uv_badge_color(trigger.entity_id) }}
+          content: >-
+            {% from 'metrics/uv/protection_window.jinja' import uv_badge_content %}
+            {{ uv_badge_content(trigger.entity_id) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_nearby_aqi
+    sensor:
+      - name: ui_waqi_nearby_aqi_badge
+        state: "{{ states('trigger.entity_id') }}"
+        attributes:
+          color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(trigger.entity_id) -}}
+          content: >-
+            {%- set aqi = states(trigger.entity_id) | int(0) -%}
+            {{- 'AQI: ' ~ aqi ~ ' · ' ~ ('Mask Needed' if aqi > 150 else 'Consider Mask' if aqi > 100 else 'No Mask') -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nws_alerts_alerts
+    sensor:
+      - name: ui_nws_alerts_alerts_badge
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          color: >-
+            {{- 'red' if states(trigger.entity_id) | int(0) > 0 else 'green' -}}
+          content: >-
+            {%- set alerts = state_attr(trigger.entity_id, 'Alerts') -%}
+            {{- alerts | map(attribute='Event') | join(', ') if alerts else 'No Active Alerts' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_uv_index
+    variables:
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, 'uv_index') | from_json }}
+    sensor:
+      - name: ui_nearby_uv_index_badge
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          color: "{{ state_info.color }}"
+          content: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_safe_exposure_minutes_st1
+    sensor:
+      - name: ui_nearby_safe_exposure_minutes_st1_badge
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          content: >-
+            {%- set v = states(trigger.entity_id) | int(0) -%}
+            {%- set h = v // 60 -%}
+            {%- set m = v % 60 -%}
+            {%- set ns = namespace(parts=[]) -%}
+            {%- if h > 0 -%}
+              {%- set ns.parts = ns.parts + [h ~ ' hour' ~ ('s' if h != 1 else '')] -%}
+            {%- endif -%}
+            {%- if m > 0 -%}
+              {%- set ns.parts = ns.parts + [m ~ ' minute' ~ ('s' if m != 1 else '')] -%}
+            {%- endif -%}
+            {%- set r = ns.parts | join(', ') -%}
+            {{- 'Safe Time: ' ~ r if has_value(trigger.entity_id) else 'Safe Time: —' -}}
+          color: >-
+            {%- set v = states(trigger.entity_id) | float(none) -%}
+            {{- 'disabled' if v is none else 'green' if v >= 60 else 'yellow' if v >= 30 else 'orange' if v >= 10 else 'red' if v > 0 else 'grey' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_uv_index
+    sensor:
+      - name: ui_nearby_uv_index_vitamin_d_badge
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          content: >-
+            {%- from 'metrics/uv/vitamin_d.jinja' import vitd_label -%}
+            {{- 'Vitamin D: ' ~ vitd_label(states(trigger.entity_id), 3) -}}
+          color: >-
+            {%- from 'metrics/uv/vitamin_d.jinja' import vitd_minutes -%}
+            {%- set r = vitd_minutes(states(trigger.entity_id), 3) | from_json -%}
+            {{- 'disabled' if r is none else 'green' if r.min < 5 else 'yellow' if r.max <= 20 else 'orange' if r.max <= 45 else 'blue' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.google_pollen_nearby_today
+    sensor:
+      - name: ui_google_pollen_nearby_today
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          primary: "{{- 'Dominant: ' ~ states(trigger.entity_id) -}}"
+          secondary: >
+            {%- set dom_cat = state_attr(trigger.entity_id,'dominant_category') -%}
+            {%- set dom_val = state_attr(trigger.entity_id,'dominant_value') -%}
+            {{- (dom_cat or 'unknown') ~ ' · Index ' ~ (dom_val if dom_val is not none else '–') -}}
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+      - name: ui_google_pollen_nearby_today_grass
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- set v = state_attr(trigger.entity_id,'grass_value') -%}
+            {{- 'Index ' ~ v if v is not none else '–' -}}
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='grass_value')) }}
+      - name: ui_google_pollen_nearby_today_tree
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- set v = state_attr(trigger.entity_id,'tree_value') -%}
+            {{- 'Index ' ~ v if v is not none else '–' -}}
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='tree_value')) }}
+      - name: ui_google_pollen_nearby_today_weed
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- set v = state_attr(trigger.entity_id,'weed_value') -%}
+            {{- 'Index ' ~ v if v is not none else '–' -}}
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='weed_value')) }}
+      - name: ui_google_pollen_nearby_today_advice
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- set recs = state_attr(trigger.entity_id,'recommendations') or [] -%}
+            {{- recs | join(' ') if recs else '—' -}}
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_nearby_day_0
+    sensor:
+      - name: ui_pollen_forecast_nearby_day_0
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Today
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_nearby_day_1
+    sensor:
+      - name: ui_pollen_forecast_nearby_day_1
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Tomorrow
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_nearby_day_2
+    sensor:
+      - name: ui_pollen_forecast_nearby_day_2
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_home_day_0
+    sensor:
+      - name: ui_pollen_forecast_home_day_0
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Today
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_home_day_1
+    sensor:
+      - name: ui_pollen_forecast_home_day_1
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Tomorrow
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_home_day_2
+    sensor:
+      - name: ui_pollen_forecast_home_day_2
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_rv_day_0
+    sensor:
+      - name: ui_pollen_forecast_rv_day_0
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Today
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_rv_day_1
+    sensor:
+      - name: ui_pollen_forecast_rv_day_1
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: Tomorrow
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.pollen_forecast_rv_day_2
+    sensor:
+      - name: ui_pollen_forecast_rv_day_2
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{- 'mdi:numeric-' ~ state_attr(trigger.entity_id, 'dominant_value') ~ '-box-outline' -}}"
+          primary: "{{- (now() + timedelta(days=2)).strftime('%A') -}}"
+          secondary: "{{- state_attr(trigger.entity_id, 'species_name') -}}"
+          icon_color: >-
+            {% from 'main.jinja' import get_color -%}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.outside_temperature_state
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_outside_temperature_state
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.high_temperature
+    sensor:
+      - name: ui_high_temperature
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(trigger.entity_id, app='ambient') -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.high_temperature_all_time
+    sensor:
+      - name: ui_high_temperature_all_time
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.outside_humidity_state
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_outside_humidity_state
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.low_temperature
+    sensor:
+      - name: ui_low_temperature
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(trigger.entity_id, app='ambient') -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.low_temperature_all_time
+    sensor:
+      - name: ui_low_temperature_all_time
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.soil_surface_temperature
+    sensor:
+      - name: ui_soil_surface_temperature
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+          icon_color: >-
+            {%- set t = states(trigger.entity_id) | float(-100) -%}
+            {{- 'blue' if t <= 32 else 'light-blue' if t <= 59 else 'green' if t <= 77 else 'orange' if t <= 95 else 'red' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.soil_temperature_at_10cm
+    sensor:
+      - name: ui_soil_temperature_at_10cm
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+          icon_color: >-
+            {%- set t = states(trigger.entity_id) | float(-100) -%}
+            {{- 'blue' if t <= 32 else 'light-blue' if t <= 59 else 'green' if t <= 77 else 'orange' if t <= 95 else 'red' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.soil_moisture
+    sensor:
+      - name: ui_soil_moisture
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {{- u_humanize_entity(trigger.entity_id) -}}
+          icon_color: >-
+            {%- set m = states(trigger.entity_id) | float(-100) -%}
+            {{- 'brown' if m < 20 else 'amber' if m < 40 else 'blue' if m < 70 else 'indigo' -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_nearby
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_waqi_nearby_aqi
+      - name: ui_waqi_nearby_aqi_gauge
+        state: "{{ states('sensor.waqi_nearby_aqi') }}"
+        attributes:
+          name: >-
+            {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+            {{- dominant('sensor.waqi_nearby') -}}
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+          color_51: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+          label_51: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+          color_101: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+          label_101: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+          color_151: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+          label_151: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+          color_201: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+          label_201: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+          color_301: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+          label_301: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+      - name: ui_waqi_nearby_pm2_5_chip
+        state: "{{ states('sensor.waqi_nearby_pm2_5') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_pm2_5') -}}
+      - name: ui_waqi_nearby_pm10_chip
+        state: "{{ states('sensor.waqi_nearby_pm10') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_pm10') -}}
+      - name: ui_waqi_nearby_o3_chip
+        state: "{{ states('sensor.waqi_nearby_o3') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_o3') -}}
+      - name: ui_waqi_nearby_co_chip
+        state: "{{ states('sensor.waqi_nearby_co') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_co') -}}
+      - name: ui_waqi_nearby_no2_chip
+        state: "{{ states('sensor.waqi_nearby_no2') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_no2') -}}
+      - name: ui_waqi_nearby_so2_chip
+        state: "{{ states('sensor.waqi_nearby_so2') }}"
+        attributes:
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.waqi_nearby_so2') -}}
+      - name: ui_aqi_forecast_nearby_day_0
+        state: "{{ states('sensor.aqi_forecast_nearby_day_0') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_0', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_nearby_day_0') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'hex') }}"
+      - name: ui_aqi_forecast_nearby_day_1
+        state: "{{ states('sensor.aqi_forecast_nearby_day_1') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_1', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_nearby_day_1') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'hex') }}"
+      - name: ui_aqi_forecast_nearby_day_2
+        state: "{{ states('sensor.aqi_forecast_nearby_day_2') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_2', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_nearby_day_2') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'hex') }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_home
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_waqi_home_aqi
+      - name: ui_waqi_home_aqi_gauge
+        state: "{{ states('sensor.waqi_home_aqi') }}"
+        attributes:
+          name: >-
+            {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+            {{- dominant('sensor.waqi_home') -}}
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+          color_51: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+          label_51: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+          color_101: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+          label_101: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+          color_151: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+          label_151: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+          color_201: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+          label_201: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+          color_301: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+          label_301: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+      - name: ui_aqi_forecast_home_day_0
+        state: "{{ states('sensor.aqi_forecast_home_day_0') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_home_day_0', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_home_day_0') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'hex') }}"
+      - name: ui_aqi_forecast_home_day_1
+        state: "{{ states('sensor.aqi_forecast_home_day_1') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_home_day_1', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_home_day_1') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'hex') }}"
+      - name: ui_aqi_forecast_home_day_2
+        state: "{{ states('sensor.aqi_forecast_home_day_2') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_home_day_2', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_home_day_2') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'hex') }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.waqi_rv
+    variables:
+      <<: *variables
+      app: 'ambient'
+    sensor:
+      - <<: *sensor
+        name: ui_waqi_rv_aqi
+      - name: ui_waqi_rv_aqi_gauge
+        state: "{{ states('sensor.waqi_rv_aqi') }}"
+        attributes:
+          name: >-
+            {%- from 'metrics/air_quality/pollutants.jinja' import dominant -%}
+            {{- dominant('sensor.waqi_rv') -}}
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+          color_51: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+          label_51: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+          color_101: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+          label_101: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+          color_151: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+          label_151: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+          color_201: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+          label_201: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+          color_301: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+          label_301: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+      - name: ui_aqi_forecast_rv_day_0
+        state: "{{ states('sensor.aqi_forecast_rv_day_0') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_rv_day_0', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_rv_day_0') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_rv_day_0', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_rv_day_0', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_rv_day_0', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_rv_day_0', 'hex') }}"
+      - name: ui_aqi_forecast_rv_day_1
+        state: "{{ states('sensor.aqi_forecast_rv_day_1') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_rv_day_1', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_rv_day_1') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_rv_day_1', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_rv_day_1', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_rv_day_1', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_rv_day_1', 'hex') }}"
+      - name: ui_aqi_forecast_rv_day_2
+        state: "{{ states('sensor.aqi_forecast_rv_day_2') }}"
+        attributes:
+          primary: "{{- state_attr('sensor.aqi_forecast_rv_day_2', 'title') -}}"
+          secondary: "{{ states('sensor.aqi_forecast_rv_day_2') }}"
+          icon_color: "{{ state_attr('sensor.aqi_forecast_rv_day_2', 'hex') }}"
+          badge_icon: "{{ state_attr('sensor.aqi_forecast_rv_day_2', 'badge') }}"
+          icon: "{{ state_attr('sensor.aqi_forecast_rv_day_2', 'icon') }}"
+          badge_color: "{{ state_attr('sensor.aqi_forecast_rv_day_2', 'hex') }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.nearby_uv_index
+    variables:
+      <<: *variables
+      app: 'nearby_uv_index'
+    sensor:
+      - <<: *sensor
+        name: ui_nearby_uv_index
+      - name: ui_nearby_uv_index_gauge
+        state: "{{ states('sensor.nearby_uv_index') }}"
+        attributes:
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+          color_2: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+          label_2: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+          color_5: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+          label_5: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+          color_7: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+          label_7: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+          color_10: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+          label_10: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+      - name: ui_nearby_today_uv_index_max_chip
+        state: "{{ states('sensor.nearby_today_uv_index_max') }}"
+        attributes:
+          content: "{{- 'Max UV: ' ~ states('sensor.nearby_today_uv_index_max') | float(0) | round(1) -}}"
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color('sensor.nearby_today_uv_index_max', app='uv_index') -}}
+      - name: ui_nearby_safe_exposure_minutes_st1
+        state: "{{ states('sensor.nearby_safe_exposure_minutes_st1') }}"
+        attributes:
+          content: "Safe Min: {{- states('sensor.nearby_safe_exposure_minutes_st1') if has_value('sensor.nearby_safe_exposure_minutes_st1') else '–' -}}"
+          icon_color: >-
+            {%- set v = states('sensor.nearby_safe_exposure_minutes_st1') | float(0) -%}
+            {{- 'red' if v < 30 else 'yellow' if v < 60 else 'green' -}}
+      - name: ui_nearby_today_uv_index_max
+        state: "{{ states('sensor.nearby_today_uv_index_max') }}"
+        attributes:
+          primary: Today
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+      - name: ui_nearby_tomorrow_uv_index_max
+        state: "{{ states('sensor.nearby_tomorrow_uv_index_max') }}"
+        attributes:
+          primary: Tomorrow
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+      - name: ui_nearby_day_2_uv_index_max
+        state: "{{ states('sensor.nearby_day_2_uv_index_max') }}"
+        attributes:
+          primary: "{{ states('sensor.nearby_day_2_weekday') }}"
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.home_uv_index
+    sensor:
+      - name: ui_home_uv_index_gauge
+        state: "{{ states('sensor.home_uv_index') }}"
+        attributes:
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+          color_2: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+          label_2: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+          color_5: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+          label_5: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+          color_7: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+          label_7: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+          color_10: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+          label_10: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+      - name: ui_home_today_uv_index_max
+        state: "{{ states('sensor.home_today_uv_index_max') }}"
+        attributes:
+          primary: Today
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+      - name: ui_home_tomorrow_uv_index_max
+        state: "{{ states('sensor.home_tomorrow_uv_index_max') }}"
+        attributes:
+          primary: Tomorrow
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+      - name: ui_home_day_2_uv_index_max
+        state: "{{ states('sensor.home_day_2_uv_index_max') }}"
+        attributes:
+          primary: "{{ states('sensor.home_day_2_weekday') }}"
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.rv_uv_index
+    sensor:
+      - name: ui_rv_uv_index_gauge
+        state: "{{ states('sensor.rv_uv_index') }}"
+        attributes:
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=0)) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=0)) -}}
+          color_2: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=2)) -}}
+          label_2: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=2)) -}}
+          color_5: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=5)) -}}
+          label_5: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=5)) -}}
+          color_7: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=7)) -}}
+          label_7: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=7)) -}}
+          color_10: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=10)) -}}
+          label_10: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
+      - name: ui_rv_today_uv_index_max
+        state: "{{ states('sensor.rv_today_uv_index_max') }}"
+        attributes:
+          primary: Today
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+      - name: ui_rv_tomorrow_uv_index_max
+        state: "{{ states('sensor.rv_tomorrow_uv_index_max') }}"
+        attributes:
+          primary: Tomorrow
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+      - name: ui_rv_day_2_uv_index_max
+        state: "{{ states('sensor.rv_day_2_uv_index_max') }}"
+        attributes:
+          primary: "{{ states('sensor.rv_day_2_weekday') }}"
+          secondary: >-
+            {%- from 'main.jinja' import get_short_label -%}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+          icon: >-
+            {%- from 'main.jinja' import get_icon -%}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+          icon_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+          badge_icon: >-
+            {%- from 'main.jinja' import get_badge -%}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+          badge_color: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
