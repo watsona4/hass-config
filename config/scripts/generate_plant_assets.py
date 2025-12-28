@@ -319,6 +319,48 @@ template:
         state: "{max_ec if max_ec is not None else ''}"
         unit_of_measurement: "µS/cm"
 
+  - sensor:
+      - name: ui_{slug}_temperature_routed
+        state: "{{{{ states('sensor.{slug}_temperature_routed') }}}}"
+        attributes:
+          content: >
+            {{%- from 'units/base.jinja' import u_convert_value, u_humanize_value, u_humanize_entity -%}}
+            {{%- set temp_min_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_min'), 'c', 'f'), '°F') -%}}
+            {{%- set temp_max_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_max'), 'c', 'f'), '°F') -%}}
+            {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+            {{{{ '\\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}}}
+          color: "{{{{ 'green' if is_state('binary_sensor.{slug}_temperature_ok','on') else 'red' }}}}"
+      - name: ui_{slug}_illuminance_routed
+        state: "{{{{ states('sensor.{slug}_illuminance_routed') }}}}"
+        attributes:
+          content: >
+            {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+            {{%- set light_min_lux = u_humanize_value(states('sensor.{slug}_light_min_lux')) -%}}
+            {{%- set light_max_lux = u_humanize_value(states('sensor.{slug}_light_max_lux'), 'lx') -%}}
+            {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+            {{{{ '\\nRange: ' ~ light_min_lux ~ '–' ~ light_max_lux }}}}
+          color: "{{{{ 'green' if is_state('binary_sensor.{slug}_light_ok','on') else 'red' }}}}"
+      - name: ui_{slug}_moisture_routed
+        state: "{{{{ states('sensor.{slug}_moisture_routed') }}}}"
+        attributes:
+          content: >
+            {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+            {{%- set moist_min_pct = u_humanize_value(states('sensor.{slug}_moisture_min'), '%') -%}}
+            {{%- set moist_max_pct = u_humanize_value(states('sensor.{slug}_moisture_max'), '%') -%}}
+            {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+            {{{{ '\\nRange: ' ~ moist_min_pct ~ '–' ~ moist_max_pct }}}}
+          color: "{{{{ 'green' if is_state('binary_sensor.{slug}_moisture_ok','on') else 'red' }}}}"
+      - name: ui_{slug}_conductivity_routed
+        state: "{{{{ states('sensor.{slug}_conductivity_routed') }}}}"
+        attributes:
+          content: >
+            {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
+            {{%- set cond_min_uscm = u_humanize_value(states('sensor.{slug}_ec_min')) -%}}
+            {{%- set cond_max_uscm = u_humanize_value(states('sensor.{slug}_ec_max')) -%}}
+            {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
+            {{{{ '\\nRange: ' ~ cond_min_uscm ~ '–' ~ cond_max_uscm ~ ' µS/cm' }}}}
+          color: "{{{{ 'green' if is_state('binary_sensor.{slug}_ec_ok','on') else 'red' }}}}"
+
   - binary_sensor:
       - name: "{display_pid} Temperature OK"
         unique_id: "{slug}_temp_ok"
@@ -505,53 +547,33 @@ cards:
           - type: custom:mushroom-template-card
             entity: sensor.{slug}_temperature_routed
             primary: Temperature
-            secondary: >
-              {{%- from 'units/base.jinja' import u_convert_value, u_humanize_value, u_humanize_entity -%}}
-              {{%- set temp_min_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_min'), 'c', 'f'), '°F') -%}}
-              {{%- set temp_max_f = u_humanize_value(u_convert_value(states('sensor.{slug}_temp_max'), 'c', 'f'), '°F') -%}}
-              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-              {{{{ '\\nRange: ' ~ temp_min_f ~ '–' ~ temp_max_f }}}}
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_temperature_routed','content') }}}}"
             icon: mdi:thermometer
-            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_temperature_ok','on') else 'red' }}}}"
+            color: "{{{{ state_attr('sensor.ui_{slug}_temperature_routed','color') }}}}"
             multiline_secondary: true
 
           - type: custom:mushroom-template-card
             entity: sensor.{slug}_illuminance_routed
             primary: Light
-            secondary: >
-              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-              {{%- set light_min_lux = u_humanize_value(states('sensor.{slug}_light_min_lux')) -%}}
-              {{%- set light_max_lux = u_humanize_value(states('sensor.{slug}_light_max_lux'), 'lx') -%}}
-              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-              {{{{ '\\nRange: ' ~ light_min_lux ~ '–' ~ light_max_lux }}}}
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_illuminance_routed','content') }}}}"
             icon: mdi:white-balance-sunny
-            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_light_ok','on') else 'red' }}}}"
+            color: "{{{{ state_attr('sensor.ui_{slug}_illuminance_routed','color') }}}}"
             multiline_secondary: true
 
           - type: custom:mushroom-template-card
             entity: sensor.{slug}_moisture_routed
             primary: Moisture
-            secondary: >
-              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-              {{%- set moist_min_pct = u_humanize_value(states('sensor.{slug}_moisture_min'), '%') -%}}
-              {{%- set moist_max_pct = u_humanize_value(states('sensor.{slug}_moisture_max'), '%') -%}}
-              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-              {{{{ '\\nRange: ' ~ moist_min_pct ~ '–' ~ moist_max_pct }}}}
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_moisture_routed','content') }}}}"
             icon: mdi:water-percent
-            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_moisture_ok','on') else 'red' }}}}"
+            color: "{{{{ state_attr('sensor.ui_{slug}_moisture_routed','color') }}}}"
             multiline_secondary: true
 
           - type: custom:mushroom-template-card
             entity: sensor.{slug}_conductivity_routed
             primary: Conductivity
-            secondary: >
-              {{%- from 'units/base.jinja' import u_humanize_entity, u_humanize_value -%}}
-              {{%- set cond_min_uscm = u_humanize_value(states('sensor.{slug}_ec_min')) -%}}
-              {{%- set cond_max_uscm = u_humanize_value(states('sensor.{slug}_ec_max')) -%}}
-              {{{{ 'Current: ' ~ u_humanize_entity(entity) }}}}
-              {{{{ '\\nRange: ' ~ cond_min_uscm ~ '–' ~ cond_max_uscm ~ ' µS/cm' }}}}
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_conductivity_routed','content') }}}}"
             icon: mdi:flash
-            color: "{{{{ 'green' if is_state('binary_sensor.{slug}_ec_ok','on') else 'red' }}}}"
+            color: "{{{{ state_attr('sensor.ui_{slug}_conductivity_routed','color') }}}}"
             multiline_secondary: true
 
       # Care summary (markdown-like), matching your Bodhi pattern
