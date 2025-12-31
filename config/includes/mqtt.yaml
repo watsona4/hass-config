@@ -38,6 +38,7 @@
     enabled_by_default: false
     icon: mdi:clock-in
     state_topic: "site/home/devices/rtl_433/devices/Acurite-Tower/A/11075/time"
+    value_template: "{{ value ~ '+00:00' }}"
     unique_id: acurite_tower_timestamp
     device: &acurite_device
       identifiers: Acurite-Tower-A-11075

@@ -5998,3 +5998,125 @@
       }}'
     elv_m: '{{ float(elv_ft) / 3.281 }}'
   mode: single
+- id: '1767001285663'
+  alias: Chicken coop freeze protection alert
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.chicken_coop_pump_on
+    - binary_sensor.barrel_heater_cycled_recently
+    - binary_sensor.pipe_heater_cycled_recently
+    trigger: state
+    to:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.acurite_tower_a_11075_temperature
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    below: 35
+  - trigger: numeric_state
+    entity_id:
+    - sensor.acurite_tower_a_11075_temperature
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    above: 36
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ latched and (warm_clear or not alarm_now) }}'
+      sequence:
+      - target:
+          entity_id: '{{ latch_entity }}'
+        action: input_boolean.turn_off
+      - target:
+          entity_id: '{{ next_entity }}'
+        data:
+          datetime: '1970-01-01 00:00:00'
+        action: input_datetime.set_datetime
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ alarm_now and not latched }}'
+      sequence:
+      - delay: 00:10:00
+      - condition: numeric_state
+        entity_id: sensor.acurite_tower_a_11075_temperature
+        below: 35
+      - condition: or
+        conditions:
+        - condition: state
+          state:
+          - 'off'
+          entity_id: binary_sensor.chicken_coop_pump_on
+        - condition: state
+          state:
+          - 'off'
+          entity_id: binary_sensor.barrel_heater_cycled_recently
+        - condition: state
+          state:
+          - 'off'
+          entity_id: binary_sensor.pipe_heater_cycled_recently
+      - data:
+          title: Chicken Coop Freeze Protection
+          message: '{{ msg }}'
+        action: persistent_notification.create
+      - target:
+          entity_id: '{{ latch_entity }}'
+        action: input_boolean.turn_on
+      - target:
+          entity_id: '{{ next_entity }}'
+        data:
+          datetime: '{{ (now() + timedelta(hours=2)).strftime(''%Y-%m-%d %H:%M:%S'')
+            }}'
+        action: input_datetime.set_datetime
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ alarm_now and latched and (now_ts >= next_ts) }}'
+      sequence:
+      - data:
+          title: Chicken Coop Freeze Protection (Reminder)
+          message: '{{ msg }}'
+        action: persistent_notification.create
+      - target:
+          entity_id: '{{ next_entity }}'
+        data:
+          datetime: '{{ (now() + timedelta(hours=2)).strftime(''%Y-%m-%d %H:%M:%S'')
+            }}'
+        action: input_datetime.set_datetime
+  mode: restart
+  variables:
+    temp_entity: sensor.acurite_tower_a_11075_temperature
+    barrel_power_entity: sensor.water_barrel_heater_power
+    pipe_power_entity: sensor.chicken_coop_outlet_2_power
+    pump_entity: binary_sensor.chicken_coop_pump_on
+    barrel_cycled_entity: binary_sensor.barrel_heater_cycled_recently
+    pipe_cycled_entity: binary_sensor.pipe_heater_cycled_recently
+    latch_entity: input_boolean.chicken_coop_freeze_alert_active
+    next_entity: input_datetime.chicken_coop_freeze_next_reminder
+    temp_f: '{{ states(temp_entity) | float(999) }}'
+    cold: '{{ temp_f < 35 }}'
+    warm_clear: '{{ temp_f > 36 }}'
+    pump_ok: '{{ is_state(pump_entity, ''on'') }}'
+    barrel_ok: '{{ is_state(barrel_cycled_entity, ''on'') }}'
+    pipe_ok: '{{ is_state(pipe_cycled_entity, ''on'') }}'
+    alarm_now: '{{ cold and (not pump_ok or not barrel_ok or not pipe_ok) }}'
+    latched: '{{ is_state(latch_entity, ''on'') }}'
+    next_str: '{{ states(next_entity) }}'
+    next_ts: "{% if next_str in ['unknown','unavailable','none',''] %}\n  0\n{% else
+      %}\n  {{ as_timestamp(strptime(next_str, '%Y-%m-%d %H:%M:%S')) | int(0) }}\n{%
+      endif %}\n"
+    now_ts: '{{ as_timestamp(now()) | int }}'
+    barrel_power: '{{ states(barrel_power_entity)|round(0) }}'
+    pipe_power: '{{ states(pipe_power_entity)|round(0) }}'
+    msg: 'Freeze protection issue. Temp={{ temp_f | round(1) }}F. Pump={{ ''on'' if
+      pump_ok else ''off'' }} (barrel load={{ barrel_power }}W). Barrel heater cycled
+      recently={{ ''yes'' if barrel_ok else ''no'' }}. Pipe heater cycled recently={{
+      ''yes'' if pipe_ok else ''no'' }} (pipe={{ pipe_power }}W).
+
+      '

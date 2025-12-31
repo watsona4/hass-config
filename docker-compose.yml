@@ -1,6 +1,7 @@
 services:
   homeassistant:
     image: ghcr.io/watsona4/hass-config:latest
+    container_name: homeassistant
     build: .
     restart: unless-stopped
     privileged: true
