@@ -1,54 +1,34 @@
 # packages/electric_blanket_power_based.yaml
 #
-# Replace these with your entities:
-#   switch.electric_blanket_plug       -> your smart plug entity_id
-#   sensor.electric_blanket_power      -> watts reported by the plug (numeric)
+# switch.electric_blanket_plug = whatever you DO control (power feed to the control panel)
+# sensor.electric_blanket_power = watts reported by that feed
 
 input_number:
   electric_blanket_warmup_hours:
     name: "Electric Blanket Warmup Hours"
-    min: 1
+    min: 0.25
     max: 8
-    step: 0.5
+    step: 0.25
     mode: slider
     unit_of_measurement: h
     icon: mdi:timer-outline
 
-  # Power thresholds for detecting “blanket is running”
-  electric_blanket_on_watts:
-    name: "Electric Blanket ON threshold (W)"
-    min: 1
-    max: 200
-    step: 1
-    unit_of_measurement: W
-    icon: mdi:flash
+# 1) Raw threshold sensor (true hysteresis via upper/lower)
+binary_sensor:
+  - platform: threshold
+    name: Electric Blanket Drawing Power Raw
+    entity_id: sensor.electric_blanket_power
+    upper: 30
 
-  electric_blanket_off_watts:
-    name: "Electric Blanket OFF threshold (W)"
-    min: 0
-    max: 200
-    step: 1
-    unit_of_measurement: W
-    icon: mdi:flash-off
-
+# 2) Debounced “truthy” sensor you actually use for automation/UI
 template:
-  # Stable binary sensor with hysteresis and debounce.
-  # Turns ON when power rises above ON threshold, stays ON until it falls below OFF threshold.
   - binary_sensor:
       - name: "Electric Blanket Drawing Power"
         unique_id: 9345ed8d-3bd0-4a46-8608-7f8c26677a74
-        state: >-
-          {%- set p = states('sensor.electric_blanket_power') | float(0) -%}
-          {%- set on_w  = states('input_number.electric_blanket_on_watts') | float(20) -%}
-          {%- set off_w = states('input_number.electric_blanket_off_watts') | float(10) -%}
-          {%- if this.state == 'on' -%}
-            {{- p > off_w -}}
-          {%- else -%}
-            {{- p > on_w -}}
-          {%- endif -%}
-        availability: "{{ states('sensor.electric_blanket_power') not in ['unknown','unavailable','none',''] }}"
+        state: "{{ is_state('binary_sensor.electric_blanket_drawing_power_raw', 'on') }}"
+        availability: "{{ has_value('sensor.electric_blanket_power') }}"
         delay_on: "00:00:20"
-        delay_off: "00:10:00"
+        delay_off: "00:01:00"
         icon: "{{ 'mdi:radiator' if this.state == 'on' else 'mdi:radiator-disabled' }}"
 
 automation:
@@ -59,30 +39,31 @@ automation:
       - platform: state
         entity_id: binary_sensor.electric_blanket_drawing_power
         to: "on"
-        id: blanket_started
+
     action:
+      - variables:
+          hours: "{{ states('input_number.electric_blanket_warmup_hours') | float(4) }}"
+          seconds: "{{ (hours * 3600) | int }}"
+
+      # Run until either:
+      #  - blanket stops drawing power (manual panel off), OR
+      #  - warmup time elapses (auto shutoff)
+      - wait_for_trigger:
+          - platform: state
+            entity_id: binary_sensor.electric_blanket_drawing_power
+            to: "off"
+        timeout: "{{ seconds }}"
+        continue_on_timeout: true
+
+      # If we hit the timeout: power-cycle the feed so the control panel ends up OFF,
+      # then restore power so it's ready for manual restart later.
       - if:
-          - condition: trigger
-            id: blanket_started
+          - "{{ wait.trigger is none }}"
         then:
-          - variables:
-              hours: "{{ states('input_number.electric_blanket_warmup_hours') | float(4) }}"
-              seconds: "{{ (hours * 3600) | int }}"
-          - wait_for_trigger:
-              - platform: state
-                entity_id: binary_sensor.electric_blanket_drawing_power
-                to: "off"
-                for: "00:20:00"
-                id: blanket_stopped
-            timeout: "{{ seconds }}"
-            continue_on_timeout: true
-          - if:
-              - "{{ wait.trigger is none }}"
-            then:
-              - service: switch.turn_off
-                target:
-                  entity_id: switch.electric_blanket_plug
-              - delay: "00:00:10"
-              - service: switch.turn_on
-                target:
-                  entity_id: switch.electric_blanket_plug
+          - service: switch.turn_off
+            target:
+              entity_id: switch.electric_blanket_plug
+          - delay: "00:00:10"
+          - service: switch.turn_on
+            target:
+              entity_id: switch.electric_blanket_plug
