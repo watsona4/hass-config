@@ -483,7 +483,7 @@
             action: script.window_position
           - if:
             - condition: state
-              entity_id: schedule.kids_daytime
+              entity_id: binary_sensor.kids_daytime
               state: 'on'
             then:
             - parallel:
@@ -528,7 +528,7 @@
             action: script.window_position
           - if:
             - condition: state
-              entity_id: schedule.kids_daytime
+              entity_id: binary_sensor.kids_daytime
               state: 'on'
             then:
             - parallel:
@@ -989,7 +989,7 @@
   description: ''
   triggers:
   - trigger: state
-    entity_id: schedule.daytime
+    entity_id: binary_sensor.daytime
     to:
     id: Daytime
   - trigger: state
@@ -1006,7 +1006,7 @@
     entity_id: input_boolean.wood_stove
     state: 'on'
   - condition: state
-    entity_id: schedule.daytime
+    entity_id: binary_sensor.daytime
     state: 'on'
   actions:
   - wait_template: '{{ states(''person.aaron_watson'') == ''home'' or states(''person.ashley_watson'')
@@ -1307,10 +1307,11 @@
     id: Tick
   conditions:
   - condition: template
-    value_template: '{% set y = now().year %}
+    value_template: '{% set y = now().year if now().month >= 11 else now().year -
+      1 %}
 
-      {% set nov1 = now().replace(month=11, day=1, hour=0, minute=0, second=0, microsecond=0)
-      %}
+      {% set nov1 = now().replace(year=y, month=11, day=1, hour=0, minute=0, second=0,
+      microsecond=0) %}
 
       {% set days_to_thu = (3 - nov1.weekday()) % 7 %}
 
@@ -1320,9 +1321,9 @@
 
       {% set start = (thanksgiving + timedelta(days=1)).date() %}
 
-      {% set end   = now().replace(year=y+1, month=1, day=1).date() %}
+      {% set end = now().replace(year=y+1, month=1, day=1).date() %}
 
-      {{ start <= now().date() < end }}'
+      {{ start <= now().date() <= end }}'
   actions:
   - variables:
       tree_switches:
@@ -2928,10 +2929,10 @@
     toggling.
   triggers:
   - entity_id:
-    - schedule.daytime
+    - binary_sensor.daytime
     trigger: state
   - entity_id:
-    - schedule.kids_daytime
+    - binary_sensor.kids_daytime
     id: Kids Daytime
     trigger: state
   - trigger: numeric_state
@@ -2976,7 +2977,7 @@
       sequence:
       - if:
         - condition: state
-          entity_id: schedule.daytime
+          entity_id: binary_sensor.daytime
           state: 'on'
         then:
         - metadata: {}
@@ -2993,7 +2994,7 @@
           action: script.turn_on
       - if:
         - condition: state
-          entity_id: schedule.kids_daytime
+          entity_id: binary_sensor.kids_daytime
           state: 'on'
         then:
         - metadata: {}
@@ -3150,7 +3151,7 @@
   - condition: or
     conditions:
     - condition: state
-      entity_id: schedule.daytime
+      entity_id: binary_sensor.daytime
       state: 'on'
     - condition: state
       entity_id: binary_sensor.evening
@@ -5126,7 +5127,7 @@
   description: ''
   triggers:
   - entity_id:
-    - schedule.daytime
+    - binary_sensor.daytime
     to: 'on'
     trigger: state
     id: Daytime On
@@ -5134,7 +5135,7 @@
     at: 06:30:00
     id: Daytime On
   - entity_id:
-    - schedule.daytime
+    - binary_sensor.daytime
     to: 'off'
     trigger: state
     id: Daytime Off
@@ -5435,7 +5436,7 @@
       data:
         title: Mouse Trap
         message: Mouse caught!
-    - wait_template: '{{ is_state(''schedule.daytime'', ''on'') }}'
+    - wait_template: '{{ is_state(''binary_sensor.daytime'', ''on'') }}'
       continue_on_timeout: true
   - if:
     - condition: numeric_state
@@ -5822,10 +5823,10 @@
   - condition: or
     conditions:
     - condition: state
-      entity_id: schedule.daytime
+      entity_id: binary_sensor.daytime
       state: 'on'
     - condition: state
-      entity_id: schedule.evening
+      entity_id: binary_sensor.evening
       state: 'on'
   actions:
   - if:

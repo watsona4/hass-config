@@ -84,57 +84,138 @@
       delay_off: "00:10:00"
       icon: "{{ 'mdi:leaf-off' if is_state(this.entity_id,'on') else 'mdi:leaf' }}"
 
-# ===============================
-# Daytime/Evening without now()
-# ===============================
+# =================
+# Daytime/Evening
+# =================
 - trigger:
     - platform: state
       entity_id:
-        - schedule.daytime
-        - schedule.evening
         - input_boolean.daytime_override
         - calendar.holidays_in_united_states
-    - platform: time
-      at: "06:30:00"
-    - platform: time
-      at: "18:30:00"
-    - platform: time
-      at: "20:30:00"
-    - platform: time
-      at: "00:01:00"
+    - platform: time_pattern
+      minutes: "/1"
 
   variables:
-    daytime: "{{ states('schedule.daytime') }}"
-    evening: "{{ states('schedule.evening') }}"
-    override: "{{ states('input_boolean.daytime_override') }}"
-    is_holiday: "{{ states('calendar.holidays_in_united_states') }}"
+    now_dt: "{{ now() }}"
+    override_on: "{{ is_state('input_boolean.daytime_override', 'on') }}"
 
-    # Time strings (safe for lexicographic compare)
-    t0630: "06:30:00"
-    t1830: "18:30:00"
-    t2030: "20:30:00"
-    hhmmss: "{{ now().strftime('%H:%M:%S') }}"
+    anchor_offset: "{{ -1 if now_dt|as_datetime < today_at('02:00:00') else 0 }}"
+    anchor_dt: "{{ now_dt|as_datetime + timedelta(days=anchor_offset) }}"
+    is_weekend: "{{ (anchor_dt|as_datetime).weekday() >= 5 }}"
+    is_weekday: "{{ not is_weekend|bool }}"
 
-    # Derived flags using string comparison
-    in_holiday_window: "{{ hhmmss >= t0630 and hhmmss < t2030 }}"
-    late: "{{ hhmmss >= t1830 }}"
+    raw_msg: "{{ state_attr('calendar.holidays_in_united_states', 'message') or '' }}"
+    holiday_name: "{{ raw_msg | regex_replace('\\s*\\([^)]*\\)\\s*$', '') | trim | replace('Day','Eve' if anchor_offset == -1 else 'Day') }}"
+
+    off_day_holidays:
+      - "New Year's Day"
+      - "Martin Luther King Jr. Day"
+      - "Presidents' Day"
+      - "Memorial Day"
+      - "Juneteenth"
+      - "Independence Day"
+      - "Labor Day"
+      - "Columbus Day"
+      - "Halloween"
+      - "Veterans Day"
+      - "Thanksgiving Day"
+      - "Black Friday"
+      - "Christmas Eve"
+      - "Christmas Day"
+      - "New Year's Eve"
+
+    calendar_on: "{{ is_state('calendar.holidays_in_united_states', 'on') }}"
+    is_holiday: "{{ calendar_on and (holiday_name in off_day_holidays) }}"
+
+    default_day_start: "05:00"
+    weekend_day_start: "06:30"
+    holiday_day_start: "06:30"
+
+    default_day_end: "20:30"
+    weekend_day_end: "20:30"
+    holiday_day_end: "20:30"
+
+    default_eve_duration: 2
+    weekend_eve_duration: 2
+    holiday_eve_duration: 2
+
+    late_cutover_time: "18:30"
+
+    exceptions:
+      "Halloween":
+        day_end: "22:30"
+        eve_duration: 1.5
+      "Christmas Eve":
+        day_end: "22:30"
+        eve_duration: 1.5
+      "New Year's Eve":
+        day_end: "00:30"
+        eve_duration: 1
+
+    exception: "{{ exceptions.get(holiday_name, {}) }}"
+
+    day_start_time: "{{ weekend_day_start if is_weekend else exception.get('day_start', holiday_day_start) if is_holiday else default_day_start }}"
+    day_end_time: "{{ weekend_day_end if is_weekend else exception.get('day_end', holiday_day_end) if is_holiday else default_day_end }}"
+
+    day_start: "{{ today_at(day_start_time) + timedelta(days=anchor_offset) }}"
+    day_end_base: "{{ today_at(day_end_time) + timedelta(days=anchor_offset) }}"
+    day_end: "{{ day_end_base|as_datetime + timedelta(days=1) if day_end_base|as_datetime <= day_start|as_datetime else day_end_base|as_datetime }}"
+
+    eve_start: "{{ day_end|as_datetime }}"
+    eve_duration_hours: "{{ weekend_eve_duration if is_weekend else exception.get('eve_duration', holiday_eve_duration) if is_holiday else default_eve_duration }}"
+    eve_end: "{{ eve_start|as_datetime + timedelta(hours=eve_duration_hours) }}"
+
+    in_daytime: "{{ now_dt|as_datetime >= day_start|as_datetime and now_dt|as_datetime < day_end|as_datetime }}"
+    in_evening: "{{ now_dt|as_datetime >= eve_start|as_datetime and now_dt|as_datetime < eve_end|as_datetime }}"
+
+    late_cutover: "{{ today_at(late_cutover_time) + timedelta(days=anchor_offset) }}"
+    is_late: "{{ now_dt|as_datetime >= late_cutover|as_datetime }}"
+    effective_evening: "{{ in_evening or (override_on and is_late) }}"
+    effective_daytime: "{{ (in_daytime or (override_on and not is_late)) and not effective_evening }}"
+
+    kids_start: "{{ day_start|as_datetime + timedelta(hours=1.5) }}"
+    kids_end: "{{ day_end|as_datetime - timedelta(hours=1) }}"
+    kids_daytime: "{{ kids_end|as_datetime > kids_start|as_datetime and (now_dt|as_datetime >= kids_start|as_datetime) and (now_dt|as_datetime < kids_end|as_datetime) }}"
 
   binary_sensor:
     - name: Daytime
       unique_id: daytime_sensor
       device_class: running
-      state: >-
-        {% set normal_daytime = (daytime == 'on') and (is_holiday != 'on') %}
-        {% set holiday_daytime = (is_holiday == 'on') and (in_holiday_window | bool) %}
-        {% set no_late_override = not ((override == 'on') and (late | bool)) %}
-        {% set special_override = (evening != 'on') and (override == 'on') and not (late | bool) %}
-        {{ special_override or ((normal_daytime or holiday_daytime) and no_late_override) }}
+      state: "{{ effective_daytime }}"
+      attributes:
+        holiday_name: "{{ holiday_name }}"
+        is_holiday: "{{ is_holiday }}"
+        is_weekend: "{{ is_weekend }}"
+        anchor_offset_days: "{{ anchor_offset }}"
+        day_start: "{{ day_start }}"
+        day_end: "{{ day_end }}"
+
+    - name: Kids Daytime
+      unique_id: kids_daytime_sensor
+      device_class: running
+      state: "{{ kids_daytime }}"
+      attributes:
+        holiday_name: "{{ holiday_name }}"
+        is_holiday: "{{ is_holiday }}"
+        is_weekend: "{{ is_weekend }}"
+        anchor_offset_days: "{{ anchor_offset}}"
+        day_start: "{{ day_start }}"
+        day_end: "{{ day_end }}"
+        kids_start: "{{ kids_start }}"
+        kids_end: "{{ kids_end }}"
 
     - name: Evening
       unique_id: evening_sensor
       device_class: running
-      state: >-
-        {{ (evening == 'on') or ((override == 'on') and (late | bool)) }}
+      state: "{{ effective_evening }}"
+      attributes:
+        holiday_name: "{{ holiday_name }}"
+        is_holiday: "{{ is_holiday }}"
+        is_weekend: "{{ is_weekend }}"
+        anchor_offset_days: "{{ anchor_offset }}"
+        eve_start: "{{ eve_start }}"
+        eve_end: "{{ eve_end }}"
+        eve_duration_hours: "{{ eve_duration_hours }}"
 
 # ===============================
 # Humidity Ratio
