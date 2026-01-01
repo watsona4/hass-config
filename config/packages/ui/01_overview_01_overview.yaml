@@ -64,6 +64,21 @@ template:
 
   - trigger:
       - platform: state
+        entity_id: binary_sensor.daytime
+    variables:
+      daytime: "{{ is_state('binary_sensor.daytime', 'on') }}"
+      evening: "{{ is_state('binary_sensor.evening', 'on') }}"
+      override: "{{ is_state('binary_sensor.daytime_override', 'on') }}"
+    sensor:
+      - name: ui_daytime_chip
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ 'mdi:white-balance-sunny' if override else 'mdi:weather-sunny' if daytime else 'mdi:weather-sunset' if evening else 'mdi:weather-night' }}"
+          label: "{{ 'Daytime' ~ (' (Override)' if override else '') if daytime else 'Evening' if evening else 'Nighttime' }}"
+          color: "{{ 'amber' if override else 'yellow' if daytime else 'orange' if evening else 'ingido' }}"
+
+  - trigger:
+      - platform: state
         entity_id: sensor.home_download_rate
     variables:
       <<: *variables
@@ -297,103 +312,67 @@ template:
             {%- from 'macros/unavailable_devices.jinja' import generate -%}
             {{ generate() | from_json }}
 
-  - sensor:
-      - name: ui_blinds_brightness_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('brightness') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_brightness_count
+        entity_id: binary_sensor.closed_brightness
     sensor:
       - name: ui_blinds_brightness
-        state: "{{ states('sensor.ui_blinds_brightness_count') }}"
+        state: "{{ states('binary_sensor.closed_brightness') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('brightness') | from_json }}
 
-  - sensor:
-      - name: ui_blinds_temperature_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('temperature') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_temperature_count
+        entity_id: binary_sensor.closed_temperature
     sensor:
       - name: ui_blinds_temperature
-        state: "{{ states('sensor.ui_blinds_temperature_count') }}"
+        state: "{{ states('binary_sensor.closed_temperature') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('temperature') | from_json }}
 
-  - sensor:
-      - name: ui_blinds_presence_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('presence') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_presence_count
+        entity_id: binary_sensor.closed_presence
     sensor:
       - name: ui_blinds_presence
-        state: "{{ states('sensor.ui_blinds_presence_count') }}"
+        state: "{{ states('binary_sensor.closed_presence') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('presence') | from_json }}
 
-  - sensor:
-      - name: ui_blinds_device_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('device') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_device_count
+        entity_id: binary_sensor.closed_devices
     sensor:
       - name: ui_blinds_device
-        state: "{{ states('sensor.ui_blinds_device_count') }}"
+        state: "{{ states('binary_sensor.closed_devices') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('device') | from_json }}
 
-  - sensor:
-      - name: ui_blinds_button_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('button') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_button_count
+        entity_id: binary_sensor.closed_button
     sensor:
       - name: ui_blinds_button
-        state: "{{ states('sensor.ui_blinds_button_count') }}"
+        state: "{{ states('binary_sensor.closed_button') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('button') | from_json }}
 
-  - sensor:
-      - name: ui_blinds_nighttime_count
-        state: >-
-          {%- from 'macros/pop_up_blinds.jinja' import count_blinds_closed -%}
-          {{ count_blinds_closed('nighttime') | int(0) }}
-
   - trigger:
       - platform: state
-        entity_id: sensor.ui_blinds_nighttime_count
+        entity_id: binary_sensor.closed_nighttime
     sensor:
       - name: ui_blinds_nighttime
-        state: "{{ states('sensor.ui_blinds_nighttime_count') }}"
+        state: "{{ states('binary_sensor.closed_nighttime') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}

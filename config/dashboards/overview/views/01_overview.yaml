@@ -39,6 +39,13 @@ sections:
             icon_color: "{{ state_attr('sensor.ui_coming_home_chip', 'color') }}"
             tap_action:
               action: more-info
+          - type: template
+            entity: binary_sensor.daytime
+            content: "{{ state_attr('sensor.ui_daytime_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_daytime_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_daytime_chip', 'color') }}"
+            tap_action:
+              action: more-info
 
       # Climate Cards
       - type: horizontal-stack
@@ -53,33 +60,57 @@ sections:
       # Network Status
       - type: horizontal-stack
         cards:
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.home_download_rate
-              - ui_entity: sensor.ui_home_download_rate
-              - name: Download
-              - app: download
-              - layout: vertical
-              - multiline_secondary: true
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.home_upload_rate
-              - ui_entity: sensor.ui_home_upload_rate
-              - name: Upload
-              - app: upload
-              - layout: vertical
-              - multiline_secondary: true
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.home_latency_icmp
-              - ui_entity: sensor.ui_home_latency_icmp
-              - name: Latency
-              - app: latency
-              - layout: vertical
-              - multiline_secondary: true
+          - type: custom:mushroom-template-card
+            entity: sensor.home_download_rate
+            icon: "{{ state_attr('sensor.ui_home_download_rate', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_home_download_rate', 'color') }}"
+            primary: Download
+            secondary: "{{ state_attr('sensor.ui_home_download_rate', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_home_download_rate', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_home_download_rate', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.home_upload_rate
+            icon: "{{ state_attr('sensor.ui_home_upload_rate', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_home_upload_rate', 'color') }}"
+            primary: Upload
+            secondary: "{{ state_attr('sensor.ui_home_upload_rate', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_home_upload_rate', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_home_upload_rate', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.home_latency_icmp
+            icon: "{{ state_attr('sensor.ui_home_latency_icmp', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_home_latency_icmp', 'color') }}"
+            primary: Latency
+            secondary: "{{ state_attr('sensor.ui_home_latency_icmp', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_home_latency_icmp', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_home_latency_icmp', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
       - type: grid
         columns: 2
@@ -99,11 +130,9 @@ sections:
     cards:
 
       # Outside Title
-      - type: custom:decluttering-card
-        template: title_card
-        variables:
-          - title: "Outdoor Conditions"
-          - subtitle: "Weather • Air Quality • Energy Use"
+      - type: custom:mushroom-title-card
+        title: "Outdoor Conditions"
+        subtitle: "Weather • Air Quality • Energy Use"
             
       # Climate States
       - type: custom:mushroom-chips-card
@@ -144,110 +173,190 @@ sections:
         cards:
 
           # Temperature and Humidity
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.outside_temperature_state
-              - ui_entity: sensor.ui_outside_temperature_state
-              - name: Outside Temp
-              - app: ambient
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.outside_humidity_state
-              - ui_entity: sensor.ui_outside_humidity_state
-              - name: Outside Humidity
-              - app: outdoor
+          - type: custom:mushroom-template-card
+            entity: sensor.outside_temperature_state
+            icon: "{{ state_attr('sensor.ui_outside_temperature_state', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_outside_temperature_state', 'color') }}"
+            primary: Outside Temp
+            secondary: "{{ state_attr('sensor.ui_outside_temperature_state', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_outside_temperature_state', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_outside_temperature_state', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.outside_humidity_state
+            icon: "{{ state_attr('sensor.ui_outside_humidity_state', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_outside_humidity_state', 'color') }}"
+            primary: Outside Humidity
+            secondary: "{{ state_attr('sensor.ui_outside_humidity_state', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_outside_humidity_state', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_outside_humidity_state', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
           # Sunlight and UV Index
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.light_sensor_illuminance
-              - ui_entity: sensor.ui_light_sensor_illuminance
-              - name: Illuminance
-              - app: outdoor
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.nearby_uv_index
-              - ui_entity: sensor.ui_nearby_uv_index
-              - name: UV Index
-              - app: uv_index
-              - options: uom=
+          - type: custom:mushroom-template-card
+            entity: sensor.light_sensor_illuminance
+            icon: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'color') }}"
+            primary: Illuminance
+            secondary: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.nearby_uv_index
+            icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_nearby_uv_index', 'color') }}"
+            primary: UV Index
+            secondary: "{{ state_attr('sensor.ui_nearby_uv_index', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_nearby_uv_index', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
           # Wind and Precipitation
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.nearby_wind_speed
-              - ui_entity: sensor.ui_nearby_wind_speed
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.nearby_today_precip_sum
-              - ui_entity: sensor.ui_nearby_today_precip_sum
+          - type: custom:mushroom-template-card
+            entity: sensor.nearby_wind_speed
+            icon: "{{ state_attr('sensor.ui_nearby_wind_speed', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_nearby_wind_speed', 'color') }}"
+            primary: "{{ state_attr('sensor.ui_nearby_wind_speed', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_nearby_wind_speed', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_nearby_wind_speed', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_nearby_wind_speed', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.nearby_today_precip_sum
+            icon: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'color') }}"
+            primary: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
           # Air Quality and Dew Point
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.waqi_nearby_aqi
-              - ui_entity: sensor.ui_waqi_nearby_aqi
-              - name: Air Quality Index
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.nearby_dew_point
-              - ui_entity: sensor.ui_nearby_dew_point
-              - name: Dew Point
-              - app: dew_point
+          - type: custom:mushroom-template-card
+            entity: sensor.waqi_nearby_aqi
+            icon: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'color') }}"
+            primary: Air Quality Index
+            secondary: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.nearby_dew_point
+            icon: "{{ state_attr('sensor.ui_nearby_dew_point', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_nearby_dew_point', 'color') }}"
+            primary: Dew Point
+            secondary: "{{ state_attr('sensor.ui_nearby_dew_point', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_nearby_dew_point', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_nearby_dew_point', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
       # Utility Usage
       - type: horizontal-stack
         cards:
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.electric_daily
-              - ui_entity: sensor.ui_electric_daily
-              - app: energy_daily_house
-              - layout: vertical
-              - multiline_secondary: true
-              - options: project_daily=true
-              - tap_action:
-                  action: navigate
-                  navigation_path: /energy
-              - icon_tap_action:
-                  action: more-info
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.water_daily
-              - ui_entity: sensor.ui_water_daily
-              - app: daily
-              - layout: vertical
-              - multiline_secondary: true
-              - options: project_daily=true
-              - tap_action:
-                  action: navigate
-                  navigation_path: /energy
-              - icon_tap_action:
-                  action: more-info
-          - type: custom:decluttering-card
-            template: ui_template_card
-            variables:
-              - entity: sensor.gas_daily
-              - ui_entity: sensor.ui_gas_daily
-              - app: daily
-              - layout: vertical
-              - multiline_secondary: true
-              - options: project_daily=true
-              - tap_action:
-                  action: navigate
-                  navigation_path: /energy
-              - icon_tap_action:
-                  action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.electric_daily
+            icon: "{{ state_attr('sensor.ui_electric_daily', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_electric_daily', 'color') }}"
+            primary: "{{ state_attr('sensor.ui_electric_daily', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_electric_daily', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_electric_daily', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_electric_daily', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: navigate
+              navigation_path: /energy
+            icon_tap_action:
+              action: more-info
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.water_daily
+            icon: "{{ state_attr('sensor.ui_water_daily', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_water_daily', 'color') }}"
+            primary: "{{ state_attr('sensor.ui_water_daily', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_water_daily', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_water_daily', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_water_daily', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: navigate
+              navigation_path: /energy
+            icon_tap_action:
+              action: more-info
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:mushroom-template-card
+            entity: sensor.gas_daily
+            icon: "{{ state_attr('sensor.ui_gas_daily', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_gas_daily', 'color') }}"
+            primary: "{{ state_attr('sensor.ui_gas_daily', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_gas_daily', 'label_vertical') }}"
+            badge_icon: "{{ state_attr('sensor.ui_gas_daily', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_gas_daily', 'badge_color') }}"
+            layout: vertical
+            multiline_secondary: true
+            tap_action:
+              action: navigate
+              navigation_path: /energy
+            icon_tap_action:
+              action: more-info
+            grid_options:
+              columns: 12
+              rows: auto
 
   # Status - Lights, Doors, Smoke/CO
   - type: grid
@@ -616,8 +725,8 @@ sections:
         heading_style: subtitle
         visibility:
           - condition: state
-            entity: input_boolean.all_windows
-            state: 'off'
+            entity: binary_sensor.closed_nighttime
+            state: 'on'
       - type: custom:auto-entities
         card:
           type: grid
@@ -633,25 +742,3 @@ sections:
               {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
             {%- endfor -%}
             {{ ns.out }}
-        styles:
-          card:
-            - position: fixed
-            - right: 24px
-            - bottom: calc(env(safe-area-inset-bottom, 0px) + 144px)
-            - z-index: 1099
-            - width: 56px
-            - height: 56px
-            - aspect-ratio: 1 / 1
-            - box-sizing: border-box
-            - padding: 0
-            - border-radius: 50%
-            - box-shadow: 0 6px 20px rgba(0,0,0,.25)
-            - background: var(--secondary-background-color)
-            - color: var(--primary-text-color)
-            - transition: opacity .25s ease, transform .25s ease
-          icon:
-            - width: 24px
-            - height: 24px
-            - transform: none !important
-          img_cell:
-            - background: none

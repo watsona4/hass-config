@@ -438,13 +438,9 @@ window_position:
   variables:
     switches: '{{ switches | default([]) }}'
     reason: '{{ reason | default('''') }}'
+    no_op: '{{ expand(switches) | selectattr(''state'', ''eq'', ''on'') | list | length
+      != 0 }}'
   sequence:
-  - if:
-    - condition: template
-      value_template: '{{ expand(switches) | selectattr(''state'', ''eq'', ''on'')
-        | list | length != 0 }}'
-    then:
-    - stop: Some conditional switches are on
   - repeat:
       for_each: '{{ entities }}'
       sequence:
@@ -456,6 +452,7 @@ window_position:
             action: '{{ action }}'
             reason: '{{ reason }}'
             window: '{{ repeat.item }}'
+            no_op: '{{ no_op }}'
   mode: parallel
   description: ''
   trace:
@@ -770,8 +767,13 @@ single_window:
           - Button
           - Presence
           - Nighttime
+    no_op:
+      selector:
+        boolean: {}
+      default: false
   variables:
     reason: '{{ reason | default('''') }}'
+    no_op: '{{ no_op | default(false) }}'
   sequence:
   - if:
     - condition: template
@@ -779,6 +781,7 @@ single_window:
         < 300 }}'
     then:
     - stop: Too soon since restart
+    enabled: false
   - choose:
     - conditions:
       - condition: template
@@ -811,7 +814,8 @@ single_window:
         value: '{{ reason }}'
   - if:
     - condition: template
-      value_template: '{{ position != action and position != ''unknown'' }}'
+      value_template: '{{ not no_op and position != action and position != ''unknown''
+        }}'
     then:
     - wait_template: '{{ (states(window) | string) not in [''opening'',''closing'']
         }}'
