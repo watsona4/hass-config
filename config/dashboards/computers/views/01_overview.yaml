@@ -2,133 +2,935 @@ title: Systems Overview
 type: sections
 max_columns: 2
 cards: []
+
 badges:
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - entity: sensor.laptop_oo58t6kn_cpu_utilization
-      - name: Laptop
-      - app: cpu_utilization
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - entity: sensor.frigate_cpu_utilization
-      - name: Frigate
-      - app: cpu_utilization
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - entity: sensor.desktop_bq063ig_cpu_utilization
-      - name: Desktop
-      - app: cpu_utilization
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - entity: sensor.opnsense_cpu_utilization
-      - name: OPNSense
-      - app: cpu_utilization
+  - type: custom:mushroom-template-badge
+    entity: sensor.laptop_oo58t6kn_cpu_utilization
+    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'color') }}"
+    label: Laptop
+    content: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.frigate_cpu_utilization
+    icon: "{{ state_attr('sensor.ui_frigate_cpu_utilization', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_frigate_cpu_utilization', 'color') }}"
+    label: Frigate
+    content: "{{ state_attr('sensor.ui_frigate_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.desktop_bq063ig_cpu_utilization
+    icon: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization', 'color') }}"
+    label: Desktop
+    content: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.opnsense_cpu_utilization
+    icon: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'color') }}"
+    label: OPNSense
+    content: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
 sections:
   - type: grid
     column_span: 2
     cards:
-      - type: custom:decluttering-card
-        template: machine_summary
-        variables:
-          - i_name: Laptop
-          - i_uptime: sensor.laptop_oo58t6kn_uptime_s
-          - i_cpu_pct: sensor.laptop_oo58t6kn_cpu_utilization
-          - i_load1: sensor.laptop_oo58t6kn_cpu_load_1m
-          - i_mem_pct: sensor.laptop_oo58t6kn_memory_percent
-          - i_mem_used: sensor.laptop_oo58t6kn_memory_used
-          - i_disk_pct: sensor.laptop_oo58t6kn_fs_c_percent
-          - i_disk_free: sensor.laptop_oo58t6kn_fs_c_free
-          - i_temp: sensor.laptop_oo58t6kn_cpu_temp_pkg
-          - i_gpu_pct: sensor.laptop_oo58t6kn_gpu_utilization
-          - i_tpu_temp: sensor.laptop_oo58t6kn_coral_apex_0_temp
-          - i_updates: sensor.laptop_oo58t6kn_updates_pending
-          - i_alerts_any: binary_sensor.laptop_status_alarm
-          - i_status: sensor.laptop_oo58t6kn_overall_status_summary
-          - i_services_display: binary_sensor.laptop_display_services
-          - i_services_glob: binary_sensor.laptop_oo58t6kn*_service_*
-          - i_containers_display: binary_sensor.laptop_display_containers
-      - type: custom:decluttering-card
-        template: machine_summary
-        variables:
-          - i_name: Frigate
-          - i_uptime: sensor.frigate_uptime_s
-          - i_cpu_pct: sensor.frigate_cpu_utilization
-          - i_load1: sensor.frigate_cpu_load_1m
-          - i_mem_pct: sensor.frigate_memory_percent
-          - i_mem_used: sensor.frigate_memory_used
-          - i_disk_pct: sensor.frigate_fs_percent
-          - i_disk_free: sensor.frigate_fs_free
-          - i_temp: sensor.frigate_cpu_temp_package_id_0
-          - i_gpu_pct: sensor.frigate_gpu_utilization
-          - i_tpu_temp: sensor.frigate_coral_apex_0_temp
-          - i_updates: sensor.frigate_updates_pending
-          - i_alerts_any: binary_sensor.frigate_status_alarm
-          - i_status: sensor.frigate_overall_status_summary
-          - i_services_display: binary_sensor.frigate_display_services
-          - i_services_glob: binary_sensor.frigate*_service_*
-          - i_containers_glob: binary_sensor.frigate*_container_*
-          - i_containers_display: binary_sensor.frigate_display_containers
-      - type: custom:decluttering-card
-        template: machine_summary
-        variables:
-          - i_name: Desktop
-          - i_uptime: sensor.desktop_bq063ig_uptime_s
-          - i_cpu_pct: sensor.desktop_bq063ig_cpu_utilization
-          - i_load1: sensor.desktop_bq063ig_cpu_load_1m
-          - i_mem_pct: sensor.desktop_bq063ig_memory_percent
-          - i_mem_used: sensor.desktop_bq063ig_memory_used
-          - i_disk_pct: sensor.desktop_bq063ig_fs_c_percent
-          - i_disk_free: sensor.desktop_bq063ig_fs_c_free
-          - i_temp: sensor.desktop_bq063ig_cpu_temp_pkg
-          - i_gpu_pct: sensor.desktop_bq063ig_gpu_utilization
-          - i_tpu_temp: sensor.desktop_bq063ig_coral_apex_0_temp
-          - i_updates: sensor.desktop_bq063ig_updates_pending
-          - i_alerts_any: binary_sensor.desktop_status_alarm
-          - i_status: sensor.desktop_bq063ig_overall_status_summary
-          - i_services_display: binary_sensor.desktop_display_services
-          - i_services_glob: binary_sensor.desktop_bq063ig*_service_*
-          - i_containers_display: binary_sensor.desktop_display_containers
-      - type: custom:decluttering-card
-        template: machine_summary
-        variables:
-          - i_name: OPNSense
-          - i_uptime: sensor.opnsense_uptime_s
-          - i_cpu_pct: sensor.opnsense_cpu_utilization
-          - i_load1: sensor.opnsense_cpu_load_1m
-          - i_mem_pct: sensor.opnsense_memory_percent
-          - i_mem_used: sensor.opnsense_memory_used
-          - i_disk_pct: sensor.opnsense_fs_percent
-          - i_disk_free: sensor.opnsense_fs_free
-          - i_temp: sensor.opnsense_cpu_temp_avg
-          - i_gpu_pct: sensor.opnsense_gpu_utilization
-          - i_tpu_temp: sensor.opnsense_coral_apex_0_temp
-          - i_updates: sensor.opnsense_updates_pending
-          - i_status: sensor.opnsense_overall_status_summary
-          - i_alerts_any: binary_sensor.opnsense_status_alarm
-          - i_services_display: binary_sensor.opnsense_display_services
-          - i_services_glob: binary_sensor.opnsense*_service_*
-          - i_containers_display: binary_sensor.opnsense_display_containers
-      - type: custom:decluttering-card
-        template: machine_summary
-        variables:
-          - i_name: RaspberryPi
-          - i_uptime: sensor.raspberrypi4_uptime_s
-          - i_cpu_pct: sensor.raspberrypi4_cpu_utilization
-          - i_load1: sensor.raspberrypi4_cpu_load_1m
-          - i_mem_pct: sensor.raspberrypi4_memory_percent
-          - i_mem_used: sensor.raspberrypi4_memory_used
-          - i_disk_pct: sensor.raspberrypi4_fs_percent
-          - i_disk_free: sensor.raspberrypi4_fs_free
-          - i_temp: sensor.raspberrypi4_cpu_temp_cpu_thermal_0
-          - i_gpu_pct: sensor.raspberrypi4_gpu_utilization
-          - i_tpu_temp: sensor.raspberrypi4_coral_apex_0_temp
-          - i_updates: sensor.raspberrypi4_updates_pending
-          - i_status: sensor.raspberrypi4_overall_status_summary
-          - i_alerts_any: binary_sensor.raspberrypi4_status_alarm
-          - i_services_display: binary_sensor.raspberrypi4_display_services
-          - i_services_glob: binary_sensor.raspberrypi4*_service_*
-          - i_containers_display: binary_sensor.raspberrypi4_display_containers
+      - type: vertical-stack
+        cards:
+
+          # Header
+          - type: custom:mushroom-title-card
+            title: Laptop
+            subtitle: "{{ states('sensor.laptop_oo58t6kn_overall_status_summary') }}"
+
+          # Summary
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.laptop_oo58t6kn_uptime_s
+                icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_uptime_s', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_uptime_s', 'color') }}"
+                primary: Uptime
+                secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_uptime_s', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_uptime_s', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_uptime_s', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.laptop_oo58t6kn_updates_pending
+                icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_updates_pending', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_updates_pending', 'color') }}"
+                primary: Updates
+                secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_updates_pending', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_updates_pending', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_updates_pending', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: binary_sensor.laptop_status_alarm
+                icon: "{{ state_attr('sensor.ui_laptop_status_alarm', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_status_alarm', 'color') }}"
+                primary: Status
+                secondary: "{{ state_attr('sensor.ui_laptop_status_alarm', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_status_alarm', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_status_alarm', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.laptop_oo58t6kn_cpu_utilization
+                icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization_load', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization_load', 'color') }}"
+                primary: CPU
+                secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization_load', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization_load', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization_load', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.laptop_oo58t6kn_memory_percent
+                icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'color') }}"
+                primary: Memory
+                secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.laptop_oo58t6kn_fs_c_percent
+                icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent', 'color') }}"
+                primary: Disk
+                secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
+                    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'color') }}"
+                    primary: Temp
+                    secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Services
+            visibility:
+              - condition: state
+                entity: binary_sensor.laptop_display_services
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.laptop_oo58t6kn*_service_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: |
+                      {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name
+
+      - type: vertical-stack
+        cards:
+
+          # Header
+          - type: custom:mushroom-title-card
+            title: Frigate
+            subtitle: "{{ states('sensor.frigate_overall_status_summary') }}"
+
+          # Summary
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_uptime_s
+                icon: "{{ state_attr('sensor.ui_frigate_uptime_s', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_uptime_s', 'color') }}"
+                primary: Uptime
+                secondary: "{{ state_attr('sensor.ui_frigate_uptime_s', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_uptime_s', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_uptime_s', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_updates_pending
+                icon: "{{ state_attr('sensor.ui_frigate_updates_pending', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_updates_pending', 'color') }}"
+                primary: Updates
+                secondary: "{{ state_attr('sensor.ui_frigate_updates_pending', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_updates_pending', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_updates_pending', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: binary_sensor.frigate_status_alarm
+                icon: "{{ state_attr('sensor.ui_frigate_status_alarm', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_status_alarm', 'color') }}"
+                primary: Status
+                secondary: "{{ state_attr('sensor.ui_frigate_status_alarm', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_status_alarm', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_status_alarm', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_cpu_utilization
+                icon: "{{ state_attr('sensor.ui_frigate_cpu_utilization_load', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_cpu_utilization_load', 'color') }}"
+                primary: CPU
+                secondary: "{{ state_attr('sensor.ui_frigate_cpu_utilization_load', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_cpu_utilization_load', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_cpu_utilization_load', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_memory_percent
+                icon: "{{ state_attr('sensor.ui_frigate_memory_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_memory_percent', 'color') }}"
+                primary: Memory
+                secondary: "{{ state_attr('sensor.ui_frigate_memory_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_memory_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_memory_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.frigate_fs_percent
+                icon: "{{ state_attr('sensor.ui_frigate_fs_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_frigate_fs_percent', 'color') }}"
+                primary: Disk
+                secondary: "{{ state_attr('sensor.ui_frigate_fs_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_frigate_fs_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_frigate_fs_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.frigate_cpu_temp_package_id_0
+                    icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'color') }}"
+                    primary: Temp
+                    secondary: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+                  - type: custom:mushroom-template-card
+                    visibility:
+                      - condition: state
+                        entity: sensor.frigate_gpu_utilization
+                        state_not: unknown
+                    entity: sensor.frigate_gpu_utilization
+                    icon: "{{ state_attr('sensor.ui_frigate_gpu_utilization', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_gpu_utilization', 'color') }}"
+                    primary: GPU
+                    secondary: "{{ state_attr('sensor.ui_frigate_gpu_utilization', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_gpu_utilization', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_gpu_utilization', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+                  - type: custom:mushroom-template-card
+                    visibility:
+                      - condition: state
+                        entity: sensor.frigate_coral_apex_0_temp
+                        state_not: unknown
+                    entity: sensor.frigate_coral_apex_0_temp
+                    icon: "{{ state_attr('sensor.ui_frigate_coral_apex_0_temp', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_coral_apex_0_temp', 'color') }}"
+                    primary: TPU
+                    secondary: "{{ state_attr('sensor.ui_frigate_coral_apex_0_temp', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_coral_apex_0_temp', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_coral_apex_0_temp', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Services
+            visibility:
+              - condition: state
+                entity: binary_sensor.frigate_display_services
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.frigate*_service_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: |
+                      {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Containers
+            visibility:
+              - condition: state
+                entity: binary_sensor.frigate_display_containers
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.frigate*_container_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: >
+                      {{- 'mdi:server' if is_state(entity,'on') else 'mdi:server-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name
+
+      - type: vertical-stack
+        cards:
+
+          # Header
+          - type: custom:mushroom-title-card
+            title: Desktop
+            subtitle: "{{ states('sensor.desktop_bq063ig_overall_status_summary') }}"
+
+          # Summary
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.desktop_bq063ig_uptime_s
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_uptime_s', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_uptime_s', 'color') }}"
+                primary: Uptime
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_uptime_s', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_uptime_s', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_uptime_s', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.desktop_bq063ig_updates_pending
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_updates_pending', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_updates_pending', 'color') }}"
+                primary: Updates
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_updates_pending', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_updates_pending', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_updates_pending', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: binary_sensor.desktop_bq063ig_status_alarm
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_status_alarm', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_status_alarm', 'color') }}"
+                primary: Status
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_status_alarm', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_status_alarm', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_status_alarm', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.desktop_bq063ig_cpu_utilization
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization_load', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization_load', 'color') }}"
+                primary: CPU
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization_load', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization_load', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_utilization_load', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.desktop_bq063ig_memory_percent
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_memory_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_memory_percent', 'color') }}"
+                primary: Memory
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_memory_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_memory_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_memory_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.desktop_bq063ig_fs_c_percent
+                icon: "{{ state_attr('sensor.ui_desktop_bq063ig_fs_c_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_fs_c_percent', 'color') }}"
+                primary: Disk
+                secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_fs_c_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_fs_c_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_fs_c_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.desktop_bq063ig_cpu_temp_pkg
+                    icon: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_temp_pkg', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_temp_pkg', 'color') }}"
+                    primary: Temp
+                    secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_temp_pkg', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_temp_pkg', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_cpu_temp_pkg', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+                  - type: custom:mushroom-template-card
+                    entity: sensor.desktop_bq063ig_gpu_utilization
+                    icon: "{{ state_attr('sensor.ui_desktop_bq063ig_gpu_utilization', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_desktop_bq063ig_gpu_utilization', 'color') }}"
+                    primary: GPU
+                    secondary: "{{ state_attr('sensor.ui_desktop_bq063ig_gpu_utilization', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_desktop_bq063ig_gpu_utilization', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_desktop_bq063ig_gpu_utilization', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Services
+            visibility:
+              - condition: state
+                entity: binary_sensor.desktop_display_services
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.desktop_bq063ig*_service_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: |
+                      {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name
+
+      - type: vertical-stack
+        cards:
+
+          # Header
+          - type: custom:mushroom-title-card
+            title: OPNSense
+            subtitle: "{{ states('sensor.opnsense_overall_status_summary') }}"
+
+          # Summary
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.opnsense_uptime_s
+                icon: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'color') }}"
+                primary: Uptime
+                secondary: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.opnsense_updates_pending
+                icon: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'color') }}"
+                primary: Updates
+                secondary: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: binary_sensor.opnsense_status_alarm
+                icon: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'color') }}"
+                primary: Status
+                secondary: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.opnsense_cpu_utilization
+                icon: "{{ state_attr('sensor.ui_opnsense_cpu_utilization_load', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_utilization_load', 'color') }}"
+                primary: CPU
+                secondary: "{{ state_attr('sensor.ui_opnsense_cpu_utilization_load', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_cpu_utilization_load', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_cpu_utilization_load', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.opnsense_memory_percent
+                icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'color') }}"
+                primary: Memory
+                secondary: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.opnsense_fs_percent
+                icon: "{{ state_attr('sensor.ui_opnsense_fs_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_opnsense_fs_percent', 'color') }}"
+                primary: Disk
+                secondary: "{{ state_attr('sensor.ui_opnsense_fs_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_opnsense_fs_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_opnsense_fs_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.opnsense_cpu_temp_avg
+                    icon: "{{ state_attr('sensor.ui_opnsense_cpu_temp_avg', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_temp_avg', 'color') }}"
+                    primary: Temp
+                    secondary: "{{ state_attr('sensor.ui_opnsense_cpu_temp_avg', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_opnsense_cpu_temp_avg', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_opnsense_cpu_temp_avg', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Services
+            visibility:
+              - condition: state
+                entity: binary_sensor.opnsense_display_services
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.opnsense*_service_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: |
+                      {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name
+
+      - type: vertical-stack
+        cards:
+
+          # Header
+          - type: custom:mushroom-title-card
+            title: RaspberryPi
+            subtitle: "{{ states('sensor.raspberrypi4_overall_status_summary') }}"
+
+          # Summary
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.raspberrypi4_uptime_s
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_uptime_s', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_uptime_s', 'color') }}"
+                primary: Uptime
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_uptime_s', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_uptime_s', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_uptime_s', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.raspberrypi4_updates_pending
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_updates_pending', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_updates_pending', 'color') }}"
+                primary: Updates
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_updates_pending', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_updates_pending', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_updates_pending', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: binary_sensor.raspberrypi4_status_alarm
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_status_alarm', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_status_alarm', 'color') }}"
+                primary: Status
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_status_alarm', 'label_vertical') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_status_alarm', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_status_alarm', 'badge_color') }}"
+                layout: vertical
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.raspberrypi4_cpu_utilization
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_cpu_utilization_load', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_cpu_utilization_load', 'color') }}"
+                primary: CPU
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_cpu_utilization_load', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_cpu_utilization_load', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_cpu_utilization_load', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: custom:mushroom-template-card
+                entity: sensor.raspberrypi4_memory_percent
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_memory_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_memory_percent', 'color') }}"
+                primary: Memory
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_memory_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_memory_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_memory_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.raspberrypi4_fs_percent
+                icon: "{{ state_attr('sensor.ui_raspberrypi4_fs_percent', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_raspberrypi4_fs_percent', 'color') }}"
+                primary: Disk
+                secondary: "{{ state_attr('sensor.ui_raspberrypi4_fs_percent', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_fs_percent', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_raspberrypi4_fs_percent', 'badge_color') }}"
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.raspberrypi4_cpu_temp_cpu_thermal_0
+                    icon: "{{ state_attr('sensor.ui_raspberrypi4_cpu_temp_cpu_thermal_0', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_raspberrypi4_cpu_temp_cpu_thermal_0', 'color') }}"
+                    primary: Temp
+                    secondary: "{{ state_attr('sensor.ui_raspberrypi4_cpu_temp_cpu_thermal_0', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_raspberrypi4_cpu_temp_cpu_thermal_0', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_raspberrypi4_cpu_temp_cpu_thermal_0', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+          - type: custom:mushroom-title-card
+            subtitle: Stopped Services
+            visibility:
+              - condition: state
+                entity: binary_sensor.raspberrypi4_display_services
+                state: 'on'
+          - type: custom:auto-entities
+            card:
+              type: custom:mushroom-chips-card
+              alignment: start
+            card_param: chips
+            filter:
+              include:
+                - entity_id: binary_sensor.raspberrypi4*_service_*
+                  state: 'off'
+                  options:
+                    type: template
+                    entity: this.entity_id
+                    icon: |
+                      {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                    icon_color: |
+                      {{- 'green' if is_state(entity,'on') else 'red' -}}
+                    content: >
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
+                      {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                    tap_action: none
+              exclude: []
+            sort:
+              method: name

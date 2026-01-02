@@ -1,0 +1,298 @@
+homeassistant:
+  customize:
+    anchor_container:
+      .variables: &variables
+        entity_id: ''
+        app: default
+        options: {}
+        state_info: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+        state_info_vertical: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+      .attributes: &attributes
+        value: "{{ state_info.value }}"
+        name: "{{ state_info.name }}"
+        default_desc: "{{ state_info.default_desc }}"
+        short_desc: "{{ state_info.short_desc }}"
+        long_desc: "{{ state_info.long_desc }}"
+        full_desc: "{{ state_info.full_desc }}"
+        icon: "{{ state_info.icon }}"
+        color: "{{ state_info.color }}"
+        badge: "{{ state_info.badge }}"
+        badge_color: "{{ state_info.badge_color }}"
+        label: "{{ state_info.label }}"
+        short_label: "{{ state_info.short_label }}"
+        long_label: "{{ state_info.long_label }}"
+        label_vertical: "{{ state_info_vertical.label }}"
+        short_label_vertical: "{{ state_info_vertical.short_label }}"
+        long_label_vertical: "{{ state_info_vertical.long_label }}"
+      .sensor: &sensor
+        state: "{{ states(entity_id) }}"
+        attributes: *attributes
+
+template:
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_cpu_utilization
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_cpu_utilization
+      app: cpu_utilization
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_cpu_utilization
+        unique_id: 25551638-81b2-459f-a5ae-38736fcdcec2
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_uptime_s
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_uptime_s
+      app: uptime
+      options:
+        device_class: duration
+        uom: s
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_uptime_s
+        unique_id: 34570a03-f3d2-4d4f-84ad-f63df5e3d9b5
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_updates_pending
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_updates_pending
+      app: count_pending
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_updates_pending
+        unique_id: f49b5d70-6681-4cdf-96b4-f0a85c5ec1cf
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.laptop_status_alarm
+          - sensor.laptop_oo58t6kn_overall_status_summary
+    variables:
+      <<: *variables
+      entity_id: binary_sensor.laptop_status_alarm
+      app: alarm
+      options:
+        summary: sensor.laptop_oo58t6kn_overall_status_summary
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_status_alarm
+        unique_id: bcdc514a-f5d7-435f-bc9d-36f52b7b6161
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_cpu_utilization
+          - sensor.laptop_oo58t6kn_cpu_load_1m
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_cpu_utilization
+      app: cpu_utilization
+      options:
+        load: sensor.laptop_oo58t6kn_cpu_load_1m
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_cpu_utilization_load
+        unique_id: 0fda50f9-7923-4afb-9217-10277d6538d5
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_cpu_load_1m
+          - sensor.laptop_oo58t6kn_cpu_load_5m
+          - sensor.laptop_oo58t6kn_cpu_load_15m
+          - sensor.laptop_oo58t6kn_cpu_cores
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_cpu_load_1m
+      app: cpu_load
+      options:
+        cores: sensor.laptop_oo58t6kn_cpu_cores
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_cpu_load_1m
+        unique_id: bbd98e6b-7b29-4508-97be-bf6850b5a450
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- set m1 = states('sensor.laptop_oo58t6kn_cpu_load_1m')|float(0) -%}
+            {%- set m5 = states('sensor.laptop_oo58t6kn_cpu_load_5m')|float(0) -%}
+            {%- set m15 = states('sensor.laptop_oo58t6kn_cpu_load_15m')|float(0) -%}
+            {%- set c = states('sensor.laptop_oo58t6kn_cpu_cores')|int(0) -%}
+            {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_memory_percent
+          - sensor.laptop_oo58t6kn_memory_used
+          - sensor.laptop_oo58t6kn_memory_total
+          - sensor.laptop_oo58t6kn_memory_available
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_memory_percent
+      app: memory_utilization
+      options:
+        used: sensor.laptop_oo58t6kn_memory_used
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_memory_percent
+        unique_id: 57f4f746-5ec4-41e9-87ba-80031df502e9
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set mem_pct = u_humanize_entity('sensor.laptop_oo58t6kn_memory_percent') -%}
+            {%- set mem_used = u_humanize_entity('sensor.laptop_oo58t6kn_memory_used') -%}
+            {%- set mem_total = u_humanize_entity('sensor.laptop_oo58t6kn_memory_total') -%}
+            {%- set mem_free = u_humanize_entity('sensor.laptop_oo58t6kn_memory_available') -%}
+            {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_fs_c_percent
+          - sensor.laptop_oo58t6kn_fs_c_free
+          - sensor.laptop_oo58t6kn_fs_c_total
+          - sensor.laptop_oo58t6kn_fs_c_used
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_fs_c_percent
+      app: disk_utilization
+      options:
+        free: sensor.laptop_oo58t6kn_fs_c_free
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_fs_c_percent
+        unique_id: 0fad69f6-849b-450c-83e6-5017ffa1070a
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_total') -%}
+            {%- set used = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_used') -%}
+            {%- set pct = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_cpu_temp_pkg
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_cpu_temp_pkg
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_cpu_temp_pkg
+        unique_id: 28cbae66-72f6-4d50-9704-dd8b00d29e2c
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_cpu_temp_max
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_oo58t6kn_cpu_temp_max
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_oo58t6kn_cpu_temp_max
+        unique_id: 3fa036c3-f137-4427-ba16-6f8ed5fa2454
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_physicaldrive0_data_rate
+          - sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate
+          - sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate
+          - sensor.laptop_oo58t6kn_disk_physicaldrive0_read_bytes
+          - sensor.laptop_oo58t6kn_disk_physicaldrive0_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_physicaldrive0_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_physicaldrive0_data_rate
+        unique_id: 9b6eef9c-6e97-4a7f-b548-d8abe1861b0d
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_battery_charge
+          - binary_sensor.laptop_oo58t6kn_battery_plugged
+          - sensor.laptop_oo58t6kn_battery_percent
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_battery_charge
+      app: discharging
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_battery_charge
+        unique_id: 7f7d79cd-3bf6-4f70-a899-3a0f8c4c2d3e
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set pct = u_humanize_entity('sensor.laptop_oo58t6kn_battery_percent') -%}
+            {%- set plugged = is_state('binary_sensor.laptop_oo58t6kn_battery_plugged','on')|bool(false) -%}
+            {{- 'Battery: ' ~ pct ~ ' • ' ~ ('Plugged' if plugged else 'On battery') -}}
+
+  - sensor:
+      - name: ui_laptop_oo58t6kn_network_active_name
+        unique_id: 0814995d-92f2-450b-87ba-33ba1756957c
+        state: "{{ states('sensor.laptop_oo58t6kn_network_active_name') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set nic = states('sensor.laptop_oo58t6kn_network_active_name') -%}
+            {%- set ip = states('sensor.laptop_oo58t6kn_network_active_ipv4') -%}
+            {%- set up = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_up') -%}
+            {%- set down = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_down') -%}
+            {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
+      - name: ui_laptop_oo58t6kn_smart_dev_sda_health
+        unique_id: 247b357f-6f49-463f-9c25-8064a5d34061
+        state: "{{ states('binary_sensor.laptop_oo58t6kn_smart_dev_sda_health') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set ok = is_state('binary_sensor.laptop_oo58t6kn_smart_dev_sda_health','on') %} 
+            {%- set temp = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_temperature') -%}
+            {%- set has_life_pct = has_value('sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used') -%}
+            {%- set poh = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_power_on_hours') -%}
+            {%- set read = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_read') -%}
+            {%- set written = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_written') -%}
+            {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+            {%- set ns = namespace(life_pct_str='') -%}
+            {%- if has_life_pct -%}
+              {%- set life_pct = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used') -%}
+              {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+            {%- endif -%}
+            {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+          icon: >-
+            {{- 'mdi:heart-pulse' if is_state('binary_sensor.laptop_oo58t6kn_smart_dev_sda_health','on') else 'mdi:heart-broken' -}}
+          color: >-
+            {{- 'green' if is_state('binary_sensor.laptop_oo58t6kn_smart_dev_sda_health','on') else 'red' -}}

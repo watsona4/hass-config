@@ -4,38 +4,46 @@ max_columns: 3
 cards: []
 
 badges:
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - name: Status
-      - entity: binary_sensor.laptop_status_alarm
-      - app: alarm
-      - options: 'summary=sensor.laptop_oo58t6kn_overall_status_summary'
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - name: CPU Load
-      - entity: sensor.laptop_oo58t6kn_cpu_load_1m
-      - app: cpu_load
-      - options: 'cores=sensor.laptop_oo58t6kn_cpu_cores'
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - name: CPU
-      - entity: sensor.laptop_oo58t6kn_cpu_utilization
-      - app: cpu_utilization
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - name: CPU Temp
-      - entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
-      - app: cpu
-  - type: custom:decluttering-card
-    template: template_badge
-    variables:
-      - name: Memory
-      - entity: sensor.laptop_oo58t6kn_memory_percent
-      - app: memory_utilization
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.laptop_status_alarm
+    icon: "{{ state_attr('sensor.ui_laptop_status_alarm', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_status_alarm', 'color') }}"
+    label: Status
+    content: "{{ state_attr('sensor.ui_laptop_status_alarm', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.laptop_oo58t6kn_cpu_load_1m
+    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m', 'color') }}"
+    label: CPU Load
+    content: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.laptop_oo58t6kn_cpu_utilization
+    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'color') }}"
+    label: CPU
+    content: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
+    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'color') }}"
+    label: CPU Temp
+    content: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.laptop_oo58t6kn_memory_percent
+    icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'color') }}"
+    label: Memory
+    content: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent', 'short_label') }}"
+    tap_action:
+      action: more-info
 
 sections:
   - type: grid
@@ -48,28 +56,17 @@ sections:
         cards:
 
           # CPU & Memory Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: CPU & Memory
-              - subtitle: Utilization and system load
+          - type: custom:mushroom-title-card
+            title: CPU & Memory
+            subtitle: Utilization and system load
 
           # CPU Load
           - type: custom:mushroom-template-card
             entity: sensor.laptop_oo58t6kn_cpu_load_1m
             primary: CPU Load (1m/5m/15m)
-            secondary: >-
-              {%- set m1 = states(entity)|float(0) -%}
-              {%- set m5 = states('sensor.laptop_oo58t6kn_cpu_load_5m')|float(0) -%}
-              {%- set m15 = states('sensor.laptop_oo58t6kn_cpu_load_15m')|float(0) -%}
-              {%- set c = states('sensor.laptop_oo58t6kn_cpu_cores')|int(0) -%}
-              {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, 'cpu_load') -}}
-            icon_color: |-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, 'cpu_load') -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_load_1m','color') }}"
             tap_action:
               action: more-info
 
@@ -77,19 +74,9 @@ sections:
           - type: custom:mushroom-template-card
             entity: sensor.laptop_oo58t6kn_memory_percent
             primary: Memory
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set mem_pct = u_humanize_entity(entity) -%}
-              {%- set mem_used = u_humanize_entity('sensor.laptop_oo58t6kn_memory_used') -%}
-              {%- set mem_total = u_humanize_entity('sensor.laptop_oo58t6kn_memory_total') -%}
-              {%- set mem_free = u_humanize_entity('sensor.laptop_oo58t6kn_memory_available') -%}
-              {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, 'memory_utilization') -}}
-            icon_color: |-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, 'memory_utilization') -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_memory_percent','color') }}"
             tap_action:
               action: more-info
 
@@ -97,49 +84,57 @@ sections:
         cards:
 
           # CPU Temperatures
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: CPU Temperatures
-              - subtitle: Thermal status and cooling headroom
+          - type: custom:mushroom-title-card
+            title: CPU Temperatures
+            subtitle: Thermal status and cooling headroom
 
           # CPU Package Temp
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - name: CPU Package Temp
-              - entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
-              - app: cpu
+          - type: custom:mushroom-template-card
+            entity: sensor.laptop_oo58t6kn_cpu_temp_pkg
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'color') }}"
+            primary: CPU Package Temp
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_pkg', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
           # CPU Max Core Temp
-          - type: custom:decluttering-card
-            template: template_card
-            variables:
-              - name: CPU Max Core Temp
-              - entity: sensor.laptop_oo58t6kn_cpu_temp_max
-              - app: cpu
+          - type: custom:mushroom-template-card
+            entity: sensor.laptop_oo58t6kn_cpu_temp_max
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_max', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_max', 'color') }}"
+            primary: CPU Max Core Temp
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_max', 'label') }}"
+            badge_icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_max', 'badge') }}"
+            badge_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_cpu_temp_max', 'badge_color') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: nothing
+            grid_options:
+              columns: 12
+              rows: auto
 
       - type: vertical-stack
         cards:
 
           # Network Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: Network
-              - subtitle: Connectivity, latency, and throughput
+          - type: custom:mushroom-title-card
+            title: Network
+            subtitle: Connectivity, latency, and throughput
 
           # Active Network Interface
           - type: custom:mushroom-template-card
             entity: sensor.laptop_oo58t6kn_network_active_name
             primary: Active NIC
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set nic = states(entity) -%}
-              {%- set ip = states('sensor.laptop_oo58t6kn_network_active_ipv4') -%}
-              {%- set up = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_up') -%}
-              {%- set down = u_humanize_entity('sensor.laptop_oo58t6kn_network_active_down') -%}
-              {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_network_active_name', 'info') }}"
             icon: mdi:lan-check
             icon_color: blue
             tap_action:
@@ -149,28 +144,17 @@ sections:
         cards:
 
           # Filesystem Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: Filesystems
-              - subtitle: Storage capacity and usage
+          - type: custom:mushroom-title-card
+            title: Filesystems
+            subtitle: Storage capacity and usage
 
           # C: Drive Usage
           - type: custom:mushroom-template-card
             entity: sensor.laptop_oo58t6kn_fs_c_percent
             primary: C:\ Drive
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set total = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_total') -%}
-              {%- set used = u_humanize_entity('sensor.laptop_oo58t6kn_fs_c_used') -%}
-              {%- set pct = u_humanize_entity(entity) -%}
-              {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, 'disk_utilization') -}}
-            icon_color: |-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, 'disk_utilization') -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_fs_c_percent','color') }}"
             tap_action:
               action: more-info
 
@@ -178,29 +162,17 @@ sections:
         cards:
 
           # Disk Info Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: Disk I/O
-              - subtitle: Read/write activity and performance
+          - type: custom:mushroom-title-card
+            title: Disk I/O
+            subtitle: Read/write activity and performance
 
           # PhysicalDrive0 I/O
           - type: custom:mushroom-template-card
             entity: sensor.laptop_physicaldrive0_data_rate
             primary: PhysicalDrive0 I/O Rates
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set read_bps = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate') -%}
-              {%- set write_bps = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate') -%}
-              {%- set read_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_bytes') -%}
-              {%- set write_bytes = u_humanize_entity('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_bytes') -%}
-              {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, 'drive_data_rate') -}}
-            icon_color: |-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, 'drive_data_rate') -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_physicaldrive0_data_rate','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_physicaldrive0_data_rate','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_physicaldrive0_data_rate','color') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
@@ -209,27 +181,17 @@ sections:
         cards:
         
           # Battery Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: Battery
-              - subtitle: Charge level and health status
+          - type: custom:mushroom-title-card
+            title: Battery
+            subtitle: Charge level and health status
 
           # Battery Info
           - type: custom:mushroom-template-card
             entity: sensor.laptop_battery_charge
             primary: Battery Level
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set pct = u_humanize_entity('sensor.laptop_oo58t6kn_battery_percent') -%}
-              {%- set plugged = is_state('binary_sensor.laptop_oo58t6kn_battery_plugged','on')|bool(false) -%}
-              {{- 'Battery: ' ~ pct ~ ' • ' ~ ('Plugged' if plugged else 'On battery') -}}
-            icon: >-
-              {%- from 'main.jinja' import get_icon -%}
-              {{- get_icon(entity, 'discharging', {'charging_entity': 'binary_sensor.laptop_oo58t6kn_battery_plugged'}) -}}
-            icon_color: |-
-              {%- from 'main.jinja' import get_color -%}
-              {{- get_color(entity, 'discharging', {'charging_entity': 'binary_sensor.laptop_oo58t6kn_battery_plugged'}) -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_battery_charge','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_battery_charge','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_battery_charge','color') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
@@ -238,36 +200,18 @@ sections:
         cards:
 
           # SMART Monitor Section
-          - type: custom:decluttering-card
-            template: title_card
-            variables:
-              - title: SMART Monitors
-              - subtitle: Drive health and diagnostics
+          - type: custom:mushroom-title-card
+            title: SMART Monitors
+            subtitle: Drive health and diagnostics
 
           # SMART Info for /dev/sda
           - type: custom:mushroom-template-card
             entity: binary_sensor.laptop_oo58t6kn_smart_dev_sda_health
             primary: Health / Temp / Life (PhysicalDrive0)
-            secondary: >-
-              {%- from 'units/base.jinja' import u_humanize_entity -%}
-              {%- set ok = is_state(entity,'on') %} 
-              {%- set temp = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_temperature') -%}
-              {%- set has_life_pct = has_value('sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used') -%}
-              {%- set poh = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_power_on_hours') -%}
-              {%- set read = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_read') -%}
-              {%- set written = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_total_bytes_written') -%}
-              {%- set health_str = 'Healthy' if ok else 'Fail' -%}
-              {%- set ns = namespace(life_pct_str='') -%}
-              {%- if has_life_pct -%}
-                {%- set life_pct = u_humanize_entity('sensor.laptop_oo58t6kn_smart_dev_sda_percentage_used') -%}
-                {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
-              {%- endif -%}
-              {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+            secondary: "{{ state_attr('sensor.ui_laptop_oo58t6kn_smart_dev_sda_health','info') }}"
+            icon: "{{ state_attr('sensor.ui_laptop_oo58t6kn_smart_dev_sda_health','icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_laptop_oo58t6kn_smart_dev_sda_health','color') }}"
             multiline_secondary: true
-            icon: >-
-              {{- 'mdi:heart-pulse' if is_state(entity,'on') else 'mdi:heart-broken' -}}
-            icon_color: >-
-              {{- 'green' if is_state(entity,'on') else 'red' -}}
             tap_action:
               action: more-info
 
@@ -280,11 +224,7 @@ sections:
         subtitle: Core utilization, system load, and clock speeds
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: ^AMD Ryzen 7 PRO 7840
+      - !include ../snippets/lhm/laptop_cpu.yaml
           
   - type: grid
     cards:
@@ -295,11 +235,7 @@ sections:
         subtitle: Graphics load, temperature, and memory activity
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: ^AMD Radeon.*$
+      - !include ../snippets/lhm/laptop_gpu.yaml
 
   - type: grid
     cards:
@@ -310,11 +246,7 @@ sections:
         subtitle: Storage usage, I/O performance, and health checks
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: ^(SAMSUNG|WD|SK hynix).*$
+      - !include ../snippets/lhm/laptop_drive.yaml
 
   - type: grid
     cards:
@@ -325,11 +257,7 @@ sections:
         subtitle: Active usage, free capacity, and bandwidth
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: ^Generic Memory$
+      - !include ../snippets/lhm/laptop_mem.yaml
 
   - type: grid
     cards:
@@ -340,11 +268,7 @@ sections:
         subtitle: Charge status, wear level, and runtime estimation
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: ^5B11M90037
+      - !include ../snippets/lhm/laptop_battery.yaml
 
   - type: grid
     cards:
@@ -355,10 +279,4 @@ sections:
         subtitle: Interfaces, throughput, and latency monitoring
 
       # LibreHardwareMonitor Cards
-      - type: custom:decluttering-card
-        template: lhm_card_stack
-        variables:
-          - machine_match: ^LAPTOP-OO58T6KN$
-          - root_match: >-
-              ^(Ethernet|Wi-Fi|Bluetooth Network
-              Connection|Tailscale)(\\s+\\d+)?$
+      - !include ../snippets/lhm/laptop_network.yaml
