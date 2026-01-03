@@ -1,8 +1,8 @@
 - binary_sensor:
     - name: Laptop Status Alarm
       device_class: problem
-      availability: "{{ has_value('binary_sensor.laptop_oo58t6kn_overall_status_ok') }}"
-      state: "{{ is_state('binary_sensor.laptop_oo58t6kn_overall_status_ok','off') }}"
+      availability: "{{ has_value('binary_sensor.laptop_overall_status_ok') }}"
+      state: "{{ is_state('binary_sensor.laptop_overall_status_ok','off') }}"
     - name: Desktop Status Alarm
       device_class: problem
       availability: "{{ has_value('binary_sensor.desktop_bq063ig_overall_status_ok') }}"
@@ -21,8 +21,6 @@
       state: "{{ is_state('binary_sensor.raspberrypi4_overall_status_ok','off') }}"
 
 - binary_sensor:
-    - name: Laptop Display Containers
-      state: "{{ false }}"
     - name: Desktop Display Containers
       state: "{{ false }}"
     - name: Frigate Display Containers
@@ -35,10 +33,6 @@
       state: "{{ false }}"
 
 - binary_sensor:
-    - name: Laptop Display Services
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.laptop_oo58t6kn.*_service_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
     - name: Desktop Display Services
       state: >
         {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.desktop_bq063ig.*_service_.*$") %}
@@ -58,8 +52,8 @@
 
 - sensor:
     - name: Laptop PhysicalDrive0 Data Rate
-      availability: "{{ has_value('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate') or has_value('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate') }}"
-      state: "{{ states('sensor.laptop_oo58t6kn_disk_physicaldrive0_read_rate')|float(0) + states('sensor.laptop_oo58t6kn_disk_physicaldrive0_write_rate')|float(0) }}"
+      availability: "{{ has_value('sensor.laptop_disk_physicaldrive0_read_rate') or has_value('sensor.laptop_disk_physicaldrive0_write_rate') }}"
+      state: "{{ states('sensor.laptop_disk_physicaldrive0_read_rate')|float(0) + states('sensor.laptop_disk_physicaldrive0_write_rate')|float(0) }}"
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement
@@ -108,8 +102,8 @@
 
 - sensor:
     - name: Laptop Battery Charge
-      availability: "{{ has_value('sensor.laptop_oo58t6kn_battery_percent') }}"
-      state: "{{ states('sensor.laptop_oo58t6kn_battery_percent') }}"
+      availability: "{{ has_value('sensor.laptop_battery_percent') }}"
+      state: "{{ states('sensor.laptop_battery_percent') }}"
       unit_of_measurement: '%'
       device_class: battery
       state_class: measurement

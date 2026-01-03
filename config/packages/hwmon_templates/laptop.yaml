@@ -1,0 +1,1488 @@
+homeassistant:
+  customize:
+    anchor_container:
+      .variables: &variables
+        entity_id: ""
+        app: default
+        options: {}
+        state_info: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+        state_info_vertical: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+      .attributes: &attributes
+        value: "{{ state_info.value }}"
+        name: "{{ state_info.name }}"
+        default_desc: "{{ state_info.default_desc }}"
+        short_desc: "{{ state_info.short_desc }}"
+        long_desc: "{{ state_info.long_desc }}"
+        full_desc: "{{ state_info.full_desc }}"
+        icon: "{{ state_info.icon }}"
+        color: "{{ state_info.color }}"
+        badge: "{{ state_info.badge }}"
+        badge_color: "{{ state_info.badge_color }}"
+        label: "{{ state_info.label }}"
+        short_label: "{{ state_info.short_label }}"
+        long_label: "{{ state_info.long_label }}"
+        label_vertical: "{{ state_info_vertical.label }}"
+        short_label_vertical: "{{ state_info_vertical.short_label }}"
+        long_label_vertical: "{{ state_info_vertical.long_label }}"
+      .sensor: &sensor
+        state: "{{ states(entity_id) }}"
+        attributes: *attributes
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_stats_bundle
+    variables:
+      entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_stats_bundle
+      available: "{{ has_value(entity_id) }}"
+      metrics: "{{ state_attr(entity_id,'metrics') or {} }}"
+    sensor:
+      # -------------------------
+      # Status / overall health
+      # -------------------------
+      - name: "Laptop Overall Status Summary"
+        unique_id: e7ced096-6a7c-5a3d-8dd4-316c148b955f
+        availability: "{{ available }}"
+        state: "{{ metrics.get('status/summary','unknown') }}"
+        icon: "mdi:card-text-outline"
+      - name: "Laptop Updates Pending"
+        unique_id: af5923f4-8300-59d0-9446-aba5488918a6
+        availability: "{{ available }}"
+        state: "{{ metrics.get('updates/pending') | int(0) }}"
+        icon: "mdi:update"
+        state_class: measurement
+      - name: "Laptop Services Checked"
+        unique_id: ab51de67-803b-5dbe-b28f-796a7608ee05
+        availability: "{{ available }}"
+        state: "{{ metrics.get('services/checked') | int(0) }}"
+        icon: "mdi:playlist-check"
+        state_class: measurement
+
+      # -------------------------
+      # CPU
+      # -------------------------
+      - name: "Laptop CPU Utilization"
+        unique_id: e25a2182-341b-59b1-ac2a-c5a193d95e91
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/percent') | float(0) }}"
+        icon: "mdi:chip"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop CPU Cores"
+        unique_id: cdcb054c-b058-5f7b-808f-a37a3de26b53
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/cores') | int(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Laptop CPU Load 1m"
+        unique_id: e0b7bb46-8e56-5dd2-b538-8c906d8e9829
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load_1m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Laptop CPU Load 5m"
+        unique_id: 47ec57f6-aebd-5fb2-bf38-4c30a1ebff55
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load_5m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Laptop CPU Load 15m"
+        unique_id: 3e0af5de-67f7-5db5-a058-5ff2a6487c23
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load_15m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Laptop CPU Temp (pkg)"
+        unique_id: 325d295a-cd54-5140-93f0-90632916224d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/temp/package') | float(0) }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Laptop CPU Temp (max)"
+        unique_id: beba28ba-a454-5d98-8ea8-17e44c5f445d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/temp/max') | float(0) }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+
+      # -------------------------
+      # Memory
+      # -------------------------
+      - name: "Laptop Memory Percent"
+        unique_id: 6a9c09aa-00fc-535f-8987-f88eaf5bb983
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/percent') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop Memory Total"
+        unique_id: 2c294e3f-950e-5800-8a30-4bab4873697a
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/total') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Laptop Memory Used"
+        unique_id: e0dd2009-1af6-52bf-a15b-ccde5df4f28e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/used') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Laptop Memory Available"
+        unique_id: 67aea7c5-7716-5f7d-9de0-da7ba8091f96
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/available') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Network (active)
+      # -------------------------
+      - name: "Laptop Network Active Name"
+        unique_id: 30f13ce8-ef10-58e4-b655-911ba6023f5e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/name','unknown') }}"
+      - name: "Laptop Network Active Up"
+        unique_id: d6b4e2b3-6cfb-55ca-af98-c179a4486837
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/up_bps') | float(0) }}"
+        icon: "mdi:upload"
+        unit_of_measurement: B/s
+      - name: "Laptop Network Active Down"
+        unique_id: 39974caf-b454-5bf1-8d55-0ae17007d97d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/down_bps') | float(0) }}"
+        icon: "mdi:download"
+        unit_of_measurement: B/s
+      - name: "Laptop Network Active IPv4"
+        unique_id: 013f26ee-f014-56d5-8d58-0fa8995cbdb7
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/ipv4','unknown') }}"
+      - name: "Laptop Network Active IPv6"
+        unique_id: 52ac1677-e206-4231-b6f8-0c640391bf17
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/ipv6','unknown') }}"
+
+      # -------------------------
+      # Filesystem (C:)
+      # -------------------------
+      - name: "Laptop FS C: percent"
+        unique_id: ea80fe16-8fff-55b9-8572-03548207ff37
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/fs_C/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop FS C: total"
+        unique_id: 61d8ceeb-ff14-569c-ad3e-ea585b69e936
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/fs_C/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Laptop FS C: used"
+        unique_id: bb68488c-7d53-5ec4-9136-6c7c8bfb0881
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/fs_C/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Laptop FS C: free"
+        unique_id: 7eab1a7f-5cfe-5d1c-ad9c-c18c3aa9bea1
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/fs_C/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Disk I/O (PhysicalDrive0)
+      # -------------------------
+      - name: "Laptop Disk PhysicalDrive0 read_rate"
+        unique_id: a5406374-e2dd-59a9-83ae-ac205c7b8da6
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/PhysicalDrive0/read_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Laptop Disk PhysicalDrive0 write_rate"
+        unique_id: f8fe3e26-5684-506c-a43a-3e2bad6c4a08
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/PhysicalDrive0/write_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Laptop Disk PhysicalDrive0 read_bytes"
+        unique_id: 7d70f3e8-40fd-5fad-93f3-548ee3a7b11d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/PhysicalDrive0/read_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Laptop Disk PhysicalDrive0 write_bytes"
+        unique_id: e88a20bd-d3a9-54ce-a840-a466bace66dc
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/PhysicalDrive0/write_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # Battery (simple)
+      # -------------------------
+      - name: "Laptop Battery Percent"
+        unique_id: 92283484-8c6e-5bc4-a21b-cc1a19c2bf03
+        availability: "{{ available }}"
+        state: "{{ metrics.get('battery/percent') | float(0) }}"
+        icon: "mdi:battery"
+        unit_of_measurement: "%"
+        state_class: measurement
+
+      # -------------------------
+      # SMART (simple)
+      # -------------------------
+      - name: "Laptop SMART /dev/sda Temperature"
+        unique_id: 119b8393-f895-5cac-84b5-770fc5072352
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/temperature') | float(0) }}"
+        icon: "mdi:thermometer"
+        unit_of_measurement: "°C"
+        state_class: measurement
+      - name: "Laptop SMART /dev/sda Power On Hours"
+        unique_id: 1013066b-43bd-51fb-9007-89e71688bb73
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/power_on_hours') | int(0) }}"
+        icon: "mdi:timer-outline"
+        unit_of_measurement: h
+        state_class: measurement
+      - name: "Laptop SMART /dev/sda Total Bytes Written"
+        unique_id: cdef28bb-ed67-560a-95d0-4fbf52d26186
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/total_bytes_written') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Laptop SMART /dev/sda Total Bytes Read"
+        unique_id: 35cb0f88-2307-59f4-9c93-f147f713cc2c
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/total_bytes_read') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # Overview
+      # -------------------------
+      - name: "Laptop Uptime (s)"
+        unique_id: a08d1dca-8e6d-54c1-8c9e-5598ae8adbca
+        availability: "{{ available }}"
+        state: "{{ metrics.get('uptime_s') }}"
+        icon: "mdi:timer-outline"
+        state_class: measurement
+      - name: "Laptop GPU Utilization"
+        unique_id: 1c1e3366-03b9-5c56-8e08-6c0f69072559
+        availability: "{{ available }}"
+        state: "{{ metrics.get('gpu/percent') }}"
+        icon: "mdi:gpu"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop Services (Bad CSV)"
+        unique_id: be751f65-62ad-5509-b347-11d05d74d37a
+        availability: "{{ available }}"
+        state: "{{ metrics.get('services/bad_list') }}"
+        icon: "mdi:alert"
+
+      # -------------------------
+      # LHM CPU
+      # -------------------------
+      - name: laptop_pack_cpu_physcores
+        unique_id: 57a46b59-1544-4f51-8632-84c9f473219f
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          items: >-
+            {% set ns = namespace(items=[]) %}
+            {% for pc in range(1, 9) %}
+              {% set t1 = (pc - 1) * 2 + 1 %}
+              {% set t2 = t1 + 1 %}
+              {% set lk1 = 'lhm/lhm__amdcpu_0_load_' ~ t1 %}
+              {% set lk2 = 'lhm/lhm__amdcpu_0_load_' ~ t2 %}
+              {% if lk1 in metrics and lk2 in metrics %}
+                {% set ck = 'lhm/lhm__amdcpu_0_clock_' ~ pc %}
+                {% set fk = 'lhm/lhm__amdcpu_0_factor_' ~ pc %}
+                {% set vk = 'lhm/lhm__amdcpu_0_voltage_' ~ pc %}
+                {% set pk = 'lhm/lhm__amdcpu_0_power_' ~ pc %}
+                {% set l1 = metrics.get(lk1) | float(0) %}
+                {% set l2 = metrics.get(lk2) | float(0) %}
+                {% set ns.items = ns.items + [{
+                  'phys_core': pc,
+                  'thread1': t1, 'thread2': t2,
+                  'load1': l1, 'load2': l2,
+                  'load_avg': ((l1 + l2) / 2),
+                  'load_max': ([l1, l2] | max),
+                  'clock_mhz': (metrics.get(ck) | float(0)),
+                  'factor': (metrics.get(fk) | float(0)),
+                  'voltage_v': (metrics.get(vk) | float(none)),
+                  'power_w': (metrics.get(pk) | float(none))
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items }}
+
+      # -------------------------
+      # LHM GPU
+      # -------------------------
+      - name: laptop_pack_gpu
+        unique_id: 8a8bd989-424f-49cb-bc2a-2a16fa79448f
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          voltages: >-
+            {{ {
+              'gpu_core_v': (metrics.get('lhm/lhm__gpu-amd_0_voltage_0') | float(0)),
+              'gpu_soc_v':  (metrics.get('lhm/lhm__gpu-amd_0_voltage_2') | float(0))
+            } }}
+          powers: >-
+            {{ {
+              'gpu_core_w': (metrics.get('lhm/lhm__gpu-amd_0_power_0') | float(0)),
+              'gpu_soc_w':  (metrics.get('lhm/lhm__gpu-amd_0_power_2') | float(0))
+            } }}
+          clocks: >-
+            {{ {
+              'gpu_core_mhz':   (metrics.get('lhm/lhm__gpu-amd_0_clock_0') | float(0)),
+              'gpu_soc_mhz':    (metrics.get('lhm/lhm__gpu-amd_0_clock_1') | float(0)),
+              'gpu_memory_mhz': (metrics.get('lhm/lhm__gpu-amd_0_clock_2') | float(0))
+            } }}
+          thermals: >-
+            {{ {
+              'gpu_vr_soc_c': (metrics.get('lhm/lhm__gpu-amd_0_temperature_4') | float(0))
+            } }}
+          engines: >-
+            {{ {
+              'gpu_core_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_0') | float(0)),
+              'd3d_3d_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_2') | float(0)),
+              'd3d_compute0_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_3') | float(0)),
+              'd3d_compute1_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_4') | float(0)),
+              'd3d_copy_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_5') | float(0)),
+              'd3d_hp3d_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_6') | float(0)),
+              'd3d_hpcompute_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_7') | float(0)),
+              'd3d_security1_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_8') | float(0)),
+              'd3d_timer0_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_9') | float(0)),
+              'd3d_video_codec0_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_10') | float(0)),
+              'd3d_video_jpeg0_pct': (metrics.get('lhm/lhm__gpu-amd_0_load_11') | float(0))
+            } }}
+          fps: >-
+            {{ (metrics.get('lhm/lhm__gpu-amd_0_factor_0') | float(-1)) }}
+          vram: >-
+            {% set b = namespace(
+              used = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_0') | float(0)),
+              free = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_1') | float(0)),
+              total = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_2') | float(0)),
+              d_used = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_3') | float(0)),
+              d_free = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_4') | float(0)),
+              d_total = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_5') | float(0)),
+              s_used = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_6') | float(0)),
+              s_free = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_7') | float(0)),
+              s_total = (metrics.get('lhm/lhm__gpu-amd_0_smalldata_8') | float(0))
+            ) %}
+            {{ {
+              'gpu_used_mib': (b.used / 1024 / 1024),
+              'gpu_free_mib': (b.free / 1024 / 1024),
+              'gpu_total_mib': (b.total / 1024 / 1024),
+
+              'ded_used_mib': (b.d_used / 1024 / 1024),
+              'ded_free_mib': (b.d_free / 1024 / 1024),
+              'ded_total_mib': (b.d_total / 1024 / 1024),
+
+              'shared_used_mib': (b.s_used / 1024 / 1024),
+              'shared_free_mib': (b.s_free / 1024 / 1024),
+              'shared_total_mib': (b.s_total / 1024 / 1024),
+
+              'gpu_used_pct': ( (100 * b.used / b.total) if b.total > 0 else 0 ),
+              'ded_used_pct': ( (100 * b.d_used / b.d_total) if b.d_total > 0 else 0 ),
+              'shared_used_pct': ( (100 * b.s_used / b.s_total) if b.s_total > 0 else 0 )
+            } }}
+          summary: >-
+            {% set e = state_attr('sensor.laptop_pack_gpu','engines') or {} %}
+            {% set v = state_attr('sensor.laptop_pack_gpu','vram') or {} %}
+            {% set t = state_attr('sensor.laptop_pack_gpu','thermals') or {} %}
+            {% set busy = [
+              e.get('d3d_3d_pct',0), e.get('d3d_compute0_pct',0), e.get('d3d_compute1_pct',0),
+              e.get('d3d_copy_pct',0), e.get('d3d_video_codec0_pct',0)
+            ] | max %}
+            {{ {
+              'busy_pct': busy,
+              'temp_c': (t.get('gpu_vr_soc_c',0) | float(0)),
+              'vram_used_pct': (v.get('gpu_used_pct',0) | float(0))
+            } }}
+
+      # -------------------------
+      # LHM Memory Details
+      # -------------------------
+      - name: laptop_pack_memory_lhm
+        unique_id: 8be18b12-7e48-4204-a316-7062a4d96385
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          mem: >-
+            {% set used = (metrics.get('lhm/lhm__ram_data_0') | float(0)) %}
+            {% set avail = (metrics.get('lhm/lhm__ram_data_1') | float(0)) %}
+            {% set vused = (metrics.get('lhm/lhm__ram_data_2') | float(0)) %}
+            {% set vavail = (metrics.get('lhm/lhm__ram_data_3') | float(0)) %}
+            {% set total = used + avail %}
+            {% set vtotal = vused + vavail %}
+            {{ {
+              'mem_load_pct': (metrics.get('lhm/lhm__ram_load_0') | float(0)),
+              'vmem_load_pct': (metrics.get('lhm/lhm__ram_load_1') | float(0)),
+              'mem_used_gib': (used / 1024 / 1024 / 1024),
+              'mem_avail_gib': (avail / 1024 / 1024 / 1024),
+              'mem_total_gib': (total / 1024 / 1024 / 1024),
+              'vmem_used_gib': (vused / 1024 / 1024 / 1024),
+              'vmem_avail_gib': (vavail / 1024 / 1024 / 1024),
+              'vmem_total_gib': (vtotal / 1024 / 1024 / 1024)
+            } }}
+
+      # -------------------------
+      # LHM Drive Details
+      # -------------------------
+      - name: laptop_pack_drive_nvme0_lhm
+        unique_id: 2fa14524-0bd4-4f88-8eab-7ee08753a9c6
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          drive: >-
+            {% set rd = (metrics.get('lhm/lhm__nvme_0_data_4') | float(0)) %}
+            {% set wr = (metrics.get('lhm/lhm__nvme_0_data_5') | float(0)) %}
+            {{ {
+              'used_space_pct': (metrics.get('lhm/lhm__nvme_0_load_0') | float(0)),
+              'total_activity_pct': (metrics.get('lhm/lhm__nvme_0_load_31') | float(0)),
+              'read_activity_pct': (metrics.get('lhm/lhm__nvme_0_load_32') | float(0)),
+              'write_activity_pct': (metrics.get('lhm/lhm__nvme_0_load_33') | float(0)),
+
+              'read_bps': (metrics.get('lhm/lhm__nvme_0_throughput_34') | float(0)),
+              'write_bps': (metrics.get('lhm/lhm__nvme_0_throughput_35') | float(0)),
+
+              'data_read_tib': (rd / 1024 / 1024 / 1024 / 1024),
+              'data_written_tib': (wr / 1024 / 1024 / 1024 / 1024),
+
+              'avail_spare_pct': (metrics.get('lhm/lhm__nvme_0_level_1') | float(0)),
+              'spare_thresh_pct': (metrics.get('lhm/lhm__nvme_0_level_2') | float(0)),
+              'percentage_used_pct': (metrics.get('lhm/lhm__nvme_0_level_3') | float(0)),
+
+              'temp_c': (metrics.get('lhm/lhm__nvme_0_temperature_0') | float(0)),
+              'temp_1_c': (metrics.get('lhm/lhm__nvme_0_temperature_6') | float(0)),
+              'temp_2_c': (metrics.get('lhm/lhm__nvme_0_temperature_7') | float(0))
+            } }}
+
+      # -------------------------
+      # LHM Battery Details
+      # -------------------------
+      - name: laptop_pack_battery_lhm
+        unique_id: 7a4688d1-caec-4659-8c21-d0fa3db095f2
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          battery: >-
+            {{ {
+              'charge_pct': (metrics.get('lhm/lhm__battery_5B11M9003700_1_level_0') | float(0)),
+              'degradation_pct': (metrics.get('lhm/lhm__battery_5B11M9003700_1_level_1') | float(0)),
+              'voltage_v': (metrics.get('lhm/lhm__battery_5B11M9003700_1_voltage_0') | float(0)),
+              'discharge_w': (metrics.get('lhm/lhm__battery_5B11M9003700_1_power_0') | float(0)),
+              'designed_wh': (metrics.get('lhm/lhm__battery_5B11M9003700_1_energy_0') | float(0)),
+              'full_wh': (metrics.get('lhm/lhm__battery_5B11M9003700_1_energy_1') | float(0)),
+              'remaining_wh': (metrics.get('lhm/lhm__battery_5B11M9003700_1_energy_2') | float(0))
+            } }}
+
+      # -------------------------
+      # LHM Network Details
+      # -------------------------
+      - name: laptop_pack_network_lhm
+        unique_id: 871fcb87-f348-4407-98f7-9b55dba84b7c
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          active: >-
+            {% set an = metrics.get('network/active/name','') %}
+            {% set ip4 = metrics.get('network/active/ipv4','') %}
+            {% set ip6 = metrics.get('network/active/ipv6','') %}
+            {% set up = metrics.get('network/active/up_bps') | float(0) %}
+            {% set dn = metrics.get('network/active/down_bps') | float(0) %}
+
+            {% set ns = namespace(best_id='', best_score=999999999, best={}) %}
+
+            {# Find candidate NICs by scanning keys #}
+            {% for k, v in metrics.items() %}
+              {% if k.startswith('lhm/lhm__nic_') and k.endswith('_throughput_7') %}
+                {% set base = k[:-('_throughput_7'|length)] %}
+                {% set nic_id = base.split('lhm/lhm__nic_')[1] %}
+                {% set up_k = 'lhm/lhm__nic_' ~ nic_id ~ '_throughput_7' %}
+                {% set dn_k = 'lhm/lhm__nic_' ~ nic_id ~ '_throughput_8' %}
+                {% set u = metrics.get(up_k) | float(0) %}
+                {% set d = metrics.get(dn_k) | float(0) %}
+                {% set score = (u - up) | abs + (d - dn) | abs %}
+                {% if score < ns.best_score %}
+                  {% set ns.best_score = score %}
+                  {% set ns.best_id = nic_id %}
+                  {% set ns.best = {
+                    'nic_id': nic_id,
+                    'up_bps': u,
+                    'down_bps': d,
+                    'util_pct': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_load_1') | float(0)),
+                    'tx_total_b': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_data_2') | float(0)),
+                    'rx_total_b': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_data_3') | float(0)),
+                    'mac': (metrics.get('network/nic/' ~ nic_id ~ '/mac',''))
+                  } %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {{ {
+              'name': an,
+              'ipv4': ip4,
+              'ipv6': ip6,
+              'active_up_bps': up,
+              'active_down_bps': dn,
+              'lhm_best': ns.best
+            } }}
+
+    binary_sensor:
+      - name: "Laptop Overall Status OK"
+        unique_id: cb1786c2-ad95-5ff2-8e07-aabddcfcbf8a
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('status/overall_ok') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Laptop Battery Plugged"
+        unique_id: 6c79439f-127e-56d4-9202-385ca6956dfe
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('battery/plugged') | string) == '1' }}"
+        icon: "mdi:power-plug"
+
+      - name: "Laptop SMART /dev/sda Health"
+        unique_id: 6810a30b-0378-5371-b371-74d479a21c74
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('smart/smart_sda/overall_health') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Laptop Services OK"
+        unique_id: 646dbb83-edbf-5b3c-9e44-036348e9544c
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('services/ok') | string) == '1' }}"
+        icon: "mdi:check-circle"
+        attributes:
+          libre_hardware_monitor: >-
+            {{ (metrics.get('services/LibreHardwareMonitor/running') | string)== '1' }}
+          dnscache: >-
+            {{ (metrics.get('services/Dnscache/running') | string) == '1' }}
+          lanman_server: >-
+            {{ (metrics.get('services/LanmanServer/running') | string) == '1'}}
+          spooler: >-
+            {{ (metrics.get('services/Spooler/running') | string) == '1' }}
+
+  # -------------------------
+  # Overview dashboard cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_cpu_utilization
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_cpu_utilization
+      app: cpu_utilization
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_cpu_utilization
+        unique_id: 25551638-81b2-459f-a5ae-38736fcdcec2
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_uptime_s
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_uptime_s
+      app: uptime
+      options:
+        device_class: duration
+        uom: s
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_uptime_s
+        unique_id: 34570a03-f3d2-4d4f-84ad-f63df5e3d9b5
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_updates_pending
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_updates_pending
+      app: count_pending
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_updates_pending
+        unique_id: f49b5d70-6681-4cdf-96b4-f0a85c5ec1cf
+
+  # -------------------------
+  # Top chips style sensors
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.laptop_status_alarm
+          - sensor.laptop_overall_status_summary
+    variables:
+      <<: *variables
+      entity_id: binary_sensor.laptop_status_alarm
+      app: alarm
+      options:
+        summary: sensor.laptop_overall_status_summary
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_status_alarm
+        unique_id: bcdc514a-f5d7-435f-bc9d-36f52b7b6161
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_cpu_load_1m
+          - sensor.laptop_cpu_load_5m
+          - sensor.laptop_cpu_load_15m
+          - sensor.laptop_cpu_cores
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_cpu_load_1m
+      app: cpu_load
+      options:
+        cores: sensor.laptop_cpu_cores
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_cpu_load_1m
+        unique_id: bbd98e6b-7b29-4508-97be-bf6850b5a450
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- set m1 = states('sensor.laptop_cpu_load_1m')|float(0) -%}
+            {%- set m5 = states('sensor.laptop_cpu_load_5m')|float(0) -%}
+            {%- set m15 = states('sensor.laptop_cpu_load_15m')|float(0) -%}
+            {%- set c = states('sensor.laptop_cpu_cores')|int(0) -%}
+            {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_cpu_utilization
+          - sensor.laptop_cpu_load_1m
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_cpu_utilization
+      app: cpu_utilization
+      options:
+        load: sensor.laptop_cpu_load_1m
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_cpu_utilization_load
+        unique_id: 0fda50f9-7923-4afb-9217-10277d6538d5
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_cpu_temp_pkg
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_cpu_temp_pkg
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_cpu_temp_pkg
+        unique_id: 28cbae66-72f6-4d50-9704-dd8b00d29e2c
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_memory_percent
+          - sensor.laptop_memory_used
+          - sensor.laptop_memory_total
+          - sensor.laptop_memory_available
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_memory_percent
+      app: memory_utilization
+      options:
+        used: sensor.laptop_memory_used
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_memory_percent
+        unique_id: 57f4f746-5ec4-41e9-87ba-80031df502e9
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set mem_pct = u_humanize_entity('sensor.laptop_memory_percent') -%}
+            {%- set mem_used = u_humanize_entity('sensor.laptop_memory_used') -%}
+            {%- set mem_total = u_humanize_entity('sensor.laptop_memory_total') -%}
+            {%- set mem_free = u_humanize_entity('sensor.laptop_memory_available') -%}
+            {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
+
+  # -------------------------
+  # Body cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_cpu_temp_max
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_cpu_temp_max
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_cpu_temp_max
+        unique_id: 3fa036c3-f137-4427-ba16-6f8ed5fa2454
+
+  - sensor:
+      - name: ui_laptop_network_active_name
+        unique_id: 0814995d-92f2-450b-87ba-33ba1756957c
+        state: "{{ states('sensor.laptop_network_active_name') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set nic = states('sensor.laptop_network_active_name') -%}
+            {%- set ip = states('sensor.laptop_network_active_ipv4') -%}
+            {%- set up = u_humanize_entity('sensor.laptop_network_active_up') -%}
+            {%- set down = u_humanize_entity('sensor.laptop_network_active_down') -%}
+            {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_fs_c_percent
+          - sensor.laptop_fs_c_free
+          - sensor.laptop_fs_c_total
+          - sensor.laptop_fs_c_used
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_fs_c_percent
+      app: disk_utilization
+      options:
+        free: sensor.laptop_fs_c_free
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_fs_c_percent
+        unique_id: 0fad69f6-849b-450c-83e6-5017ffa1070a
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.laptop_fs_c_total') -%}
+            {%- set used = u_humanize_entity('sensor.laptop_fs_c_used') -%}
+            {%- set pct = u_humanize_entity('sensor.laptop_fs_c_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_physicaldrive0_data_rate
+          - sensor.laptop_disk_physicaldrive0_read_rate
+          - sensor.laptop_disk_physicaldrive0_write_rate
+          - sensor.laptop_disk_physicaldrive0_read_bytes
+          - sensor.laptop_disk_physicaldrive0_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_physicaldrive0_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_physicaldrive0_data_rate
+        unique_id: 9b6eef9c-6e97-4a7f-b548-d8abe1861b0d
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.laptop_disk_physicaldrive0_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.laptop_disk_physicaldrive0_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.laptop_disk_physicaldrive0_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.laptop_disk_physicaldrive0_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_network_lhm
+    sensor:
+      - name: ui_laptop_network_summary
+        unique_id: 9b3ed5d8-5e58-4d6a-bf4f-89f7c10d06a2
+        state: "ok"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {% set a = state_attr('sensor.laptop_pack_network_lhm','active') or {} %}
+            {% set b = a.get('lhm_best', {}) %}
+
+            {% set nic = a.get('name','Active NIC') %}
+            {% set ip4 = a.get('ipv4','') %}
+            {% set ip6 = a.get('ipv6','') %}
+
+            {% set up = states('sensor.laptop_network_active_up') %}
+            {% set dn = states('sensor.laptop_network_active_down') %}
+
+            {% set up_h = u_humanize_entity('sensor.laptop_network_active_up') %}
+            {% set dn_h = u_humanize_entity('sensor.laptop_network_active_down') %}
+
+            {% set util = b.get('util_pct',0) | float(0) %}
+            {% set rx_gib = (b.get('rx_total_b',0) | float(0)) / 1024 / 1024 / 1024 %}
+            {% set tx_gib = (b.get('tx_total_b',0) | float(0)) / 1024 / 1024 / 1024 %}
+            {% set mac = b.get('mac','') %}
+
+            {{-
+              nic
+              ~ '\nIPv4: ' ~ ip4
+              ~ '\nIPv6: ' ~ (ip6 if ip6 else 'n/a')
+              ~ '\nDown: ' ~ dn_h ~ ' • Up: ' ~ up_h
+              ~ '\nUtil: ' ~ (util|round(1)) ~ '%'
+              ~ '\nTotals: RX ' ~ (rx_gib|round(2)) ~ ' GiB • TX ' ~ (tx_gib|round(2)) ~ ' GiB'
+              ~ (('\nMAC: ' ~ mac) if mac else '')
+            -}}
+          icon: mdi:network
+          color: >-
+            {% set a = state_attr('sensor.laptop_pack_network_lhm','active') or {} %}
+            {% set util = (a.get('lhm_best', {}).get('util_pct',0) | float(0)) %}
+            {% if util >= 85 %}red
+            {% elif util >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.laptop_battery_charge
+          - binary_sensor.laptop_battery_plugged
+          - sensor.laptop_battery_percent
+    variables:
+      <<: *variables
+      entity_id: sensor.laptop_battery_charge
+      app: discharging
+    sensor:
+      - <<: *sensor
+        name: ui_laptop_battery_charge
+        unique_id: 7f7d79cd-3bf6-4f70-a899-3a0f8c4c2d3e
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set pct = u_humanize_entity('sensor.laptop_battery_percent') -%}
+            {%- set plugged = is_state('binary_sensor.laptop_battery_plugged','on')|bool(false) -%}
+            {{- 'Battery: ' ~ pct ~ ' • ' ~ ('Plugged' if plugged else 'On battery') -}}
+
+  - sensor:
+      - name: ui_laptop_smart_dev_sda_health
+        unique_id: 247b357f-6f49-463f-9c25-8064a5d34061
+        state: "{{ states('binary_sensor.laptop_smart_dev_sda_health') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set ok = is_state('binary_sensor.laptop_smart_dev_sda_health','on') %}  {%- set temp = u_humanize_entity('sensor.laptop_smart_dev_sda_temperature') -%}
+            {%- set has_life_pct = has_value('sensor.laptop_smart_dev_sda_percentage_used') -%}
+            {%- set poh = u_humanize_entity('sensor.laptop_smart_dev_sda_power_on_hours') -%}
+            {%- set read = u_humanize_entity('sensor.laptop_smart_dev_sda_total_bytes_read') -%}
+            {%- set written = u_humanize_entity('sensor.laptop_smart_dev_sda_total_bytes_written') -%}
+            {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+            {%- set ns = namespace(life_pct_str='') -%}
+            {%- if has_life_pct -%}
+              {%- set life_pct = u_humanize_entity('sensor.laptop_smart_dev_sda_percentage_used') -%}
+              {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+            {%- endif -%}
+            {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+          icon: >-
+            {{- 'mdi:heart-pulse' if is_state('binary_sensor.laptop_smart_dev_sda_health','on') else 'mdi:heart-broken' -}}
+          color: >-
+            {{- 'green' if is_state('binary_sensor.laptop_smart_dev_sda_health','on') else 'red' -}}
+
+  - binary_sensor:
+      - name: ui_laptop_services
+        unique_id: a9a1a66e-9626-45d9-a4ce-6324c88a7cbe
+        state: "{{ states('sensor.laptop_services_ok') }}"
+        attributes:
+          libre_hardware_monitor: >-
+            {%- set running = state_attr('binary_sensor.laptop_services_ok','libre_hardware_monitor') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'LibreHardwareMonitor',
+            } }}
+          dnscache: >-
+            {%- set running = state_attr('binary_sensor.laptop_services_ok','dnscache') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Dnscache',
+            } }}
+          lanman_server: >-
+            {%- set running = state_attr('binary_sensor.laptop_services_ok','lanman_server') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'LanmanServer',
+            } }}
+          spooler: >-
+            {%- set running = state_attr('binary_sensor.laptop_services_ok','spooler') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Spooler',
+            } }}
+
+  # -------------------------
+  # Detail cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_cpu_physcores
+    sensor:
+      - name: ui_laptop_cpu_physcore_1
+        unique_id: 989a3050-ad99-496c-a745-057e0768d179
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 1 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 1 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_2
+        unique_id: 0aa19064-d1a2-4a28-9606-4b5fae389ebe
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 2 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 2 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_3
+        unique_id: e874644d-11d9-40ff-a42d-a6f58c539d25
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 3 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 3 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_4
+        unique_id: 1ac9379d-f7da-4f5d-89ab-c46a59921342
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 4 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 4 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_5
+        unique_id: 493c9a31-0d5a-4229-8232-bce45fb083c3
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 5 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 5 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_6
+        unique_id: 9fb42f8c-15fb-485f-a69e-eb32b9a5b34d
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 6 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 6 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_7
+        unique_id: d0723658-9a90-484b-9500-16d9ca45fc7c
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 7 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 7 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_cpu_physcore_8
+        unique_id: 0c02ecb5-e502-4084-9746-a1a79b391c04
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 8 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set v = ns.it.voltage_v %}
+              {% set p = ns.it.power_w %}
+              {% set extra = namespace(lines=[]) %}
+              {% if v is not none %}{% set extra.lines = extra.lines + ['V: ' ~ (v|round(3)) ~ ' V'] %}{% endif %}
+              {% if p is not none %}{% set extra.lines = extra.lines + ['P: ' ~ (p|round(1)) ~ ' W'] %}{% endif %}
+              {{-
+                'Threads #' ~ ns.it.thread1 ~ '/' ~ ns.it.thread2 ~ ': ' ~ (ns.it.load1|round(1)) ~ '% • ' ~ (ns.it.load2|round(1)) ~ '%\n'
+                ~ 'Core: ' ~ (ns.it.load_avg|round(1)) ~ '% avg • ' ~ clk ~ ' • x' ~ (ns.it.factor|round(2))
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.laptop_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 8 and x.load_max > ns.mx %}{% set ns.mx = x.load_max %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_gpu
+    sensor:
+      - name: ui_laptop_gpu_engines
+        unique_id: 1bb2f659-dbea-4f72-b58c-974abff4e539
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set e = state_attr('sensor.laptop_pack_gpu','engines') or {} %}
+            {{-
+              'GPU Core: ' ~ (e.get('gpu_core_pct',0)|round(1)) ~ '%\n'
+              ~ 'D3D 3D: ' ~ (e.get('d3d_3d_pct',0)|round(1)) ~ '%  •  '
+              ~ 'Copy: ' ~ (e.get('d3d_copy_pct',0)|round(1)) ~ '%\n'
+              ~ 'Compute 0/1: ' ~ (e.get('d3d_compute0_pct',0)|round(1)) ~ '% / ' ~ (e.get('d3d_compute1_pct',0)|round(1)) ~ '%\n'
+              ~ 'Video Codec: ' ~ (e.get('d3d_video_codec0_pct',0)|round(1)) ~ '%  •  '
+              ~ 'JPEG: ' ~ (e.get('d3d_video_jpeg0_pct',0)|round(1)) ~ '%'
+            -}}
+          icon: "mdi:expansion-card"
+          color: >-
+            {% set s = state_attr('sensor.laptop_pack_gpu','summary') or {} %}
+            {% set busy = s.get('busy_pct',0) | float(0) %}
+            {% if busy >= 85 %}red
+            {% elif busy >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_gpu_vram
+        unique_id: e0684792-82b1-4d50-b230-a6613c0ef119
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set v = state_attr('sensor.laptop_pack_gpu','vram') or {} %}
+            {{-
+              'GPU VRAM: ' ~ (v.get('gpu_used_mib',0)|round(0)) ~ ' / ' ~ (v.get('gpu_total_mib',0)|round(0)) ~ ' MiB'
+              ~ ' (' ~ (v.get('gpu_used_pct',0)|round(1)) ~ '%)\n'
+              ~ 'Dedicated: ' ~ (v.get('ded_used_mib',0)|round(0)) ~ ' / ' ~ (v.get('ded_total_mib',0)|round(0)) ~ ' MiB'
+              ~ ' (' ~ (v.get('ded_used_pct',0)|round(1)) ~ '%)\n'
+              ~ 'Shared: ' ~ (v.get('shared_used_mib',0)|round(0)) ~ ' / ' ~ (v.get('shared_total_mib',0)|round(0)) ~ ' MiB'
+              ~ ' (' ~ (v.get('shared_used_pct',0)|round(1)) ~ '%)'
+            -}}
+          icon: "mdi:memory"
+          color: >-
+            {% set v = state_attr('sensor.laptop_pack_gpu','vram') or {} %}
+            {% set pct = v.get('gpu_used_pct',0) | float(0) %}
+            {% if pct >= 90 %}red
+            {% elif pct >= 75 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_gpu_thermals_power
+        unique_id: 5fcc4086-74b7-42ae-b5f1-e92e01950681
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set t = state_attr('sensor.laptop_pack_gpu','thermals') or {} %}
+            {% set p = state_attr('sensor.laptop_pack_gpu','powers') or {} %}
+            {% set v = state_attr('sensor.laptop_pack_gpu','voltages') or {} %}
+            {{-
+              'VR SoC Temp: ' ~ (t.get('gpu_vr_soc_c',0)|round(1)) ~ ' °C\n'
+              ~ 'Power: Core ' ~ (p.get('gpu_core_w',0)|round(1)) ~ ' W • SoC ' ~ (p.get('gpu_soc_w',0)|round(1)) ~ ' W\n'
+              ~ 'Voltage: Core ' ~ (v.get('gpu_core_v',0)|round(3)) ~ ' V • SoC ' ~ (v.get('gpu_soc_v',0)|round(3)) ~ ' V'
+            -}}
+          icon: "mdi:thermometer"
+          color: >-
+            {% set t = state_attr('sensor.laptop_pack_gpu','thermals') or {} %}
+            {% set c = t.get('gpu_vr_soc_c',0) | float(0) %}
+            {% if c >= 90 %}red
+            {% elif c >= 75 %}amber
+            {% else %}green{% endif %}
+      - name: ui_laptop_gpu_clocks_fps
+        unique_id: f139a81d-572f-49cd-81fe-751280223c03
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set c = state_attr('sensor.laptop_pack_gpu','clocks') or {} %}
+            {% set fps = state_attr('sensor.laptop_pack_gpu','fps') | float(-1) %}
+            {% set fps_line = ('\nFullscreen FPS: ' ~ (fps|round(1))) if fps >= 0 else '' %}
+            {{-
+              'Core: ' ~ (c.get('gpu_core_mhz',0)|round(0)) ~ ' MHz\n'
+              ~ 'SoC: ' ~ (c.get('gpu_soc_mhz',0)|round(0)) ~ ' MHz\n'
+              ~ 'Memory: ' ~ (c.get('gpu_memory_mhz',0)|round(0)) ~ ' MHz'
+              ~ fps_line
+            -}}
+          icon: "mdi:speedometer"
+          color: >-
+            {% set s = state_attr('sensor.laptop_pack_gpu','summary') or {} %}
+            {% set busy = s.get('busy_pct',0) | float(0) %}
+            {% if busy >= 85 %}red
+            {% elif busy >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_memory_lhm
+    sensor:
+      - name: ui_laptop_memory_lhm
+        unique_id: 5fa6ba64-787b-4ccb-84fd-2830078fd278
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set x = state_attr('sensor.laptop_pack_memory_lhm','mem') or {} %}
+            {{-
+              'Used: ' ~ (x.mem_used_gib|round(2)) ~ ' GiB / ' ~ (x.mem_total_gib|round(2)) ~ ' GiB'
+              ~ ' • Free: ' ~ (x.mem_avail_gib|round(2)) ~ ' GiB'
+              ~ ' • ' ~ (x.mem_load_pct|round(1)) ~ '%\n'
+              ~ 'Virtual: ' ~ (x.vmem_used_gib|round(2)) ~ ' GiB / ' ~ (x.vmem_total_gib|round(2)) ~ ' GiB'
+              ~ ' • ' ~ (x.vmem_load_pct|round(1)) ~ '%'
+            -}}
+          icon: mdi:memory
+          color: >-
+            {% set x = state_attr('sensor.laptop_pack_memory_lhm','mem') or {} %}
+            {% set p = x.mem_load_pct | float(0) %}
+            {% if p >= 90 %}red
+            {% elif p >= 75 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_drive_nvme0_lhm
+    sensor:
+      - name: ui_laptop_drive_nvme0_lhm
+        unique_id: 2f77efda-9dc9-467e-9c1b-d176be782e49
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set d = state_attr('sensor.laptop_pack_drive_nvme0_lhm','drive') or {} %}
+            {% set r = d.read_bps | float(0) %}
+            {% set w = d.write_bps | float(0) %}
+            {% set r_kib = (r/1024) %}
+            {% set w_kib = (w/1024) %}
+            {{-
+              'Used: ' ~ (d.used_space_pct|round(1)) ~ '%\n'
+              ~ 'I/O: R ' ~ (r_kib|round(1)) ~ ' KiB/s • W ' ~ (w_kib|round(1)) ~ ' KiB/s\n'
+              ~ 'Activity: T ' ~ (d.total_activity_pct|round(1)) ~ '% • R ' ~ (d.read_activity_pct|round(1)) ~ '% • W ' ~ (d.write_activity_pct|round(1)) ~ '%\n'
+              ~ 'Temps: ' ~ (d.temp_c|round(1)) ~ '°C • ' ~ (d.temp_1_c|round(1)) ~ '°C • ' ~ (d.temp_2_c|round(1)) ~ '°C\n'
+              ~ 'Spare: ' ~ (d.avail_spare_pct|round(0)) ~ '% (Th ' ~ (d.spare_thresh_pct|round(0)) ~ '%) • Used ' ~ (d.percentage_used_pct|round(0)) ~ '%\n'
+              ~ 'Totals: Read ' ~ (d.data_read_tib|round(2)) ~ ' TiB • Written ' ~ (d.data_written_tib|round(2)) ~ ' TiB'
+            -}}
+          icon: mdi:harddisk
+          color: >-
+            {% set d = state_attr('sensor.laptop_pack_drive_nvme0_lhm','drive') or {} %}
+            {% set used = d.used_space_pct | float(0) %}
+            {% set wear = d.percentage_used_pct | float(0) %}
+            {% if used >= 90 or wear >= 90 %}red
+            {% elif used >= 80 or wear >= 75 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_battery_lhm
+    sensor:
+      - name: ui_laptop_battery_lhm
+        unique_id: 70584685-719e-4b79-94d7-b0df1ff8517d
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set b = state_attr('sensor.laptop_pack_battery_lhm','battery') or {} %}
+            {{-
+              'Battery: ' ~ (b.charge_pct|round(1)) ~ '%\n'
+              ~ 'Degradation: ' ~ (b.degradation_pct|round(1)) ~ '%\n'
+              ~ 'Voltage: ' ~ (b.voltage_v|round(2)) ~ ' V • Discharge: ' ~ (b.discharge_w|round(1)) ~ ' W\n'
+              ~ 'Capacity: ' ~ (b.remaining_wh|round(2)) ~ ' Wh remaining\n'
+              ~ 'Full: ' ~ (b.full_wh|round(2)) ~ ' Wh • Design: ' ~ (b.designed_wh|round(0)) ~ ' Wh'
+            -}}
+          icon: mdi:battery
+          color: >-
+            {% set b = state_attr('sensor.laptop_pack_battery_lhm','battery') or {} %}
+            {% set c = b.charge_pct | float(0) %}
+            {% if c <= 10 %}red
+            {% elif c <= 25 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_network_lhm
+    variables: &net_vars
+      id: 7B0DEBAA4F-3F92-4649-99A7-B5E625B1DF7E7D
+      metrics: "{{ state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_stats_bundle','metrics') or {} }}"
+      util: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_load_1', none) }}"
+      mac: "{{ metrics.get('network/nic/' ~ id ~ '/mac','') }}"
+      up: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_throughput_7',0) | float(0) }}"
+      dn: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_throughput_8',0) | float(0) }}"
+      tot: "{{ up + dn }}"
+      rx: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_data_3',0) | float(0) }}"
+      tx: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_data_2',0) | float(0) }}"
+    sensor:
+      - name: ui_laptop_network_wifi_lhm
+        unique_id: 6cb64b92-17a9-40fe-8d25-0654f2e9466c
+        state: Wi-Fi
+        attributes: &net_attrs
+          secondary: >-
+            {{-
+              'Down: ' ~ ((dn/1024)|round(1)) ~ ' KiB/s • Up: ' ~ ((up/1024)|round(1)) ~ ' KiB/s\n'
+              ~ 'Totals: RX ' ~ ((rx/1024/1024/1024)|round(2)) ~ ' GiB • TX ' ~ ((tx/1024/1024/1024)|round(2)) ~ ' GiB'
+              ~ (('\nMAC: ' ~ mac) if mac else '')
+            -}}
+          icon: mdi:wifi
+          icon_color: >-
+            {# Prefer util if present; else color by traffic #}
+            {% if util is not none %}
+              {% set u = util | float(0) %}
+              {% if u >= 85 %}red
+              {% elif u >= 60 %}amber
+              {% elif u >= 20 %}blue
+              {% else %}green{% endif %}
+            {% else %}
+              {% if tot >= 5*1024*1024 %}red
+              {% elif tot >= 1*1024*1024 %}amber
+              {% elif tot >= 200*1024 %}blue
+              {% elif tot >= 5*1024 %}green
+              {% else %}grey{% endif %}
+            {% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_network_lhm
+    variables:
+      <<: *net_vars
+      id: 7BB55AE6DA-865F-48D7-AB46-BF5BAE282FC27D
+    sensor:
+      - name: ui_laptop_network_eth_lhm
+        unique_id: 7ac3ba6d-30e9-4af1-9144-bd35ca00b314
+        state: Ethernet
+        attributes:
+          <<: *net_attrs
+          icon: mdi:ethernet
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_network_lhm
+    variables:
+      <<: *net_vars
+      id: 7B417248BE-5BBD-40C1-8D61-F315C096033C7D
+    sensor:
+      - name: ui_laptop_network_wsl_lhm
+        unique_id: 74a75c32-d241-47ad-93b9-56b1934e3c5c
+        state: WSL vEthernet
+        attributes:
+          <<: *net_attrs
+          icon: mdi:docker
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.laptop_pack_network_lhm
+    variables:
+      <<: *net_vars
+      id: 7B37217669-42DA-4657-A55B-0D995D3282507D
+    sensor:
+      - name: ui_laptop_network_tailscale_lhm
+        unique_id: a7657296-e532-4a28-a273-79bec2fd4af8
+        state: Tailscale
+        attributes:
+          <<: *net_attrs
+          icon: mdi:vpn
