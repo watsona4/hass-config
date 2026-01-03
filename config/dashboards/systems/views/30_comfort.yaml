@@ -50,6 +50,11 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.new_trap_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.pantry_thermometer_temperature
       - app: ambient
     - type: custom:decluttering-card
@@ -77,17 +82,27 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.kids_bathroom_presence_living_room_temperature
+      - entity: sensor.kids_bathroom_presence_temperature
       - app: ambient
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.master_bathroom_presence_living_room_temperature
+      - entity: sensor.master_bathroom_presence_temperature
       - app: ambient
     - type: custom:decluttering-card
       template: template_card
       variables:
       - entity: sensor.study_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.teams_button_device_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.upstairs_outdoor_temperature
       - app: ambient
   - type: heading
     heading: Other Areas
@@ -158,7 +173,27 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.hub_2_4a37
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.hub_2_9c25
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.playroom_door_device_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.hub_2_1d47
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.playroom_lights_device_temperature
       - app: ambient
     - type: custom:decluttering-card
       template: template_card
@@ -196,6 +231,11 @@ cards:
       template: template_card
       variables:
       - entity: sensor.water_heater_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.water_heater_set_point
       - app: ambient
 - type: custom:stack-in-card
   mode: vertical
@@ -263,12 +303,12 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.kids_bathroom_presence_living_room_humidity
+      - entity: sensor.kids_bathroom_presence_humidity
       - app: indoor
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.master_bathroom_presence_living_room_humidity
+      - entity: sensor.master_bathroom_presence_humidity
       - app: indoor
     - type: custom:decluttering-card
       template: template_card
@@ -282,6 +322,11 @@ cards:
     columns: 2
     square: false
     cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.ambientweather_wh31e_1_167_humidity
+      - app: indoor
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -329,6 +374,21 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.hub_2_4a37_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.hub_2_9c25_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.hub_2_1d47_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.everything_presence_one_6dbdf0_humidity
       - app: indoor
     - type: custom:decluttering-card
@@ -357,4 +417,9 @@ cards:
       template: template_card
       variables:
       - entity: sensor.mold_indicator
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.outside_water_humidity
       - app: indoor

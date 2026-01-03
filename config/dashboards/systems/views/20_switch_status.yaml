@@ -23,11 +23,43 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_childlock
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.living_room_dehumidifier
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
       entity: switch.dishwasher_power
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_auto2
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_eco50
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_glas40
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_intensiv70
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_machinecare
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_prerinse
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_program_quick65
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -39,7 +71,107 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_extra_dry
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.gas_stove_switch
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_half_load
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dishwasher_hygiene
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.laundry_room_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.laundry_room_thermometer_show_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.living_room_presence_micro_motion_detection
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.living_room_presence_mmwave_sensor
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.living_room_presence_uart_presence_output
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.living_room_presence_uart_target_output
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.downstairs_thermostat_mute
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_living_room_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_living_room_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_living_room_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_living_room_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.pantry_thermometer_comfort_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.pantry_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_humidifier_child_lock
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.humidifier_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_crossfade
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_loudness
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_status_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_subwoofer_enabled
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_touch_controls
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_thermometer_show_smiley
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -54,11 +186,302 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
+      entity: switch.eleanor_presence_underlying_open_function_info_output_switch
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.electric_blanket_plug
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
+      entity: switch.kids_bathroom_presence_underlying_open_function_info_output_switch
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.master_bathroom_presence_underlying_open_function_info_output_switch
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.michael_presence_underlying_open_function_info_output_switch
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_back_hallway_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_back_hallway_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_back_hallway_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_back_hallway_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_eleanor_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_eleanor_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_eleanor_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_eleanor_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_upstairs_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_upstairs_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_upstairs_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_upstairs_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_guest_room_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_guest_room_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_guest_room_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_guest_room_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_michael_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_michael_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_michael_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_kids_room_michael_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.unnamed_room_crossfade
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.unnamed_room_loudness
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.study_space_heater_outlet
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.unnamed_room_status_light
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_subwoofer_enabled_2
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_thermometer_comfort_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.unnamed_room_touch_controls
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.upstairs_manual_away_mode
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.upstairs_smart_away_enable
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Other Areas
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.backyard_camera_snapshots
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.chicken_coop_thermometer_comfort_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.chicken_coop_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_audio_detection
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.doorbell_camera_snapshots
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.driveway_camera_snapshots
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.rv_camera_snapshots
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.side_yard_camera_snapshots
       tap_action:
         action: more-info
   - type: heading
@@ -69,7 +492,110 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_motion
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_detect
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_improve_contrast
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_review_detections
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_recordings
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_review_alerts
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_snapshots
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.ratgdov25i_f6128e_learn
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.platform_battery_monitor_switch_0
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.platform_battery_monitor_switch_1
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.shop_air_conditioner
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.shop_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.shop_thermometer_show_smiley
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Upper
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_family_room_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_family_room_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_family_room_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_family_room_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_gym_heads_up
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_gym_nightly_promise
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_gym_pathlight
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.nest_protect_gym_steam_check
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.playroom_presence_micro_motion_detection
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.everything_presence_one_6dbdf0_mmwave_sensor
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.everything_presence_one_6dbdf0_uart_presence_output
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.everything_presence_one_6dbdf0_uart_target_output
       tap_action:
         action: more-info
   - type: heading
@@ -79,6 +605,30 @@ cards:
     columns: 2
     square: false
     cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.dehumidifier_beep
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dehumidifier_pump
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.dehumidifier_pump_enabled
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.freezer_temperature_comfort_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.freezer_temperature_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.water_heater_away
+      tap_action:
+        action: more-info
     - type: custom:mushroom-entity-card
       entity: switch.water_heater_boost
       tap_action:
@@ -107,6 +657,16 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.breakfast_room_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.dishwasher_connectivity
+      - app: connectivity
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.humidifier_low_water
       - app: problem
     - type: custom:decluttering-card
@@ -114,6 +674,21 @@ cards:
       variables:
       - entity: binary_sensor.kitchen_door_contact
       - app: door
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.kitchen_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.kitchen_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.laundry_room_window_calibration
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -127,8 +702,28 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.living_room_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.everything_presence_one_6dbad0_occupancy
       - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.everything_presence_one_6dbad0_mmwave
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.everything_presence_one_6dbad0_pir
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.living_room_right_window_calibration
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -142,8 +737,83 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.downstairs_thermostat_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.downstairs_thermostat_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_living_room_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.humidifier_water_tank_lifted
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.living_room_door_contact
       - app: door
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.dishwasher_remote_control
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.dishwasher_remote_start
+      - app: default
   - type: heading
     heading: Upstairs
     heading_style: subtitle
@@ -169,6 +839,11 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.back_hallway_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.nest_protect_kids_room_eleanor_co_status
       - app: carbon_monoxide
     - type: custom:decluttering-card
@@ -189,6 +864,16 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.parlor_table_lamp_power_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.electric_blanket_status
+      - app: connectivity
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.nest_protect_upstairs_co_status
       - app: carbon_monoxide
     - type: custom:decluttering-card
@@ -204,6 +889,11 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.front_hallway_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.nest_protect_guest_room_co_status
       - app: carbon_monoxide
     - type: custom:decluttering-card
@@ -214,8 +904,23 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.guest_bedroom_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.guest_bedroom_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.nest_protect_guest_room_smoke_status
       - app: smoke
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.guest_bedroom_south_window_calibration
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -229,8 +934,33 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.master_bathroom_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.master_bathroom_presence_presence_information
       - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bathroom_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bedroom_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bedroom_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.michael_room_window_calibration
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -251,6 +981,286 @@ cards:
       variables:
       - entity: binary_sensor.nest_protect_kids_room_michael_smoke_status
       - app: smoke
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_guest_room_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_eleanor_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_kids_room_michael_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_hallway_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_upstairs_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_left_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_west_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.upstairs_home_state
+      - app: presence
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.upstairs_internet_status
+      - app: connectivity
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.upstairs_relay_server
+      - app: connectivity
   - type: heading
     heading: Other Areas
     heading_style: subtitle
@@ -261,8 +1271,143 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.backyard_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.backyard_camera_bear_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.backyard_camera_car_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.backyard_camera_cat_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.backyard_camera_horse_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.backyard_camera_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.barrel_heater_cycled_recently
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.chicken_coop_pump_on
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.chicken_roosting
       - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_bark_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_bear_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_cat_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_fire_alarm_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_horse_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_person_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_scream_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_speech_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.doorbell_camera_yell_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.driveway_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.driveway_camera_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.driveway_camera_person_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.front_yard_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.front_yard_bear_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.front_yard_car_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.front_yard_cat_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.front_yard_horse_occupancy
+      - app: occupancy
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -271,8 +1416,73 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.pipe_heater_cycled_recently
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.pipe_heater_on
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_bear_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_car_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_cat_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_dog_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.rv_camera_person_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.rv_door_open
       - app: door
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.side_yard_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.side_yard_camera_motion
+      - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.side_yard_camera_person_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_barrel_heater_on
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -288,13 +1498,43 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.garage_camera_all_occupancy
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.garage_camera_person_occupancy
       - app: occupancy
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.ratgdov25i_f6128e_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.ratgdov25i_f6128e_dry_contact_close
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.ratgdov25i_f6128e_dry_contact_light
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.ratgdov25i_f6128e_dry_contact_open
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.ratgdov25i_f6128e_motion
       - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.ratgdov25i_f6128e_motor
+      - app: running
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -305,6 +1545,26 @@ cards:
       variables:
       - entity: binary_sensor.garage_camera_motion
       - app: motion
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.platform_battery_monitor_cloud
+      - app: connectivity
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.platform_battery_monitor_input_0_input
+      - app: power
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.platform_battery_monitor_input_1_input
+      - app: power
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.platform_battery_monitor_restart_required
+      - app: problem
   - type: heading
     heading: Garage Upper
     heading_style: subtitle
@@ -335,6 +1595,106 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.nest_protect_family_room_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_removed_from_base
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_gym_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_battery_health
+      - app: battery
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_buzzer_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_co_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_humidity_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_led_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_pir_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_smoke_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_speaker_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.nest_protect_family_room_wifi_test
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.playroom_door_contact
       - app: door
     - type: custom:decluttering-card
@@ -345,8 +1705,43 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.playroom_lights_cloud
+      - app: connectivity
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.playroom_lights_channel_1_input
+      - app: power
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.playroom_lights_channel_2_input
+      - app: power
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.playroom_lights_overheating
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.playroom_lights_overpowering
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.everything_presence_one_6dbdf0_occupancy
       - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.everything_presence_one_6dbdf0_mmwave
+      - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.everything_presence_one_6dbdf0_pir
+      - app: motion
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -374,5 +1769,45 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.dehumidifier_defrosting
+      - app: cold
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.dehumidifier_replace_filter
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.dehumidifier_tank_removed
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.dehumidifier_tank_full
       - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_heater_control_enabled
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_heater_intelligence_enabled
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_heater_thermostat_enabled
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_heater_time_of_use_enabled
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.water_heater_timer_enabled
+      - app: default

@@ -141,6 +141,28 @@ cards:
       entity: lock.side_door
       tap_action:
         action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-lock-card
+      entity: lock.front_door
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Garage Lower
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-lock-card
+      entity: lock.ratgdov25i_f6128e_lock_remotes
+      tap_action:
+        action: more-info
 - type: custom:stack-in-card
   mode: vertical
   keep:

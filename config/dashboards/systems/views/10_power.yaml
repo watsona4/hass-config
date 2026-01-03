@@ -27,6 +27,14 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-light-card
+      entity: light.everything_presence_one_6dbad0_esp32_status_led
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.everything_presence_one_6dbad0_mmwave_led
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
       entity: light.parlor_lamp
       tap_action:
         action: more-info
@@ -41,6 +49,10 @@ cards:
     columns: 2
     square: false
     cards:
+    - type: custom:mushroom-light-card
+      entity: light.parlor_table_lamp_status_led
+      tap_action:
+        action: more-info
     - type: custom:mushroom-light-card
       entity: light.guest_bedroom_lamp
       tap_action:
@@ -100,6 +112,14 @@ cards:
     cards:
     - type: custom:mushroom-light-card
       entity: light.playroom_lights
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.everything_presence_one_6dbdf0_esp32_status_led
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-light-card
+      entity: light.everything_presence_one_6dbdf0_mmwave_led
       tap_action:
         action: more-info
 - type: custom:stack-in-card

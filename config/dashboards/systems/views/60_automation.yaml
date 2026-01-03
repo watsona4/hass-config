@@ -410,14 +410,6 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
-      entity: script.christmas_lights_off
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: script.christmas_lights_on
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
       entity: script.turn_off_interior_lights
       tap_action:
         action: more-info
