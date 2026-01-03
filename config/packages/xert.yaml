@@ -273,15 +273,26 @@ template:
 ###############################################################################
 automation:
 
-  - id: xert_bootstrap_token
-    alias: "Xert: bootstrap token on startup"
+  - alias: "Startup - delay external API storm"
     trigger:
       - platform: homeassistant
         event: start
+    action:
+      - delay: "00:02:00"
+      - event: x_startup_ok
+
+  - id: xert_bootstrap_token
+    alias: "Xert: bootstrap token on startup"
+    trigger:
+      - platform: event
+        event_type: x_startup_ok
     mode: restart
     action:
-      - delay: "00:00:05"
-      - service: rest_command.xert_token_fetch
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_token_fetch
+          jitter_max: 20
+          cooldown: 2
         response_variable: xert_init
       - variables:
           acc: "{{ (xert_init.get('content') or {}).get('access_token','') }}"
@@ -307,7 +318,11 @@ automation:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
                   value: "{{ exp_epoch - 300 }}"   # refresh 5 min early
-              - service: rest_command.xert_training_info_fetch
+              - service: script.serialized_service_call
+                data:
+                  service: rest_command.xert_training_info_fetch
+                  jitter_max: 20
+                  cooldown: 2
                 response_variable: resp_ti
               - variables:
                   ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
@@ -318,7 +333,11 @@ automation:
                 event_data:
                   available: "{{ ti_ok }}"
                   parsed: "{{ ti_parsed | tojson }}"
-              - service: rest_command.xert_activity_list_fetch
+              - service: script.serialized_service_call
+                data:
+                  service: rest_command.xert_activity_list_fetch
+                  jitter_max: 20
+                  cooldown: 2
                 response_variable: resp_al
               - variables:
                   al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
@@ -344,7 +363,11 @@ automation:
       exp_epoch: "{{ states('input_number.xert_token_expires_epoch')|int(0) }}"
     condition: "{{ exp_epoch > 0 and now_epoch >= exp_epoch }}"
     action:
-      - service: rest_command.xert_token_refresh
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_token_refresh
+          jitter_max: 20
+          cooldown: 2
         response_variable: xert_ref
       - variables:
           acc: "{{ (xert_ref.get('content') or {}).get('access_token','') }}"
@@ -370,8 +393,11 @@ automation:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
                   value: "{{ exp_epoch - 300 }}"
-              - delay: "00:00:02"
-              - service: rest_command.xert_training_info_fetch
+              - service: script.serialized_service_call
+                data:
+                  service: rest_command.xert_training_info_fetch
+                  jitter_max: 20
+                  cooldown: 2
                 response_variable: resp_ti
               - variables:
                   ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
@@ -382,7 +408,11 @@ automation:
                 event_data:
                   available: "{{ ti_ok }}"
                   parsed: "{{ ti_parsed | tojson }}"
-              - service: rest_command.xert_activity_list_fetch
+              - service: script.serialized_service_call
+                data:
+                  service: rest_command.xert_activity_list_fetch
+                  jitter_max: 20
+                  cooldown: 2
                 response_variable: resp_al
               - variables:
                   al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
@@ -402,7 +432,11 @@ automation:
         to: "False"
         for: "00:00:10"
     action:
-      - service: rest_command.xert_token_refresh
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_token_refresh
+          jitter_max: 20
+          cooldown: 2
         response_variable: xert_ref2
       - variables:
           acc: "{{ (xert_ref2.get('content') or {}).get('access_token','') }}"
@@ -428,8 +462,11 @@ automation:
                   entity_id: input_number.xert_token_expires_epoch
                 data:
                   value: "{{ exp_epoch - 300 }}"
-      - delay: "00:00:05"
-      - service: rest_command.xert_training_info_fetch
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_training_info_fetch
+          jitter_max: 20
+          cooldown: 2
         response_variable: resp_ti
       - variables:
           ti_ok: "{{ resp_ti is mapping and (resp_ti.status|int(0)) == 200 and (resp_ti.content is mapping or resp_ti.content|string != '') }}"
@@ -440,7 +477,11 @@ automation:
         event_data:
           available: "{{ ti_ok }}"
           parsed: "{{ ti_parsed | tojson }}"
-      - service: rest_command.xert_activity_list_fetch
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_activity_list_fetch
+          jitter_max: 20
+          cooldown: 2
         response_variable: resp_al
       - variables:
           al_ok: "{{ resp_al is mapping and (resp_al.status|int(0)) == 200 and (resp_al.content is mapping or resp_al.content|string != '') }}"
@@ -458,12 +499,12 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/15"
-      - platform: homeassistant
-        event: start
     action:
-      - delay:
-          seconds: "{{ range(0, 20) | random | int }}"
-      - service: rest_command.xert_training_info_fetch
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_training_info_fetch
+          jitter_max: 20
+          cooldown: 2
         response_variable: resp
       - variables:
           ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
@@ -484,12 +525,12 @@ automation:
           - sensor.xert_lookback_from_epoch
           - sensor.xert_lookback_to_epoch
           - input_text.xert_access_token
-      - platform: homeassistant
-        event: start
     action:
-      - delay:
-          seconds: "{{ range(5, 15) | random | int }}"
-      - service: rest_command.xert_activity_list_fetch
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_activity_list_fetch
+          jitter_max: 20
+          cooldown: 2
         response_variable: resp
       - variables:
           ok: "{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}"
@@ -500,3 +541,43 @@ automation:
         event_data:
           available: "{{ ok }}"
           parsed: "{{ parsed_obj | tojson }}"
+
+script:
+  serialized_service_call:
+    alias: Serialized service call (jitter + cooldown)
+    mode: queued
+    max: 100
+    fields:
+      service:
+        description: "Service to call, e.g. rest_command.xert_training_info"
+      service_data:
+        description: "Data for the service"
+        example: {}
+      jitter_max:
+        description: "Max random delay (seconds) before calling"
+        example: 120
+      cooldown:
+        description: "Extra delay after call (seconds) to space out calls"
+        example: 3
+    sequence:
+      - variables:
+          jmax: "{{ jitter_max | default(0) | int }}"
+          jitter: "{{ (range(0, jmax + 1) | random) if jmax > 0 else 0 }}"
+          cool: "{{ cooldown | default(0) | int }}"
+      - if:
+          - condition: template
+            value_template: "{{ jitter > 0 }}"
+        then:
+          - delay:
+              seconds: "{{ jitter }}"
+      - service: "{{ service }}"
+        data: "{{ service_data | default({}) }}"
+        response_variable: _svc_resp
+      - if:
+          - condition: template
+            value_template: "{{ cool > 0 }}"
+        then:
+          - delay:
+              seconds: "{{ cool }}"
+      - stop: "done"
+        response_variable: _svc_resp

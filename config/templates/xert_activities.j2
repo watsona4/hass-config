@@ -89,9 +89,11 @@ automation:
       - wait_template: "{% raw %}{{ has_value('sensor.xert_activity_{% endraw %}{{ i }}{% raw %}_path') }}{% endraw %}"
         continue_on_timeout: false
         timeout: "00:00:10"
-      - delay:
-          seconds: "{% raw %}{{ ({% endraw %}{{ i }}{% raw %} * 2) + (range(0, 2) | random | int) }}{% endraw %}"
-      - service: rest_command.xert_activity_detail_fetch_{{ i }}
+      - service: script.serialized_service_call
+        data:
+          service: rest_command.xert_activity_detail_fetch_{{ i }}
+          jitter_max: 20
+          cooldown: 2
         response_variable: resp
       - variables:
           ok: "{% raw %}{{ resp is mapping and (resp.status | int(0)) == 200 and (resp.content is mapping or resp.content | string != '') }}{% endraw %}"
