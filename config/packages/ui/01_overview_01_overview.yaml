@@ -2,13 +2,15 @@ homeassistant:
   customize:
     anchor_container:
       .variables: &variables
-        app: 'default'
+        entity_id: ""
+        app: default
+        options: {}
         state_info: >-
           {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+          {{ get_device_state_info(entity_id, app, options=options) | from_json }}
         state_info_vertical: >-
           {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(trigger.entity_id, app, layout='vertical') | from_json }}
+          {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
       .attributes: &attributes
         value: "{{ state_info.value }}"
         name: "{{ state_info.name }}"
@@ -27,51 +29,60 @@ homeassistant:
         short_label_vertical: "{{ state_info_vertical.short_label }}"
         long_label_vertical: "{{ state_info_vertical.long_label }}"
       .sensor: &sensor
-        state: "{{ states(trigger.entity_id) }}"
+        state: "{{ states(entity_id) }}"
         attributes: *attributes
 
 template:
-
   - trigger:
       - platform: state
         entity_id: input_boolean.someone_is_home
     variables:
       <<: *variables
-      app: 'someone_home'
+      entity_id: input_boolean.someone_is_home
+      app: someone_home
     sensor:
       - <<: *sensor
         name: ui_someone_is_home_chip
+        unique_id: d9889c2b-0ec7-4f1e-b216-971014b1b147
 
   - trigger:
       - platform: state
         entity_id: input_boolean.home_alone
     variables:
       <<: *variables
-      app: 'home_alone'
+      entity_id: input_boolean.home_alone
+      app: home_alone
     sensor:
       - <<: *sensor
         name: ui_home_alone_chip
+        unique_id: 51836646-0c6b-4001-86bb-2919f5e9d3ba
 
   - trigger:
       - platform: state
         entity_id: input_boolean.coming_home
     variables:
       <<: *variables
-      app: 'returning_home'
+      entity_id: input_boolean.coming_home
+      app: returning_home
     sensor:
       - <<: *sensor
         name: ui_coming_home_chip
+        unique_id: 874e881b-c191-45dd-a8ba-a05e5ab38638
 
   - trigger:
       - platform: state
-        entity_id: binary_sensor.daytime
+        entity_id:
+          - binary_sensor.daytime
+          - binary_sensor.evening
+          - binary_sensor.daytime_override
     variables:
       daytime: "{{ is_state('binary_sensor.daytime', 'on') }}"
       evening: "{{ is_state('binary_sensor.evening', 'on') }}"
       override: "{{ is_state('binary_sensor.daytime_override', 'on') }}"
     sensor:
       - name: ui_daytime_chip
-        state: "{{ states(trigger.entity_id) }}"
+        unique_id: 79737332-7f49-432b-a929-7ab3946e316f
+        state: "{{ states('binary_sensor.daytime') }}"
         attributes:
           icon: "{{ 'mdi:white-balance-sunny' if override else 'mdi:weather-sunny' if daytime else 'mdi:weather-sunset' if evening else 'mdi:weather-night' }}"
           label: "{{ 'Daytime' ~ (' (Override)' if override else '') if daytime else 'Evening' if evening else 'Nighttime' }}"
@@ -82,37 +93,44 @@ template:
         entity_id: sensor.home_download_rate
     variables:
       <<: *variables
-      app: 'download'
+      entity_id: sensor.home_download_rate
+      app: download
     sensor:
       - <<: *sensor
         name: ui_home_download_rate
+        unique_id: 882bf0ed-f102-47e4-a9b3-8354e5a740c0
 
   - trigger:
       - platform: state
         entity_id: sensor.home_upload_rate
     variables:
       <<: *variables
-      app: 'upload'
+      entity_id: sensor.home_upload_rate
+      app: upload
     sensor:
       - <<: *sensor
         name: ui_home_upload_rate
+        unique_id: 8ac9a9b5-ae3a-4737-b4f3-38909a988d24
 
   - trigger:
       - platform: state
         entity_id: sensor.home_latency_icmp
     variables:
       <<: *variables
-      app: 'latency'
+      entity_id: sensor.home_latency_icmp
+      app: latency
     sensor:
       - <<: *sensor
         name: ui_home_latency_icmp
+        unique_id: da689d3e-1f33-4299-8463-c5a5e17d267a
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.sunny
     variables:
       <<: *variables
-      app: 'sunny'
+      entity_id: binary_sensor.sunny
+      app: sunny
       is_sunny: "{{ is_state('binary_sensor.sunny','on') or not is_state('binary_sensor.dark_outside','on') }}"
       dark_state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
@@ -120,7 +138,9 @@ template:
     sensor:
       - <<: *sensor
         name: ui_sunny_chip
+        unique_id: be871c38-2bb1-43ae-b5f4-ed8afe040b6c
         attributes:
+          <<: *attributes
           label: "{{ (state_info if is_sunny|bool else dark_state_info).label }}"
           icon: "{{ (state_info if is_sunny|bool else dark_state_info).icon }}"
           color: "{{ (state_info if is_sunny|bool else dark_state_info).color }}"
@@ -130,248 +150,229 @@ template:
         entity_id: binary_sensor.rainy
     variables:
       <<: *variables
-      app: 'rainy'
+      entity_id: binary_sensor.rainy
+      app: rainy
     sensor:
       - <<: *sensor
         name: ui_rainy_chip
+        unique_id: b294fad1-6632-4e3c-ae76-aea04977ce75
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.windy
     variables:
       <<: *variables
-      app: 'windy'
+      entity_id: binary_sensor.windy
+      app: windy
     sensor:
       - <<: *sensor
         name: ui_windy_chip
+        unique_id: 1db1ac0c-c775-4162-bb34-6e4fa86380bd
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.hot_inside
     variables:
       <<: *variables
-      app: 'hot_inside'
+      entity_id: binary_sensor.hot_inside
+      app: hot_inside
     sensor:
       - <<: *sensor
         name: ui_hot_inside_chip
+        unique_id: 9b20570c-af22-4cd1-a786-790c85d9a687
 
   - trigger:
       - platform: state
         entity_id: sensor.outside_temperature_state
     variables:
       <<: *variables
-      app: 'ambient'
+      entity_id: sensor.outside_temperature_state
+      app: ambient
     sensor:
       - <<: *sensor
         name: ui_outside_temperature_state
+        unique_id: 42c9961c-d16c-4489-bb00-55e3c869c367
 
   - trigger:
       - platform: state
         entity_id: sensor.outside_humidity_state
     variables:
       <<: *variables
-      app: 'outdoor'
+      entity_id: sensor.outside_humidity_state
+      app: outdoor
     sensor:
       - <<: *sensor
         name: ui_outside_humidity_state
+        unique_id: 3afe8d4f-31b4-4367-a640-a50e65f19c27
 
   - trigger:
       - platform: state
         entity_id: sensor.light_sensor_illuminance
     variables:
       <<: *variables
-      app: 'outdoor'
+      entity_id: sensor.light_sensor_illuminance
+      app: outdoor
     sensor:
       - <<: *sensor
         name: ui_light_sensor_illuminance
+        unique_id: 7bffa8e5-8384-4421-9a3b-f47c60348ae9
 
   - trigger:
       - platform: state
         entity_id: sensor.nearby_uv_index
     variables:
       <<: *variables
-      app: 'uv_index'
+      entity_id: sensor.nearby_uv_index
+      app: uv_index
     sensor:
       - <<: *sensor
         name: ui_nearby_uv_index
+        unique_id: 0948b99b-224f-4a71-be70-78b31753596a
 
   - trigger:
       - platform: state
         entity_id: sensor.nearby_wind_speed
     variables:
       <<: *variables
-      state_info: >-
-        {%- from 'main.jinja' import get_device_state_info -%}
-        {{ get_device_state_info(trigger.entity_id, app, direction='sensor.nearby_wind_direction',
-          gusts='sensor.nearby_wind_gust', show_deg=False) | from_json }}
-      state_info_vertical: >-
-        {%- from 'main.jinja' import get_device_state_info -%}
-        {{ get_device_state_info(trigger.entity_id, app, layout='vertical',
-          direction='sensor.nearby_wind_direction', gusts='sensor.nearby_wind_gust', show_deg=False) | from_json }}
+      entity_id: sensor.nearby_wind_speed
+      options:
+        direction: sensor.nearby_wind_direction
+        gusts: sensor.nearby_wind_gust
+        show_deg: false
     sensor:
       - <<: *sensor
         name: ui_nearby_wind_speed
+        unique_id: bf1762ea-31ba-405d-9584-9eda237772ae
 
   - trigger:
       - platform: state
         entity_id: sensor.nearby_today_precip_sum
     variables:
       <<: *variables
-      state_info: >-
-        {%- from 'main.jinja' import get_device_state_info -%}
-        {{ get_device_state_info(trigger.entity_id, app, prob='sensor.nearby_today_precip_prob_max') | from_json }}
-      state_info_vertical: >-
-        {%- from 'main.jinja' import get_device_state_info -%}
-        {{ get_device_state_info(trigger.entity_id, app, layout='vertical',
-          prob='sensor.nearby_today_precip_prob_max') | from_json }}
+      entity_id: sensor.nearby_today_precip_sum
+      options:
+        prob: sensor.nearby_today_precip_prob_max
     sensor:
       - <<: *sensor
         name: ui_nearby_today_precip_sum
+        unique_id: f44a31ae-348a-43ef-bca9-f1af7662d1c0
 
   - trigger:
       - platform: state
         entity_id: sensor.waqi_nearby_aqi
-    variables: *variables
+    variables:
+      <<: *variables
+      entity_id: sensor.waqi_nearby_aqi
     sensor:
       - <<: *sensor
         name: ui_waqi_nearby_aqi
+        unique_id: 7c8dbd44-e7da-4305-81e8-3d1e2c15f52f
 
   - trigger:
       - platform: state
         entity_id: sensor.nearby_dew_point
     variables:
       <<: *variables
-      app: 'dew_point'
+      entity_id: sensor.nearby_dew_point
+      app: dew_point
     sensor:
       - <<: *sensor
         name: ui_nearby_dew_point
+        unique_id: 3f833fec-c73f-4a8e-8dff-995638f24a94
 
   - trigger:
       - platform: state
         entity_id: sensor.electric_daily
     variables:
       <<: *variables
-      app: 'energy_daily_house'
+      entity_id: sensor.electric_daily
+      app: energy_daily_house
     sensor:
       - <<: *sensor
         name: ui_electric_daily
+        unique_id: 2ff01172-cb6f-49f5-b6fd-53b65d6b74a9
 
   - trigger:
       - platform: state
         entity_id: sensor.water_daily
     variables:
       <<: *variables
-      app: 'daily'
+      entity_id: sensor.water_daily
+      app: daily
     sensor:
       - <<: *sensor
         name: ui_water_daily
+        unique_id: e8cae0bc-c6e7-4fad-bb07-72457cd4860d
 
   - trigger:
       - platform: state
         entity_id: sensor.gas_daily
     variables:
       <<: *variables
-      app: 'daily'
+      entity_id: sensor.gas_daily
+      app: daily
     sensor:
       - <<: *sensor
         name: ui_gas_daily
+        unique_id: e239f218-f013-49e0-aa2e-14c373a38824
 
   - trigger:
-      - platform: homeassistant
-        event: start
-      - platform: event
-        event_type: state_changed
+      - platform: time_pattern
+        seconds: "/5"
     sensor:
       - name: ui_unavailable_devices_count
+        unique_id: cb7bc447-f3cf-4bb8-a71e-fc5ad165ae63
         state: >-
-          {%- set eid = (trigger.event.data.entity_id if trigger.platform == 'event' else '') -%}
-          {%- if eid in ['sensor.ui_unavailable_devices_count', 'sensor.ui_unavailable_devices'] -%}
-            {{ this.state | int(0) }}
-          {%- elif trigger.platform == 'homeassistant' -%}
-            {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
-            {{ count_unavailable_devices() | int(0) }}
-          {%- else -%}
-            {%- set old = (trigger.event.data.old_state.state if trigger.event.data.old_state is not none else none) -%}
-            {%- set new = (trigger.event.data.new_state.state if trigger.event.data.new_state is not none else none) -%}
-            {%- if old in ['unavailable','unknown'] or new in ['unavailable','unknown'] -%}
-              {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
-              {{ count_unavailable_devices() | int(0) }}
-            {%- else -%}
-              {{ this.state | int(0) }}
-            {%- endif -%}
-          {%- endif -%}
+          {%- from 'macros/unavailable_devices.jinja' import count_unavailable_devices -%}
+          {{ count_unavailable_devices() | int(0) }}
 
-  - trigger:
-      - platform: state
-        entity_id: sensor.ui_unavailable_devices_count
-    sensor:
+  - sensor:
       - name: ui_unavailable_devices
+        unique_id: b197005e-18ee-46e3-b278-be4c47443956
         state: "{{ states('sensor.ui_unavailable_devices_count') }}"
         attributes:
           devices: >-
             {%- from 'macros/unavailable_devices.jinja' import generate -%}
             {{ generate() | from_json }}
 
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_brightness
-    sensor:
+  - sensor:
       - name: ui_blinds_brightness
+        unique_id: 82470cae-a733-4770-abbc-4ed44d75da12
         state: "{{ states('binary_sensor.closed_brightness') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('brightness') | from_json }}
-
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_temperature
-    sensor:
       - name: ui_blinds_temperature
+        unique_id: 6e13a89c-8200-4a6c-93d2-3c387a0e04bb
         state: "{{ states('binary_sensor.closed_temperature') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('temperature') | from_json }}
-
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_presence
-    sensor:
       - name: ui_blinds_presence
+        unique_id: bcfaa767-5d45-425c-a566-ece6777241eb
         state: "{{ states('binary_sensor.closed_presence') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('presence') | from_json }}
-
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_devices
-    sensor:
       - name: ui_blinds_device
+        unique_id: 76c410c0-e5b4-4e5e-b9ef-a38bdd718e3f
         state: "{{ states('binary_sensor.closed_devices') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('device') | from_json }}
-
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_button
-    sensor:
       - name: ui_blinds_button
+        unique_id: b5c3ce30-dc4a-44ec-9735-0ea4c2431bb0
         state: "{{ states('binary_sensor.closed_button') }}"
         attributes:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('button') | from_json }}
-
-  - trigger:
-      - platform: state
-        entity_id: binary_sensor.closed_nighttime
-    sensor:
       - name: ui_blinds_nighttime
+        unique_id: 8641600d-39d1-423e-8ed2-097eaca96b2c
         state: "{{ states('binary_sensor.closed_nighttime') }}"
         attributes:
           blinds: >-
