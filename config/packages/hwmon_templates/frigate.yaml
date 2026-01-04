@@ -1,0 +1,2176 @@
+homeassistant:
+  customize:
+    anchor_container:
+      .variables: &variables
+        entity_id: ""
+        app: default
+        options: {}
+        state_info: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+        state_info_vertical: >-
+          {%- from 'main.jinja' import get_device_state_info -%}
+          {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+      .attributes: &attributes
+        value: "{{ state_info.value }}"
+        name: "{{ state_info.name }}"
+        default_desc: "{{ state_info.default_desc }}"
+        short_desc: "{{ state_info.short_desc }}"
+        long_desc: "{{ state_info.long_desc }}"
+        full_desc: "{{ state_info.full_desc }}"
+        icon: "{{ state_info.icon }}"
+        color: "{{ state_info.color }}"
+        badge: "{{ state_info.badge }}"
+        badge_color: "{{ state_info.badge_color }}"
+        label: "{{ state_info.label }}"
+        short_label: "{{ state_info.short_label }}"
+        long_label: "{{ state_info.long_label }}"
+        label_vertical: "{{ state_info_vertical.label }}"
+        short_label_vertical: "{{ state_info_vertical.short_label }}"
+        long_label_vertical: "{{ state_info_vertical.long_label }}"
+      .sensor: &sensor
+        state: "{{ states(entity_id) }}"
+        attributes: *attributes
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_frigate_stats_bundle
+    variables:
+      entity_id: sensor.frigate_frigate_stats_bundle
+      available: "{{ has_value(entity_id) }}"
+      metrics: "{{ state_attr(entity_id,'metrics') or {} }}"
+    sensor:
+      # -------------------------
+      # Status / overall health
+      # -------------------------
+      - name: "Frigate Overall Status Summary"
+        unique_id: 56031dc3-a9e8-4a20-af1a-49b6015927e4
+        availability: "{{ available }}"
+        state: "{{ metrics.get('status/summary','unknown') }}"
+        icon: "mdi:card-text-outline"
+      - name: "Frigate Updates Pending"
+        unique_id: 921dc573-1014-4400-976d-3fc2be0328a1
+        availability: "{{ available }}"
+        state: "{{ metrics.get('updates/pending') | int(0) }}"
+        icon: "mdi:update"
+        state_class: measurement
+      - name: "Frigate Services Checked"
+        unique_id: d4884280-299e-4b44-9c33-e0e6951e90b5
+        availability: "{{ available }}"
+        state: "{{ metrics.get('services/checked') | int(0) }}"
+        icon: "mdi:playlist-check"
+        state_class: measurement
+      - name: "Frigate Containers Checked"
+        unique_id: 12c3bcd2-56da-41c7-b551-943c3fe70b03
+        availability: "{{ available }}"
+        state: "{{ metrics.get('docker/checked') | int(0) }}"
+        icon: "mdi:playlist-check"
+        state_class: measurement
+
+      # -------------------------
+      # CPU
+      # -------------------------
+      - name: "Frigate CPU Utilization"
+        unique_id: ba7be773-5962-4a26-8885-e884e1115669
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/percent') | float(0) }}"
+        icon: "mdi:chip"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate CPU Cores"
+        unique_id: e218db08-fb4a-4075-93c9-bb74a3af771b
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/cores') | int(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Frigate CPU Load 1m"
+        unique_id: 959d0fa9-1a05-4df9-9d07-a4c34ab2c3fe
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load/1m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Frigate CPU Load 5m"
+        unique_id: 36c12026-58a2-4481-84ee-4f66031b8eea
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load/5m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Frigate CPU Load 15m"
+        unique_id: 61f8257e-e459-4ee5-a6a0-737b21c9fa3d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/load/15m') | float(0) }}"
+        icon: "mdi:chip"
+        state_class: measurement
+      - name: "Frigate CPU Temp (pkg)"
+        unique_id: a193eb1f-4ed6-4e85-83ad-d63b69cb7d09
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/temp/Package id 0') | float(0) }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Frigate CPU Temp (composite)"
+        unique_id: 733240b1-9883-4cc5-8faa-201c2226057c
+        availability: "{{ available }}"
+        state: "{{ metrics.get('cpu/temp/Composite') | float(0) }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+
+      # -------------------------
+      # Memory
+      # -------------------------
+      - name: "Frigate Memory Percent"
+        unique_id: 8772b4da-4118-4333-854d-5fa4a5a69a07
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/percent') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate Memory Total"
+        unique_id: 30d4d4f4-a456-473f-99c6-77309dbb257e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/total') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate Memory Used"
+        unique_id: 0a010c56-bf33-436d-8435-94771477be27
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/used') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate Memory Available"
+        unique_id: 5875c7bb-a0c4-4cfc-af7a-26e06720f72b
+        availability: "{{ available }}"
+        state: "{{ metrics.get('mem/available') | float(0) }}"
+        icon: "mdi:memory"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Network (active)
+      # -------------------------
+      - name: "Frigate Network Active Name"
+        unique_id: de842897-f9ad-40c1-abe7-67e7cbc3da90
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/name','unknown') }}"
+      - name: "Frigate Network Active Up"
+        unique_id: d9d3c12e-6ce4-434c-8e3d-caf6763ddb3f
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/up_bps') | float(0) }}"
+        icon: "mdi:upload"
+        unit_of_measurement: B/s
+      - name: "Frigate Network Active Down"
+        unique_id: 6bd6705c-bd92-4340-9856-db98d4a464d7
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/down_bps') | float(0) }}"
+        icon: "mdi:download"
+        unit_of_measurement: B/s
+      - name: "Frigate Network Active IPv4"
+        unique_id: 89678227-6afe-476e-9605-3e70ec3a6e19
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/ipv4','unknown') }}"
+      - name: "Frigate Network Active IPv6"
+        unique_id: e4dc7f1a-bb32-4881-baf2-902b3db8f5b3
+        availability: "{{ available }}"
+        state: "{{ metrics.get('network/active/ipv6','unknown') }}"
+
+      # -------------------------
+      # Filesystem (/)
+      # -------------------------
+      - name: "Frigate FS Root Percent"
+        unique_id: a4307ddc-81a4-45a0-a50c-7117de2b9171
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/root/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Root Total"
+        unique_id: 96431861-ace3-404f-8360-97eefc2dcf7d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/root/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Root Used"
+        unique_id: c1cee435-be7e-43e1-bfd5-4eaee05d90ab
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/root/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Root Free"
+        unique_id: 96136d6a-c3d5-4e09-8cb8-333d2305440d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/root/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/boot)
+      # -------------------------
+      - name: "Frigate FS Boot Percent"
+        unique_id: 83afeaaf-8fa0-4e23-9536-8c6722a6c954
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/boot/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Boot Total"
+        unique_id: 3d86d2fe-1b6e-46d8-9db5-0ff90c60693d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/boot/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Boot Used"
+        unique_id: 494ec7b5-95ba-46d1-b426-a16ff49a15cc
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/boot/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Boot Free"
+        unique_id: 0de0b363-6600-4e18-a09f-eba885d15f90
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/boot/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/boot/efi)
+      # -------------------------
+      - name: "Frigate FS EFI Percent"
+        unique_id: 98f56e33-4ed9-4101-8ad8-9e23c57e7fd5
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/efi/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS EFI Total"
+        unique_id: 4a13ee10-1b1d-4dfe-9399-a0e447e71b03
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/efi/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS EFI Used"
+        unique_id: 6a27efce-0a25-476b-b66e-62d0ae1c338b
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/efi/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS EFI Free"
+        unique_id: aaae826c-dadb-4092-af4a-f81f6839cb77
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/efi/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/home)
+      # -------------------------
+      - name: "Frigate FS Home Percent"
+        unique_id: 6094945f-0e56-466e-8ebf-7ff821e29cdc
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/home/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Home Total"
+        unique_id: 7273d104-75a3-4170-b826-f45bd3a83691
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/home/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Home Used"
+        unique_id: 612a9268-510c-4000-9746-f7533c742daa
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/home/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Home Free"
+        unique_id: c71811f4-561f-4df2-aa73-3f56d13a87f9
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/home/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/data)
+      # -------------------------
+      - name: "Frigate FS Data Percent"
+        unique_id: 738caf70-ba85-4e06-851c-70faede95644
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/data/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Data Total"
+        unique_id: c4fc3f8b-bec2-459e-aa28-06898f015b59
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/data/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Data Used"
+        unique_id: d2cfd19c-c1a7-47b6-9a55-946e6879cd0c
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/data/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Data Free"
+        unique_id: 31c0f417-41ec-416d-8e2e-429cd5f08fc2
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/data/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/frigate-hot)
+      # -------------------------
+      - name: "Frigate FS Frigate Hot Percent"
+        unique_id: 8dfb8593-ba0b-4f34-9aea-aade41a8991d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/frigate-hot/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Frigate Hot Total"
+        unique_id: ba0b3147-32a0-4c9c-97d1-a5287aae2096
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/frigate-hot/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Frigate Hot Used"
+        unique_id: a1875680-ee17-41d5-94fe-e1c3e730097e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/frigate-hot/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Frigate Hot Free"
+        unique_id: b061f93a-d840-407b-99f7-877572fc8c22
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/frigate-hot/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Filesystem (/tmp)
+      # -------------------------
+      - name: "Frigate FS Tmp Percent"
+        unique_id: fb68d6fd-4901-4372-9e55-dd203ed1ebca
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/tmp/percent') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate FS Tmp Total"
+        unique_id: cb2c45b3-a0a3-4553-9cd8-fdc19a0eda73
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/tmp/total') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Tmp Used"
+        unique_id: 5ddc2dc1-9594-4d35-8479-7b1e2c551d5b
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/tmp/used') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+      - name: "Frigate FS Tmp Free"
+        unique_id: 47f8f64e-a7d4-4a94-9d41-03ca1b9f6d7d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('fs/tmp/free') | float(0) }}"
+        icon: "mdi:harddisk"
+        unit_of_measurement: GiB
+        state_class: measurement
+
+      # -------------------------
+      # Disk I/O (sda1)
+      # -------------------------
+      - name: "Frigate Disk sda1 read_rate"
+        unique_id: ae2da93f-ad5f-4d74-9b4e-dbe79ee4dee6
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/sda1/read_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk sda1 write_rate"
+        unique_id: 1ede2d6b-db27-4a23-a061-8b21b924c457
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/sda1/write_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk sda1 read_bytes"
+        unique_id: 03198016-52b8-46ba-b482-07b6056374d3
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/sda1/read_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Frigate Disk sda1 write_bytes"
+        unique_id: c2430055-98e7-4e1c-b6d0-2bb1c55658f3
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/sda1/write_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # Disk I/O (nvme0n1p1)
+      # -------------------------
+      - name: "Frigate Disk nvme0n1p1 read_rate"
+        unique_id: bbc13c59-e0b5-4651-bef1-0c5728360313
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p1/read_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p1 write_rate"
+        unique_id: 44baede3-f45a-4626-a79c-523e12ebd1b9
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p1/write_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p1 read_bytes"
+        unique_id: a38f0ced-7e59-4e24-9aca-b0ce9373c7b8
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p1/read_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p1 write_bytes"
+        unique_id: 85ff8e72-cc51-41de-b3f2-2fb285eb8221
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p1/write_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # Disk I/O (nvme0n1p2)
+      # -------------------------
+      - name: "Frigate Disk nvme0n1p2 read_rate"
+        unique_id: 3ec42773-a5a1-4a2c-b45f-41d260d65ee9
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p2/read_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p2 write_rate"
+        unique_id: 0ea65b87-7941-4670-81c1-f4bb2d53a2aa
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p2/write_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p2 read_bytes"
+        unique_id: 8e906b1d-dc40-4db7-ab40-3d66f271c489
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p2/read_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p2 write_bytes"
+        unique_id: 54ef8848-63fe-4985-ae14-060214bba96d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p2/write_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # Disk I/O (nvme0n1p3)
+      # -------------------------
+      - name: "Frigate Disk nvme0n1p3 read_rate"
+        unique_id: fc8a0737-2a94-4bc1-a50f-42308be7b269
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p3/read_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p3 write_rate"
+        unique_id: 15d15ca4-7feb-4026-845d-da14882c3b95
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p3/write_rate') | float(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B/s
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p3 read_bytes"
+        unique_id: b7ee428d-9b8f-4cfa-aea9-6b06cdff8032
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p3/read_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Frigate Disk nvme0n1p3 write_bytes"
+        unique_id: 32073415-2c65-46bf-a1c9-eea9f53ae961
+        availability: "{{ available }}"
+        state: "{{ metrics.get('disk/nvme0n1p3/write_bytes') | int(0) }}"
+        icon: "mdi:swap-horizontal"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # SMART (nvme0n1)
+      # -------------------------
+      - name: "Frigate SMART /dev/nvme0n1 Temperature"
+        unique_id: 1ac181ff-4050-490a-ade2-13818551151c
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_nvme0n1/temperature') | float(0) }}"
+        icon: "mdi:thermometer"
+        unit_of_measurement: "°C"
+        state_class: measurement
+      - name: "Frigate SMART /dev/nvme0n1 Power On Hours"
+        unique_id: 24b16bd6-577e-489d-b041-f481c82386ab
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_nvme0n1/power_on_hours') | int(0) }}"
+        icon: "mdi:timer-outline"
+        unit_of_measurement: h
+        state_class: measurement
+      - name: "Frigate SMART /dev/nvme0n1 Total Bytes Written"
+        unique_id: 3f670fcd-4546-4b73-b5a8-8cb67e59e820
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_nvme0n1/total_bytes_written') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        state_class: measurement
+      - name: "Frigate SMART /dev/nvme0n1 Total Bytes Read"
+        unique_id: e54f51c6-ced4-4cbf-8485-d560e167a1dd
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_nvme0n1/total_bytes_read') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        state_class: measurement
+
+      # -------------------------
+      # SMART (sda)
+      # -------------------------
+      - name: "Frigate SMART /dev/sda Temperature"
+        unique_id: 4b347b33-2c34-41a0-84ab-0f69a1f2311f
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/temperature') | float(0) }}"
+        icon: "mdi:thermometer"
+        unit_of_measurement: "°C"
+        state_class: measurement
+      - name: "Frigate SMART /dev/sda Power On Hours"
+        unique_id: f35b9310-6b98-4fee-9073-1b3261a28c5b
+        availability: "{{ available }}"
+        state: "{{ metrics.get('smart/smart_sda/power_on_hours') | int(0) }}"
+        icon: "mdi:timer-outline"
+        unit_of_measurement: h
+        state_class: measurement
+
+      # -------------------------
+      # Google Coral TPU
+      # -------------------------
+      - name: "Coral apex_0 Temp"
+        unique_id: 4487f676-c31c-485d-b25e-2671d5dc5361
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/temp') | float(0) }}"
+        icon: "mdi:thermometer"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Coral apex_0 Trip Point 0"
+        unique_id: ebfff7cc-a52b-49ab-b038-8a0134d92494
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/trip_point0_temp') | float(0) }}"
+        icon: "mdi:thermometer-plus"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Coral apex_0 Trip Point 1"
+        unique_id: b39f9baf-223c-4283-853a-388e914413b4
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/trip_point1_temp') | float(0) }}"
+        icon: "mdi:thermometer-plus"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Coral apex_0 Trip Point 2"
+        unique_id: 60eb8a7f-ab3c-4221-a325-36a2fe7f57a9
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/trip_point2_temp') | float(0) }}"
+        icon: "mdi:thermometer-plus"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Coral apex_0 Warning Temp"
+        unique_id: 22aa7848-d35c-4b4b-9a03-5e8986f2b838
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/hw_temp_warn2') | float(0) }}"
+        icon: "mdi:thermometer-alert"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+
+      # -------------------------
+      # Borg Backup
+      # -------------------------
+      - name: "Borg Last Run (UTC)"
+        unique_id: 48b00a91-5b51-4c38-ab9d-4b02916703ba
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/last_run_ts') }}"
+        icon: "mdi:clock-outline"
+        device_class: timestamp
+      - name: "Borg Last Duration"
+        unique_id: 63a79c39-8940-413d-b368-e4b930cd5533
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/duration_s') | float(0) }}"
+        icon: "mdi:timer-outline"
+        unit_of_measurement: s
+        device_class: duration
+        state_class: measurement
+      - name: "Borg Last Total Duration"
+        unique_id: 5fa8f087-3e6d-45bd-8fc1-f5c881a4fbfd
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/total_duration_s') | float(0) }}"
+        icon: "mdi:timer-outline"
+        unit_of_measurement: s
+        device_class: duration
+        state_class: measurement
+      - name: "Borg Archives Count"
+        unique_id: 352a9c9c-f565-4ceb-ab6e-0ea0993500d2
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/archives_count') | int(0) }}"
+        icon: "mdi:archive"
+        state_class: measurement
+      - name: "Borg Size Original"
+        unique_id: 4bc0ff03-43b7-49c0-bddf-41a625f53cde
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/size_original') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        device_class: data_size
+        state_class: total_increasing
+      - name: "Borg Size Compressed"
+        unique_id: 86068f8e-dc21-4932-9566-e97bf249227d
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/size_compressed') | int(0) }}"
+        icon: "mdi:database-outline"
+        unit_of_measurement: B
+        device_class: data_size
+        state_class: total_increasing
+      - name: "Borg Size Deduplicated"
+        unique_id: 23b3d7b1-33b3-4526-a6d9-a48692f24604
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/size_deduplicated') | int(0) }}"
+        icon: "mdi:content-cut"
+        unit_of_measurement: B
+        device_class: data_size
+        state_class: total_increasing
+      - name: "Borg Repo"
+        unique_id: e9c24024-da3b-405d-b0bd-8dc06ca51e67
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/repo') }}"
+        icon: "mdi:database"
+      - name: "Borg Repo Unique Bytes"
+        unique_id: 4e0c64c0-2c43-4c61-9b7c-d4b7fd7d3c73
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/repo_unique_bytes') | int(0) }}"
+        icon: "mdi:database"
+        unit_of_measurement: B
+        device_class: data_size
+        state_class: total_increasing
+      - name: "Borg Last Archive"
+        unique_id: ba1c1448-9ddc-4f6c-97e6-da590b17db4a
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/last_archive') }}"
+        icon: "mdi:package-variant-closed"
+      - name: "Borg RC Create"
+        unique_id: 3def2ef9-4272-4204-8834-328ad409ec22
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/rc_create') }}"
+        icon: "mdi:numeric"
+      - name: "Borg RC Prune"
+        unique_id: e4b351c3-5c71-485b-b879-1c1ea9993d9f
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/rc_create') }}"
+        icon: "mdi:numeric"
+      - name: "Borg RC Compact"
+        unique_id: af03cd2f-1100-4695-a3c4-ea30f0204e45
+        availability: "{{ available }}"
+        state: "{{ metrics.get('borg/rc_compact') }}"
+        icon: "mdi:numeric"
+                
+      # -------------------------
+      # Overview
+      # -------------------------
+      - name: "Frigate Uptime (s)"
+        unique_id: 31d0fb46-38ab-46f2-93f5-60e51cc9736e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('uptime_s') }}"
+        icon: "mdi:timer-outline"
+        state_class: measurement
+      - name: "Frigate GPU Utilization"
+        unique_id: d815eb3f-5cd2-42c0-ab11-241fba92ab2e
+        availability: "{{ available }}"
+        state: "{{ metrics.get('gpu/percent') }}"
+        icon: "mdi:gpu"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Frigate Services (Bad CSV)"
+        unique_id: 299279c7-3ffc-4ddb-abbe-7954a4e03139
+        availability: "{{ available }}"
+        state: "{{ metrics.get('services/bad_list') }}"
+        icon: "mdi:alert"
+      - name: "Frigate Containers (Bad CSV)"
+        unique_id: b44150da-b0c0-47a9-82c2-3b26a1c11aa7
+        availability: "{{ available }}"
+        state: "{{ metrics.get('docker/bad_list') }}"
+        icon: "mdi:alert"
+
+      # -------------------------
+      # LHM CPU
+      # -------------------------
+      - name: frigate_pack_cpu_physcores
+        unique_id: 61fdf78f-8d83-4d50-80cc-5fc05a1a15f7
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          items: >-
+            {% set ns = namespace(items=[]) %}
+            {% for pc in range(1, 5) %}
+              {% set lk = 'lhm/lhm_cpu_cpu_load_cpu_core__' ~ pc %}
+              {% if lk in metrics %}
+                {% set ck = 'lhm/lhm_cpu_cpu_clocks_core__' ~ pc %}
+                {% set l = metrics.get(lk) | float(0) %}
+                {% set ns.items = ns.items + [{
+                  'phys_core': pc,
+                  'load': l, 
+                  'clock_mhz': (metrics.get(ck) | float(0)),
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items }}
+
+      # -------------------------
+      # LHM GPU
+      # -------------------------
+      - name: frigate_pack_gpu
+        unique_id: 73741f6d-5c2f-49bc-99a7-ea4198b966da
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          clocks: >-
+            {{ {
+              'gpu_core_mhz':   (metrics.get('lhm/lhm_gpu_intel_clocks_graphics') | float(0)),
+            } }}
+          engines: >-
+            {{ {
+              'gpu_core_pct': (metrics.get('lhm/lhm_gpu_intel_load_gpu') | float(0)),
+              'render': (metrics.get('lhm/lhm_gpu_intel_load_render') | float(0)),
+              'blitter': (metrics.get('lhm/lhm_gpu_intel_load_blitter') | float(0)),
+              'video': (metrics.get('lhm/lhm_gpu_intel_load_video') | float(0)),
+              'video_enhance': (metrics.get('lhm/lhm_gpu_intel_load_videoenhance') | float(0)),
+            } }}
+          summary: >-
+            {% set e = state_attr('sensor.frigate_pack_gpu','engines') or {} %}
+            {% set busy = [
+              e.get('render',0), e.get('blitter',0), e.get('video',0),
+              e.get('video_enhance',0)
+            ] | max %}
+            {{ {
+              'busy_pct': busy,
+            } }}
+
+      # -------------------------
+      # LHM Network Details
+      # -------------------------
+      - name: frigate_pack_network_lhm
+        unique_id: 51dc035a-d8d0-4dcf-bbaf-a923d1e5e429
+        availability: "{{ available }}"
+        state: "ok"
+        attributes:
+          active: >-
+            {% set an = metrics.get('network/active/name','') %}
+            {% set ip4 = metrics.get('network/active/ipv4','') %}
+            {% set ip6 = metrics.get('network/active/ipv6','') %}
+            {% set up = metrics.get('network/active/up_bps') | float(0) %}
+            {% set dn = metrics.get('network/active/down_bps') | float(0) %}
+
+            {% set ns = namespace(best_id='', best_score=999999999, best={}) %}
+
+            {# Find candidate NICs by scanning keys #}
+            {% for k, v in metrics.items() %}
+              {% if k.startswith('lhm/lhm__nic_') and k.endswith('_throughput_7') %}
+                {% set base = k[:-('_throughput_7'|length)] %}
+                {% set nic_id = base.split('lhm/lhm__nic_')[1] %}
+                {% set up_k = 'lhm/lhm__nic_' ~ nic_id ~ '_throughput_7' %}
+                {% set dn_k = 'lhm/lhm__nic_' ~ nic_id ~ '_throughput_8' %}
+                {% set u = metrics.get(up_k) | float(0) %}
+                {% set d = metrics.get(dn_k) | float(0) %}
+                {% set score = (u - up) | abs + (d - dn) | abs %}
+                {% if score < ns.best_score %}
+                  {% set ns.best_score = score %}
+                  {% set ns.best_id = nic_id %}
+                  {% set ns.best = {
+                    'nic_id': nic_id,
+                    'up_bps': u,
+                    'down_bps': d,
+                    'util_pct': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_load_1') | float(0)),
+                    'tx_total_b': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_data_2') | float(0)),
+                    'rx_total_b': (metrics.get('lhm/lhm__nic_' ~ nic_id ~ '_data_3') | float(0)),
+                    'mac': (metrics.get('network/nic/' ~ nic_id ~ '/mac',''))
+                  } %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {{ {
+              'name': an,
+              'ipv4': ip4,
+              'ipv6': ip6,
+              'active_up_bps': up,
+              'active_down_bps': dn,
+              'lhm_best': ns.best
+            } }}
+
+    binary_sensor:
+
+      - name: "Frigate Overall Status OK"
+        unique_id: d4b50993-3f86-4baf-9343-15bd3d255dfe
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('status/overall_ok') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Frigate SMART /dev/sda Health"
+        unique_id: 7506a158-8c29-4b69-aca8-8b8f55d1de55
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('smart/smart_sda/overall_health') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Frigate SMART /dev/nvme0n1 Health"
+        unique_id: 42a901be-3e4c-42a3-9047-f08ac1db5e81
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('smart/smart_nvme0n1/overall_health') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Coral apex_0 Over Throttle Setpoint"
+        unique_id: 8e404538-8a5e-4ce8-9ce8-bf7b917637ef
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/over_setpoint') == '1' }}"
+
+      - name: "Coral apex_0 HW Temp Warning"
+        unique_id: c5bb2121-38ad-4d9d-8788-25f6c059a2cb
+        availability: "{{ available }}"
+        state: "{{ metrics.get('coral/apex_0/hw_temp_warn2_en') == '1' }}"
+
+      - name: "Borg Last Run Success"
+        unique_id: 3e7472cb-6b1e-4b97-9774-9e0561d97256
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('borg/success') | string) == '1' }}"
+        icon: "mdi:check-circle"
+
+      - name: "Borg Warnings"
+        unique_id: e92aec63-2c2f-45f7-92f0-72fe8a869049
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('borg/warnings') | string) == '1' }}"
+        icon: "mdi:alert-circle-outline"
+
+      - name: "Frigate Services OK"
+        unique_id: 76adf4b8-aaa5-4358-8742-f1fcfeb1e33e
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('services/ok') | string) == '1' }}"
+        icon: "mdi:check-circle"
+        attributes:
+          apache2: >-
+            {{ (metrics.get('services/apache2/running') | string)== '1' }}
+          borg_backup: >-
+            {{ (metrics.get('services/borg-backup.timer/running') | string) == '1' }}
+          chrony: >-
+            {{ (metrics.get('services/chrony/running') | string) == '1'}}
+          clamav_clamonacc: >-
+            {{ (metrics.get('services/clamav-clamonacc/running') | string) == '1' }}
+          clamav_daemon: >-
+            {{ (metrics.get('services/clamav-daemon/running') | string) == '1' }}
+          clamav_freshclam: >-
+            {{ (metrics.get('services/clamav-freshclam/running') | string) == '1' }}
+          cloudflared: >-
+            {{ (metrics.get('services/cloudflared/running') | string) == '1' }}
+          code_server_watsam: >-
+            {{ (metrics.get('services/code-server@watsam/running') | string) == '1' }}
+          containerd: >-
+            {{ (metrics.get('services/containerd/running') | string) == '1' }}
+          cvdupdate: >-
+            {{ (metrics.get('services/cvdupdate.timer/running') | string) == '1' }}
+          docker: >-
+            {{ (metrics.get('services/docker/running') | string) == '1' }}
+          fail2ban: >-
+            {{ (metrics.get('services/fail2ban/running') | string) == '1' }}
+          guacd: >-
+            {{ (metrics.get('services/guacd/running') | string) == '1' }}
+          hwmon_mqtt: >-
+            {{ (metrics.get('services/hwmon-mqtt/running') | string) == '1' }}
+          mosquitto: >-
+            {{ (metrics.get('services/mosquitto/running') | string) == '1' }}
+          netprobe: >-
+            {{ (metrics.get('services/netprobe.timer/running') | string) == '1' }}
+          nut_monitor: >-
+            {{ (metrics.get('services/nut-monitor/running') | string) == '1' }}
+          nut_server: >-
+            {{ (metrics.get('services/nut-server/running') | string) == '1' }}
+          nut_driver_cyberpower850: >-
+            {{ (metrics.get('services/nut-driver@cyberpower850/running') | string) == '1' }}
+          postgresql_16_main: >-
+            {{ (metrics.get('services/postgresql@16-main/running') | string) == '1' }}
+          redis_server: >-
+            {{ (metrics.get('services/redis-server/running') | string) == '1' }}
+          rtl_tcp_CHICKEN_H2O: >-
+            {{ (metrics.get('services/rtl_tcp@CHICKEN_H2O/running') | string) == '1' }}
+          rtl_tcp_THERMOMETER: >-
+            {{ (metrics.get('services/rtl_tcp@THERMOMETER/running') | string) == '1' }}
+          rtl_tcp_WATER_METER: >-
+            {{ (metrics.get('services/rtl_tcp@WATER_METER/running') | string) == '1' }}
+          tailscaled: >-
+            {{ (metrics.get('services/tailscaled/running') | string) == '1' }}
+
+      - name: "Frigate Containers OK"
+        unique_id: bf6b5b3e-5daa-4a54-ab4a-a9fff096dc12
+        availability: "{{ available }}"
+        state: "{{ (metrics.get('docker/ok') | string) == '1' }}"
+        icon: "mdi:check-circle"
+        attributes:
+          brightness: >-
+            {{ (metrics.get('docker/brightness/running') | string) == '1' }}
+          chicken_lights: >-
+            {{ (metrics.get('docker/chicken_lights/running') | string) == '1' }}
+          clothing: >-
+            {{ (metrics.get('docker/clothing/running') | string) == '1' }}
+          esphome: >-
+            {{ (metrics.get('docker/esphome/running') | string) == '1' }}
+          frigate: >-
+            {{ (metrics.get('docker/frigate/running') | string) == '1' }}
+          guac_web: >-
+            {{ (metrics.get('docker/guac_web/running') | string) == '1' }}
+          homeassistant: >-
+            {{ (metrics.get('docker/homeassistant/running') | string) == '1' }}
+          portainer: >-
+            {{ (metrics.get('docker/portainer/running') | string) == '1' }}
+          rtl_433_chicken_water: >-
+            {{ (metrics.get('docker/rtl_433-chicken_water/running') | string) == '1' }}
+          rtl_433_outdoor_thermometer: >-
+            {{ (metrics.get('docker/rtl_433-outdoor_thermometer/running') | string) == '1' }}
+          rtlamr2mqtt: >-
+            {{ (metrics.get('docker/rtlamr2mqtt/running') | string) == '1' }}
+          switchbot_mqtt: >-
+            {{ (metrics.get('docker/switchbot-mqtt/running') | string) == '1' }}
+          switchbot_climate: >-
+            {{ (metrics.get('docker/switchbot_climate/running') | string) == '1' }}
+          weight_tasks: >-
+            {{ (metrics.get('docker/weight_tasks/running') | string) == '1' }}
+          wyoming_piper: >-
+            {{ (metrics.get('docker/wyoming-piper/running') | string) == '1' }}
+          wyoming_whisper: >-
+            {{ (metrics.get('docker/wyoming-whisper/running') | string) == '1' }}
+          zigbee2mqtt: >-
+            {{ (metrics.get('docker/zigbee2mqtt/running') | string) == '1' }}
+
+  # -------------------------
+  # Overview dashboard cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_cpu_utilization
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_cpu_utilization
+      app: cpu_utilization
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_cpu_utilization
+        unique_id: f0227a00-3032-4a9a-9b9c-0da77e12d428
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_uptime_s
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_uptime_s
+      app: uptime
+      options:
+        device_class: duration
+        uom: s
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_uptime_s
+        unique_id: e3f480fc-0dff-4047-8a75-455293303521
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_updates_pending
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_updates_pending
+      app: count_pending
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_updates_pending
+        unique_id: 53e9da24-fb2c-40a7-b6de-851292e37c11
+
+  # -------------------------
+  # Top chips style sensors
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.frigate_status_alarm
+          - sensor.frigate_overall_status_summary
+    variables:
+      <<: *variables
+      entity_id: binary_sensor.frigate_status_alarm
+      app: alarm
+      options:
+        summary: sensor.frigate_overall_status_summary
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_status_alarm
+        unique_id: c9f3defe-29c7-43a9-9131-99ea894c6c2e
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_cpu_load_1m
+          - sensor.frigate_cpu_load_5m
+          - sensor.frigate_cpu_load_15m
+          - sensor.frigate_cpu_cores
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_cpu_load_1m
+      app: cpu_load
+      options:
+        cores: sensor.frigate_cpu_cores
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_cpu_load_1m
+        unique_id: 5ebb15f0-d647-4950-b929-87ad196386f8
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- set m1 = states('sensor.frigate_cpu_load_1m')|float(0) -%}
+            {%- set m5 = states('sensor.frigate_cpu_load_5m')|float(0) -%}
+            {%- set m15 = states('sensor.frigate_cpu_load_15m')|float(0) -%}
+            {%- set c = states('sensor.frigate_cpu_cores')|int(0) -%}
+            {{- '1 min: ' ~ m1 ~ ' • 5 min: ' ~ m5 ~ ' • 15 min: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_cpu_utilization
+          - sensor.frigate_cpu_load_1m
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_cpu_utilization
+      app: cpu_utilization
+      options:
+        load: sensor.frigate_cpu_load_1m
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_cpu_utilization_load
+        unique_id: 7138e9d0-0bdf-4353-a2a3-45cb64ebbe7d
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_cpu_temp_pkg
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_cpu_temp_pkg
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_cpu_temp_pkg
+        unique_id: 40b121c8-2353-444b-8be1-ae3223de4ccd
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_memory_percent
+          - sensor.frigate_memory_used
+          - sensor.frigate_memory_total
+          - sensor.frigate_memory_available
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_memory_percent
+      app: memory_utilization
+      options:
+        used: sensor.frigate_memory_used
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_memory_percent
+        unique_id: 537ec747-0768-432c-ad72-d86f0c889775
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set mem_pct = u_humanize_entity('sensor.frigate_memory_percent') -%}
+            {%- set mem_used = u_humanize_entity('sensor.frigate_memory_used') -%}
+            {%- set mem_total = u_humanize_entity('sensor.frigate_memory_total') -%}
+            {%- set mem_free = u_humanize_entity('sensor.frigate_memory_available') -%}
+            {{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ ' • Free: ' ~ mem_free ~ ' • ' ~ mem_pct -}}
+
+  # -------------------------
+  # Body cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_cpu_temp_composite
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_cpu_temp_composite
+      app: cpu
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_cpu_temp_composite
+        unique_id: 48669c2e-3e85-4100-9622-1b5d4e76c27e
+
+  - sensor:
+      - name: ui_frigate_network_active_name
+        unique_id: 5321d05a-65a0-43a2-b798-bcebba73c744
+        state: "{{ states('sensor.frigate_network_active_name') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set nic = states('sensor.frigate_network_active_name') -%}
+            {%- set ip = states('sensor.frigate_network_active_ipv4') -%}
+            {%- set up = u_humanize_entity('sensor.frigate_network_active_up') -%}
+            {%- set down = u_humanize_entity('sensor.frigate_network_active_down') -%}
+            {{- nic ~ ' • ' ~ ip ~ ' • Up: ' ~ up ~ ' • Down: ' ~ down -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_root_percent
+          - sensor.frigate_fs_root_free
+          - sensor.frigate_fs_root_total
+          - sensor.frigate_fs_root_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_root_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_root_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_root_percent
+        unique_id: ea2f3542-6844-408b-a395-5c6bcc488695
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_root_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_root_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_root_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_boot_percent
+          - sensor.frigate_fs_boot_free
+          - sensor.frigate_fs_boot_total
+          - sensor.frigate_fs_boot_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_boot_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_boot_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_boot_percent
+        unique_id: 0504f6bc-3c5f-45c1-b324-26ca217a9736
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_boot_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_boot_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_boot_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_efi_percent
+          - sensor.frigate_fs_efi_free
+          - sensor.frigate_fs_efi_total
+          - sensor.frigate_fs_efi_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_efi_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_efi_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_efi_percent
+        unique_id: 2b8a4861-8e8a-4a8e-83f8-b328cd2b3be1
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_efi_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_efi_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_efi_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_home_percent
+          - sensor.frigate_fs_home_free
+          - sensor.frigate_fs_home_total
+          - sensor.frigate_fs_home_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_home_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_home_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_home_percent
+        unique_id: 9b787126-f473-4bd0-bf73-8c1e83241f93
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_home_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_home_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_home_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_data_percent
+          - sensor.frigate_fs_data_free
+          - sensor.frigate_fs_data_total
+          - sensor.frigate_fs_data_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_data_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_data_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_data_percent
+        unique_id: b6444cac-3a80-47f2-9bf4-93fcc328934b
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_data_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_data_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_data_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_frigate_hot_percent
+          - sensor.frigate_fs_frigate_hot_free
+          - sensor.frigate_fs_frigate_hot_total
+          - sensor.frigate_fs_frigate_hot_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_frigate_hot_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_frigate_hot_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_frigate_hot_percent
+        unique_id: ec9fe316-7283-40d1-ba6e-4e70bc3a7b3a
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_frigate_hot_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_frigate_hot_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_frigate_hot_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_tmp_percent
+          - sensor.frigate_fs_tmp_free
+          - sensor.frigate_fs_tmp_total
+          - sensor.frigate_fs_tmp_used
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_fs_tmp_percent
+      app: disk_utilization
+      options:
+        free: sensor.frigate_fs_tmp_free
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_fs_tmp_percent
+        unique_id: 17fdbff0-af08-4834-993d-5338fe92b5d0
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set total = u_humanize_entity('sensor.frigate_fs_tmp_total') -%}
+            {%- set used = u_humanize_entity('sensor.frigate_fs_tmp_used') -%}
+            {%- set pct = u_humanize_entity('sensor.frigate_fs_tmp_percent') -%}
+            {{- 'Total: ' ~ total ~ ' • Used: ' ~ used ~ ' • ' ~ pct -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_sda1_data_rate
+          - sensor.frigate_disk_sda1_read_rate
+          - sensor.frigate_disk_sda1_write_rate
+          - sensor.frigate_disk_sda1_read_bytes
+          - sensor.frigate_disk_sda1_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_sda1_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_sda1_data_rate
+        unique_id: a724766d-ac20-4b37-84f7-377ff9338280
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.frigate_disk_sda1_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.frigate_disk_sda1_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_sda1_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_sda1_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_nvme0n1p1_data_rate
+          - sensor.frigate_disk_nvme0n1p1_read_rate
+          - sensor.frigate_disk_nvme0n1p1_write_rate
+          - sensor.frigate_disk_nvme0n1p1_read_bytes
+          - sensor.frigate_disk_nvme0n1p1_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_nvme0n1p1_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_nvme0n1p1_data_rate
+        unique_id: 7579f3dc-ddd1-4277-bc1a-61da898e6fe7
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p1_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p1_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p1_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p1_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_nvme0n1p2_data_rate
+          - sensor.frigate_disk_nvme0n1p2_read_rate
+          - sensor.frigate_disk_nvme0n1p2_write_rate
+          - sensor.frigate_disk_nvme0n1p2_read_bytes
+          - sensor.frigate_disk_nvme0n1p2_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_nvme0n1p2_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_nvme0n1p2_data_rate
+        unique_id: 3a92b06f-bd67-4709-8e8d-9363ffea0ba4
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p2_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p2_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p2_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p2_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.frigate_nvme0n1p3_data_rate
+          - sensor.frigate_disk_nvme0n1p3_read_rate
+          - sensor.frigate_disk_nvme0n1p3_write_rate
+          - sensor.frigate_disk_nvme0n1p3_read_bytes
+          - sensor.frigate_disk_nvme0n1p3_write_bytes
+    variables:
+      <<: *variables
+      entity_id: sensor.frigate_nvme0n1p3_data_rate
+      app: drive_data_rate
+    sensor:
+      - <<: *sensor
+        name: ui_frigate_nvme0n1p3_data_rate
+        unique_id: 657c3ae2-21c7-4e09-a798-855f2c4bb9da
+        attributes:
+          <<: *attributes
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set read_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p3_read_rate') -%}
+            {%- set write_bps = u_humanize_entity('sensor.frigate_disk_nvme0n1p3_write_rate') -%}
+            {%- set read_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p3_read_bytes') -%}
+            {%- set write_bytes = u_humanize_entity('sensor.frigate_disk_nvme0n1p3_write_bytes') -%}
+            {{- 'Read: ' ~ read_bps ~ ' • Write: ' ~ write_bps ~ '\nTotal Read: ' ~ read_bytes ~ ' • Total Write: ' ~ write_bytes -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_pack_network_lhm
+    sensor:
+      - name: ui_frigate_network_summary
+        unique_id: 02a45299-b848-4bca-97ac-b6910264b784
+        state: "ok"
+        attributes:
+          secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {% set a = state_attr('sensor.frigate_pack_network_lhm','active') or {} %}
+            {% set b = a.get('lhm_best', {}) %}
+
+            {% set nic = a.get('name','Active NIC') %}
+            {% set ip4 = a.get('ipv4','') %}
+            {% set ip6 = a.get('ipv6','') %}
+
+            {% set up = states('sensor.frigate_network_active_up') %}
+            {% set dn = states('sensor.frigate_network_active_down') %}
+
+            {% set up_h = u_humanize_entity('sensor.frigate_network_active_up') %}
+            {% set dn_h = u_humanize_entity('sensor.frigate_network_active_down') %}
+
+            {% set util = b.get('util_pct',0) | float(0) %}
+            {% set rx_gib = (b.get('rx_total_b',0) | float(0)) / 1024 / 1024 / 1024 %}
+            {% set tx_gib = (b.get('tx_total_b',0) | float(0)) / 1024 / 1024 / 1024 %}
+            {% set mac = b.get('mac','') %}
+
+            {{-
+              nic
+              ~ '\nIPv4: ' ~ ip4
+              ~ '\nIPv6: ' ~ (ip6 if ip6 else 'n/a')
+              ~ '\nDown: ' ~ dn_h ~ ' • Up: ' ~ up_h
+              ~ '\nUtil: ' ~ (util|round(1)) ~ '%'
+              ~ '\nTotals: RX ' ~ (rx_gib|round(2)) ~ ' GiB • TX ' ~ (tx_gib|round(2)) ~ ' GiB'
+              ~ (('\nMAC: ' ~ mac) if mac else '')
+            -}}
+          icon: mdi:network
+          color: >-
+            {% set a = state_attr('sensor.frigate_pack_network_lhm','active') or {} %}
+            {% set util = (a.get('lhm_best', {}).get('util_pct',0) | float(0)) %}
+            {% if util >= 85 %}red
+            {% elif util >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - sensor:
+      - name: ui_frigate_smart_dev_sda1_health
+        unique_id: c8cdec12-42c9-48a6-8f88-bd3d7862d3b0
+        state: "{{ states('binary_sensor.frigate_smart_dev_sda_health') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set ok = is_state('binary_sensor.frigate_smart_dev_sda_health','on') %}
+            {%- set temp = u_humanize_entity('sensor.frigate_smart_dev_sda_temperature') -%}
+            {%- set has_life_pct = has_value('sensor.frigate_smart_dev_sda_percentage_used') -%}
+            {%- set poh = u_humanize_entity('sensor.frigate_smart_dev_sda_power_on_hours') -%}
+            {%- set read = u_humanize_entity('sensor.frigate_smart_dev_sda_total_bytes_read') -%}
+            {%- set written = u_humanize_entity('sensor.frigate_smart_dev_sda_total_bytes_written') -%}
+            {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+            {%- set ns = namespace(life_pct_str='') -%}
+            {%- if has_life_pct -%}
+              {%- set life_pct = u_humanize_entity('sensor.frigate_smart_dev_sda_percentage_used') -%}
+              {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+            {%- endif -%}
+            {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+          icon: >-
+            {{- 'mdi:heart-pulse' if is_state('binary_sensor.frigate_smart_dev_sda_health','on') else 'mdi:heart-broken' -}}
+          color: >-
+            {{- 'green' if is_state('binary_sensor.frigate_smart_dev_sda_health','on') else 'red' -}}
+
+  - sensor:
+      - name: ui_frigate_smart_dev_nvme0n1_health
+        unique_id: 382094a9-0e23-41a0-8986-b92eafdb360f
+        state: "{{ states('binary_sensor.frigate_smart_dev_nvme0n1_health') }}"
+        attributes:
+          info: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}
+            {%- set ok = is_state('binary_sensor.frigate_smart_dev_nvme0n1_health','on') %}
+            {%- set temp = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_temperature') -%}
+            {%- set has_life_pct = has_value('sensor.frigate_smart_dev_nvme0n1_percentage_used') -%}
+            {%- set poh = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_power_on_hours') -%}
+            {%- set read = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_total_bytes_read') -%}
+            {%- set written = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_total_bytes_written') -%}
+            {%- set health_str = 'Healthy' if ok else 'Fail' -%}
+            {%- set ns = namespace(life_pct_str='') -%}
+            {%- if has_life_pct -%}
+              {%- set life_pct = u_humanize_entity('sensor.frigate_smart_dev_nvme0n1_percentage_used') -%}
+              {%- set ns.life_pct_str = ' • Used ' ~ life_pct -%}
+            {%- endif -%}
+            {{- health_str ~ ' • ' ~ temp ~ ns.life_pct_str ~ ' • POH ' ~ poh ~ '\nBytes Read: ' ~ read ~ ' • Bytes Written: ' ~ written -}}
+          icon: >-
+            {{- 'mdi:heart-pulse' if is_state('binary_sensor.frigate_smart_dev_nvme0n1_health','on') else 'mdi:heart-broken' -}}
+          color: >-
+            {{- 'green' if is_state('binary_sensor.frigate_smart_dev_nvme0n1_health','on') else 'red' -}}
+
+  - sensor:
+      - name: ui_frigate_coral_apex_0_temp
+        unique_id: 5f92fb55-7915-465d-a9a7-35d639fdebf2
+        state: "{{ states('sensor.coral_apex_0_temp') }}"
+        attributes:
+          secondary: >-
+            {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+            {% set temp = u_humanize_entity('sensor.coral_apex_0_temp') %}
+            {% set warn2 = u_humanize_entity('sensor.coral_apex_0_warning_temp') %}
+            {% set warn2_on = 'on' if is_state('binary_sensor.coral_apex_0_hw_temp_warning','on') else 'off' %}
+            {% set point0 = u_humanize_entity('sensor.coral_apex_0_trip_point_0') %}
+            {% set point1 = u_humanize_entity('sensor.coral_apex_0_trip_point_1') %}
+            {% set point2 = u_humanize_entity('sensor.coral_apex_0_trip_point_2') %}
+            {{ 'Now: ' ~ temp ~ ' • Warn2: ' ~ warn2 ~ ' (' ~ warn2_on ~ ')' }}
+            {{ '\n    TP0: ' ~ point0 ~ ' — mild throttling begins' }}
+            {{ '\n    TP1: ' ~ point1 ~ ' — stronger throttling' }}
+            {{ '\n    TP2: ' ~ point2 ~ ' — critical; device may reset/disable' }}
+          icon: >-
+            {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+            {% set t = u_convert_entity('sensor.coral_apex_0_temp',"c")|float(none) %}
+            {% set tp0 = states('sensor.coral_apex_0_trip_point_0')|float(0) %}
+            {% set tp1 = states('sensor.coral_apex_0_trip_point_1')|float(0) %}
+            {% set tp2 = states('sensor.coral_apex_0_trip_point_2')|float(0) %}
+            {% if tp2 > 0 and t >= tp2 %}
+              mdi:thermometer-alert
+            {% elif tp1 > 0 and t >= tp1 %}
+              mdi:thermometer-high
+            {% elif tp0 > 0 and t >= tp0 %}
+              mdi:thermometer
+            {% else %}
+              mdi:thermometer-low
+            {% endif %}
+          color: >-
+            {% from 'units/base.jinja' import u_humanize_entity, u_convert_entity %}
+            {% set t = u_convert_entity('sensor.coral_apex_0_temp',"c")|float(none) %}
+            {% set tp0 = states('sensor.coral_apex_0_trip_point_0')|float(0) %}
+            {% set tp1 = states('sensor.coral_apex_0_trip_point_1')|float(0) %}
+            {% set tp2 = states('sensor.coral_apex_0_trip_point_2')|float(0) %}
+            {% if tp2 > 0 and t >= tp2 %}
+              red
+            {% elif tp1 > 0 and t >= tp1 %}
+              orange
+            {% elif tp0 > 0 and t >= tp0 %}
+              amber
+            {% else %}
+              green
+            {% endif %}
+
+  - sensor:
+      - name: ui_frigate_borg_last_run
+        unique_id: cf1487fb-4f08-4851-8553-848354e3e40a
+        state: "{{ states('sensor.frigate_borg_last_run') }}"
+        attributes:
+          secondary: >-
+            {% from 'units/base.jinja' import u_humanize_entity %}
+            {% set last_run = (states('sensor.borg_last_run_utc')|as_datetime(default=None)|default(now()))|as_local|relative_time %}
+            {% set archives = states('sensor.borg_archives_count') %}
+            {% set runtime = u_humanize_entity('sensor.borg_last_duration') %}
+            {{ last_run ~ ' ago • ' ~ archives ~ ' archives • Runtime: ' ~ runtime }}
+          icon: >-
+            {{ 'mdi:cloud-check' if is_state('binary_sensor.borg_last_run_success','on') else 'mdi:cloud-alert' }}
+          color: >-
+            {{ 'green' if is_state('binary_sensor.borg_last_run_success','on') else 'red' }}
+      - name: ui_frigate_borg_repo
+        unique_id: 81bd1d17-4d15-4508-8214-c20910c3de2e
+        state: "{{ states('sensor.frigate_borg_repo') }}"
+        attributes:
+          secondary: >-
+            {% from 'units/base.jinja' import u_humanize_entity %}
+            {% set repo = states('sensor.borg_repo') %}
+            {% set unique = u_humanize_entity('sensor.borg_repo_unique_bytes') %}
+            {% set archives = states('sensor.borg_archives_count') %}
+            {{ repo ~ ' • Unique ' ~ unique ~ ' • Archives ' ~ archives }}
+          icon: mdi:server
+          color: blue
+      - name: ui_frigate_borg_last_backup
+        unique_id: ae7f5a26-dbac-4210-b00b-927a5d8a415e
+        state: "{{ states('sensor.frigate_borg_last_backup') }}"
+        attributes:
+          secondary: >-
+            {% from 'units/base.jinja' import u_humanize_entity %}
+            {% set last_run = (states('sensor.borg_last_run_utc')|as_datetime|as_local).strftime('%c') %}
+            {% set last_archive = states('sensor.borg_last_archive') %}
+            {% set original = u_humanize_entity('sensor.borg_size_original') %}
+            {% set compressed = u_humanize_entity('sensor.borg_size_compressed') %}
+            {% set deduplicated = u_humanize_entity('sensor.borg_size_deduplicated') %}
+            {{ last_run ~ ' • ' ~ last_archive }}
+            {{ '\n' ~ original ~ ' ➝ ' ~ compressed ~ ' ➝ ' ~ deduplicated }}
+          icon: >-
+            {{ 'mdi:cloud-check' if is_state('binary_sensor.borg_success','on') else 'mdi:cloud-alert' }}
+          color: >-
+            {% if is_state('binary_sensor.borg_last_run_success','on') %}
+              {% if is_state('binary_sensor.borg_warnings','on') %}
+                orange
+              {% else %}
+                green
+              {% endif %}
+            {% else %}
+              red
+            {% endif %}
+
+  - binary_sensor:
+      - name: ui_frigate_services
+        unique_id: 0b84c59c-15ab-49ba-ad07-9fd5edb3e6ae
+        state: "{{ states('sensor.frigate_services_ok') }}"
+        attributes:
+          apache2: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','apache2') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Apache2',
+            } }}
+          borg_backup: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','borg_backup') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Borg Backup',
+            } }}
+          chrony: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','chrony') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Chrony',
+            } }}
+          clamav_clamonacc: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','clamav_clamonacc') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'ClamAV On Access',
+            } }}
+          clamav_daemon: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','clamav_daemon') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'ClamAV Daemon',
+            } }}
+          clamav_freshclam: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','clamav_freshclam') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'ClamAV Freshclam',
+            } }}
+          cloudflared: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','cloudflared') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Cloudflare Daemon',
+            } }}
+          code_server_watsam: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','code_server_watsam') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Code Server',
+            } }}
+          containerd: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','containerd') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Containerd',
+            } }}
+          cvdupdate: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','cvdupdate') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'CVD Update',
+            } }}
+          docker: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','docker') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Docker',
+            } }}
+          fail2ban: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','fail2ban') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Fail2ban',
+            } }}
+          guacd: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','guacd') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Guacamole Daemon',
+            } }}
+          hwmon_mqtt: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','hwmon_mqtt') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Hardware Monitor',
+            } }}
+          mosquitto: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','mosquitto') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Mosquitto',
+            } }}
+          netprobe: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','netprobe') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Netprobe',
+            } }}
+          nut_monitor: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','nut_monitor') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'NUT Monitor',
+            } }}
+          nut_server: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','nut_server') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'NUT Server',
+            } }}
+          nut_driver_cyberpower850: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','nut_driver_cyberpower850') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'NUT Driver',
+            } }}
+          postgresql_16_main: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','postgresql_16_main') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'PostgreSQL',
+            } }}
+          redis_server: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','redis_server') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Redis',
+            } }}
+          rtl_tcp_CHICKEN_H2O: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','rtl_tcp_CHICKEN_H2O') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTL TCP Chicken Water',
+            } }}
+          rtl_tcp_THERMOMETER: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','rtl_tcp_THERMOMETER') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTL TCP Thermometer',
+            } }}
+          rtl_tcp_WATER_METER: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','rtl_tcp_WATER_METER') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTL TCP Water Meter',
+            } }}
+          tailscaled: >-
+            {%- set running = state_attr('binary_sensor.frigate_services_ok','tailscaled') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Tailscale Daemon',
+            } }}
+
+  - binary_sensor:
+      - name: ui_frigate_containers
+        unique_id: ed62fe73-4f67-41ca-8a60-563bf937d8d6
+        state: "{{ states('sensor.frigate_containers_ok') }}"
+        attributes:
+          brightness: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','brightness') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Brightness',
+            } }}
+          chicken_lights: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','chicken_lights') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Chicken Lights',
+            } }}
+          clothing: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','clothing') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Clothing',
+            } }}
+          esphome: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','esphome') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'ESPHome',
+            } }}
+          frigate: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','frigate') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Frigate NVR',
+            } }}
+          guac_web: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','guac_web') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Guacamole Web',
+            } }}
+          homeassistant: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','homeassistant') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Home Assistant',
+            } }}
+          portainer: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','portainer') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Portainer',
+            } }}
+          rtl_433_chicken_water: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','rtl_433_chicken_water') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTL 433 Chicken Water',
+            } }}
+          rtl_433_outdoor_thermometer: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','rtl_433_outdoor_thermometer') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTL 433 Outdoor Thermometer',
+            } }}
+          rtlamr2mqtt: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','rtlamr2mqtt') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'RTLAMR2MQTT',
+            } }}
+          switchbot_mqtt: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','switchbot_mqtt') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Switchbot MQTT',
+            } }}
+          switchbot_climate: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','switchbot_climate') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Switchbot Climate',
+            } }}
+          weight_tasks: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','weight_tasks') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Weight Tasks',
+            } }}
+          wyoming_piper: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','wyoming_piper') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Wyoming Piper',
+            } }}
+          wyoming_whisper: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','wyoming_whisper') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Wyoming Whisper',
+            } }}
+          zigbee2mqtt: >-
+            {%- set running = state_attr('binary_sensor.frigate_containers_ok','zigbee2mqtt') | bool -%}
+            {{ {
+              'icon': 'mdi:cog' if running else 'mdi:cog-off',
+              'icon_color': 'green' if running else 'red',
+              'content': 'Zigbee2MQTT',
+            } }}
+
+
+  # -------------------------
+  # Detail cards
+  # -------------------------
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_pack_cpu_physcores
+    sensor:
+      - name: ui_frigate_cpu_physcore_1
+        unique_id: 7852bff6-52a1-4204-a1d7-a43f7fd1e5f4
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 1 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set extra = namespace(lines=[]) %}
+              {{-
+                'Load: ' ~ (ns.it.load|round(1)) ~ '% • ' ~ clk
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 1 and x.load > ns.mx %}{% set ns.mx = x.load %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_frigate_cpu_physcore_2
+        unique_id: c44213a9-56e8-410d-bb33-4876803ea2b1
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 2 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set extra = namespace(lines=[]) %}
+              {{-
+                'Load: ' ~ (ns.it.load|round(1)) ~ '% • ' ~ clk
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 2 and x.load > ns.mx %}{% set ns.mx = x.load %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_frigate_cpu_physcore_3
+        unique_id: 96416f19-a4cc-4ee3-8eff-823f0f142ac0
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 3 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set extra = namespace(lines=[]) %}
+              {{-
+                'Load: ' ~ (ns.it.load|round(1)) ~ '% • ' ~ clk
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 3 and x.load > ns.mx %}{% set ns.mx = x.load %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_frigate_cpu_physcore_4
+        unique_id: ee7944c2-cb94-4963-9d94-6e1f94f059ee
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(it=None) %}
+            {% for x in items %}
+              {% if x.phys_core == 4 %}{% set ns.it = x %}{% endif %}
+            {% endfor %}
+            {% if ns.it %}
+              {% set c = ns.it.clock_mhz %}
+              {% set clk = ((c/1000)|round(2) ~ ' GHz') if c >= 1000 else (c|round(0) ~ ' MHz') %}
+              {% set extra = namespace(lines=[]) %}
+              {{-
+                'Load: ' ~ (ns.it.load|round(1)) ~ '% • ' ~ clk
+                ~ (('\n' ~ (extra.lines|join(' • '))) if extra.lines|length else '')
+              -}}
+            {% else %}
+              {{ 'No data' }}
+            {% endif %}
+          icon: "mdi:cpu-64-bit"
+          color: >-
+            {% set items = state_attr('sensor.frigate_pack_cpu_physcores','items') or [] %}
+            {% set ns = namespace(mx=0) %}
+            {% for x in items %}
+              {% if x.phys_core == 4 and x.load > ns.mx %}{% set ns.mx = x.load %}{% endif %}
+            {% endfor %}
+            {% if ns.mx >= 85 %}red
+            {% elif ns.mx >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_pack_gpu
+    sensor:
+      - name: ui_frigate_gpu_engines
+        unique_id: 5d91f29b-fde7-426c-90b4-f9b9b9d48722
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set e = state_attr('sensor.frigate_pack_gpu','engines') or {} %}
+            {{-
+              'GPU Core: ' ~ (e.get('gpu_core_pct',0)|round(1)) ~ '%\n'
+              ~ '3D Render: ' ~ (e.get('render',0)|round(1)) ~ '% • Copy: ' ~ (e.get('blitter',0)|round(1)) ~ '%\n'
+              ~ 'Video Codec: ' ~ (e.get('video',0)|round(1)) ~ '% / ' ~ (e.get('video_enhance',0)|round(1)) ~ '%'
+            -}}
+          icon: "mdi:expansion-card"
+          color: >-
+            {% set s = state_attr('sensor.frigate_pack_gpu','summary') or {} %}
+            {% set busy = s.get('busy_pct',0) | float(0) %}
+            {% if busy >= 85 %}red
+            {% elif busy >= 60 %}amber
+            {% else %}green{% endif %}
+      - name: ui_frigate_gpu_clocks_fps
+        unique_id: 9f9ced2e-cf93-4f26-946b-9456f3c87c0e
+        state: "ok"
+        attributes:
+          secondary: >-
+            {% set c = state_attr('sensor.frigate_pack_gpu','clocks') or {} %}
+            {{-
+              'Core: ' ~ (c.get('gpu_core_mhz',0)|round(0)) ~ ' MHz'
+            -}}
+          icon: "mdi:speedometer"
+          color: >-
+            {% set s = state_attr('sensor.frigate_pack_gpu','summary') or {} %}
+            {% set busy = s.get('busy_pct',0) | float(0) %}
+            {% if busy >= 85 %}red
+            {% elif busy >= 60 %}amber
+            {% else %}green{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_pack_network_lhm
+    variables: &net_vars
+      id: E8FF1ED1E5277D
+      metrics: "{{ state_attr('sensor.frigate_frigate_stats_bundle','metrics') or {} }}"
+      util: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_load_1', none) }}"
+      mac: "{{ metrics.get('network/nic/' ~ id ~ '/mac','') }}"
+      up: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_throughput_7',0) | float(0) }}"
+      dn: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_throughput_8',0) | float(0) }}"
+      tot: "{{ up + dn }}"
+      rx: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_data_3',0) | float(0) }}"
+      tx: "{{ metrics.get('lhm/lhm__nic_' ~ id ~ '_data_2',0) | float(0) }}"
+    sensor:
+      - name: ui_frigate_network_enp1s0_lhm
+        unique_id: 2bad8a5f-00ce-4b87-943b-e62bfd7f900d
+        state: Ethernet
+        attributes: &net_attrs
+          secondary: >-
+            {{-
+              'Down: ' ~ ((dn/1024)|round(1)) ~ ' KiB/s • Up: ' ~ ((up/1024)|round(1)) ~ ' KiB/s\n'
+              ~ 'Totals: RX ' ~ ((rx/1024/1024/1024)|round(2)) ~ ' GiB • TX ' ~ ((tx/1024/1024/1024)|round(2)) ~ ' GiB'
+              ~ (('\nMAC: ' ~ mac) if mac else '')
+            -}}
+          icon: mdi:ethernet
+          icon_color: >-
+            {# Prefer util if present; else color by traffic #}
+            {% if util is not none %}
+              {% set u = util | float(0) %}
+              {% if u >= 85 %}red
+              {% elif u >= 60 %}amber
+              {% elif u >= 20 %}blue
+              {% else %}green{% endif %}
+            {% else %}
+              {% if tot >= 5*1024*1024 %}red
+              {% elif tot >= 1*1024*1024 %}amber
+              {% elif tot >= 200*1024 %}blue
+              {% elif tot >= 5*1024 %}green
+              {% else %}grey{% endif %}
+            {% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.frigate_pack_network_lhm
+    variables:
+      <<: *net_vars
+      id: TAILSCALE07D
+    sensor:
+      - name: ui_frigate_network_ts_lhm
+        unique_id: 4311c653-3702-4a2a-b917-201212867fcc
+        state: Tailscale
+        attributes:
+          <<: *net_attrs
+          icon: mdi:vpn

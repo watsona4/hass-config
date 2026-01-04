@@ -20,36 +20,6 @@
       availability: "{{ has_value('binary_sensor.raspberrypi4_overall_status_ok') }}"
       state: "{{ is_state('binary_sensor.raspberrypi4_overall_status_ok','off') }}"
 
-- binary_sensor:
-    - name: Desktop Display Containers
-      state: "{{ false }}"
-    - name: Frigate Display Containers
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.frigate.*_container_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
-    - name: OPNSense Display Containers
-      state: "{{ false }}"
-    - name: RaspberryPi Display Containers
-      state: "{{ false }}"
-
-- binary_sensor:
-    - name: Desktop Display Services
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.desktop_bq063ig.*_service_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
-    - name: Frigate Display Services
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.frigate.*_service_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
-    - name: OPNSense Display Services
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.opnsense.*_service_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
-    - name: RaspberryPi Display Services
-      state: >
-        {% set entities = states.binary_sensor | selectattr("entity_id", "match", "^binary_sensor\.raspberrypi4.*_service_.*$") %}
-        {{ entities | selectattr('state','eq','off') | list | count > 0 }}
-
 - sensor:
     - name: Laptop PhysicalDrive0 Data Rate
       availability: "{{ has_value('sensor.laptop_disk_physicaldrive0_read_rate') or has_value('sensor.laptop_disk_physicaldrive0_write_rate') }}"
@@ -75,15 +45,27 @@
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement
-    - name: Frigate nvme0n1 Data Rate
-      availability: "{{ has_value('sensor.frigate_disk_nvme0n1_read_rate') or has_value('sensor.frigate_disk_nvme0n1_write_rate') }}"
-      state: "{{ states('sensor.frigate_disk_nvme0n1_read_rate')|float(0) + states('sensor.frigate_disk_nvme0n1_write_rate')|float(0) }}"
+    - name: Frigate nvme0n1p1 Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_nvme0n1p1_read_rate') or has_value('sensor.frigate_disk_nvme0n1p1_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_nvme0n1p1_read_rate')|float(0) + states('sensor.frigate_disk_nvme0n1p1_write_rate')|float(0) }}"
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement
-    - name: Frigate sda Data Rate
-      availability: "{{ has_value('sensor.frigate_disk_sda_read_rate') or has_value('sensor.frigate_disk_sda_write_rate') }}"
-      state: "{{ states('sensor.frigate_disk_sda_read_rate')|float(0) + states('sensor.frigate_disk_sda_write_rate')|float(0) }}"
+    - name: Frigate nvme0n1p2 Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_nvme0n1p2_read_rate') or has_value('sensor.frigate_disk_nvme0n1p2_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_nvme0n1p2_read_rate')|float(0) + states('sensor.frigate_disk_nvme0n1p2_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Frigate nvme0n1p3 Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_nvme0n1p3_read_rate') or has_value('sensor.frigate_disk_nvme0n1p3_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_nvme0n1p3_read_rate')|float(0) + states('sensor.frigate_disk_nvme0n1p3_write_rate')|float(0) }}"
+      unit_of_measurement: B/s
+      device_class: data_rate
+      state_class: measurement
+    - name: Frigate sda1 Data Rate
+      availability: "{{ has_value('sensor.frigate_disk_sda1_read_rate') or has_value('sensor.frigate_disk_sda1_write_rate') }}"
+      state: "{{ states('sensor.frigate_disk_sda1_read_rate')|float(0) + states('sensor.frigate_disk_sda1_write_rate')|float(0) }}"
       unit_of_measurement: B/s
       device_class: data_rate
       state_class: measurement

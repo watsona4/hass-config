@@ -310,32 +310,50 @@ sections:
                   rows: auto
           - type: horizontal-stack
             cards:
-              - type: custom:mushroom-template-card
-                entity: sensor.frigate_fs_percent
-                icon: "{{ state_attr('sensor.ui_frigate_fs_percent', 'icon') }}"
-                icon_color: "{{ state_attr('sensor.ui_frigate_fs_percent', 'color') }}"
-                primary: Disk
-                secondary: "{{ state_attr('sensor.ui_frigate_fs_percent', 'label') }}"
-                badge_icon: "{{ state_attr('sensor.ui_frigate_fs_percent', 'badge') }}"
-                badge_color: "{{ state_attr('sensor.ui_frigate_fs_percent', 'badge_color') }}"
-                multiline_secondary: true
-                tap_action:
-                  action: more-info
-                icon_tap_action:
-                  action: nothing
-                grid_options:
-                  columns: 12
-                  rows: auto
               - type: vertical-stack
                 cards:
                   - type: custom:mushroom-template-card
-                    entity: sensor.frigate_cpu_temp_package_id_0
-                    icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'icon') }}"
-                    icon_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'color') }}"
+                    entity: sensor.frigate_fs_root_percent
+                    icon: "{{ state_attr('sensor.ui_frigate_fs_root_percent', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_fs_root_percent', 'color') }}"
+                    primary: NVMe
+                    secondary: "{{ state_attr('sensor.ui_frigate_fs_root_percent', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_fs_root_percent', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_fs_root_percent', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+                  - type: custom:mushroom-template-card
+                    entity: sensor.frigate_fs_data_percent
+                    icon: "{{ state_attr('sensor.ui_frigate_fs_data_percent', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_fs_data_percent', 'color') }}"
+                    primary: HDD
+                    secondary: "{{ state_attr('sensor.ui_frigate_fs_data_percent', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_fs_data_percent', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_fs_data_percent', 'badge_color') }}"
+                    multiline_secondary: true
+                    tap_action:
+                      action: more-info
+                    icon_tap_action:
+                      action: nothing
+                    grid_options:
+                      columns: 12
+                      rows: auto
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.frigate_cpu_temp_pkg
+                    icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_pkg', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_pkg', 'color') }}"
                     primary: Temp
-                    secondary: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'label') }}"
-                    badge_icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'badge') }}"
-                    badge_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_package_id_0', 'badge_color') }}"
+                    secondary: "{{ state_attr('sensor.ui_frigate_cpu_temp_pkg', 'label') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_frigate_cpu_temp_pkg', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_frigate_cpu_temp_pkg', 'badge_color') }}"
                     multiline_secondary: true
                     tap_action:
                       action: more-info

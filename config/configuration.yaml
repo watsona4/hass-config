@@ -73,6 +73,7 @@ recorder:
       - script.window_position
       - sensor.rv_bridge_location_raw
       - sensor.laptop_oo58t6kn_laptop_oo58t6kn_stats_bundle
+      - sensor.frigate_frigate_stats_bundle
     entity_globs:
       - sensor.ui_*
       - sensor.*_rssi

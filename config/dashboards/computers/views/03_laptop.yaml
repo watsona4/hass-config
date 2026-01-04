@@ -130,6 +130,7 @@ sections:
             title: Network
             subtitle: Connectivity, latency, and throughput
 
+          # Active Network Interface
           - type: custom:mushroom-template-card
             entity: sensor.laptop_pack_network_lhm
             primary: Network
