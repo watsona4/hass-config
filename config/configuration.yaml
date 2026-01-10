@@ -37,6 +37,7 @@ logger:
     homeassistant.components.bluetooth.passive_update_coordinator: critical
     homeassistant.components.bluetooth.active_update_coordinator: critical
     homeassistant.components.bluetooth.manager: critical
+    homeassistant.components.opower.coordinator: critical
     homeassistant.components.recorder: info
     sqlalchemy.engine.Engine: warning
     homeassistant.core: info

@@ -669,7 +669,7 @@ template:
         icon: "mdi:database-outline"
         unit_of_measurement: B
         device_class: data_size
-        state_class: total_increasing
+        state_class: measurement
       - name: "Borg Size Deduplicated"
         unique_id: 23b3d7b1-33b3-4526-a6d9-a48692f24604
         availability: "{{ available }}"
@@ -677,7 +677,7 @@ template:
         icon: "mdi:content-cut"
         unit_of_measurement: B
         device_class: data_size
-        state_class: total_increasing
+        state_class: measurement
       - name: "Borg Repo"
         unique_id: e9c24024-da3b-405d-b0bd-8dc06ca51e67
         availability: "{{ available }}"
@@ -690,7 +690,7 @@ template:
         icon: "mdi:database"
         unit_of_measurement: B
         device_class: data_size
-        state_class: total_increasing
+        state_class: measurement
       - name: "Borg Last Archive"
         unique_id: ba1c1448-9ddc-4f6c-97e6-da590b17db4a
         availability: "{{ available }}"
