@@ -1,0 +1,62 @@
+################################################################################
+# Garage Engine Audio: helpers + derived idling sensor + assist automations
+################################################################################
+
+input_boolean:
+  garage_engine_recent_start:
+    name: Garage engine recent start
+    icon: mdi:engine
+
+timer:
+  garage_engine_recent_start:
+    name: Garage engine recent start window
+    duration: "00:15:00"  # adjust as desired
+
+template:
+  - binary_sensor:
+      - name: "Garage Engine Idling Derived"
+        unique_id: 859a1ab0-ab15-48d1-9f12-86f5b5f3bf86
+        icon: mdi:engine
+        state: >
+          {% set ns = namespace(db=states('sensor.garage_camera_sound_level')|float(-99)) %}
+          {{ is_state('input_boolean.garage_engine_recent_start', 'on')
+             and ns.db > -38 }}
+        attributes:
+          sound_level_db: >
+            {% set ns = namespace(db=states('sensor.garage_camera_sound_level')|float(-99)) %}
+            {{ ns.db }}
+          threshold_db: -38
+          recent_start: "{{ is_state('input_boolean.garage_engine_recent_start', 'on') }}"
+
+automation:
+  # Arm the "recent start" window when Frigate detects engine_starting
+  - alias: "Garage: mark engine recent start (Frigate engine_starting)"
+    id: 2a69741d-8fbd-40e1-bad9-370431fa7a33
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.garage_camera_engine_starting_sound
+        to: "on"
+    action:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.garage_engine_recent_start
+      - service: timer.start
+        target:
+          entity_id: timer.garage_engine_recent_start
+        data:
+          duration: "00:15:00"
+
+  # Clear the window when the timer expires
+  - alias: "Garage: clear engine recent start window"
+    id: ae42cf1e-46e2-463c-8541-5e15b61c9564
+    mode: single
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.garage_engine_recent_start
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.garage_engine_recent_start

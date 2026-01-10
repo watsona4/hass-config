@@ -62,6 +62,14 @@
     event_data:
       entity_id: timer.garage_door_delay
     id: Timer
+  - trigger: state
+    entity_id: binary_sensor.garage_camera_engine_starting_sound
+    to: 'on'
+    id: Engine Starting
+  - trigger: state
+    entity_id: binary_sensor.garage_engine_idling_derived
+    to: 'on'
+    id: Engine Idling Derived On
   conditions: []
   actions:
   - if:
@@ -91,6 +99,9 @@
       - condition: state
         entity_id: cover.ratgdov25i_f6128e_door
         state: closing
+    - condition: state
+      entity_id: binary_sensor.garage_engine_idling_derived
+      state: 'off'
     then:
     - action: cover.close_cover
       target:
@@ -100,6 +111,34 @@
     continue_on_timeout: false
     timeout: 00:10:00
   - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Engine Starting
+        - Engine Idling Derived On
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.someone_is_home
+          state: 'on'
+        - condition: state
+          entity_id: cover.ratgdov25i_f6128e_door
+          state: closed
+        - condition: state
+          entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
+          state: 'off'
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: cover.ratgdov25i_f6128e_door
+            state: opening
+          - condition: state
+            entity_id: cover.ratgdov25i_f6128e_door
+            state: closing
+        then:
+        - action: cover.open_cover
+          target:
+            entity_id: cover.ratgdov25i_f6128e_door
     - conditions:
       - condition: trigger
         id: Motion
@@ -150,6 +189,9 @@
           - condition: state
             entity_id: cover.ratgdov25i_f6128e_door
             state: closing
+        - condition: state
+          entity_id: binary_sensor.garage_engine_idling_derived
+          state: 'off'
         then:
         - action: cover.close_cover
           target:
@@ -243,6 +285,9 @@
         - condition: state
           entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
           state: 'on'
+      - condition: state
+        entity_id: binary_sensor.garage_engine_idling_derived
+        state: 'off'
       then:
       - action: cover.close_cover
         target:
