@@ -1,0 +1,67 @@
+# =============================================================================
+# UI Sensors: Environment Dashboard - Plants View
+# =============================================================================
+#
+# UI sensors for the plants view badges. These store pre-computed card
+# attributes for dashboard use. Dashboards reference these via state_attr()
+# for clean YAML with no inline Jinja.
+#
+# Entities created:
+#   - sensor.ui_plants_location_badge
+#   - sensor.ui_plants_location_reason_badge
+#   - sensor.ui_plants_location_changed_badge
+#   - sensor.ui_plant_sensor_location_badge
+#
+# =============================================================================
+
+template:
+
+  # ---------------------------------------------------------------------------
+  # Plants Location Badge
+  # ---------------------------------------------------------------------------
+  - sensor:
+      - name: ui_plants_location_badge
+        state: "{{ states('sensor.plants_location') }}"
+        attributes:
+          icon: >-
+            {% set p = states('sensor.plants_location') %}
+            {{ 'mdi:home' if p == 'Inside' else 'mdi:tree' if p == 'Outside' else 'mdi:sprout' }}
+          color: >-
+            {% set p = states('sensor.plants_location') %}
+            {{ 'blue' if p == 'Inside' else 'green' if p == 'Outside' else 'amber' }}
+          content: "{{ 'Plants Location: ' ~ states('sensor.plants_location') }}"
+
+  # ---------------------------------------------------------------------------
+  # Plants Location Reason Badge
+  # ---------------------------------------------------------------------------
+  - sensor:
+      - name: ui_plants_location_reason_badge
+        state: "{{ states('sensor.plants_location_reason') }}"
+        attributes:
+          icon: mdi:comment-text
+          color: blue
+          content: "{{ 'Location Reason: ' ~ (states('sensor.plants_location_reason') or '—') }}"
+
+  # ---------------------------------------------------------------------------
+  # Plants Location Changed Badge
+  # ---------------------------------------------------------------------------
+  - sensor:
+      - name: ui_plants_location_changed_badge
+        state: "{{ states('sensor.plants_location_changed') }}"
+        attributes:
+          icon: mdi:clock-outline
+          color: grey
+          content: >-
+            {% set p = state_attr('sensor.plants_location_changed','pretty') %}
+            {{ 'Last Changed: ' ~ (p if p else 'never') }}
+
+  # ---------------------------------------------------------------------------
+  # Plant Sensor Location Badge
+  # ---------------------------------------------------------------------------
+  - sensor:
+      - name: ui_plant_sensor_location_badge
+        state: "{{ states('input_select.plant_sensor_location') }}"
+        attributes:
+          icon: mdi:leaf
+          color: green
+          content: "{{ 'Probe Location: ' ~ (states('input_select.plant_sensor_location') | title) }}"
