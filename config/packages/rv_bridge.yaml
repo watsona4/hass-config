@@ -1,23 +1,85 @@
-# packages/rv_bridge.yaml
-# Mirrors RV MQTT StateStream -> local read-only entities for dashboards
+# =============================================================================
+# Package: RV Bridge
+# =============================================================================
+#
+# Mirrors RV MQTT StateStream -> local read-only entities for dashboards.
+# The RV runs its own Home Assistant instance and publishes state via MQTT
+# StateStream. This package creates local entities that mirror that state.
+#
+# Dependencies:
+#   - MQTT broker connection
+#   - RV Home Assistant instance publishing to site/rv/statestream/#
+#
+# Entities created:
+#
+#   Sensors (MQTT):
+#     - sensor.rv_battery_soc
+#     - sensor.rv_battery_voltage
+#     - sensor.rv_dc_current
+#     - sensor.rv_ac_input_amps
+#     - sensor.rv_ac_source
+#     - sensor.rv_solar_watts
+#     - sensor.rv_inside_temperature
+#     - sensor.rv_outside_temperature
+#     - sensor.rv_outside_humidity
+#     - sensor.rv_wind_speed
+#     - sensor.rv_rain_rate
+#     - sensor.rv_barometric_pressure
+#     - sensor.rv_fresh_tank
+#     - sensor.rv_gray_tank
+#     - sensor.rv_black_tank
+#     - sensor.rv_propane_left
+#     - sensor.rv_propane_right
+#     - sensor.rv_propane_pct
+#     - sensor.rv_water_heater_temp
+#     - sensor.rv_tire_fl_psi, sensor.rv_tire_fr_psi, sensor.rv_tire_rl_psi, sensor.rv_tire_rr_psi
+#     - sensor.rv_tire_fl_temp, sensor.rv_tire_fr_temp, sensor.rv_tire_rl_temp, sensor.rv_tire_rr_temp
+#     - sensor.rv_bridge_location_raw
+#
+#   Binary Sensors (MQTT):
+#     - binary_sensor.rv_inverter_enabled
+#     - binary_sensor.rv_charger_enabled
+#     - binary_sensor.rv_shore_power
+#     - binary_sensor.rv_water_pump
+#     - binary_sensor.rv_water_heater
+#     - binary_sensor.rv_light_living, binary_sensor.rv_light_kitchen, binary_sensor.rv_light_bedroom
+#     - binary_sensor.rv_smoke_alarm
+#     - binary_sensor.rv_co_alarm
+#     - binary_sensor.rv_propane_leak
+#     - binary_sensor.rv_door_open
+#
+#   Select (MQTT):
+#     - select.rv_water_heater_mode
+#
+#   Device Tracker (MQTT):
+#     - device_tracker.rv_gps
+#
+#   Template Sensors:
+#     - sensor.rv_status_summary
+#
+#   Automations:
+#     - automation.rv_gps_statestream_merged_json
+#     - automation.rv_gps_publish_throttled_tracker
+#
+# =============================================================================
 
-# -------------------------------------------------------------------
-# Set your RV StateStream base topic once and reuse via YAML anchors.
-# Example if RV StateStream is configured as:
-#   mqtt_statestream:
-#     base_topic: site/rv/statestream
-# -------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# Customization
+# -----------------------------------------------------------------------------
 homeassistant:
   customize:
     device_tracker.rv_gps:
       friendly_name: "RV"
 
+# -----------------------------------------------------------------------------
+# MQTT Entities
+# -----------------------------------------------------------------------------
 mqtt:
+
+  # ---------------------------------------------------------------------------
+  # Sensors: Electrical / Power
+  # ---------------------------------------------------------------------------
   sensor:
-    # =========================
-    # ELECTRICAL / POWER
-    # =========================
     - name: "RV Battery SOC"
       unique_id: 85c9ccea-e698-4f6f-ac53-18fa8d95f2c8
       state_topic: site/rv/statestream/sensor/rv_battery_soc/state
@@ -53,9 +115,9 @@ mqtt:
       unit_of_measurement: W
       device_class: power
 
-      # =========================
-      # CLIMATE / WEATHER
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Sensors: Climate / Weather
+    # ---------------------------------------------------------------------------
     - name: "RV Inside Temperature"
       unique_id: 74e99972-b0e2-477c-b2e0-72fded3efc82
       state_topic: site/rv/statestream/sensor/zone_0_temperature/state
@@ -98,9 +160,9 @@ mqtt:
       device_class: atmospheric_pressure
       value_template: "{{ value | float(default=none) }}"
 
-      # =========================
-      # TANKS / WATER / PROPANE
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Sensors: Tanks / Water / Propane
+    # ---------------------------------------------------------------------------
     - name: "RV Fresh Tank"
       unique_id: ef5f0044-e280-4933-bd95-d9400a7b86fd
       state_topic: site/rv/statestream/sensor/rv_fresh_tank/state
@@ -146,27 +208,30 @@ mqtt:
       unit_of_measurement: "°F"
       device_class: temperature
 
-      # =========================
-      # TPMS
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Sensors: TPMS Pressure
+    # ---------------------------------------------------------------------------
     - name: "RV Tire FL PSI"
       unique_id: 319064a5-8ca0-45e0-a258-53525180407f
       state_topic: site/rv/statestream/sensor/rv_tire_fl_psi/state
       unit_of_measurement: psi
       icon: mdi:car-tire-alert
       device_class: pressure
+
     - name: "RV Tire FR PSI"
       unique_id: 718c1109-e30f-4613-b8cc-cd004c24673f
       state_topic: site/rv/statestream/sensor/rv_tire_fr_psi/state
       unit_of_measurement: psi
       icon: mdi:car-tire-alert
       device_class: pressure
+
     - name: "RV Tire RL PSI"
       unique_id: e60eb93a-fe98-4676-94a2-72b9a0afce5c
       state_topic: site/rv/statestream/sensor/rv_tire_rl_psi/state
       unit_of_measurement: psi
       icon: mdi:car-tire-alert
       device_class: pressure
+
     - name: "RV Tire RR PSI"
       unique_id: 811d92c3-1aff-4740-aebd-45d98a9e7211
       state_topic: site/rv/statestream/sensor/rv_tire_rr_psi/state
@@ -174,24 +239,30 @@ mqtt:
       icon: mdi:car-tire-alert
       device_class: pressure
 
+    # ---------------------------------------------------------------------------
+    # Sensors: TPMS Temperature
+    # ---------------------------------------------------------------------------
     - name: "RV Tire FL Temp"
       unique_id: c9fcd266-e65c-4edb-a876-f4367fac24ea
       state_topic: site/rv/statestream/sensor/rv_tire_fl_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
       value_template: "{{ value | float(default=none) }}"
+
     - name: "RV Tire FR Temp"
       unique_id: c000f65d-51ec-4511-a28f-28673f555744
       state_topic: site/rv/statestream/sensor/rv_tire_fr_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
       value_template: "{{ value | float(default=none) }}"
+
     - name: "RV Tire RL Temp"
       unique_id: f902296d-2bb2-4fc1-ab22-d33690f50f05
       state_topic: site/rv/statestream/sensor/rv_tire_rl_temp/state
       unit_of_measurement: "°F"
       device_class: temperature
       value_template: "{{ value | float(default=none) }}"
+
     - name: "RV Tire RR Temp"
       unique_id: 8f3dbdda-06c7-4739-806e-778873398122
       state_topic: site/rv/statestream/sensor/rv_tire_rr_temp/state
@@ -199,18 +270,18 @@ mqtt:
       device_class: temperature
       value_template: "{{ value | float(default=none) }}"
 
-      # =========================
-      # LOCATION / GPS
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Sensors: Location / GPS
+    # ---------------------------------------------------------------------------
     - name: "RV Bridge Location Raw"
       unique_id: 27b26f1e-2a51-4cf3-b44f-a879e4bbc437
       state_topic: site/rv/bridge/location
       value_template: "{{ value }}"
 
+  # ---------------------------------------------------------------------------
+  # Binary Sensors: Electrical / Power
+  # ---------------------------------------------------------------------------
   binary_sensor:
-    # =========================
-    # ELECTRICAL / POWER
-    # =========================
     - name: "RV Inverter Enabled"
       unique_id: fe8fb1dc-6f62-4a01-bdd5-a4a6debb9080
       state_topic: site/rv/statestream/binary_sensor/rv_inverter_likely/state
@@ -246,9 +317,9 @@ mqtt:
       payload_off: "off"
       device_class: power
 
-      # =========================
-      # LIGHTING (read-only mirrors)
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Binary Sensors: Lighting (read-only mirrors)
+    # ---------------------------------------------------------------------------
     - name: "RV Light Living"
       unique_id: b51e9b06-83c5-4f0b-81b5-ef0f65452458
       state_topic: site/rv/statestream/light/rv_living_room/state
@@ -273,9 +344,9 @@ mqtt:
       icon: mdi:lightbulb
       device_class: light
 
-      # =========================
-      # SAFETY / ALARMS / SECURITY
-      # =========================
+    # ---------------------------------------------------------------------------
+    # Binary Sensors: Safety / Alarms / Security
+    # ---------------------------------------------------------------------------
     - name: "RV Smoke Alarm"
       unique_id: 23082ac4-561b-4949-8232-18b75f1d59da
       state_topic: site/rv/statestream/binary_sensor/rv_smoke_alarm/state
@@ -304,10 +375,10 @@ mqtt:
       payload_off: "off"
       device_class: door
 
+  # ---------------------------------------------------------------------------
+  # Select: Modes / Settings
+  # ---------------------------------------------------------------------------
   select:
-    # =========================
-    # MODES / SETTINGS
-    # =========================
     - name: "RV Water Heater Mode"
       unique_id: 840c231c-0abf-4603-9331-c8dafc0269c3
       state_topic: site/rv/statestream/select/rv_water_heater_mode/state
@@ -318,25 +389,26 @@ mqtt:
         - "on"
         - "auto"
 
+  # ---------------------------------------------------------------------------
+  # Device Tracker: Location / GPS
+  # ---------------------------------------------------------------------------
+  # RV GPS device_tracker using merged JSON document from automation below.
+  # Home Assistant MQTT device_tracker only supports a single topic with JSON payload.
+  # See: https://www.home-assistant.io/integrations/device_tracker.mqtt/
+  #
+  # Example payload:
+  # {
+  #   "latitude": 37.123456,
+  #   "longitude": -122.123456,
+  #   "gps_accuracy": 5,
+  #   "speed_m_s": 0,
+  #   "heading_deg": 0,
+  #   "altitude_m": 10,
+  #   "time_utc": "2024-01-01T12:00:00Z",
+  #   "fix_mode": 3
+  # }
+  # ---------------------------------------------------------------------------
   device_tracker:
-    # =========================
-    # LOCATION / GPS
-    # =========================
-    # RV GPS device_tracker using merged JSON document from above automation
-    # Note: Home Assistant MQTT device_tracker only supports a single topic with JSON payload
-    # See: https://www.home-assistant.io/integrations/mqtt/#device_tracker
-    # See: https://www.home-assistant.io/integrations/device_tracker.mqtt/
-    # Example payload:
-    # {
-    #   "latitude": 37.123456,
-    #   "longitude": -122.123456,
-    #   "gps_accuracy": 5,
-    #   "speed_m_s": 0,
-    #   "heading_deg": 0,
-    #   "altitude_m": 10,
-    #   "time_utc": "2024-01-01T12:00:00Z",
-    #   "fix_mode": 3
-    # }
     - name: "RV GPS"
       unique_id: 0ffb7df0-f781-4745-abf8-56638caa2612
       source_type: gps
@@ -349,10 +421,10 @@ mqtt:
           {{ {} | tojson }}
         {% endif %}
 
+# -----------------------------------------------------------------------------
+# Template Sensors: Summary / Status
+# -----------------------------------------------------------------------------
 template:
-  # =========================
-  # SUMMARY / STATUS
-  # =========================
   - sensor:
       - name: "RV Status Summary"
         unique_id: bc41357c-e590-4fca-869e-a46b88ca5954
@@ -381,14 +453,15 @@ template:
           interior_temp: "{{ states('sensor.rv_inside_temperature') | float(0) }}"
           gps_entity: device_tracker.rv_gps
 
+# -----------------------------------------------------------------------------
+# Automations: GPS Processing
+# -----------------------------------------------------------------------------
 automation:
-  # =========================
-  # LOCATION / GPS
-  # =========================
+  # ---------------------------------------------------------------------------
   # Merge incoming Statestream GPS attributes into a single JSON document
-  # and publish to a single MQTT topic for use by a Home Assistant MQTT device_tracker
-  # (since Home Assistant MQTT device_tracker only supports a single topic with JSON payload)
-  # Incoming topics are like:
+  # and publish to a single MQTT topic for use by MQTT device_tracker.
+  #
+  # Incoming topics:
   #   site/rv/statestream/device_tracker/rv_gps/latitude
   #   site/rv/statestream/device_tracker/rv_gps/longitude
   #   site/rv/statestream/device_tracker/rv_gps/gps_accuracy
@@ -397,12 +470,10 @@ automation:
   #   site/rv/statestream/device_tracker/rv_gps/altitude_m
   #   site/rv/statestream/device_tracker/rv_gps/time_utc
   #   site/rv/statestream/device_tracker/rv_gps/fix_mode
-  # Resulting merged JSON document is published to:
-  #   site/rv/bridge/location
-  # which is then consumed by the MQTT device_tracker below.
-  # The merge logic ensures that only the attributes that have actually changed
-  # are updated in the JSON document, while others retain their previous values.
-  - alias: RV GPS (Statestream) -> merged JSON
+  #
+  # Output topic: site/rv/bridge/location
+  # ---------------------------------------------------------------------------
+  - alias: "RV GPS Statestream Merged JSON"
     id: dc86b90d-27c3-4cdb-9c32-b721c5514158
     description: Merge incoming Statestream GPS attributes into a single JSON document
     mode: queued
@@ -471,7 +542,10 @@ automation:
                   retain: true
                   payload: "{{ out | tojson }}"
 
-  - alias: RV GPS, publish throttled tracker
+  # ---------------------------------------------------------------------------
+  # Publish throttled GPS updates to the device_tracker
+  # ---------------------------------------------------------------------------
+  - alias: "RV GPS Publish Throttled Tracker"
     id: 3e5f4c1e-2b1c-4f4a-8f3e-9c1e2d3f4a5b
     description: Publish throttled GPS updates to the MQTT device_tracker
     trigger:
