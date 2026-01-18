@@ -1,35 +1,54 @@
+# -----------------------------------------------------------------------------
+# Environment Dashboard: Plants View
+# -----------------------------------------------------------------------------
+#
+# Displays plant care status with per-plant sections dynamically switched
+# via input_select. All dynamic values use state_attr() lookups on ui_*
+# sensors - no inline Jinja templates.
+#
+# -----------------------------------------------------------------------------
+
 type: sections
 max_columns: 2
 title: Plants
 path: plants
+
+# -----------------------------------------------------------------------------
+# Badges: All use state_attr() lookups on ui_* sensors
+# -----------------------------------------------------------------------------
 badges:
   - type: custom:mushroom-template-badge
     entity: sensor.plants_location
-    icon: >-
-      {% set p = states(entity) %}
-      {{ 'mdi:home' if p == 'Inside' else 'mdi:tree' if p == 'Outside' else 'mdi:sprout' }}
-    color: >-
-      {% set p = states(entity) %}
-      {{ 'blue' if p == 'Inside' else 'green' if p == 'Outside' else 'amber' }}
-    content: "Plants Location: {{ states(entity) }}"
-  - type: custom:mushroom-template-badge
-    entity: sensor.plants_location_reason
-    content: "Location Reason: {{ states(entity) or '—' }}"
-    icon: mdi:comment-text
-    color: blue
-  - type: custom:mushroom-template-badge
-    entity: sensor.plants_location_changed
-    icon: mdi:clock-outline
-    content: >-
-      {% set p = state_attr(entity,'pretty') %}
-      Last Changed: {{ p if p else 'never' }}
-  - type: custom:mushroom-template-badge
-    entity: input_select.plant_sensor_location
-    icon: mdi:leaf
-    color: green
-    content: "Probe Location: {{ states(entity) | title }}"
+    icon: "{{ state_attr('sensor.ui_plants_location_badge', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_plants_location_badge', 'color') }}"
+    content: "{{ state_attr('sensor.ui_plants_location_badge', 'content') }}"
     tap_action:
       action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.plants_location_reason
+    icon: "{{ state_attr('sensor.ui_plants_location_reason_badge', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_plants_location_reason_badge', 'color') }}"
+    content: "{{ state_attr('sensor.ui_plants_location_reason_badge', 'content') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.plants_location_changed
+    icon: "{{ state_attr('sensor.ui_plants_location_changed_badge', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_plants_location_changed_badge', 'color') }}"
+    content: "{{ state_attr('sensor.ui_plants_location_changed_badge', 'content') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: input_select.plant_sensor_location
+    icon: "{{ state_attr('sensor.ui_plant_sensor_location_badge', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_plant_sensor_location_badge', 'color') }}"
+    content: "{{ state_attr('sensor.ui_plant_sensor_location_badge', 'content') }}"
+    tap_action:
+      action: more-info
+
+# -----------------------------------------------------------------------------
+# Sections: Plant cards switched via state-switch
+# -----------------------------------------------------------------------------
 sections:
   - type: grid
     column_span: 2

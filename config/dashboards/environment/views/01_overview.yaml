@@ -350,13 +350,23 @@ sections:
             cards:
 
               # Current Temperature
-              - type: custom:decluttering-card
-                template: ui_template_card
-                variables:
-                  - entity: sensor.outside_temperature_state
-                  - ui_entity: sensor.ui_outside_temperature_state
-                  - name: Temp
-                  - app: ambient
+              - type: custom:mushroom-template-card
+                entity: 'sensor.outside_temperature_state'
+                icon: "{{ state_attr('sensor.ui_outside_temperature_state', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_outside_temperature_state', 'color') }}"
+                primary: Temp
+                secondary: "{{ state_attr('sensor.ui_outside_temperature_state', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_outside_temperature_state', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_outside_temperature_state', 'badge_color') }}"
+                layout: 'horizontal'
+                multiline_secondary: false
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
 
               # Recent High Temperature
               - type: custom:mushroom-template-card
@@ -379,13 +389,23 @@ sections:
                   action: more-info
 
               # Current Humidity
-              - type: custom:decluttering-card
-                template: ui_template_card
-                variables:
-                  - entity: sensor.outside_humidity_state
-                  - ui_entity: sensor.ui_outside_humidity_state
-                  - name: Humidity
-                  - app: outdoor
+              - type: custom:mushroom-template-card
+                entity: 'sensor.outside_humidity_state'
+                icon: "{{ state_attr('sensor.ui_outside_humidity_state', 'icon') }}"
+                icon_color: "{{ state_attr('sensor.ui_outside_humidity_state', 'color') }}"
+                primary: Humidity
+                secondary: "{{ state_attr('sensor.ui_outside_humidity_state', 'label') }}"
+                badge_icon: "{{ state_attr('sensor.ui_outside_humidity_state', 'badge') }}"
+                badge_color: "{{ state_attr('sensor.ui_outside_humidity_state', 'badge_color') }}"
+                layout: 'horizontal'
+                multiline_secondary: false
+                tap_action:
+                  action: more-info
+                icon_tap_action:
+                  action: nothing
+                grid_options:
+                  columns: 12
+                  rows: auto
 
               # Recent Low Temperature
               - type: custom:mushroom-template-card
