@@ -1,22 +1,56 @@
-# =====================================================================
-# Google Pollen – REST sensors + derived template sensors (Nearby/Home/RV)
-# Shared macros: env/pollen_core.jinja
-# =====================================================================
+# =============================================================================
+# Google Pollen - Pollen forecast data from Google Pollen API for multiple
+# locations (Nearby/Home/RV)
+#
+# Fetches 5-day pollen forecasts via REST commands triggered by automations,
+# then parses the response into template sensors for dashboards and alerting.
+#
+# Entities created:
+#   REST commands:
+#     - rest_command.google_pollen_nearby_fetch: Fetches pollen for nearby location
+#     - rest_command.google_pollen_home_fetch: Fetches pollen for home location
+#     - rest_command.google_pollen_rv_fetch: Fetches pollen for RV location
+#
+#   Base sensors (event-triggered, store raw API response):
+#     - sensor.google_pollen_nearby: Raw pollen data for nearby location
+#     - sensor.google_pollen_home: Raw pollen data for home location
+#     - sensor.google_pollen_rv: Raw pollen data for RV location
+#
+#   Derived sensors (per location - Nearby/Home/RV):
+#     - sensor.google_pollen_*_today: Dominant pollen type with values/colors
+#     - sensor.pollen_species_*_today: Top species with category/value/picture
+#     - sensor.pollen_forecast_*_day_0/1/2: 3-day forecast with dominant/species
+#     - sensor.pollen_species_list_*_today: Full species list attribute
+#     - sensor.pollen_peak_index_*_today: Maximum pollen index value
+#
+#   Automations:
+#     - Google Pollen Nearby: 10-min fetch with 0-20s jitter
+#     - Google Pollen Home: 10-min fetch with 20-40s jitter (staggered)
+#     - Google Pollen RV: 10-min fetch with 40-60s jitter (staggered)
+#
+# Key attributes:
+#   - dominant_value: Numeric pollen index (0-5 scale)
+#   - dominant_category: Text category (None, Very Low, Low, Moderate, High, Very High)
+#   - dominant_hex: Color code for UI display
+#   - grass_value/tree_value/weed_value: Per-type index values
+#   - recommendations: Health recommendations array
+#
+# Dependencies:
+#   - macros/rest_helpers.jinja: Location coordinate macros (nearby_lat, home_lon, etc.)
+#   - metrics/pollen/pollen.jinja: build_ctx macro for parsing API responses
+#   - secrets.yaml: google_pollen_api_key
+#   - device_tracker.rv_gps: For RV location availability check
+# =============================================================================
 
-###############################################################################
-# REST commands: Google Pollen (Nearby / Home / RV)
-# Note: api_key is passed in from the automation (keeps !secret out of command)
-###############################################################################
+# -----------------------------------------------------------------------------
+# REST commands: Google Pollen API endpoints
+# Note: api_key is passed in from automation data (keeps !secret out of command)
+# -----------------------------------------------------------------------------
 rest_command:
   google_pollen_nearby_fetch:
     url: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid, nearby_lat, nearby_lon -%}
-      {%- set base = 'https://pollen.googleapis.com/v1/forecast:lookup' if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
-      {%- if base.startswith('http://127.0.0.1') -%}
-        {{ base }}
-      {%- else -%}
-        {{ base }}?location.latitude={{ nearby_lat() }}&location.longitude={{ nearby_lon() }}&days=5&languageCode=en&key={{ api_key }}
-      {%- endif -%}
+      {%- from 'macros/rest_helpers.jinja' import nearby_lat, nearby_lon -%}
+      https://pollen.googleapis.com/v1/forecast:lookup?location.latitude={{ nearby_lat() }}&location.longitude={{ nearby_lon() }}&days=5&languageCode=en&key={{ api_key }}
     method: GET
     timeout: 8
     headers:
@@ -26,13 +60,8 @@ rest_command:
 
   google_pollen_home_fetch:
     url: >-
-      {%- from 'macros/rest_helpers.jinja' import home_is_valid, home_lat, home_lon -%}
-      {%- set base = 'https://pollen.googleapis.com/v1/forecast:lookup' if (home_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
-      {%- if base.startswith('http://127.0.0.1') -%}
-        {{ base }}
-      {%- else -%}
-        {{ base }}?location.latitude={{ home_lat() }}&location.longitude={{ home_lon() }}&days=5&languageCode=en&key={{ api_key }}
-      {%- endif -%}
+      {%- from 'macros/rest_helpers.jinja' import home_lat, home_lon -%}
+      https://pollen.googleapis.com/v1/forecast:lookup?location.latitude={{ home_lat() }}&location.longitude={{ home_lon() }}&days=5&languageCode=en&key={{ api_key }}
     method: GET
     timeout: 8
     headers:
@@ -42,13 +71,8 @@ rest_command:
 
   google_pollen_rv_fetch:
     url: >-
-      {%- from 'macros/rest_helpers.jinja' import rv_is_valid, rv_lat, rv_lon -%}
-      {%- set base = 'https://pollen.googleapis.com/v1/forecast:lookup' if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
-      {%- if base.startswith('http://127.0.0.1') -%}
-        {{ base }}
-      {%- else -%}
-        {{ base }}?location.latitude={{ rv_lat() }}&location.longitude={{ rv_lon() }}&days=5&languageCode=en&key={{ api_key }}
-      {%- endif -%}
+      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon -%}
+      https://pollen.googleapis.com/v1/forecast:lookup?location.latitude={{ rv_lat() }}&location.longitude={{ rv_lon() }}&days=5&languageCode=en&key={{ api_key }}
     method: GET
     timeout: 8
     headers:
@@ -56,15 +80,17 @@ rest_command:
       User-Agent: HomeAssistant
       Cache-Control: no-cache
 
-# ---------- Template sensors (shared structure, per location) ----------
+# -----------------------------------------------------------------------------
+# Template sensors (shared structure, per location)
+# -----------------------------------------------------------------------------
 template:
 
   - trigger:
       - platform: event
         event_type: google_pollen_nearby_update
     sensor:
-      - name: Google Pollen Nearby
-        unique_id: google_pollen_nearby
+      - name: "Google Pollen Nearby"
+        unique_id: 3606204b-9f48-d5f4-4e6b-4b65f618d191
         availability: "{{ trigger.event.data.available | default(false) }}"
         state: >-
           {%- set data =
@@ -95,8 +121,8 @@ template:
       - platform: event
         event_type: google_pollen_home_update
     sensor:
-      - name: Google Pollen Home
-        unique_id: google_pollen_home
+      - name: "Google Pollen Home"
+        unique_id: 3e4b413c-91b1-c684-f6d3-465756034021
         availability: "{{ trigger.event.data.available | default(false) }}"
         state: >-
           {%- set data =
@@ -127,8 +153,8 @@ template:
       - platform: event
         event_type: google_pollen_rv_update
     sensor:
-      - name: Google Pollen RV
-        unique_id: google_pollen_rv
+      - name: "Google Pollen RV"
+        unique_id: aa882f5f-21d0-03c4-fbbb-aa9ae4444a27
         availability: "{{ trigger.event.data.available | default(false) and has_value('device_tracker.rv_gps') }}"
         state: >-
           {%- set data =
@@ -163,7 +189,7 @@ template:
       src: sensor.google_pollen_nearby
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json(default={}) -}}
+        {{ build_ctx(src) | from_json(default={}) }}
       d0: >-
         {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
         {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
@@ -183,70 +209,59 @@ template:
       d0_attr: "{{ di_attr[0] if di_attr|count>0 else {} }}"
       plants_fallback: "{{ d0_attr.get('plantInfo') or [] }}"
     sensor:
-      - name: Google Pollen Nearby Today
-        unique_id: google_pollen_nearby_today
+      - name: "Google Pollen Nearby Today"
+        unique_id: 5afa2d1c-6166-5f44-de4b-4d0639d38c71
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: >-
-          {{- (top.get('displayName') or top.get('code')) if has_vals else 'none' -}}
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
-            {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
-          dominant_value: >-
-            {{- (top.get('indexInfo') or {}).get('value') if has_vals else 0 -}}
-          dominant_category: >-
-            {{- (top.get('indexInfo') or {}).get('category') if has_vals else 'none' -}}
+            {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
+          dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
               {%- set r = (c.get('red') or 0) * 255 -%}
               {%- set g = (c.get('green') or 0) * 255 -%}
               {%- set b = (c.get('blue') or 0) * 255 -%}
-              {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
+              {{ '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) }}
             {%- else -%}
               {{ neutral_hex }}
             {%- endif -%}
           grass_value: >-
             {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           tree_value: >-
             {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           weed_value: >-
             {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
-          recommendations: >-
-            {{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
+          recommendations: "{{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}"
 
-      - name: Pollen Species Nearby Today
-        unique_id: pollen_species_nearby_today
+      - name: "Pollen Species Nearby Today"
+        unique_id: 14c1c6bb-2648-cb24-3a03-92798ca3b62d
         icon: mdi:leaf
-        availability: >-
-          {{- has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) -}}
+        availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
-          {{- ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') -}}
+          {{ ctx.pick.name if (ctx.plants | count) > 0 else
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
         attributes:
           code: >-
-            {{- ctx.pick.code if (ctx.plants | count) > 0 else
-                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) -}}
-          type: >-
-            {{- ctx.pick.type if (ctx.plants | count) > 0 else none -}}
-          in_season: >-
-            {{- ctx.pick.in_season if (ctx.plants | count) > 0 else none -}}
-          category: >-
-            {{- ctx.pick.category if (ctx.plants | count) > 0 else 'none' -}}
-          value: >-
-            {{- ctx.pick.value if (ctx.plants | count) > 0 else 0 -}}
-          entity_picture: >-
-            {{- ctx.pick.picture if (ctx.plants | count) > 0 else none -}}
+            {{ ctx.pick.code if (ctx.plants | count) > 0 else
+                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
+          type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
+          in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
+          entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
-      - name: Pollen Forecast Nearby Day 0
-        unique_id: pollen_forecast_nearby_day_0
+      - name: "Pollen Forecast Nearby Day 0"
+        unique_id: 04f21dd5-c4bc-3254-036b-d65039948868
         icon: mdi:calendar-today
-        availability: >-
-          {{ (ctx.days | count) > 0 }}
+        availability: "{{ (ctx.days | count) > 0 }}"
         state: >-
           {%- if (ctx.days | count) > 0 and (ctx.days[0].get('exists') | default(false)) -%}
             {{ ctx.days[0].get('state') or 'unknown' }}
@@ -265,8 +280,8 @@ template:
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
-      - name: Pollen Forecast Nearby Day 1
-        unique_id: pollen_forecast_nearby_day_1
+      - name: "Pollen Forecast Nearby Day 1"
+        unique_id: ee80550b-d219-2a54-805b-e8f2fef67310
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 1 }}"
         state: >-
@@ -287,8 +302,8 @@ template:
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
-      - name: Pollen Forecast Nearby Day 2
-        unique_id: pollen_forecast_nearby_day_2
+      - name: "Pollen Forecast Nearby Day 2"
+        unique_id: 81511af7-0cfa-7564-dbe3-367a4cac7942
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 2 }}"
         state: >-
@@ -309,8 +324,8 @@ template:
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
-      - name: Pollen Species List Nearby Today
-        unique_id: pollen_species_list_nearby_today
+      - name: "Pollen Species List Nearby Today"
+        unique_id: 5bf1d963-e864-a974-7f63-49a3cf55eb85
         availability: "{{ has_value(src) and ( (ctx.di | count) > 0 ) }}"
         state: "{{ (ctx.di | count) > 0 }}"
         attributes:
@@ -332,10 +347,10 @@ template:
               } -%}
               {%- set ns.out = ns.out + [item] -%}
             {%- endfor -%}
-            {{- ns.out -}}
+            {{ ns.out }}
 
-      - name: Pollen Peak Index Nearby Today
-        unique_id: pollen_peak_index_nearby_today
+      - name: "Pollen Peak Index Nearby Today"
+        unique_id: c6cefeb2-3544-ecc4-c173-da589bade897
         icon: mdi:meter-gas
         availability: "{{ has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) }}"
         state: >-
@@ -357,90 +372,77 @@ template:
       src: sensor.google_pollen_home
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json(default={}) -}}
+        {{ build_ctx(src) | from_json(default={}) }}
       d0: >-
         {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
         {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
-      types: >-
-        {{ (d0.get('pollenTypeInfo') or []) }}
+      types: "{{ (d0.get('pollenTypeInfo') or []) }}"
       ranked: >-
         {{ (types
             | selectattr('indexInfo','defined')
             | selectattr('indexInfo.value','defined')
             | sort(attribute='indexInfo.value', reverse=true)
             | list) }}
-      top: >-
-        {{ (ranked[0] if ranked | count > 0 else {}) }}
+      top: "{{ (ranked[0] if ranked | count > 0 else {}) }}"
       has_vals: "{{ ranked | count > 0 }}"
       neutral_hex: "#9E9E9E"
       di_attr: "{{ state_attr(src, 'dailyInfo') or [] }}"
       d0_attr: "{{ di_attr[0] if di_attr|count>0 else {} }}"
       plants_fallback: "{{ d0_attr.get('plantInfo') or [] }}"
     sensor:
-      - name: Google Pollen Home Today
-        unique_id: google_pollen_home_today
+      - name: "Google Pollen Home Today"
+        unique_id: 56430790-66c2-0184-926b-a54db77315a1
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: >-
-          {{- (top.get('displayName') or top.get('code')) if has_vals else 'none' -}}
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
-            {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
-          dominant_value: >-
-            {{- (top.get('indexInfo') or {}).get('value') if has_vals else 0 -}}
-          dominant_category: >-
-            {{- (top.get('indexInfo') or {}).get('category') if has_vals else 'none' -}}
+            {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
+          dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
               {%- set r = (c.get('red') or 0) * 255 -%}
               {%- set g = (c.get('green') or 0) * 255 -%}
               {%- set b = (c.get('blue') or 0) * 255 -%}
-              {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
+              {{ '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) }}
             {%- else -%}
               {{ neutral_hex }}
             {%- endif -%}
           grass_value: >-
             {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           tree_value: >-
             {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           weed_value: >-
             {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
-          recommendations: >-
-            {{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
+          recommendations: "{{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}"
 
-      - name: Pollen Species Home Today
-        unique_id: pollen_species_home_today
+      - name: "Pollen Species Home Today"
+        unique_id: a30c83da-1129-52c4-f2eb-acde4db5354c
         icon: mdi:leaf
-        availability: >-
-          {{- has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) -}}
+        availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
-          {{- ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') -}}
+          {{ ctx.pick.name if (ctx.plants | count) > 0 else
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
         attributes:
           code: >-
-            {{- ctx.pick.code if (ctx.plants | count) > 0 else
-                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) -}}
-          type: >-
-            {{- ctx.pick.type if (ctx.plants | count) > 0 else none -}}
-          in_season: >-
-            {{- ctx.pick.in_season if (ctx.plants | count) > 0 else none -}}
-          category: >-
-            {{- ctx.pick.category if (ctx.plants | count) > 0 else 'none' -}}
-          value: >-
-            {{- ctx.pick.value if (ctx.plants | count) > 0 else 0 -}}
-          entity_picture: >-
-            {{- ctx.pick.picture if (ctx.plants | count) > 0 else none -}}
+            {{ ctx.pick.code if (ctx.plants | count) > 0 else
+                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
+          type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
+          in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
+          entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
-      - name: Pollen Forecast Home Day 0
-        unique_id: pollen_forecast_home_day_0
+      - name: "Pollen Forecast Home Day 0"
+        unique_id: 2b698351-9198-1824-7dfb-81c2a8936fa3
         icon: mdi:calendar-today
-        availability: >-
-          {{ (ctx.days | count) > 0 }}
+        availability: "{{ (ctx.days | count) > 0 }}"
         state: >-
           {%- if (ctx.days | count) > 0 and (ctx.days[0].get('exists') | default(false)) -%}
             {{ ctx.days[0].get('state') or 'unknown' }}
@@ -459,8 +461,8 @@ template:
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
-      - name: Pollen Forecast Home Day 1
-        unique_id: pollen_forecast_home_day_1
+      - name: "Pollen Forecast Home Day 1"
+        unique_id: 2f57cb48-e613-2e44-0563-e318b92011de
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 1 }}"
         state: >-
@@ -481,8 +483,8 @@ template:
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
-      - name: Pollen Forecast Home Day 2
-        unique_id: pollen_forecast_home_day_2
+      - name: "Pollen Forecast Home Day 2"
+        unique_id: 191dcf8b-a4a9-c4f4-75a3-d308fbc23a7f
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 2 }}"
         state: >-
@@ -503,8 +505,8 @@ template:
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
-      - name: Pollen Species List Home Today
-        unique_id: pollen_species_list_home_today
+      - name: "Pollen Species List Home Today"
+        unique_id: 07254857-acb7-df74-87db-9f63eda262b1
         availability: "{{ has_value(src) and ( (ctx.di | count) > 0 ) }}"
         state: "{{ (ctx.di | count) > 0 }}"
         attributes:
@@ -526,10 +528,10 @@ template:
               } -%}
               {%- set ns.out = ns.out + [item] -%}
             {%- endfor -%}
-            {{- ns.out -}}
+            {{ ns.out }}
 
-      - name: Pollen Peak Index Home Today
-        unique_id: pollen_peak_index_home_today
+      - name: "Pollen Peak Index Home Today"
+        unique_id: ac4e487c-4754-8d44-f58b-5bc9c689e6a0
         icon: mdi:meter-gas
         availability: "{{ has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) }}"
         state: >-
@@ -551,90 +553,77 @@ template:
       src: sensor.google_pollen_rv
       ctx: >-
         {%- from 'metrics/pollen/pollen.jinja' import build_ctx -%}
-        {{- build_ctx(src) | from_json(default={}) -}}
+        {{ build_ctx(src) | from_json(default={}) }}
       d0: >-
         {%- set di = ctx.di if ctx is mapping and 'di' in ctx else [] -%}
         {{ (di[0] if di is sequence and (di | count) > 0 else {}) }}
-      types: >-
-        {{ (d0.get('pollenTypeInfo') or []) }}
+      types: "{{ (d0.get('pollenTypeInfo') or []) }}"
       ranked: >-
         {{ (types
             | selectattr('indexInfo','defined')
             | selectattr('indexInfo.value','defined')
             | sort(attribute='indexInfo.value', reverse=true)
             | list) }}
-      top: >-
-        {{ (ranked[0] if ranked | count > 0 else {}) }}
+      top: "{{ (ranked[0] if ranked | count > 0 else {}) }}"
       has_vals: "{{ ranked | count > 0 }}"
       neutral_hex: "#9E9E9E"
       di_attr: "{{ state_attr(src, 'dailyInfo') or [] }}"
       d0_attr: "{{ di_attr[0] if di_attr|count>0 else {} }}"
       plants_fallback: "{{ d0_attr.get('plantInfo') or [] }}"
     sensor:
-      - name: Google Pollen RV Today
-        unique_id: google_pollen_rv_today
+      - name: "Google Pollen RV Today"
+        unique_id: e5c54be4-0f16-6254-1ba3-560d889b28df
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: >-
-          {{- (top.get('displayName') or top.get('code')) if has_vals else 'none' -}}
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
-            {{- "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none -}}
-          dominant_value: >-
-            {{- (top.get('indexInfo') or {}).get('value') if has_vals else 0 -}}
-          dominant_category: >-
-            {{- (top.get('indexInfo') or {}).get('category') if has_vals else 'none' -}}
+            {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
+          dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
               {%- set r = (c.get('red') or 0) * 255 -%}
               {%- set g = (c.get('green') or 0) * 255 -%}
               {%- set b = (c.get('blue') or 0) * 255 -%}
-              {{- '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) -}}
+              {{ '#%02X%02X%02X'|format(r|round(0)|int(0), g|round(0)|int(0), b|round(0)|int(0)) }}
             {%- else -%}
               {{ neutral_hex }}
             {%- endif -%}
           grass_value: >-
             {%- set xlist = (types | selectattr('code','eq','GRASS') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           tree_value: >-
             {%- set xlist = (types | selectattr('code','eq','TREE') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
           weed_value: >-
             {%- set xlist = (types | selectattr('code','eq','WEED') | list) -%}
-            {{- ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 -}}
-          recommendations: >-
-            {{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}
+            {{ ((xlist[0].get('indexInfo') or {}).get('value')) if (has_vals and xlist|count>0) else 0 }}
+          recommendations: "{{ (ranked[0].get('healthRecommendations') or []) | unique | list if has_vals else [] }}"
 
-      - name: Pollen Species RV Today
-        unique_id: pollen_species_rv_today
+      - name: "Pollen Species RV Today"
+        unique_id: 90b4d971-f3ed-abf4-55cb-fd1801506e1a
         icon: mdi:leaf
-        availability: >-
-          {{- has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) -}}
+        availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
-          {{- ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') -}}
+          {{ ctx.pick.name if (ctx.plants | count) > 0 else
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
         attributes:
           code: >-
-            {{- ctx.pick.code if (ctx.plants | count) > 0 else
-                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) -}}
-          type: >-
-            {{- ctx.pick.type if (ctx.plants | count) > 0 else none -}}
-          in_season: >-
-            {{- ctx.pick.in_season if (ctx.plants | count) > 0 else none -}}
-          category: >-
-            {{- ctx.pick.category if (ctx.plants | count) > 0 else 'none' -}}
-          value: >-
-            {{- ctx.pick.value if (ctx.plants | count) > 0 else 0 -}}
-          entity_picture: >-
-            {{- ctx.pick.picture if (ctx.plants | count) > 0 else none -}}
+            {{ ctx.pick.code if (ctx.plants | count) > 0 else
+                (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
+          type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
+          in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
+          entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
-      - name: Pollen Forecast RV Day 0
-        unique_id: pollen_forecast_rv_day_0
+      - name: "Pollen Forecast RV Day 0"
+        unique_id: 2616715b-83b9-4864-c00b-409e3fd87947
         icon: mdi:calendar-today
-        availability: >-
-          {{ (ctx.days | count) > 0 }}
+        availability: "{{ (ctx.days | count) > 0 }}"
         state: >-
           {%- if (ctx.days | count) > 0 and (ctx.days[0].get('exists') | default(false)) -%}
             {{ ctx.days[0].get('state') or 'unknown' }}
@@ -653,8 +642,8 @@ template:
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
-      - name: Pollen Forecast RV Day 1
-        unique_id: pollen_forecast_rv_day_1
+      - name: "Pollen Forecast RV Day 1"
+        unique_id: a40e2b49-0df8-01e4-d593-debdbaf910bb
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 1 }}"
         state: >-
@@ -675,8 +664,8 @@ template:
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
-      - name: Pollen Forecast RV Day 2
-        unique_id: pollen_forecast_rv_day_2
+      - name: "Pollen Forecast RV Day 2"
+        unique_id: a2966d4b-3f7c-9224-386b-efb337657dde
         icon: mdi:calendar
         availability: "{{ (ctx.days | count) > 2 }}"
         state: >-
@@ -697,8 +686,8 @@ template:
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
-      - name: Pollen Species List RV Today
-        unique_id: pollen_species_list_rv_today
+      - name: "Pollen Species List RV Today"
+        unique_id: b42916cf-b3ca-93d4-f95b-bb4ccaff058b
         availability: "{{ has_value(src) and ( (ctx.di | count) > 0 ) }}"
         state: "{{ (ctx.di | count) > 0 }}"
         attributes:
@@ -720,10 +709,10 @@ template:
               } -%}
               {%- set ns.out = ns.out + [item] -%}
             {%- endfor -%}
-            {{- ns.out -}}
+            {{ ns.out }}
 
-      - name: Pollen Peak Index RV Today
-        unique_id: pollen_peak_index_rv_today
+      - name: "Pollen Peak Index RV Today"
+        unique_id: 766a524c-7b4f-2df4-36a3-42f100c2f9e6
         icon: mdi:meter-gas
         availability: "{{ has_value(src) and ((((ctx.d or {}).get('pollenTypeInfo') or []) | count) > 0) }}"
         state: >-
@@ -737,14 +726,14 @@ template:
             ) -%}
           {{ (vals|max) if (vals|count) > 0 else 0 }}
 
-###############################################################################
+# -----------------------------------------------------------------------------
 # Automations: staggered updates per location, ~10 min cadence with jitter
 # Pass api_key via data so rest_command.url can template {{ api_key }}
-###############################################################################
+# -----------------------------------------------------------------------------
 automation:
   # Nearby
-  - id: google_pollen_nearby_refresh_via_rest_command
-    alias: Google Pollen Nearby, refresh via REST command
+  - alias: "Google Pollen Nearby"
+    id: a2fa11aa-3cec-468c-a0bf-4c2755fa23b5
     mode: single
     trigger:
       - platform: time_pattern
@@ -773,8 +762,8 @@ automation:
           parsed: "{{ parsed_obj | tojson }}"
 
   # Home
-  - id: google_pollen_home_refresh_via_rest_command
-    alias: Google Pollen Home, refresh via REST command
+  - alias: "Google Pollen Home"
+    id: 2a16ef2e-2ab3-43a2-8e4f-5156a55c52f1
     mode: single
     trigger:
       - platform: time_pattern
@@ -803,8 +792,8 @@ automation:
           parsed: "{{ parsed_obj | tojson }}"
 
   # RV
-  - id: google_pollen_rv_refresh_via_rest_command
-    alias: Google Pollen RV, refresh via REST command
+  - alias: "Google Pollen RV"
+    id: 4e0e82d2-170d-493a-8251-1e93c16a11af
     mode: single
     trigger:
       - platform: time_pattern
@@ -813,7 +802,7 @@ automation:
       - condition: template
         value_template: >-
           {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
-          {{- rv_is_valid() | bool -}}
+          {{ rv_is_valid() | bool }}
     action:
       - delay:
           seconds: "{{ 40 + (range(0, 20) | random | int) }}"

@@ -205,15 +205,15 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.google_pollen_home_refresh_via_rest_command
+      entity: automation.google_pollen_home
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.google_pollen_nearby_refresh_via_rest_command
+      entity: automation.google_pollen_nearby
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.google_pollen_rv_refresh_via_rest_command
+      entity: automation.google_pollen_rv
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
