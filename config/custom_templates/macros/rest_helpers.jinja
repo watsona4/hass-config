@@ -61,5 +61,5 @@
 {% endmacro %}
 
 {% macro waqi_url(lat, lon) %}
-    {{- 'https://api.waqi.info/feed/geo:%0.6f;%0.6f'|format(lat,lon) -}}
+    {{- 'https://api.waqi.info/feed/geo:%0.6f;%0.6f'|format(lat|float(0),lon|float(0)) -}}
 {% endmacro %}

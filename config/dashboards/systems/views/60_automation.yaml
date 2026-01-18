@@ -297,15 +297,15 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.waqi_home_refresh_via_rest_command
+      entity: automation.waqi_home
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.waqi_nearby_refresh_via_rest_command
+      entity: automation.waqi_nearby
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.waqi_rv_refresh_via_rest_command
+      entity: automation.waqi_rv
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
