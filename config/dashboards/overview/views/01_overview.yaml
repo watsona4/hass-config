@@ -53,9 +53,13 @@ sections:
           - type: custom:mushroom-climate-card
             entity: climate.downstairs_thermostat
             name: Downstairs
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.upstairs_thermostat
             name: Upstairs
+            tap_action:
+              action: more-info
       
       # Network Status
       - type: horizontal-stack
@@ -557,30 +561,48 @@ sections:
           - type: custom:mushroom-climate-card
             entity: climate.downstairs_thermostat
             name: Downstairs
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.upstairs_thermostat
             name: Upstairs
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.playroom_minisplit_setall_playroom_minisplit
             name: Playroom
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.gym_minisplit_setall_gym_minisplit
             name: Gym
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.chicken_heat_lamp
             name: Chicken Coop
+            tap_action:
+              action: more-info
           - type: custom:mushroom-climate-card
             entity: climate.study_space_heater
             name: Study Space Heater
+            tap_action:
+              action: more-info
           - type: custom:mushroom-humidifier-card
             entity: humidifier.living_room_dehumidifier
             name: Living Room Dehumidifier
+            tap_action:
+              action: more-info
           - type: custom:mushroom-humidifier-card
             entity: humidifier.dehumidifier
             name: Basement Dehumidifier
+            tap_action:
+              action: more-info
           - type: custom:mushroom-humidifier-card
             entity: humidifier.humidifier
             name: Parlor Humidifier
+            tap_action:
+              action: more-info
 
   # Blinds Details
   - type: grid

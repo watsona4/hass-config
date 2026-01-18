@@ -1537,14 +1537,22 @@
     - binary_sensor.daytime
     id: Daytime
     trigger: state
+    to:
   - entity_id:
     - input_boolean.wood_stove
     id: Wood Stove
     trigger: state
+    from:
+    - 'on'
+    - 'off'
+    to:
+    - 'on'
+    - 'off'
   - entity_id:
     - input_boolean.someone_is_home
     id: Someone Home
     trigger: state
+    to:
   - entity_id:
     - binary_sensor.kitchen_door_contact
     to: 'on'
@@ -1590,6 +1598,7 @@
     entity_id: b3171e9d44e389886ab08cb8e3c21a49
     type: current_option_changed
     trigger: device
+    enabled: false
   conditions: []
   actions:
   - variables:
@@ -1624,6 +1633,12 @@
         target:
           entity_id: climate.downstairs_thermostat
         action: climate.set_hvac_mode
+        enabled: false
+      - action: climate.turn_on
+        metadata: {}
+        target:
+          entity_id: climate.downstairs_thermostat
+        data: {}
     - if:
       - condition: state
         entity_id: climate.upstairs_thermostat
@@ -1635,6 +1650,7 @@
         target:
           entity_id: climate.upstairs_thermostat
         action: climate.set_hvac_mode
+        enabled: true
     - if:
       - condition: state
         state: 'off'
@@ -1646,6 +1662,12 @@
         action: climate.set_hvac_mode
         target:
           entity_id: climate.study_space_heater
+        enabled: false
+      - action: climate.turn_on
+        metadata: {}
+        target:
+          entity_id: climate.study_space_heater
+        data: {}
   - choose:
     - conditions:
       - condition: state
@@ -1674,14 +1696,12 @@
         target:
           entity_id: climate.downstairs_thermostat
         action: climate.set_temperature
-      - metadata: {}
-        data:
-          hvac_mode: heat_cool
-          target_temp_high: 85
-          target_temp_low: 50
-        action: climate.set_temperature
-        target:
-          entity_id: climate.downstairs_thermostat
+        enabled: false
+      - device_id: ffa24dba7efe667f7b158707766c6736
+        domain: select
+        entity_id: b3171e9d44e389886ab08cb8e3c21a49
+        type: select_option
+        option: away
       - metadata: {}
         data:
           hvac_mode: cool
@@ -1868,6 +1888,20 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
+              enabled: false
+            - if:
+              - condition: device
+                device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: selected_option
+                option: away
+              then:
+              - device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: select_option
+                option: home
             else:
             - data:
                 target_temp_high: '{{downstairs}}'
@@ -1876,6 +1910,20 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
+              enabled: false
+            - if:
+              - condition: device
+                device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: selected_option
+                option: away
+              then:
+              - device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: select_option
+                option: home
           - action: climate.set_hvac_mode
             target:
               entity_id: climate.study_space_heater
@@ -1902,6 +1950,19 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
+            - if:
+              - condition: device
+                device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: selected_option
+                option: away
+              then:
+              - device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: select_option
+                option: sleep
             else:
             - data:
                 target_temp_high: '{{downstairs}}'
@@ -1910,6 +1971,19 @@
               target:
                 entity_id: climate.downstairs_thermostat
               action: climate.set_temperature
+            - if:
+              - condition: device
+                device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: selected_option
+                option: away
+              then:
+              - device_id: ffa24dba7efe667f7b158707766c6736
+                domain: select
+                entity_id: b3171e9d44e389886ab08cb8e3c21a49
+                type: select_option
+                option: sleep
           - action: climate.set_hvac_mode
             target:
               entity_id: climate.study_space_heater
@@ -1920,6 +1994,34 @@
               temperature: 60
             target:
               entity_id: climate.study_space_heater
+  - if:
+    - condition: trigger
+      id:
+      - Wood Stove
+    then:
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: input_boolean.wood_stove
+          state:
+          - 'on'
+        sequence:
+        - action: notify.persistent_notification
+          metadata: {}
+          data:
+            message: 'Set Ecobee Comfort Settings to: Home = 63 °F and Sleep = 60
+              °F'
+      - conditions:
+        - condition: state
+          entity_id: input_boolean.wood_stove
+          state:
+          - 'off'
+        sequence:
+        - action: notify.persistent_notification
+          metadata: {}
+          data:
+            message: 'Set Ecobee Comfort Settings to: Home = 68 °F and Sleep = 65
+              °F'
   mode: queued
   trace:
     stored_traces: 100
