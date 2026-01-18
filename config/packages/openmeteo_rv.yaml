@@ -1,27 +1,36 @@
 # =====================================================================================
-# OpenMeteo: consolidated package with per-location and selector
-# Exposes:
-#   - Weather entities for RV, Home, RV
-#   - Individual current metrics as sensors per-location
-#   - Individual daily (index 0 = today) metrics as sensors per-location
-# Dependencies:
-#   - sensors: sensor.openmeteo_rv, sensor.openmeteo_home, sensor.openmeteo_rv
-#   - jinja: env/weather_codes.jinja (for condition mapping)
-# Notes:
-#   - All templates use has_value and safe indexing to avoid errors.
-#   - Units: uses native units coming from your REST/OpenMeteo setup.
+# OpenMeteo RV - Weather data for RV/mobile location
+#
+# Fetches forecast data from Open-Meteo API every 15 minutes with random jitter.
+# Location coordinates come from macros/rest_helpers.jinja (rv_lat, rv_lon, rv_alt).
+# Only fetches when rv_is_valid() returns true (RV has valid GPS coordinates).
+#
+# Entities created:
+#   - weather.openmeteo_weather_rv: Full weather entity with current + forecast
+#   - sensor.openmeteo_rv: Raw API data (temperature state, full response in attributes)
+#   - sensor.openmeteo_rv_temperature: Current temperature
+#   - sensor.openmeteo_rv_apparent_temperature: Feels-like temperature
+#   - sensor.openmeteo_rv_humidity: Relative humidity
+#   - sensor.openmeteo_rv_dew_point: Dew point temperature
+#   - sensor.openmeteo_rv_uv_index: Current UV index
+#   - sensor.openmeteo_rv_wind_*: Wind speed, gust, direction
+#   - sensor.openmeteo_rv_*_uv_index_max: Today/tomorrow/day2 max UV forecasts
+#   - sensor.openmeteo_rv_today_precip_*: Precipitation sum and probability
+#   - binary_sensor.openmeteo_rv_uv_protection: True when UV exceeds 3.5 threshold
+#   - sensor.openmeteo_rv_safe_exposure_*_st[1-6]: Safe sun exposure by skin type
+#
+# Jinja dependencies:
+#   - macros/rest_helpers.jinja: Location coordinate macros + rv_is_valid() check
+#   - metrics/weather/forecasts.jinja: Condition mapping and forecast formatting
+#   - metrics/uv/protection_window.jinja: UV threshold time window calculation
+#   - metrics/uv/exposure_st.jinja: Safe exposure time by Fitzpatrick skin type
 # =====================================================================================
 
 rest_command:
   openmeteo_rv_fetch:
     url: >-
-      {%- from 'macros/rest_helpers.jinja' import rv_is_valid, rv_lat, rv_lon, rv_alt -%}
-      {%- set base = 'https://api.open-meteo.com/v1/forecast' if (rv_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
-      {%- if base.startswith('http://127.0.0.1') -%}
-        {{ base }}
-      {%- else -%}
-        {{ base }}?latitude={{ rv_lat() }}&longitude={{ rv_lon() }}&elevation={{ rv_alt() }}&timezone=auto&current=apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&daily=precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max&hourly=apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_hours=24
-      {%- endif -%}
+      {%- from 'macros/rest_helpers.jinja' import rv_lat, rv_lon, rv_alt -%}
+      https://api.open-meteo.com/v1/forecast?latitude={{ rv_lat() }}&longitude={{ rv_lon() }}&elevation={{ rv_alt() }}&timezone=auto&current=apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&daily=precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max&hourly=apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_hours=24
     method: GET
     timeout: 60
     headers:
@@ -32,8 +41,9 @@ rest_command:
 template:
 
   - weather:
-      - name: OpenMeteo Weather RV
-        unique_id: openmeteo_weather_rv
+      - name: "OpenMeteo Weather RV"
+        unique_id: 6fed3a02-6e9b-7344-00eb-1bb259e9dd15
+        availability: "{{ has_value('sensor.openmeteo_rv') }}"
         condition_template: >
           {%- from 'metrics/weather/forecasts.jinja' import current_condition -%}
           {{- current_condition('sensor.openmeteo_rv') -}}
@@ -63,8 +73,8 @@ template:
       - platform: event
         event_type: openmeteo_rv_update
     sensor:
-      - name: OpenMeteo RV
-        unique_id: openmeteo_rv
+      - name: "OpenMeteo RV"
+        unique_id: ed5ee531-bf7b-7b24-6e1b-3516782452d2
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°F"
@@ -72,8 +82,7 @@ template:
           {{ trigger is not none
              and trigger.event is not none
              and trigger.event.data is mapping
-             and (trigger.event.data.available | default(false))
-             and has_value('device_tracker.rv_gps') }}
+             and (trigger.event.data.available | default(false)) }}
         state: >-
           {%- set data = trigger.event.data.parsed if trigger and trigger.event and trigger.event.data.parsed is mapping else {} -%}
           {%- set cur = data.get('current') or {} -%}
@@ -91,213 +100,99 @@ template:
           daily: "{{ trigger.event.data.parsed.daily if trigger else none }}"
 
   - sensor:
-      - name: RV Temperature
-        unique_id: rv_current_temperature
+      - name: "OpenMeteo RV Temperature"
+        unique_id: 5aee3ace-d525-42b3-a677-dda08dd5486d
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('temperature_2m') -}}"
-
-      - name: RV UV Index
-        unique_id: rv_current_uv_index
+      - name: "OpenMeteo RV UV Index"
+        unique_id: 0dd7f4db-87a8-c824-7acb-44bc23327483
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('uv_index') -}}"
-
-      - name: RV Apparent Temperature
-        unique_id: rv_current_apparent_temperature
+      - name: "OpenMeteo RV Apparent Temperature"
+        unique_id: 97b93d50-3811-4e6b-b48f-ac3c144c8086
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('apparent_temperature') -}}"
-
-      - name: RV Humidity
-        unique_id: rv_current_humidity
+      - name: "OpenMeteo RV Humidity"
+        unique_id: 66b3afb5-64c2-48f1-9928-844b9eba989b
         device_class: humidity
         unit_of_measurement: "%"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('relative_humidity_2m') -}}"
-
-      - name: RV Dew Point
-        unique_id: rv_current_dew_point
+      - name: "OpenMeteo RV Dew Point"
+        unique_id: b9bc6f0a-aaae-4d51-935a-1135f86ef47a
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('dew_point_2m') -}}"
-
-      - name: RV Pressure
-        unique_id: rv_current_pressure
-        device_class: atmospheric_pressure
-        unit_of_measurement: "hPa"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('surface_pressure') -}}"
-
-      - name: RV Wind Speed
-        unique_id: rv_current_wind_speed
+      - name: "OpenMeteo RV Wind Speed"
+        unique_id: b14a91be-ff1f-2a44-71a3-70b73c5c88a6
         device_class: wind_speed
         unit_of_measurement: "mph"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_speed_10m') -}}"
-
-      - name: RV Wind Gust
-        unique_id: rv_current_wind_gust
+      - name: "OpenMeteo RV Wind Gust"
+        unique_id: d1963b9d-156e-4374-2933-ef6215b8d56c
         device_class: wind_speed
         unit_of_measurement: "mph"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_gusts_10m') -}}"
-
-      - name: RV Wind Direction
-        unique_id: rv_current_wind_direction
+      - name: "OpenMeteo RV Wind Direction"
+        unique_id: c993ab66-e384-0984-2e7b-a2684e70fdf0
         device_class: wind_direction
         unit_of_measurement: "°"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('wind_direction_10m') -}}"
-
-      - name: RV Visibility
-        unique_id: rv_current_visibility
-        device_class: distance
-        unit_of_measurement: "m"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('visibility') -}}"
-
-      - name: RV Cloud Cover
-        unique_id: rv_current_cloud_cover
-        unit_of_measurement: "%"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('cloud_cover') -}}"
-
-      - name: RV Weather Code
-        unique_id: rv_current_weather_code
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('weather_code') -}}"
-
-      - name: RV Observation Time
-        unique_id: rv_current_observation_time
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_rv','current') or {}).get('time') | as_datetime | as_local -}}"
-
-      - name: RV Today Temp Max
-        unique_id: rv_daily0_temp_max
-        device_class: temperature
-        unit_of_measurement: "°F"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('temperature_2m_max') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Temp Min
-        unique_id: rv_daily0_temp_min
-        device_class: temperature
-        unit_of_measurement: "°F"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('temperature_2m_min') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Uv Index Max
-        unique_id: rv_daily0_uv_index_max
+      - name: "OpenMeteo RV Today UV Index Max"
+        unique_id: e95d9e5b-46d4-71e4-5b83-fdba32baf14a
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Tomorrow Uv Index Max
-        unique_id: rv_daily1_uv_index_max
+      - name: "OpenMeteo RV Tomorrow UV Index Max"
+        unique_id: 5ef76ab5-ee87-40d4-d853-d826c30d3786
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[1] if (_l | length) > 1 else none -}}
-
-      - name: RV Day 2 Uv Index Max
-        unique_id: rv_daily2_uv_index_max
+      - name: "OpenMeteo RV Day 2 UV Index Max"
+        unique_id: e8ed2ffd-9d3a-26c4-6c5b-c37aa4d3a7f7
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[2] if (_l | length) > 2 else none -}}
-
-      - name: RV Day 2 Weekday
-        unique_id: rv_daily2_weekday
+      - name: "OpenMeteo RV Day 2 Weekday"
+        unique_id: ddb45a44-0edb-e244-3a63-b06c53c62ac9
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('time') or [] -%}
           {{- (_l[2] | as_datetime).strftime('%A') if (_l | length) > 2 else none -}}
-
-      - name: RV Today Precip Sum
-        unique_id: rv_daily0_precip_sum
+      - name: "OpenMeteo RV Today Precip Sum"
+        unique_id: e0489ad5-ebde-4736-a516-76745b372cf6
         device_class: precipitation
         unit_of_measurement: "in"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('precipitation_sum') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Rain Sum
-        unique_id: rv_daily0_rain_sum
-        device_class: precipitation
-        unit_of_measurement: "in"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('rain_sum') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Snowfall Sum
-        unique_id: rv_daily0_snowfall_sum
-        device_class: precipitation
-        unit_of_measurement: "in"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('snowfall_sum') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Precip Prob Max
-        unique_id: rv_daily0_precip_prob_max
+      - name: "OpenMeteo RV Today Precip Prob Max"
+        unique_id: d53e4c1c-b128-4870-8fd7-0f63e175a8b7
         unit_of_measurement: "%"
         availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('precipitation_probability_max') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
 
-      - name: RV Today Wind Speed Max
-        unique_id: rv_daily0_wind_speed_max
-        device_class: wind_speed
-        unit_of_measurement: "mph"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('windspeed_10m_max') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Wind Dir Dom
-        unique_id: rv_daily0_wind_dir_dom
-        device_class: wind_direction
-        unit_of_measurement: "°"
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('winddirection_10m_dominant') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: RV Today Sunrise
-        unique_id: rv_daily0_sunrise
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('sunrise') or [] -%}
-          {{- _l[0] | as_datetime | as_local if (_l | length) > 0 else none -}}
-
-      - name: RV Today Sunset
-        unique_id: rv_daily0_sunset
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_rv') and (state_attr('sensor.openmeteo_rv','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_rv','daily') or {}).get('sunset') or [] -%}
-          {{- _l[0] | as_datetime | as_local if (_l | length) > 0 else none -}}
-
   - sensor:
-      - name: RV UV Window JSON
-        unique_id: rv_uv_window_json
+      - name: "OpenMeteo RV UV Window JSON"
+        unique_id: f7911b1a-28d0-5d14-0153-a097a5f5569b
         icon: mdi:code-json
         availability: "{{- has_value('sensor.openmeteo_rv') -}}"
         state: "{{- now () -}}"
@@ -307,36 +202,36 @@ template:
             {{- uv_window('sensor.openmeteo_rv', 3.5) | from_json(default={}) -}}
 
   - binary_sensor:
-      - name: RV UV Protection
-        unique_id: rv_uv_protection
-        availability: "{{- has_value('sensor.rv_uv_window_json') -}}"
+      - name: "OpenMeteo RV UV Protection"
+        unique_id: 4c3fb7cf-b85d-cdb4-13cb-edd689e714ce
+        availability: "{{- has_value('sensor.openmeteo_rv_uv_window_json') -}}"
         state: >-
-          {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+          {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
           {%- set s = window.get('start') | as_datetime(default=None) -%}
           {%- set e = window.get('end') | as_datetime(default=None) -%}
           {{- s is not none and e is not none and s | as_local <= now() < e | as_local -}}
         attributes:
           start: >-
-            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
             {%- set dt = window.get('start') | as_datetime(default=none) -%}
             {{- dt | as_local if dt is not none -}}
           end: >-
-            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
             {%- set dt = window.get('end') | as_datetime(default=none) -%}
             {{- dt | as_local if dt is not none -}}
           duration: >-
-            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
             {{- timedelta(minutes=window.get('duration_min') | int(0)) -}}
           active: >-
-            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
             {{- window.get('active') | bool(none) -}}
           ever_above: >-
-            {%- set window = state_attr('sensor.rv_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_rv_uv_window_json','data') -%}
             {{- window.get('ever_above') | bool(none) -}}
 
   - sensor:
-      - name: RV UV Exposure JSON
-        unique_id: rv_uv_exposure_json
+      - name: "OpenMeteo RV UV Exposure JSON"
+        unique_id: f270cc1e-0832-f404-e77b-915faccfbe92
         icon: mdi:code-json
         availability: "{{- has_value('sensor.openmeteo_rv') -}}"
         state: "{{- now () -}}"
@@ -346,170 +241,169 @@ template:
             {{- uv_safe_exposure_multi('sensor.openmeteo_rv') | from_json(default={}) -}}
 
   - sensor:
-      - name: RV Safe Exposure End ST1
-        unique_id: rv_safe_exposure_end_st1
+      - name: "OpenMeteo RV Safe Exposure End ST1"
+        unique_id: 1edfdb88-da6c-4de4-96e3-e634909ee1c2
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st1', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st1', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure End ST2
-        unique_id: rv_safe_exposure_end_st2
+      - name: "OpenMeteo RV Safe Exposure End ST2"
+        unique_id: a5c7ac03-cac6-5274-485b-4b3e529adbb3
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st2', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st2', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure End ST3
-        unique_id: rv_safe_exposure_end_st3
+      - name: "OpenMeteo RV Safe Exposure End ST3"
+        unique_id: e47c8a38-85ef-5df4-2acb-e27fa547474c
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st3', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st3', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure End ST4
-        unique_id: rv_safe_exposure_end_st4
+      - name: "OpenMeteo RV Safe Exposure End ST4"
+        unique_id: 0e58f7e8-5e2f-b384-0b53-d2df20499bf7
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st4', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st4', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure End ST5
-        unique_id: rv_safe_exposure_end_st5
+      - name: "OpenMeteo RV Safe Exposure End ST5"
+        unique_id: 80d5d250-6cda-8ad4-5d8b-bfee69fbc401
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st5', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st5', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure End ST6
-        unique_id: rv_safe_exposure_end_st6
+      - name: "OpenMeteo RV Safe Exposure End ST6"
+        unique_id: 1d881b27-dfaa-eb04-153b-70b6006ff4dc
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st6', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st6', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: RV Safe Exposure Minutes ST1
-        unique_id: rv_safe_exposure_minutes_st1
+      - name: "OpenMeteo RV Safe Exposure Minutes ST1"
+        unique_id: d463bf0d-d248-2714-d813-25b29618cc84
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st1', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st1', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: RV Safe Exposure Minutes ST2
-        unique_id: rv_safe_exposure_minutes_st2
+      - name: "OpenMeteo RV Safe Exposure Minutes ST2"
+        unique_id: 0cc2f6e9-a3e5-e664-293b-685a533906ab
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st2', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st2', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: RV Safe Exposure Minutes ST3
-        unique_id: rv_safe_exposure_minutes_st3
+      - name: "OpenMeteo RV Safe Exposure Minutes ST3"
+        unique_id: 36ed6d62-0e33-e5b4-12ab-602f9e1b4097
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st3', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st3', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: RV Safe Exposure Minutes ST4
-        unique_id: rv_safe_exposure_minutes_st4
+      - name: "OpenMeteo RV Safe Exposure Minutes ST4"
+        unique_id: 56d2bafe-125e-d3c4-543b-db1c9ac74ad0
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st4', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st4', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: RV Safe Exposure Minutes ST5
-        unique_id: rv_safe_exposure_minutes_st5
+      - name: "OpenMeteo RV Safe Exposure Minutes ST5"
+        unique_id: 83a870e2-35a1-f7a4-0803-fdcbaab404f0
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st5', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st5', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: RV Safe Exposure Minutes ST6
-        unique_id: rv_safe_exposure_minutes_st6
+      - name: "OpenMeteo RV Safe Exposure Minutes ST6"
+        unique_id: 068ca55e-1a25-2954-850b-b424372a66ac
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st6', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.rv_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_rv_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st6', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
 automation:
-  - id: openmeteo_rv_refresh_via_rest_command
-    alias: OpenMeteo RV, refresh via REST command
+  - alias: "OpenMeteo RV"
+    id: 36af5936-a64e-b0a4-0b2b-2c54c4921b4b
     mode: single
     trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
     conditions:
       - condition: template
         value_template: >-
           {%- from 'macros/rest_helpers.jinja' import rv_is_valid -%}
-          {{- rv_is_valid() | bool -}}
+          {{ rv_is_valid() | bool }}
     action:
-      # add a small random delay so instances do not align
       - delay:
           seconds: "{{ range(0, 60) | random | int }}"
       - service: rest_command.openmeteo_rv_fetch

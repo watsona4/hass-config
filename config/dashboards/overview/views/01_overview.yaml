@@ -225,7 +225,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.nearby_uv_index
+            entity: sensor.openmeteo_nearby_uv_index
             icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_uv_index', 'color') }}"
             primary: UV Index
@@ -242,7 +242,7 @@ sections:
 
           # Wind and Precipitation
           - type: custom:mushroom-template-card
-            entity: sensor.nearby_wind_speed
+            entity: sensor.openmeteo_nearby_wind_speed
             icon: "{{ state_attr('sensor.ui_nearby_wind_speed', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_wind_speed', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_wind_speed', 'name') }}"
@@ -257,7 +257,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.nearby_today_precip_sum
+            entity: sensor.openmeteo_nearby_today_precip_sum
             icon: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'name') }}"
@@ -289,7 +289,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.nearby_dew_point
+            entity: sensor.openmeteo_nearby_dew_point
             icon: "{{ state_attr('sensor.ui_nearby_dew_point', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_dew_point', 'color') }}"
             primary: Dew Point

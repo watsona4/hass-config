@@ -69,7 +69,7 @@
         {% set gust_max = states('sensor.wind_gust_max_10m')|float(0) %}
         {% set gust_now = states('sensor.wind_gust_mph')|float(0) %}
         {% set mean_5m  = states('sensor.wind_speed_mean_5m')|float(0) %}
-        {% set wind_dir = states('sensor.home_wind_direction')|float(0) %}
+        {% set wind_dir = states('sensor.openmeteo_home_wind_direction')|float(0) %}
         {% set door_dir = states('input_number.garage_azimuth')|float(180) %}
         {% set angle = (((wind_dir - door_dir + 180) % 360 - 180)|abs) %}
         {% set aligned = angle <= 60 %}
@@ -985,13 +985,13 @@
       entity_id:
         - sensor.user_context
         - sensor.outside_temperature_state
-        - sensor.nearby_temperature
+        - sensor.openmeteo_nearby_temperature
         - sensor.outside_humidity_state
-        - sensor.nearby_humidity
+        - sensor.openmeteo_nearby_humidity
   variables:
     at_home: "{{ is_state('sensor.user_context', 'home') }}"
-    temp_src: "{{ 'sensor.outside_temperature_state' if (at_home | bool) else 'sensor.nearby_temperature' }}"
-    humid_src: "{{ 'sensor.outside_humidity_state' if (at_home | bool) else 'sensor.nearby_humidity' }}"
+    temp_src: "{{ 'sensor.outside_temperature_state' if (at_home | bool) else 'sensor.openmeteo_nearby_temperature' }}"
+    humid_src: "{{ 'sensor.outside_humidity_state' if (at_home | bool) else 'sensor.openmeteo_nearby_humidity' }}"
     temp_val: "{{ states(temp_src) | float(none) }}"
     humid_val: "{{ states(humid_src) | float(none) }}"
   sensor:

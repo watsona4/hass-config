@@ -6,7 +6,7 @@ badges:
 
   # UV protection
   - type: custom:mushroom-template-badge
-    entity: binary_sensor.nearby_uv_protection
+    entity: binary_sensor.openmeteo_nearby_uv_protection
     icon: mdi:shield-sun
     color: "{{ state_attr('sensor.ui_nearby_uv_protection_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_uv_protection_badge', 'content') }}"
@@ -33,7 +33,7 @@ badges:
 
   # UV Index
   - type: custom:mushroom-template-badge
-    entity: sensor.nearby_uv_index
+    entity: sensor.openmeteo_nearby_uv_index
     icon: mdi:weather-sunny-alert
     color: "{{ state_attr('sensor.ui_nearby_uv_index_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_uv_index_badge', 'content') }}"
@@ -42,7 +42,7 @@ badges:
 
   # Safe Exposure Time
   - type: custom:mushroom-template-badge
-    entity: sensor.nearby_safe_exposure_minutes_st1
+    entity: sensor.openmeteo_nearby_safe_exposure_minutes_st1
     icon: mdi:sun-clock
     color: "{{ state_attr('sensor.ui_nearby_safe_exposure_minutes_st1_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_safe_exposure_minutes_st1_badge', 'content') }}"
@@ -51,7 +51,7 @@ badges:
 
   # Vitamin D
   - type: custom:mushroom-template-badge
-    entity: sensor.nearby_uv_index
+    entity: sensor.openmeteo_nearby_uv_index
     icon: mdi:pill
     color: "{{ state_attr('sensor.ui_nearby_uv_index_vitamin_d_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_uv_index_vitamin_d_badge', 'content') }}"
@@ -78,7 +78,7 @@ sections:
             forecast_type: hourly
             temperature_sensor: sensor.local_temperature
             humidity_sensor: sensor.local_humidity
-            apparent_sensor: sensor.nearby_apparent_temperature
+            apparent_sensor: sensor.openmeteo_nearby_apparent_temperature
             aqi_sensor: sensor.waqi_nearby_aqi
 
           # Hourly Forecast Grid
@@ -735,7 +735,7 @@ sections:
         unit: ""
         icon: mdi:white-balance-sunny
         adaptive_state_color: true
-        entity: sensor.nearby_uv_index
+        entity: sensor.openmeteo_nearby_uv_index
         max: 11
         segments:
           - from: 0
@@ -756,7 +756,7 @@ sections:
         secondary:
           show_gauge: none
           unit: UVI
-          entity: sensor.nearby_uv_index
+          entity: sensor.openmeteo_nearby_uv_index
         gauge_foreground_style:
           width: 10
         needle: true
@@ -767,14 +767,14 @@ sections:
       - type: custom:mushroom-chips-card
         chips:
           - type: template
-            entity: sensor.nearby_today_uv_index_max
+            entity: sensor.openmeteo_nearby_today_uv_index_max
             icon: mdi:weather-sunny-alert
             content: "{{ state_attr('sensor.ui_nearby_today_uv_index_max_chip', 'content') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_today_uv_index_max_chip', 'icon_color') }}"
             tap_action:
               action: more-info
           - type: template
-            entity: sensor.nearby_safe_exposure_minutes_st1
+            entity: sensor.openmeteo_nearby_safe_exposure_minutes_st1
             icon: mdi:timer-sand
             content: "{{ state_attr('sensor.ui_nearby_safe_exposure_minutes_st1', 'content') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_safe_exposure_minutes_st1', 'icon_color') }}"
@@ -782,7 +782,7 @@ sections:
               action: more-info
         alignment: center
       - type: custom:mushroom-template-card
-        entity: sensor.nearby_uv_index
+        entity: sensor.openmeteo_nearby_uv_index
         primary: Health Advice
         icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
         secondary: "{{ state_attr('sensor.ui_nearby_uv_index', 'full_desc') }}"
@@ -840,7 +840,7 @@ sections:
                 unit: ""
                 icon: mdi:white-balance-sunny
                 adaptive_state_color: true
-                entity: sensor.home_uv_index
+                entity: sensor.openmeteo_home_uv_index
                 max: 11
                 segments:
                   - from: 0
@@ -861,7 +861,7 @@ sections:
                 secondary:
                   show_gauge: none
                   unit: UVI
-                  entity: sensor.home_uv_index
+                  entity: sensor.openmeteo_home_uv_index
                 gauge_foreground_style:
                   width: 10
                 needle: true
@@ -919,7 +919,7 @@ sections:
                 unit: ""
                 icon: mdi:white-balance-sunny
                 adaptive_state_color: true
-                entity: sensor.rv_uv_index
+                entity: sensor.openmeteo_rv_uv_index
                 max: 11
                 segments:
                   - from: 0
@@ -940,7 +940,7 @@ sections:
                 secondary:
                   show_gauge: none
                   unit: UVI
-                  entity: sensor.rv_uv_index
+                  entity: sensor.openmeteo_rv_uv_index
                 gauge_foreground_style:
                   width: 10
                 needle: true

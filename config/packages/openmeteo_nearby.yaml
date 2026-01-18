@@ -1,30 +1,35 @@
 # =====================================================================================
-# OpenMeteo: consolidated package with per-location and selector
-# Exposes:
-#   - Weather entities for Nearby, Home, RV
-#   - Individual current metrics as sensors per-location
-#   - Individual daily (index 0 = today) metrics as sensors per-location
-# Dependencies:
-#   - sensors: sensor.openmeteo_nearby, sensor.openmeteo_home, sensor.openmeteo_rv
-#   - jinja: env/weather_codes.jinja (for condition mapping)
-# Notes:
-#   - All templates use has_value and safe indexing to avoid errors.
-#   - Units: uses native units coming from your REST/OpenMeteo setup.
+# OpenMeteo Nearby - Weather data for secondary/nearby location
+#
+# Fetches forecast data from Open-Meteo API every 15 minutes with random jitter.
+# Location coordinates come from macros/rest_helpers.jinja (nearby_lat, nearby_lon, nearby_alt).
+#
+# Entities created:
+#   - weather.openmeteo_weather_nearby: Full weather entity with current + forecast
+#   - sensor.openmeteo_nearby: Raw API data (temperature state, full response in attributes)
+#   - sensor.openmeteo_nearby_temperature: Current temperature
+#   - sensor.openmeteo_nearby_apparent_temperature: Feels-like temperature
+#   - sensor.openmeteo_nearby_humidity: Relative humidity
+#   - sensor.openmeteo_nearby_dew_point: Dew point temperature
+#   - sensor.openmeteo_nearby_uv_index: Current UV index
+#   - sensor.openmeteo_nearby_wind_*: Wind speed, gust, direction
+#   - sensor.openmeteo_nearby_*_uv_index_max: Today/tomorrow/day2 max UV forecasts
+#   - sensor.openmeteo_nearby_today_precip_*: Precipitation sum and probability
+#   - binary_sensor.openmeteo_nearby_uv_protection: True when UV exceeds 3.5 threshold
+#   - sensor.openmeteo_nearby_safe_exposure_*_st[1-6]: Safe sun exposure by skin type
+#
+# Jinja dependencies:
+#   - macros/rest_helpers.jinja: Location coordinate macros
+#   - metrics/weather/forecasts.jinja: Condition mapping and forecast formatting
+#   - metrics/uv/protection_window.jinja: UV threshold time window calculation
+#   - metrics/uv/exposure_st.jinja: Safe exposure time by Fitzpatrick skin type
 # =====================================================================================
 
-###############################################################################
-# REST command: OpenMeteo Nearby
-###############################################################################
 rest_command:
   openmeteo_nearby_fetch:
     url: >-
-      {%- from 'macros/rest_helpers.jinja' import nearby_is_valid, nearby_lat, nearby_lon, nearby_alt -%}
-      {%- set base = 'https://api.open-meteo.com/v1/forecast' if (nearby_is_valid() | bool) else 'http://127.0.0.1:65535/' -%}
-      {%- if base.startswith('http://127.0.0.1') -%}
-        {{ base }}
-      {%- else -%}
-        {{ base }}?latitude={{ nearby_lat() }}&longitude={{ nearby_lon() }}&elevation={{ nearby_alt() }}&timezone=auto&current=apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&daily=precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max&hourly=apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_hours=24
-      {%- endif -%}
+      {%- from 'macros/rest_helpers.jinja' import nearby_lat, nearby_lon, nearby_alt -%}
+      https://api.open-meteo.com/v1/forecast?latitude={{ nearby_lat() }}&longitude={{ nearby_lon() }}&elevation={{ nearby_alt() }}&timezone=auto&current=apparent_temperature,cloud_cover,dew_point_2m,is_day,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,visibility,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&daily=precipitation_probability_max,precipitation_sum,rain_sum,snowfall_sum,sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max,weather_code,wind_gusts_10m_max,wind_direction_10m_dominant,wind_speed_10m_max&hourly=apparent_temperature,cloud_cover,dew_point_2m,is_day,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,temperature_2m,uv_index,weather_code,wind_direction_10m,wind_gusts_10m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_hours=24
     method: GET
     timeout: 60
     headers:
@@ -35,8 +40,9 @@ rest_command:
 template:
 
   - weather:
-      - name: OpenMeteo Weather Nearby
-        unique_id: openmeteo_weather_nearby
+      - name: "OpenMeteo Weather Nearby"
+        unique_id: 9cd02bfe-4945-8774-0fdb-8868f3605528
+        availability: "{{ has_value('sensor.openmeteo_nearby') }}"
         condition_template: >
           {%- from 'metrics/weather/forecasts.jinja' import current_condition -%}
           {{- current_condition('sensor.openmeteo_nearby') -}}
@@ -66,8 +72,8 @@ template:
       - platform: event
         event_type: openmeteo_nearby_update
     sensor:
-      - name: OpenMeteo Nearby
-        unique_id: openmeteo_nearby
+      - name: "OpenMeteo Nearby"
+        unique_id: 6bedc664-f6d5-25d4-422b-2ec88ad09367
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°F"
@@ -93,213 +99,99 @@ template:
           daily: "{{ trigger.event.data.parsed.daily if trigger else none }}"
 
   - sensor:
-      - name: Nearby Temperature
-        unique_id: nearby_current_temperature
+      - name: "OpenMeteo Nearby Temperature"
+        unique_id: fc855098-deb0-4cf8-8fc2-90362ffb8521
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('temperature_2m') -}}"
-
-      - name: Nearby UV Index
-        unique_id: nearby_current_uv_index
+      - name: "OpenMeteo Nearby UV Index"
+        unique_id: b77484bc-874f-9154-5e93-b1402a3f7713
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('uv_index') -}}"
-
-      - name: Nearby Apparent Temperature
-        unique_id: nearby_current_apparent_temperature
+      - name: "OpenMeteo Nearby Apparent Temperature"
+        unique_id: 3d64c881-9236-48bf-8a5a-70f2dfd95387
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('apparent_temperature') -}}"
-
-      - name: Nearby Humidity
-        unique_id: nearby_current_humidity
+      - name: "OpenMeteo Nearby Humidity"
+        unique_id: 265f8453-37a3-4104-ac53-0baa288d96a1
         device_class: humidity
         unit_of_measurement: "%"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('relative_humidity_2m') -}}"
-
-      - name: Nearby Dew Point
-        unique_id: nearby_current_dew_point
+      - name: "OpenMeteo Nearby Dew Point"
+        unique_id: 771d7b7b-4c12-42be-be82-5fc69068989c
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('dew_point_2m') -}}"
-
-      - name: Nearby Pressure
-        unique_id: nearby_current_pressure
-        device_class: atmospheric_pressure
-        unit_of_measurement: "hPa"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('surface_pressure') -}}"
-
-      - name: Nearby Wind Speed
-        unique_id: nearby_current_wind_speed
+      - name: "OpenMeteo Nearby Wind Speed"
+        unique_id: eaefe15e-23da-c6a4-b0d3-a03409bbd93b
         device_class: wind_speed
         unit_of_measurement: "mph"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_speed_10m') -}}"
-
-      - name: Nearby Wind Gust
-        unique_id: nearby_current_wind_gust
+      - name: "OpenMeteo Nearby Wind Gust"
+        unique_id: d87956d1-7dcb-bc24-e62b-38b1d88abbed
         device_class: wind_speed
         unit_of_measurement: "mph"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_gusts_10m') -}}"
-
-      - name: Nearby Wind Direction
-        unique_id: nearby_current_wind_direction
+      - name: "OpenMeteo Nearby Wind Direction"
+        unique_id: aa58d75c-44f7-e564-4e23-53f2f20b2438
         device_class: wind_direction
         unit_of_measurement: "°"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
         state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('wind_direction_10m') -}}"
-
-      - name: Nearby Visibility
-        unique_id: nearby_current_visibility
-        device_class: distance
-        unit_of_measurement: "m"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('visibility') -}}"
-
-      - name: Nearby Cloud Cover
-        unique_id: nearby_current_cloud_cover
-        unit_of_measurement: "%"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('cloud_cover') -}}"
-
-      - name: Nearby Weather Code
-        unique_id: nearby_current_weather_code
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('weather_code') -}}"
-
-      - name: Nearby Observation Time
-        unique_id: nearby_current_observation_time
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','current') is mapping) -}}"
-        state: "{{- (state_attr('sensor.openmeteo_nearby','current') or {}).get('time') | as_datetime | as_local -}}"
-
-      - name: Nearby Today Temp Max
-        unique_id: nearby_daily0_temp_max
-        device_class: temperature
-        unit_of_measurement: "°F"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('temperature_2m_max') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Temp Min
-        unique_id: nearby_daily0_temp_min
-        device_class: temperature
-        unit_of_measurement: "°F"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('temperature_2m_min') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Uv Index Max
-        unique_id: nearby_daily0_uv_index_max
+      - name: "OpenMeteo Nearby Today UV Index Max"
+        unique_id: 9f1f1014-56a3-90e4-22cb-9dfab887ed0e
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Tomorrow Uv Index Max
-        unique_id: nearby_daily1_uv_index_max
+      - name: "OpenMeteo Nearby Tomorrow UV Index Max"
+        unique_id: 5125181d-f4ac-6fe4-5993-7170dbca14f2
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[1] if (_l | length) > 1 else none -}}
-
-      - name: Nearby Day 2 Uv Index Max
-        unique_id: nearby_daily2_uv_index_max
+      - name: "OpenMeteo Nearby Day 2 UV Index Max"
+        unique_id: e114d9f8-6e7d-3954-9d43-4194bfe26ec6
         state_class: measurement
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('uv_index_max') or [] -%}
           {{- _l[2] if (_l | length) > 2 else none -}}
-
-      - name: Nearby Day 2 Weekday
-        unique_id: nearby_daily2_weekday
+      - name: "OpenMeteo Nearby Day 2 Weekday"
+        unique_id: eb46530b-709d-52d4-7583-5aa45c9a0930
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('time') or [] -%}
           {{- (_l[2] | as_datetime).strftime('%A') if (_l | length) > 2 else none -}}
-
-      - name: Nearby Today Precip Sum
-        unique_id: nearby_daily0_precip_sum
+      - name: "OpenMeteo Nearby Today Precip Sum"
+        unique_id: 27d28564-fce1-4322-b4b8-68ec352577df
         device_class: precipitation
         unit_of_measurement: "in"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('precipitation_sum') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Rain Sum
-        unique_id: nearby_daily0_rain_sum
-        device_class: precipitation
-        unit_of_measurement: "in"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('rain_sum') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Snowfall Sum
-        unique_id: nearby_daily0_snowfall_sum
-        device_class: precipitation
-        unit_of_measurement: "in"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('snowfall_sum') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Precip Prob Max
-        unique_id: nearby_daily0_precip_prob_max
+      - name: "OpenMeteo Nearby Today Precip Prob Max"
+        unique_id: 0fa69e2e-70f8-4033-8a20-ce458c5f9d1c
         unit_of_measurement: "%"
         availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
         state: >-
           {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('precipitation_probability_max') or [] -%}
           {{- _l[0] if (_l | length) > 0 else none -}}
 
-      - name: Nearby Today Wind Speed Max
-        unique_id: nearby_daily0_wind_speed_max
-        device_class: wind_speed
-        unit_of_measurement: "mph"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('windspeed_10m_max') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Wind Dir Dom
-        unique_id: nearby_daily0_wind_dir_dom
-        device_class: wind_direction
-        unit_of_measurement: "°"
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('winddirection_10m_dominant') or [] -%}
-          {{- _l[0] if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Sunrise
-        unique_id: nearby_daily0_sunrise
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('sunrise') or [] -%}
-          {{- _l[0] | as_datetime | as_local if (_l | length) > 0 else none -}}
-
-      - name: Nearby Today Sunset
-        unique_id: nearby_daily0_sunset
-        device_class: timestamp
-        availability: "{{- has_value('sensor.openmeteo_nearby') and (state_attr('sensor.openmeteo_nearby','daily') is mapping) -}}"
-        state: >-
-          {%- set _l = (state_attr('sensor.openmeteo_nearby','daily') or {}).get('sunset') or [] -%}
-          {{- _l[0] | as_datetime | as_local if (_l | length) > 0 else none -}}
-
   - sensor:
-      - name: Nearby UV Window JSON
-        unique_id: nearby_uv_window_json
+      - name: "OpenMeteo Nearby UV Window JSON"
+        unique_id: 04f59597-9224-8174-93d3-24dbee08d0fc
         icon: mdi:code-json
         availability: "{{- has_value('sensor.openmeteo_nearby') -}}"
         state: "{{- now () -}}"
@@ -309,36 +201,36 @@ template:
             {{- uv_window('sensor.openmeteo_nearby', 3.5) | from_json(default={}) -}}
 
   - binary_sensor:
-      - name: Nearby UV Protection
-        unique_id: nearby_uv_protection
-        availability: "{{- has_value('sensor.nearby_uv_window_json') -}}"
+      - name: "OpenMeteo Nearby UV Protection"
+        unique_id: 183e593c-b8ae-5774-3493-55aab0d064ef
+        availability: "{{- has_value('sensor.openmeteo_nearby_uv_window_json') -}}"
         state: >-
-          {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+          {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
           {%- set s = window.get('start') | as_datetime(default=None) -%}
           {%- set e = window.get('end') | as_datetime(default=None) -%}
           {{- s is not none and e is not none and s | as_local <= now() < e | as_local -}}
         attributes:
           start: >-
-            {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
             {%- set dt = window.get('start') | as_datetime(default=none) -%}
             {{- dt | as_local if dt is not none -}}
           end: >-
-            {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
             {%- set dt = window.get('end') | as_datetime(default=none) -%}
             {{- dt | as_local if dt is not none -}}
           duration: >-
-            {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
             {{- timedelta(minutes=window.get('duration_min') | int(0)) -}}
           active: >-
-            {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
             {{- window.get('active') | bool(none) -}}
           ever_above: >-
-            {%- set window = state_attr('sensor.nearby_uv_window_json','data') -%}
+            {%- set window = state_attr('sensor.openmeteo_nearby_uv_window_json','data') -%}
             {{- window.get('ever_above') | bool(none) -}}
 
   - sensor:
-      - name: Nearby UV Exposure JSON
-        unique_id: nearby_uv_exposure_json
+      - name: "OpenMeteo Nearby UV Exposure JSON"
+        unique_id: 4b4380ba-4312-12d4-418b-6ddf7bbe22fa
         icon: mdi:code-json
         availability: "{{- has_value('sensor.openmeteo_nearby') -}}"
         state: "{{- now () -}}"
@@ -348,163 +240,163 @@ template:
             {{- uv_safe_exposure_multi('sensor.openmeteo_nearby') | from_json(default={}) -}}
 
   - sensor:
-      - name: Nearby Safe Exposure End ST1
-        unique_id: nearby_safe_exposure_end_st1
+      - name: "OpenMeteo Nearby Safe Exposure End ST1"
+        unique_id: ec7c7b32-b540-4a34-f853-aa10144d4d69
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st1', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st1', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure End ST2
-        unique_id: nearby_safe_exposure_end_st2
+      - name: "OpenMeteo Nearby Safe Exposure End ST2"
+        unique_id: 04d1895c-262b-cc54-4cdb-4f4a67bb8fff
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st2', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st2', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure End ST3
-        unique_id: nearby_safe_exposure_end_st3
+      - name: "OpenMeteo Nearby Safe Exposure End ST3"
+        unique_id: 7b72f8d0-9da8-9594-82e3-646e3f8e92d0
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st3', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st3', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure End ST4
-        unique_id: nearby_safe_exposure_end_st4
+      - name: "OpenMeteo Nearby Safe Exposure End ST4"
+        unique_id: 62589552-1585-d784-c7eb-d889f1bd2950
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st4', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st4', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure End ST5
-        unique_id: nearby_safe_exposure_end_st5
+      - name: "OpenMeteo Nearby Safe Exposure End ST5"
+        unique_id: ae5da711-fe05-5e44-0c1b-515d3be71f7e
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st5', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st5', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure End ST6
-        unique_id: nearby_safe_exposure_end_st6
+      - name: "OpenMeteo Nearby Safe Exposure End ST6"
+        unique_id: 4e5fad7a-8a98-33c4-464b-5dcce881f253
         device_class: timestamp
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st6', {})).get('end_ts')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set ts = (data.get('st6', {}) if data is mapping else {}).get('end_ts') -%}
           {%- set dt = ts | as_datetime(default=none) -%}
           {{- dt | as_local if dt is not none -}}
 
-      - name: Nearby Safe Exposure Minutes ST1
-        unique_id: nearby_safe_exposure_minutes_st1
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST1"
+        unique_id: 1e1151ac-5812-e244-d65b-7f926dffe152
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st1', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st1', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: Nearby Safe Exposure Minutes ST2
-        unique_id: nearby_safe_exposure_minutes_st2
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST2"
+        unique_id: 73d9d96f-9fdb-f0f4-0b33-8d720096d893
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st2', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st2', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: Nearby Safe Exposure Minutes ST3
-        unique_id: nearby_safe_exposure_minutes_st3
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST3"
+        unique_id: 167d2b54-d1d7-5af4-a12b-03ffb58b7f29
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st3', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st3', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: Nearby Safe Exposure Minutes ST4
-        unique_id: nearby_safe_exposure_minutes_st4
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST4"
+        unique_id: 85df29bb-9b2e-7a64-5b93-7fd580e6cf9f
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st4', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st4', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: Nearby Safe Exposure Minutes ST5
-        unique_id: nearby_safe_exposure_minutes_st5
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST5"
+        unique_id: 7066ce2c-df7c-02f4-f833-9e9624cd55f5
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st5', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st5', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
-      - name: Nearby Safe Exposure Minutes ST6
-        unique_id: nearby_safe_exposure_minutes_st6
+      - name: "OpenMeteo Nearby Safe Exposure Minutes ST6"
+        unique_id: 6dd47634-b267-ff34-8d8b-fc763eb77e5c
         device_class: duration
         unit_of_measurement: "min"
         icon: mdi:timer-sand
         availability: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {{- data is mapping and ((data.get('st6', {})).get('mins')) is not none -}}
         state: >-
-          {%- set data = state_attr('sensor.nearby_uv_exposure_json','data') -%}
+          {%- set data = state_attr('sensor.openmeteo_nearby_uv_exposure_json','data') -%}
           {%- set mins = (data.get('st6', {}) if data is mapping else {}).get('mins') -%}
           {{- mins | int(none) -}}
 
 automation:
-  - id: openmeteo_nearby_refresh_via_rest_command
-    alias: OpenMeteo Nearby, refresh via REST command
+  - alias: "OpenMeteo Nearby"
+    id: f9b66501-2c79-476b-b7db-527f2d9a92ea
     mode: single
     trigger:
       - platform: time_pattern
-        minutes: "/5"
+        minutes: "/15"
     conditions:
       - condition: template
         value_template: >-

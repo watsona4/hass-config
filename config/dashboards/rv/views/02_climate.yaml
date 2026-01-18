@@ -41,7 +41,7 @@ cards:
             name: Temp
           - entity: sensor.rv_outside_humidity
             name: Humidity
-          - entity: sensor.rv_wind_speed
+          - entity: sensor.openmeteo_rv_wind_speed
             name: Wind
           - entity: sensor.rv_rain_rate
             name: Rain

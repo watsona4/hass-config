@@ -34,7 +34,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: binary_sensor.nearby_uv_protection
+        entity_id: binary_sensor.openmeteo_nearby_uv_protection
     sensor:
       - name: ui_nearby_uv_protection_badge
         state: "{{ states(trigger.entity_id) }}"
@@ -75,7 +75,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_uv_index
+        entity_id: sensor.openmeteo_nearby_uv_index
     variables:
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
@@ -89,7 +89,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_safe_exposure_minutes_st1
+        entity_id: sensor.openmeteo_nearby_safe_exposure_minutes_st1
     sensor:
       - name: ui_nearby_safe_exposure_minutes_st1_badge
         state: "{{ states(trigger.entity_id) }}"
@@ -113,7 +113,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_uv_index
+        entity_id: sensor.openmeteo_nearby_uv_index
     sensor:
       - name: ui_nearby_uv_index_vitamin_d_badge
         state: "{{ states(trigger.entity_id) }}"
@@ -691,7 +691,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_uv_index
+        entity_id: sensor.openmeteo_nearby_uv_index
     variables:
       <<: *variables
       app: 'nearby_uv_index'
@@ -699,7 +699,7 @@ template:
       - <<: *sensor
         name: ui_nearby_uv_index
       - name: ui_nearby_uv_index_gauge
-        state: "{{ states('sensor.nearby_uv_index') }}"
+        state: "{{ states('sensor.openmeteo_nearby_uv_index') }}"
         attributes:
           color_0: >-
             {%- from 'main.jinja' import get_color -%}
@@ -732,83 +732,83 @@ template:
             {%- from 'main.jinja' import get_long_desc -%}
             {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
       - name: ui_nearby_today_uv_index_max_chip
-        state: "{{ states('sensor.nearby_today_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_nearby_today_uv_index_max') }}"
         attributes:
-          content: "{{- 'Max UV: ' ~ states('sensor.nearby_today_uv_index_max') | float(0) | round(1) -}}"
+          content: "{{- 'Max UV: ' ~ states('sensor.openmeteo_nearby_today_uv_index_max') | float(0) | round(1) -}}"
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.nearby_today_uv_index_max', app='uv_index') -}}
+            {{- get_color('sensor.openmeteo_nearby_today_uv_index_max', app='uv_index') -}}
       - name: ui_nearby_safe_exposure_minutes_st1
-        state: "{{ states('sensor.nearby_safe_exposure_minutes_st1') }}"
+        state: "{{ states('sensor.openmeteo_nearby_safe_exposure_minutes_st1') }}"
         attributes:
-          content: "Safe Min: {{- states('sensor.nearby_safe_exposure_minutes_st1') if has_value('sensor.nearby_safe_exposure_minutes_st1') else '–' -}}"
+          content: "Safe Min: {{- states('sensor.openmeteo_nearby_safe_exposure_minutes_st1') if has_value('sensor.openmeteo_nearby_safe_exposure_minutes_st1') else '–' -}}"
           icon_color: >-
-            {%- set v = states('sensor.nearby_safe_exposure_minutes_st1') | float(0) -%}
+            {%- set v = states('sensor.openmeteo_nearby_safe_exposure_minutes_st1') | float(0) -%}
             {{- 'red' if v < 30 else 'yellow' if v < 60 else 'green' -}}
       - name: ui_nearby_today_uv_index_max
-        state: "{{ states('sensor.nearby_today_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_nearby_today_uv_index_max') }}"
         attributes:
           primary: Today
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_today_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_today_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_today_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_today_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_today_uv_index_max'))) -}}
       - name: ui_nearby_tomorrow_uv_index_max
-        state: "{{ states('sensor.nearby_tomorrow_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_nearby_tomorrow_uv_index_max') }}"
         attributes:
           primary: Tomorrow
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_tomorrow_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_tomorrow_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_tomorrow_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_tomorrow_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_tomorrow_uv_index_max'))) -}}
       - name: ui_nearby_day_2_uv_index_max
-        state: "{{ states('sensor.nearby_day_2_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_nearby_day_2_uv_index_max') }}"
         attributes:
-          primary: "{{ states('sensor.nearby_day_2_weekday') }}"
+          primary: "{{ states('sensor.openmeteo_nearby_day_2_weekday') }}"
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_day_2_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_day_2_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_day_2_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_day_2_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.nearby_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_nearby_day_2_uv_index_max'))) -}}
 
   - trigger:
       - platform: state
-        entity_id: sensor.home_uv_index
+        entity_id: sensor.openmeteo_home_uv_index
     sensor:
       - name: ui_home_uv_index_gauge
-        state: "{{ states('sensor.home_uv_index') }}"
+        state: "{{ states('sensor.openmeteo_home_uv_index') }}"
         attributes:
           color_0: >-
             {%- from 'main.jinja' import get_color -%}
@@ -841,69 +841,69 @@ template:
             {%- from 'main.jinja' import get_long_desc -%}
             {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
       - name: ui_home_today_uv_index_max
-        state: "{{ states('sensor.home_today_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_home_today_uv_index_max') }}"
         attributes:
           primary: Today
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_today_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_today_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_today_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_today_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_today_uv_index_max'))) -}}
       - name: ui_home_tomorrow_uv_index_max
-        state: "{{ states('sensor.home_tomorrow_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_home_tomorrow_uv_index_max') }}"
         attributes:
           primary: Tomorrow
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_tomorrow_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_tomorrow_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_tomorrow_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_tomorrow_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_tomorrow_uv_index_max'))) -}}
       - name: ui_home_day_2_uv_index_max
-        state: "{{ states('sensor.home_day_2_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_home_day_2_uv_index_max') }}"
         attributes:
-          primary: "{{ states('sensor.home_day_2_weekday') }}"
+          primary: "{{ states('sensor.openmeteo_home_day_2_weekday') }}"
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_day_2_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_day_2_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_day_2_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_day_2_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.home_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_home_day_2_uv_index_max'))) -}}
 
   - trigger:
       - platform: state
-        entity_id: sensor.rv_uv_index
+        entity_id: sensor.openmeteo_rv_uv_index
     sensor:
       - name: ui_rv_uv_index_gauge
-        state: "{{ states('sensor.rv_uv_index') }}"
+        state: "{{ states('sensor.openmeteo_rv_uv_index') }}"
         attributes:
           color_0: >-
             {%- from 'main.jinja' import get_color -%}
@@ -936,59 +936,59 @@ template:
             {%- from 'main.jinja' import get_long_desc -%}
             {{- get_long_desc(none, app='uv_index', options=dict(value=10)) -}}
       - name: ui_rv_today_uv_index_max
-        state: "{{ states('sensor.rv_today_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_rv_today_uv_index_max') }}"
         attributes:
           primary: Today
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_today_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_today_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_today_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_today_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_today_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_today_uv_index_max'))) -}}
       - name: ui_rv_tomorrow_uv_index_max
-        state: "{{ states('sensor.rv_tomorrow_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_rv_tomorrow_uv_index_max') }}"
         attributes:
           primary: Tomorrow
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_tomorrow_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_tomorrow_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_tomorrow_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_tomorrow_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_tomorrow_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_tomorrow_uv_index_max'))) -}}
       - name: ui_rv_day_2_uv_index_max
-        state: "{{ states('sensor.rv_day_2_uv_index_max') }}"
+        state: "{{ states('sensor.openmeteo_rv_day_2_uv_index_max') }}"
         attributes:
-          primary: "{{ states('sensor.rv_day_2_weekday') }}"
+          primary: "{{ states('sensor.openmeteo_rv_day_2_weekday') }}"
           secondary: >-
             {%- from 'main.jinja' import get_short_label -%}
-            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+            {{- get_short_label(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_day_2_uv_index_max'))) -}}
           icon: >-
             {%- from 'main.jinja' import get_icon -%}
-            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+            {{- get_icon(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_day_2_uv_index_max'))) -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_day_2_uv_index_max'))) -}}
           badge_icon: >-
             {%- from 'main.jinja' import get_badge -%}
-            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+            {{- get_badge(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_day_2_uv_index_max'))) -}}
           badge_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.rv_day_2_uv_index_max'))) -}}
+            {{- get_color(none, app='uv_index', options=dict(value=states('sensor.openmeteo_rv_day_2_uv_index_max'))) -}}

@@ -28,7 +28,7 @@ homeassistant:
         label_vertical: "{{ state_info_vertical.label }}"
         short_label_vertical: "{{ state_info_vertical.short_label }}"
         long_label_vertical: "{{ state_info_vertical.long_label }}"
-      .sensor: &sensor
+      .sensor: &sensor      
         state: "{{ states(entity_id) }}"
         attributes: *attributes
 
@@ -219,10 +219,10 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_uv_index
+        entity_id: sensor.openmeteo_nearby_uv_index
     variables:
       <<: *variables
-      entity_id: sensor.nearby_uv_index
+      entity_id: sensor.openmeteo_nearby_uv_index
       app: uv_index
     sensor:
       - <<: *sensor
@@ -231,13 +231,13 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_wind_speed
+        entity_id: sensor.openmeteo_nearby_wind_speed
     variables:
       <<: *variables
-      entity_id: sensor.nearby_wind_speed
+      entity_id: sensor.openmeteo_nearby_wind_speed
       options:
-        direction: sensor.nearby_wind_direction
-        gusts: sensor.nearby_wind_gust
+        direction: sensor.openmeteo_nearby_wind_direction
+        gusts: sensor.openmeteo_nearby_wind_gust
         show_deg: false
     sensor:
       - <<: *sensor
@@ -246,12 +246,12 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_today_precip_sum
+        entity_id: sensor.openmeteo_nearby_today_precip_sum
     variables:
       <<: *variables
-      entity_id: sensor.nearby_today_precip_sum
+      entity_id: sensor.openmeteo_nearby_today_precip_sum
       options:
-        prob: sensor.nearby_today_precip_prob_max
+        prob: sensor.openmeteo_nearby_today_precip_prob_max
     sensor:
       - <<: *sensor
         name: ui_nearby_today_precip_sum
@@ -270,10 +270,10 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.nearby_dew_point
+        entity_id: sensor.openmeteo_nearby_dew_point
     variables:
       <<: *variables
-      entity_id: sensor.nearby_dew_point
+      entity_id: sensor.openmeteo_nearby_dew_point
       app: dew_point
     sensor:
       - <<: *sensor
