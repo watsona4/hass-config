@@ -727,7 +727,7 @@ template:
           {{ (vals|max) if (vals|count) > 0 else 0 }}
 
 # -----------------------------------------------------------------------------
-# Automations: staggered updates per location, ~10 min cadence with jitter
+# Automations: ~15 min cadence with random 0-900s jitter to spread API calls
 # Pass api_key via data so rest_command.url can template {{ api_key }}
 # -----------------------------------------------------------------------------
 automation:
@@ -737,16 +737,15 @@ automation:
     mode: single
     trigger:
       - platform: time_pattern
-        minutes: "/10"
+        minutes: "/15"
     conditions:
       - condition: template
         value_template: >-
           {%- from 'macros/rest_helpers.jinja' import nearby_is_valid -%}
           {{ nearby_is_valid() | bool }}
     action:
-      # early window jitter
       - delay:
-          seconds: "{{ range(0, 20) | random | int }}"
+          seconds: "{{ range(0, 900) | random | int }}"
       - service: rest_command.google_pollen_nearby_fetch
         data:
           api_key: !secret google_pollen_api_key
@@ -767,16 +766,15 @@ automation:
     mode: single
     trigger:
       - platform: time_pattern
-        minutes: "/10"
+        minutes: "/15"
     conditions:
       - condition: template
         value_template: >-
           {%- from 'macros/rest_helpers.jinja' import home_is_valid -%}
           {{ home_is_valid() | bool }}
     action:
-      # mid window jitter, stagger vs Nearby
       - delay:
-          seconds: "{{ 20 + (range(0, 20) | random | int) }}"
+          seconds: "{{ range(0, 900) | random | int }}"
       - service: rest_command.google_pollen_home_fetch
         data:
           api_key: !secret google_pollen_api_key
@@ -797,7 +795,7 @@ automation:
     mode: single
     trigger:
       - platform: time_pattern
-        minutes: "/10"
+        minutes: "/15"
     conditions:
       - condition: template
         value_template: >-
@@ -805,7 +803,7 @@ automation:
           {{ rv_is_valid() | bool }}
     action:
       - delay:
-          seconds: "{{ 40 + (range(0, 20) | random | int) }}"
+          seconds: "{{ range(0, 900) | random | int }}"
       - service: rest_command.google_pollen_rv_fetch
         data:
           api_key: !secret google_pollen_api_key

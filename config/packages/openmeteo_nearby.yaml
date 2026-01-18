@@ -404,7 +404,7 @@ automation:
           {{ nearby_is_valid() | bool }}
     action:
       - delay:
-          seconds: "{{ range(0, 60) | random | int }}"
+          seconds: "{{ range(0, 900) | random | int }}"
       - service: rest_command.openmeteo_nearby_fetch
         response_variable: resp
       - variables:
