@@ -1,20 +1,52 @@
-# Home instance
+# =============================================================================
+# Package: Remote RV Supervision
+# =============================================================================
+#
+# Monitors RV connectivity via MQTT heartbeat and triggers remote reboot if
+# the RV Home Assistant instance becomes unresponsive while MQTT is still online.
+#
+# Dependencies:
+#   - sensor.rv_last_seen (MQTT heartbeat sensor with expire_after)
+#   - binary_sensor.rv_mqtt_status (RV MQTT LWT status)
+#   - MQTT broker connection
+#
+# Entities created:
+#   - input_datetime.rv_last_remote_reboot
+#
+# Automations:
+#   - automation.rv_remote_reboot_on_stale_heartbeat_via_mqtt
+#   - automation.rv_notify_when_mqtt_offline
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Input Datetime: Reboot Tracking
+# -----------------------------------------------------------------------------
 input_datetime:
   rv_last_remote_reboot:
-    name: RV Last Remote Reboot
+    name: "RV Last Remote Reboot"
     has_date: true
     has_time: true
 
+# -----------------------------------------------------------------------------
+# Automations
+# -----------------------------------------------------------------------------
 automation:
-  - id: rv_remote_reboot_on_stale_heartbeat
-    alias: RV Remote Reboot on Stale Heartbeat (via MQTT)
+
+  # ---------------------------------------------------------------------------
+  # Remote Reboot on Stale Heartbeat
+  # Triggers when RV heartbeat expires while MQTT is still online.
+  # Cooldown: 30 minutes between reboot attempts.
+  # ---------------------------------------------------------------------------
+  - id: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+    alias: "RV Stale Heartbeat Reboot"
     mode: single
     trigger:
       # Heartbeat expired; sensor flips to 'unavailable' due to expire_after: 300
       - platform: state
         entity_id: sensor.rv_last_seen
-        to: 'unavailable'
-        for: '00:05:00'   # extra grace; optional
+        to: "unavailable"
+        for: "00:05:00"
       # Optional: rising latency approach; fire if heartbeat stops changing for 10 minutes
       - platform: template
         value_template: >
@@ -26,12 +58,11 @@ automation:
         # Cooldown: do not send more than once per 30 minutes
         value_template: >
           {% set last = states('input_datetime.rv_last_remote_reboot') %}
-          {% if last in ['unknown','unavailable',''] %} true
-          {% else %} {{ (now() - as_datetime(last)|as_local).total_seconds() > 30*60 }}
-          {% endif %}
+          {{ last in ['unknown','unavailable',''] or
+             (now() - as_datetime(last)|as_local).total_seconds() > 1800 }}
       - condition: state
         entity_id: binary_sensor.rv_mqtt_status
-        state: 'on'   # Online; only try reboot if the bus is connected
+        state: "on"
     action:
       - service: mqtt.publish
         data:
@@ -39,7 +70,8 @@ automation:
           payload: "now"
           qos: 1
       - service: input_datetime.set_datetime
-        target: { entity_id: input_datetime.rv_last_remote_reboot }
+        target:
+          entity_id: input_datetime.rv_last_remote_reboot
         data:
           datetime: "{{ now().isoformat() }}"
       - service: persistent_notification.create
@@ -47,14 +79,18 @@ automation:
           title: "RV reboot requested"
           message: "Heartbeat expired while MQTT was online; reboot command sent."
 
-  - id: rv_notify_when_offline
-    alias: RV Notify when MQTT Offline
+  # ---------------------------------------------------------------------------
+  # Notify when MQTT Offline
+  # Alerts when RV MQTT connection is down for 5 minutes.
+  # ---------------------------------------------------------------------------
+  - id: b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e
+    alias: "RV MQTT Offline Alert"
     mode: single
     trigger:
       - platform: state
         entity_id: binary_sensor.rv_mqtt_status
-        to: 'off'
-        for: '00:05:00'
+        to: "off"
+        for: "00:05:00"
     action:
       - service: persistent_notification.create
         data:
