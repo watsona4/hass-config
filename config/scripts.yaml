@@ -807,11 +807,11 @@ single_window:
     - condition: template
       value_template: '{{ final == ''closed'' }}'
     then:
-    - action: input_text.set_value
+    - action: input_select.select_option
       target:
-        entity_id: input_text.blind_{{ window.split('.')[1] }}_closed_reason
+        entity_id: input_select.blind_{{ window.split('.')[1] }}_closed_reason
       data:
-        value: '{{ reason }}'
+        option: '{{ reason }}'
   - if:
     - condition: template
       value_template: '{{ not no_op and position != action and position != ''unknown''

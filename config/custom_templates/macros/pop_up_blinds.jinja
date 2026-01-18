@@ -25,7 +25,7 @@
 
 {% macro _card_for_cover(eid) -%}
     {%- set slug = eid.split('.', 1)[1] -%}
-    {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+    {%- set reason_eid = 'input_select.blind_' ~ slug ~ '_closed_reason' -%}
 
     {%- set primary_tmpl -%}
         {% raw %}
@@ -161,7 +161,7 @@
             {% continue %}
         {%- endif -%}
 
-        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set reason_eid = 'input_select.blind_' ~ slug ~ '_closed_reason' -%}
         {%- set code = (states(reason_eid) or '') | trim | lower -%}
 
         {# If filtering by wanted, require exact membership #}
@@ -188,7 +188,7 @@
         {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
         {%- if c.state not in ['closed','closing'] -%}{% continue %}{%- endif -%}
 
-        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set reason_eid = 'input_select.blind_' ~ slug ~ '_closed_reason' -%}
         {%- set code = (states(reason_eid) or '') | trim | lower -%}
 
         {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
@@ -213,7 +213,7 @@
         {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
         {%- if c.state not in ['closed','closing'] -%}{% continue %}{%- endif -%}
 
-        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set reason_eid = 'input_select.blind_' ~ slug ~ '_closed_reason' -%}
         {%- set code = (states(reason_eid) or '') | trim | lower -%}
 
         {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
@@ -243,7 +243,7 @@
         {%- set s = states(eid) -%}
         {%- if only_when_closed and s not in ['closed','closing'] -%}{% continue %}{%- endif -%}
 
-        {%- set reason_eid = 'input_text.blind_' ~ slug ~ '_closed_reason' -%}
+        {%- set reason_eid = 'input_select.blind_' ~ slug ~ '_closed_reason' -%}
         {%- set code = (states(reason_eid) or '') | trim | lower -%}
         {%- if wanted_list and code not in wanted_list -%}{% continue %}{%- endif -%}
 
