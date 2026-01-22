@@ -66,10 +66,6 @@
     entity_id: binary_sensor.garage_camera_engine_starting_sound
     to: 'on'
     id: Engine Starting
-  - trigger: state
-    entity_id: binary_sensor.garage_engine_idling_derived
-    to: 'on'
-    id: Engine Idling Derived On
   conditions: []
   actions:
   - if:
@@ -100,7 +96,7 @@
         entity_id: cover.ratgdov25i_f6128e_door
         state: closing
     - condition: state
-      entity_id: binary_sensor.garage_engine_idling_derived
+      entity_id: input_boolean.garage_engine_recent_start
       state: 'off'
     then:
     - action: cover.close_cover
@@ -115,7 +111,6 @@
       - condition: trigger
         id:
         - Engine Starting
-        - Engine Idling Derived On
       sequence:
       - if:
         - condition: state
@@ -190,7 +185,7 @@
             entity_id: cover.ratgdov25i_f6128e_door
             state: closing
         - condition: state
-          entity_id: binary_sensor.garage_engine_idling_derived
+          entity_id: input_boolean.garage_engine_recent_start
           state: 'off'
         then:
         - action: cover.close_cover
@@ -286,7 +281,7 @@
           entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
           state: 'on'
       - condition: state
-        entity_id: binary_sensor.garage_engine_idling_derived
+        entity_id: input_boolean.garage_engine_recent_start
         state: 'off'
       then:
       - action: cover.close_cover

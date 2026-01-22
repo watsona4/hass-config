@@ -1,5 +1,7 @@
 ################################################################################
-# Garage Engine Audio: helpers + derived idling sensor + assist automations
+# Garage Engine Audio: helpers + automations
+# Sets input_boolean.garage_engine_recent_start for 15 minutes after engine
+# starting sound is detected. Used to prevent garage door from auto-closing.
 ################################################################################
 
 input_boolean:
@@ -10,23 +12,7 @@ input_boolean:
 timer:
   garage_engine_recent_start:
     name: Garage engine recent start window
-    duration: "00:15:00"  # adjust as desired
-
-template:
-  - binary_sensor:
-      - name: "Garage Engine Idling Derived"
-        unique_id: 859a1ab0-ab15-48d1-9f12-86f5b5f3bf86
-        icon: mdi:engine
-        state: >
-          {% set ns = namespace(db=states('sensor.garage_camera_sound_level')|float(-99)) %}
-          {{ is_state('input_boolean.garage_engine_recent_start', 'on')
-             and ns.db > -38 }}
-        attributes:
-          sound_level_db: >
-            {% set ns = namespace(db=states('sensor.garage_camera_sound_level')|float(-99)) %}
-            {{ ns.db }}
-          threshold_db: -38
-          recent_start: "{{ is_state('input_boolean.garage_engine_recent_start', 'on') }}"
+    duration: "00:15:00"
 
 automation:
   # Arm the "recent start" window when Frigate detects engine_starting
