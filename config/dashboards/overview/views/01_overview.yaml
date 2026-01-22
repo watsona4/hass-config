@@ -60,7 +60,7 @@ sections:
             name: Upstairs
             tap_action:
               action: more-info
-      
+
       # Network Status
       - type: horizontal-stack
         cards:
@@ -137,7 +137,7 @@ sections:
       - type: custom:mushroom-title-card
         title: "Outdoor Conditions"
         subtitle: "Weather • Air Quality • Energy Use"
-            
+
       # Climate States
       - type: custom:mushroom-chips-card
         alignment: center
@@ -369,7 +369,19 @@ sections:
       # Status Title
       - type: custom:mushroom-title-card
         title: Status
-        subtitle: Lights On • Doors & Windows Open • Smoke/CO Alerts
+        subtitle: Garage • Lights On • Doors & Windows Open • Smoke/CO Alerts
+
+      # Garage Door Status
+      - type: custom:mushroom-template-card
+        entity: cover.ratgdov25i_f6128e_door
+        icon: "{{ state_attr('sensor.garage_door_status', 'icon') }}"
+        icon_color: "{{ state_attr('sensor.garage_door_status', 'color') }}"
+        primary: Garage Door
+        secondary: "{{ states('sensor.garage_door_status') | title }} • {{ state_attr('sensor.garage_door_status', 'reason') }}"
+        tap_action:
+          action: more-info
+        hold_action:
+          action: toggle
 
       # Smoke and CO Alerts
       - type: custom:auto-entities

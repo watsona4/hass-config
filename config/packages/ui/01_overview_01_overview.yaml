@@ -1,73 +1,79 @@
-homeassistant:
-  customize:
-    anchor_container:
-      .variables: &variables
-        entity_id: ""
-        app: default
-        options: {}
-        state_info: >-
-          {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(entity_id, app, options=options) | from_json }}
-        state_info_vertical: >-
-          {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
-      .attributes: &attributes
-        value: "{{ state_info.value }}"
-        name: "{{ state_info.name }}"
-        default_desc: "{{ state_info.default_desc }}"
-        short_desc: "{{ state_info.short_desc }}"
-        long_desc: "{{ state_info.long_desc }}"
-        full_desc: "{{ state_info.full_desc }}"
-        icon: "{{ state_info.icon }}"
-        color: "{{ state_info.color }}"
-        badge: "{{ state_info.badge }}"
-        badge_color: "{{ state_info.badge_color }}"
-        label: "{{ state_info.label }}"
-        short_label: "{{ state_info.short_label }}"
-        long_label: "{{ state_info.long_label }}"
-        label_vertical: "{{ state_info_vertical.label }}"
-        short_label_vertical: "{{ state_info_vertical.short_label }}"
-        long_label_vertical: "{{ state_info_vertical.long_label }}"
-      .sensor: &sensor      
-        state: "{{ states(entity_id) }}"
-        attributes: *attributes
-
 template:
+  # ---------------------------------------------------------------------------
+  # Overview UI Sensors (no YAML anchors - all inline)
+  # ---------------------------------------------------------------------------
+
   - trigger:
       - platform: state
         entity_id: input_boolean.someone_is_home
     variables:
-      <<: *variables
       entity_id: input_boolean.someone_is_home
       app: someone_home
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_someone_is_home_chip
+      - name: ui_someone_is_home_chip
         unique_id: d9889c2b-0ec7-4f1e-b216-971014b1b147
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: input_boolean.home_alone
     variables:
-      <<: *variables
       entity_id: input_boolean.home_alone
       app: home_alone
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_home_alone_chip
+      - name: ui_home_alone_chip
         unique_id: 51836646-0c6b-4001-86bb-2919f5e9d3ba
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: input_boolean.coming_home
     variables:
-      <<: *variables
       entity_id: input_boolean.coming_home
       app: returning_home
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_coming_home_chip
+      - name: ui_coming_home_chip
         unique_id: 874e881b-c191-45dd-a8ba-a05e5ab38638
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
@@ -86,61 +92,102 @@ template:
         attributes:
           icon: "{{ 'mdi:white-balance-sunny' if override else 'mdi:weather-sunny' if daytime else 'mdi:weather-sunset' if evening else 'mdi:weather-night' }}"
           label: "{{ 'Daytime' ~ (' (Override)' if override else '') if daytime else 'Evening' if evening else 'Nighttime' }}"
-          color: "{{ 'amber' if override else 'yellow' if daytime else 'orange' if evening else 'ingido' }}"
+          color: "{{ 'amber' if override else 'yellow' if daytime else 'orange' if evening else 'indigo' }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.home_download_rate
     variables:
-      <<: *variables
       entity_id: sensor.home_download_rate
       app: download
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_home_download_rate
+      - name: ui_home_download_rate
         unique_id: 882bf0ed-f102-47e4-a9b3-8354e5a740c0
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
+          short_label: "{{ state_info.short_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.home_upload_rate
     variables:
-      <<: *variables
       entity_id: sensor.home_upload_rate
       app: upload
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_home_upload_rate
+      - name: ui_home_upload_rate
         unique_id: 8ac9a9b5-ae3a-4737-b4f3-38909a988d24
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
+          short_label: "{{ state_info.short_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.home_latency_icmp
     variables:
-      <<: *variables
       entity_id: sensor.home_latency_icmp
       app: latency
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_home_latency_icmp
+      - name: ui_home_latency_icmp
         unique_id: da689d3e-1f33-4299-8463-c5a5e17d267a
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
+          short_label: "{{ state_info.short_label }}"
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.sunny
     variables:
-      <<: *variables
       entity_id: binary_sensor.sunny
       app: sunny
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
       is_sunny: "{{ is_state('binary_sensor.sunny','on') or not is_state('binary_sensor.dark_outside','on') }}"
       dark_state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info('binary_sensor.dark_outside', 'dark_outside') | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_sunny_chip
+      - name: ui_sunny_chip
         unique_id: be871c38-2bb1-43ae-b5f4-ed8afe040b6c
+        state: "{{ states(entity_id) }}"
         attributes:
-          <<: *attributes
           label: "{{ (state_info if is_sunny|bool else dark_state_info).label }}"
           icon: "{{ (state_info if is_sunny|bool else dark_state_info).icon }}"
           color: "{{ (state_info if is_sunny|bool else dark_state_info).color }}"
@@ -149,172 +196,341 @@ template:
       - platform: state
         entity_id: binary_sensor.rainy
     variables:
-      <<: *variables
       entity_id: binary_sensor.rainy
       app: rainy
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_rainy_chip
+      - name: ui_rainy_chip
         unique_id: b294fad1-6632-4e3c-ae76-aea04977ce75
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.windy
     variables:
-      <<: *variables
       entity_id: binary_sensor.windy
       app: windy
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_windy_chip
+      - name: ui_windy_chip
         unique_id: 1db1ac0c-c775-4162-bb34-6e4fa86380bd
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: binary_sensor.hot_inside
     variables:
-      <<: *variables
       entity_id: binary_sensor.hot_inside
       app: hot_inside
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_hot_inside_chip
+      - name: ui_hot_inside_chip
         unique_id: 9b20570c-af22-4cd1-a786-790c85d9a687
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.outside_temperature_state
     variables:
-      <<: *variables
       entity_id: sensor.outside_temperature_state
       app: ambient
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_outside_temperature_state
+      - name: ui_outside_temperature_state
         unique_id: 42c9961c-d16c-4489-bb00-55e3c869c367
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.outside_humidity_state
     variables:
-      <<: *variables
       entity_id: sensor.outside_humidity_state
       app: outdoor
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_outside_humidity_state
+      - name: ui_outside_humidity_state
         unique_id: 3afe8d4f-31b4-4367-a640-a50e65f19c27
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.light_sensor_illuminance
     variables:
-      <<: *variables
       entity_id: sensor.light_sensor_illuminance
       app: outdoor
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_light_sensor_illuminance
+      - name: ui_light_sensor_illuminance
         unique_id: 7bffa8e5-8384-4421-9a3b-f47c60348ae9
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.openmeteo_nearby_uv_index
     variables:
-      <<: *variables
       entity_id: sensor.openmeteo_nearby_uv_index
       app: uv_index
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_nearby_uv_index
+      - name: ui_nearby_uv_index
         unique_id: 0948b99b-224f-4a71-be70-78b31753596a
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.openmeteo_nearby_wind_speed
     variables:
-      <<: *variables
       entity_id: sensor.openmeteo_nearby_wind_speed
+      app: default
       options:
         direction: sensor.openmeteo_nearby_wind_direction
         gusts: sensor.openmeteo_nearby_wind_gust
         show_deg: false
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_nearby_wind_speed
+      - name: ui_nearby_wind_speed
         unique_id: bf1762ea-31ba-405d-9584-9eda237772ae
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.openmeteo_nearby_today_precip_sum
     variables:
-      <<: *variables
       entity_id: sensor.openmeteo_nearby_today_precip_sum
+      app: default
       options:
         prob: sensor.openmeteo_nearby_today_precip_prob_max
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_nearby_today_precip_sum
+      - name: ui_nearby_today_precip_sum
         unique_id: f44a31ae-348a-43ef-bca9-f1af7662d1c0
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.waqi_nearby_aqi
     variables:
-      <<: *variables
       entity_id: sensor.waqi_nearby_aqi
+      app: default
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_waqi_nearby_aqi
+      - name: ui_waqi_nearby_aqi
         unique_id: 7c8dbd44-e7da-4305-81e8-3d1e2c15f52f
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.openmeteo_nearby_dew_point
     variables:
-      <<: *variables
       entity_id: sensor.openmeteo_nearby_dew_point
       app: dew_point
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_nearby_dew_point
+      - name: ui_nearby_dew_point
         unique_id: 3f833fec-c73f-4a8e-8dff-995638f24a94
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.electric_daily
     variables:
-      <<: *variables
       entity_id: sensor.electric_daily
       app: energy_daily_house
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_electric_daily
+      - name: ui_electric_daily
         unique_id: 2ff01172-cb6f-49f5-b6fd-53b65d6b74a9
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.water_daily
     variables:
-      <<: *variables
       entity_id: sensor.water_daily
       app: daily
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_water_daily
+      - name: ui_water_daily
         unique_id: e8cae0bc-c6e7-4fad-bb07-72457cd4860d
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: state
         entity_id: sensor.gas_daily
     variables:
-      <<: *variables
       entity_id: sensor.gas_daily
       app: daily
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_gas_daily
+      - name: ui_gas_daily
         unique_id: e239f218-f013-49e0-aa2e-14c373a38824
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
 
   - trigger:
       - platform: time_pattern

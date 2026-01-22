@@ -1,0 +1,146 @@
+################################################################################
+# Garage Door Status: tracks door state and reason for current position
+# Reasons derived from the main Garage Door automation logic
+################################################################################
+
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.ratgdov25i_f6128e_door
+          - input_boolean.someone_is_home
+          - input_boolean.home_alone
+          - input_boolean.garage_engine_recent_start
+          - binary_sensor.dark_outside
+          - binary_sensor.daytime
+          - binary_sensor.rainy
+          - binary_sensor.windy
+          - binary_sensor.ratgdov25i_f6128e_obstruction
+          - binary_sensor.ratgdov25i_f6128e_motion
+          - timer.garage_door_delay
+      - platform: homeassistant
+        event: start
+    variables:
+      door_state: "{{ states('cover.ratgdov25i_f6128e_door') }}"
+      is_open: "{{ door_state == 'open' }}"
+      is_closed: "{{ door_state == 'closed' }}"
+      is_opening: "{{ door_state == 'opening' }}"
+      is_closing: "{{ door_state == 'closing' }}"
+
+      # Conditions
+      someone_home: "{{ is_state('input_boolean.someone_is_home', 'on') }}"
+      home_alone: "{{ is_state('input_boolean.home_alone', 'on') }}"
+      engine_recent: "{{ is_state('input_boolean.garage_engine_recent_start', 'on') }}"
+      dark_outside: "{{ is_state('binary_sensor.dark_outside', 'on') }}"
+      daytime: "{{ is_state('binary_sensor.daytime', 'on') }}"
+      rainy: "{{ is_state('binary_sensor.rainy', 'on') }}"
+      windy: "{{ is_state('binary_sensor.windy', 'on') }}"
+      obstruction: "{{ is_state('binary_sensor.ratgdov25i_f6128e_obstruction', 'on') }}"
+      motion: "{{ is_state('binary_sensor.ratgdov25i_f6128e_motion', 'on') }}"
+      timer_active: "{{ is_state('timer.garage_door_delay', 'active') }}"
+
+      # Good weather conditions for door to be open
+      good_conditions: "{{ daytime and not dark_outside and not rainy and not windy and someone_home and not home_alone }}"
+
+      # Determine reason based on current state and conditions
+      reason: >-
+        {%- if is_opening -%}
+          Opening
+        {%- elif is_closing -%}
+          Closing
+        {%- elif is_open -%}
+          {#- Why is the door open? -#}
+          {%- if engine_recent -%}
+            Vehicle departing
+          {%- elif motion -%}
+            Motion detected
+          {%- elif good_conditions -%}
+            Good weather
+          {%- elif timer_active -%}
+            Recently opened
+          {%- elif not someone_home -%}
+            No one home (will close)
+          {%- else -%}
+            Manually opened
+          {%- endif -%}
+        {%- elif is_closed -%}
+          {#- Why is the door closed? -#}
+          {%- if obstruction -%}
+            Obstruction detected
+          {%- elif windy -%}
+            Windy conditions
+          {%- elif rainy -%}
+            Rainy weather
+          {%- elif dark_outside -%}
+            Dark outside
+          {%- elif not someone_home -%}
+            No one home
+          {%- elif home_alone -%}
+            Home alone mode
+          {%- elif not daytime -%}
+            Nighttime
+          {%- else -%}
+            Normal closed
+          {%- endif -%}
+        {%- else -%}
+          Unknown
+        {%- endif -%}
+
+      # Icon based on state
+      icon: >-
+        {%- if is_opening -%}
+          mdi:garage-open-variant
+        {%- elif is_closing -%}
+          mdi:garage-variant
+        {%- elif is_open -%}
+          mdi:garage-open
+        {%- elif is_closed -%}
+          mdi:garage
+        {%- else -%}
+          mdi:garage-alert
+        {%- endif -%}
+
+      # Color based on state and conditions
+      color: >-
+        {%- if obstruction -%}
+          red
+        {%- elif is_opening or is_closing -%}
+          amber
+        {%- elif is_open -%}
+          {%- if good_conditions -%}
+            green
+          {%- elif windy or rainy -%}
+            orange
+          {%- elif not someone_home -%}
+            red
+          {%- else -%}
+            blue
+          {%- endif -%}
+        {%- elif is_closed -%}
+          {%- if windy or rainy -%}
+            green
+          {%- else -%}
+            grey
+          {%- endif -%}
+        {%- else -%}
+          red
+        {%- endif -%}
+
+    sensor:
+      - name: Garage Door Status
+        unique_id: garage_door_status_reason
+        state: "{{ door_state }}"
+        attributes:
+          reason: "{{ reason }}"
+          icon: "{{ icon }}"
+          color: "{{ color }}"
+          someone_home: "{{ someone_home }}"
+          home_alone: "{{ home_alone }}"
+          engine_recent: "{{ engine_recent }}"
+          dark_outside: "{{ dark_outside }}"
+          daytime: "{{ daytime }}"
+          rainy: "{{ rainy }}"
+          windy: "{{ windy }}"
+          obstruction: "{{ obstruction }}"
+          motion: "{{ motion }}"
+          good_conditions: "{{ good_conditions }}"
