@@ -1,0 +1,163 @@
+# =============================================================================
+# Machine Configuration: OPNsense Router
+# =============================================================================
+#
+# OPNsense firewall/router running on FreeBSD with ZFS.
+# Monitors network interfaces, services, and security components.
+#
+# =============================================================================
+
+machine:
+  name: OPNsense
+  slug: opnsense
+  telemetry_sensor: sensor.opnsense_home_arpa_opnsense_home_arpa_hardware_telemetry
+  view_order: 5
+
+# -----------------------------------------------------------------------------
+# Sections
+# -----------------------------------------------------------------------------
+sections:
+
+  # ---------------------------------------------------------------------------
+  # Host / Status
+  # ---------------------------------------------------------------------------
+  host:
+    enabled: true
+    metrics:
+      - uptime_s
+      - process_count
+
+  health:
+    enabled: true
+    metrics:
+      - overall_ok
+      - updates_pending
+
+  # ---------------------------------------------------------------------------
+  # Services
+  # ---------------------------------------------------------------------------
+  services:
+    enabled: true
+    include:
+      - adguardhome
+      - kea
+      - crowdsec
+      - cron
+
+  # ---------------------------------------------------------------------------
+  # CPU
+  # ---------------------------------------------------------------------------
+  cpu:
+    enabled: true
+    metrics:
+      - load_pct
+      - load_1m
+      - load_5m
+      - load_15m
+      - num_physical_cores
+      - num_logical_cores
+
+  # ---------------------------------------------------------------------------
+  # Memory
+  # ---------------------------------------------------------------------------
+  memory:
+    enabled: true
+    metrics:
+      - system.load_pct
+      - system.used_b
+      - system.available_b
+      - system.total_b
+      - virtual.load_pct
+
+  # ---------------------------------------------------------------------------
+  # Filesystems (ZFS)
+  # ---------------------------------------------------------------------------
+  filesystems:
+    enabled: true
+    include:
+      - mountpoint: /
+        display_name: Root
+      - mountpoint: /var/log
+        display_name: Logs
+
+  # ---------------------------------------------------------------------------
+  # Network Interfaces
+  # ---------------------------------------------------------------------------
+  network:
+    enabled: true
+    include:
+      - name: re0
+        display_name: LAN
+      - name: re1
+        display_name: WAN
+      - name: re0_vlan10
+        display_name: VLAN10
+      - name: re0_vlan20
+        display_name: VLAN20
+      - name: wg0
+        display_name: WireGuard
+      - name: tailscale0
+        display_name: Tailscale
+
+  # ---------------------------------------------------------------------------
+  # Motherboard Temps
+  # ---------------------------------------------------------------------------
+  motherboard:
+    enabled: true
+    temps:
+      include:
+        - pattern: tz0
+          display_name: System Temp
+
+  # ---------------------------------------------------------------------------
+  # OPNsense Plugins
+  # ---------------------------------------------------------------------------
+  opnsense:
+    enabled: true
+    metrics:
+      - plugins_count
+
+  # ---------------------------------------------------------------------------
+  # Zenarmor (Sensei)
+  # ---------------------------------------------------------------------------
+  zenarmor:
+    enabled: true
+    metrics:
+      - cloud_running
+      - engine_running
+
+# -----------------------------------------------------------------------------
+# Dashboard Display Options
+# -----------------------------------------------------------------------------
+dashboard:
+  # Overview page configuration (01_overview.yaml)
+  overview:
+    display_name: OPNSense
+    filesystems:
+      - slug: root
+        label: Disk
+    temp_suffix: cpu_temp
+    gpu:
+      enabled: false
+    tpu:
+      enabled: false
+    services:
+      display: auto
+    containers:
+      display: null
+
+  detail_sections:
+    - title: System Status
+      cards: [uptime, updates, health_summary]
+    - title: CPU
+      cards: [cpu_load, cpu_cores]
+    - title: Memory
+      cards: [memory_used, swap]
+    - title: Storage
+      cards: [filesystems]
+    - title: Network
+      cards: [network_interfaces]
+    - title: Services
+      cards: [services_status]
+    - title: Security
+      cards: [zenarmor_status]

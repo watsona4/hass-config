@@ -1,0 +1,258 @@
+# =============================================================================
+# Machine Configuration: Frigate
+# =============================================================================
+#
+# Defines which telemetry metrics to expose for the Frigate server.
+# Used by generate_hwmon_assets.py to create packages and dashboard views.
+#
+# =============================================================================
+
+machine:
+  # Machine identifier used in entity names and dashboard paths
+  name: Frigate
+  slug: frigate
+
+  # The MQTT sensor created by telemetry-tap via MQTT discovery
+  # Format: sensor.<hostname>_hardware_telemetry
+  # The full JSON payload is stored as attributes on this sensor
+  telemetry_sensor: sensor.frigate_frigate_hardware_telemetry
+
+  # Dashboard view ordering (02-99, 01 is overview)
+  view_order: 4
+
+# -----------------------------------------------------------------------------
+# Sections to include in generated assets
+# Each section corresponds to a top-level key in the telemetry payload
+# -----------------------------------------------------------------------------
+sections:
+
+  # ---------------------------------------------------------------------------
+  # Host / Status
+  # ---------------------------------------------------------------------------
+  host:
+    enabled: true
+    metrics:
+      - uptime_s
+      - process_count
+
+  health:
+    enabled: true
+    metrics:
+      - overall_ok
+      - updates_pending
+
+  # ---------------------------------------------------------------------------
+  # Services and Containers
+  # ---------------------------------------------------------------------------
+  services:
+    enabled: true
+    # List services to track (matches health.services[].name)
+    include:
+      - apache2
+      - docker
+      - mosquitto
+      - postgresql@16-main
+      - redis-server
+      - tailscaled
+      - nut-server
+      - nut-monitor
+      - fail2ban
+      - chrony
+      - cloudflared
+      - hwmon-mqtt
+
+  containers:
+    enabled: true
+    # List containers to track (matches health.containers[].name)
+    include:
+      - homeassistant
+      - frigate
+      - esphome
+      - zigbee2mqtt
+      - portainer
+      - wyoming-whisper
+      - wyoming-piper
+      - brightness
+      - chicken_lights
+      - switchbot-mqtt
+      - switchbot_climate
+
+  # ---------------------------------------------------------------------------
+  # CPU
+  # ---------------------------------------------------------------------------
+  cpu:
+    enabled: true
+    metrics:
+      - load_pct
+      - load_1m
+      - load_5m
+      - load_15m
+      - temp_c
+      - num_physical_cores
+      - num_logical_cores
+
+  # ---------------------------------------------------------------------------
+  # Memory
+  # ---------------------------------------------------------------------------
+  memory:
+    enabled: true
+    metrics:
+      - system.load_pct
+      - system.used_b
+      - system.available_b
+      - system.total_b
+      - virtual.load_pct
+
+  # ---------------------------------------------------------------------------
+  # Filesystems
+  # ---------------------------------------------------------------------------
+  filesystems:
+    enabled: true
+    # Filter by label or mountpoint
+    include:
+      - label: root
+        display_name: Root
+      - label: home
+        display_name: Home
+      - label: var
+        display_name: Var
+      - label: docker
+        display_name: Docker
+      - label: pgsql
+        display_name: PostgreSQL
+      - label: frigatehot
+        display_name: Frigate Hot
+      - label: data
+        display_name: Data
+    metrics:
+      - used_b
+      - available_b
+      - read_rate_bps
+      - write_rate_bps
+
+  # ---------------------------------------------------------------------------
+  # Drives
+  # ---------------------------------------------------------------------------
+  drives:
+    enabled: true
+    include:
+      - name: nvme0n1
+        display_name: NVMe SSD
+        partitions:
+          - name: /dev/nvme0n1p1
+            display_name: EFI
+          - name: /dev/nvme0n1p2
+            display_name: Boot
+          - name: /dev/nvme0n1p3
+            display_name: LVM
+      - name: sda
+        display_name: HDD
+        partitions:
+          - name: /dev/sda1
+            display_name: Data
+    metrics:
+      - info              # Drive model, type, manufacturer, serial, firmware
+      - transfer_rate     # Total read+write rate (B/s)
+      - read_rate         # Read rate (B/s)
+      - write_rate        # Write rate (B/s)
+      - used_b            # Used bytes
+      - available_b       # Available bytes
+      - used_pct          # Percent used
+      - temp_c            # Temperature
+      - smart.info        # Comprehensive SMART attributes
+      - smart.overall_health
+      - smart.wear_leveling_pct
+
+  # ---------------------------------------------------------------------------
+  # Network Interfaces
+  # ---------------------------------------------------------------------------
+  network:
+    enabled: true
+    # Only include physical/meaningful interfaces
+    include:
+      - name: enp1s0
+        display_name: Ethernet
+      - name: tailscale0
+        display_name: Tailscale
+    metrics:
+      - ipv4
+      - rate_up_bps
+      - rate_down_bps
+      - link_speed_mbps
+
+  # ---------------------------------------------------------------------------
+  # Motherboard
+  # ---------------------------------------------------------------------------
+  motherboard:
+    enabled: true
+    temps:
+      include:
+        - pattern: "Package id 0"
+          display_name: CPU Package
+        - pattern: "Composite"
+          display_name: NVMe
+
+  # ---------------------------------------------------------------------------
+  # GPUs
+  # ---------------------------------------------------------------------------
+  gpus:
+    enabled: true
+    # Include all GPUs found
+    metrics:
+      - core.load_pct
+      - core.clock_hz
+      - core.power_w
+
+  # ---------------------------------------------------------------------------
+  # TPUs (Coral)
+  # ---------------------------------------------------------------------------
+  tpus:
+    enabled: true
+    metrics:
+      - temp_c
+      - thermal.throttling
+
+# -----------------------------------------------------------------------------
+# Dashboard Display Options
+# -----------------------------------------------------------------------------
+dashboard:
+  # Overview page configuration (01_overview.yaml)
+  overview:
+    display_name: Frigate
+    filesystems:
+      - slug: root
+        label: WD BLACK 2TB SN770 NVMe SSD
+      - slug: data
+        label: WD Blue 2TB Mobile HDD
+    temp_suffix: cpu_temp
+    gpu:
+      enabled: true
+      suffix: gpu_utilization
+      label: Intel iGPU
+    tpu:
+      enabled: true
+      suffix: coral_tpu_temp
+      label: Google Coral TPU
+    services:
+      display: auto
+    containers:
+      display: auto
+
+  # Sections on the machine-specific view
+  detail_sections:
+    - title: System Status
+      cards: [uptime, updates, health_summary]
+    - title: CPU
+      cards: [cpu_load, cpu_cores, cpu_temp]
+    - title: Memory
+      cards: [memory_used, memory_available, swap]
+    - title: Storage
+      cards: [filesystems, drives]
+    - title: Network
+      cards: [network_interfaces]
+    - title: Services
+      cards: [services_status]
+    - title: Containers
+      cards: [containers_status]
+    - title: Hardware
+      cards: [gpu, tpu, motherboard_temps]

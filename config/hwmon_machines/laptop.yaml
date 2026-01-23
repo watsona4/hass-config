@@ -1,0 +1,187 @@
+# =============================================================================
+# Machine Configuration: Laptop
+# =============================================================================
+#
+# Windows 11 Lenovo ThinkPad with AMD Ryzen and integrated Radeon graphics.
+# Includes battery monitoring, WiFi stats, and drive health.
+#
+# =============================================================================
+
+machine:
+  name: Laptop
+  slug: laptop
+  telemetry_sensor: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+  view_order: 3
+
+# -----------------------------------------------------------------------------
+# Sections
+# -----------------------------------------------------------------------------
+sections:
+
+  # ---------------------------------------------------------------------------
+  # Host / Status
+  # ---------------------------------------------------------------------------
+  host:
+    enabled: true
+    metrics:
+      - uptime_s
+      - process_count
+
+  health:
+    enabled: true
+    metrics:
+      - overall_ok
+      - updates_pending
+
+  # ---------------------------------------------------------------------------
+  # Services
+  # ---------------------------------------------------------------------------
+  services:
+    enabled: true
+    include:
+      - Dnscache
+      - LanmanServer
+      - LibreHardwareMonitor
+      - Spooler
+
+  # ---------------------------------------------------------------------------
+  # CPU
+  # ---------------------------------------------------------------------------
+  cpu:
+    enabled: true
+    metrics:
+      - load_pct
+      - load_1m
+      - load_5m
+      - load_15m
+      - temp_c
+      - power_w
+      - num_physical_cores
+      - num_logical_cores
+
+  # ---------------------------------------------------------------------------
+  # Memory
+  # ---------------------------------------------------------------------------
+  memory:
+    enabled: true
+    metrics:
+      - system.load_pct
+      - system.used_b
+      - system.available_b
+      - system.total_b
+      - virtual.load_pct
+
+  # ---------------------------------------------------------------------------
+  # Filesystems
+  # ---------------------------------------------------------------------------
+  filesystems:
+    enabled: true
+    include:
+      - label: Windows
+        display_name: Windows (C:)
+
+  # ---------------------------------------------------------------------------
+  # Drives (with SMART)
+  # ---------------------------------------------------------------------------
+  drives:
+    enabled: true
+    include:
+      - name: PhysicalDrive0
+        display_name: NVMe SSD
+    metrics:
+      - temp_c
+      - smart.overall_health
+      - smart.wear_leveling_pct
+
+  # ---------------------------------------------------------------------------
+  # Network Interfaces
+  # ---------------------------------------------------------------------------
+  network:
+    enabled: true
+    include:
+      - name: Wi-Fi
+        display_name: WiFi
+      - name: Tailscale
+        display_name: Tailscale
+
+  # ---------------------------------------------------------------------------
+  # WiFi
+  # ---------------------------------------------------------------------------
+  wifi:
+    enabled: true
+    interface: Wi-Fi
+    metrics:
+      - essid
+      - signal_pct
+      - signal_dbm
+      - channel
+      - bitrate_mbps
+
+  # ---------------------------------------------------------------------------
+  # Batteries
+  # ---------------------------------------------------------------------------
+  batteries:
+    enabled: true
+    metrics:
+      - charge_level_pct
+      - discharging
+      - power_w
+      - voltage_v
+      - degradation_pct
+      - remain_cap_mwh
+      - full_cap_mwh
+
+  # ---------------------------------------------------------------------------
+  # GPUs
+  # ---------------------------------------------------------------------------
+  gpus:
+    enabled: true
+    metrics:
+      - core.load_pct
+      - core.power_w
+      - temp_c
+
+# -----------------------------------------------------------------------------
+# Dashboard Display Options
+# -----------------------------------------------------------------------------
+dashboard:
+  # Overview page configuration (01_overview.yaml)
+  overview:
+    display_name: Laptop
+    filesystems:
+      - slug: windows_c
+        label: Samsung 512GB NVMe SSD
+    temp_suffix: cpu_temp
+    gpu:
+      enabled: true
+      suffix: gpu_utilization
+      label: AMD Radeon 780m
+    tpu:
+      enabled: false
+    services:
+      display: chips
+      chips:
+        - libre_hardware_monitor
+        - dnscache
+        - lanman_server
+        - spooler
+    containers:
+      display: null
+
+  detail_sections:
+    - title: System Status
+      cards: [uptime, updates, health_summary]
+    - title: CPU
+      cards: [cpu_load, cpu_temp, cpu_power]
+    - title: Memory
+      cards: [memory_used, swap]
+    - title: Storage
+      cards: [filesystems, drive_health]
+    - title: Network
+      cards: [network_interfaces, wifi_stats]
+    - title: Battery
+      cards: [battery_status, battery_health]
+    - title: GPU
+      cards: [gpu_load, gpu_temp]
+    - title: Services
+      cards: [services_status]

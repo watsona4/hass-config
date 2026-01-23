@@ -1,0 +1,165 @@
+# =============================================================================
+# Machine Configuration: Raspberry Pi 4 Time Server
+# =============================================================================
+#
+# Raspberry Pi 4 running as a stratum-1 NTP time server with GPS/PPS.
+# Includes SBC-specific sensors and time server metrics.
+#
+# =============================================================================
+
+machine:
+  name: RasPi4
+  slug: raspi4
+  telemetry_sensor: sensor.raspi4_raspi4_hardware_telemetry
+  view_order: 7
+
+# -----------------------------------------------------------------------------
+# Sections
+# -----------------------------------------------------------------------------
+sections:
+
+  # ---------------------------------------------------------------------------
+  # Host / Status
+  # ---------------------------------------------------------------------------
+  host:
+    enabled: true
+    metrics:
+      - uptime_s
+      - process_count
+
+  health:
+    enabled: true
+    metrics:
+      - overall_ok
+      - updates_pending
+
+  # ---------------------------------------------------------------------------
+  # Services
+  # ---------------------------------------------------------------------------
+  services:
+    enabled: true
+    include:
+      - chrony
+      - gpsd
+      - str2str-ntrip
+
+  # ---------------------------------------------------------------------------
+  # SBC (Raspberry Pi specific)
+  # ---------------------------------------------------------------------------
+  sbc:
+    enabled: true
+    metrics:
+      - throttling
+      - arm_mem_b
+      - gpu_mem_b
+      - voltages.core_v
+      - clocks.arm_hz
+
+  # ---------------------------------------------------------------------------
+  # CPU
+  # ---------------------------------------------------------------------------
+  cpu:
+    enabled: true
+    metrics:
+      - load_pct
+      - load_1m
+      - load_5m
+      - load_15m
+      - temp_c
+      - num_physical_cores
+      - num_logical_cores
+
+  # ---------------------------------------------------------------------------
+  # Memory
+  # ---------------------------------------------------------------------------
+  memory:
+    enabled: true
+    metrics:
+      - system.load_pct
+      - system.used_b
+      - system.available_b
+      - system.total_b
+      - virtual.load_pct
+
+  # ---------------------------------------------------------------------------
+  # Filesystems
+  # ---------------------------------------------------------------------------
+  filesystems:
+    enabled: true
+    include:
+      - label: rootfs
+        display_name: Root
+      - label: bootfs
+        display_name: Boot
+
+  # ---------------------------------------------------------------------------
+  # Network Interfaces
+  # ---------------------------------------------------------------------------
+  network:
+    enabled: true
+    include:
+      - name: eth0
+        display_name: Ethernet
+
+  # ---------------------------------------------------------------------------
+  # Time Server (chrony/NTP/GPS)
+  # ---------------------------------------------------------------------------
+  time_server:
+    enabled: true
+    metrics:
+      # Chrony tracking
+      - tracking.reference_name
+      - tracking.stratum
+      - tracking.system_time_offset_s
+      - tracking.rms_offset_s
+      - tracking.frequency_ppm
+      - tracking.leap_status
+      # GPS
+      - gps.mode
+      - gps.status
+      - gps.satellites_visible
+      - gps.satellites_used
+      - gps.hdop
+      - gps.latitude
+      - gps.longitude
+      # Server stats
+      - server_stats.ntp_packets_received
+      - server_stats.client_count
+
+# -----------------------------------------------------------------------------
+# Dashboard Display Options
+# -----------------------------------------------------------------------------
+dashboard:
+  # Overview page configuration (01_overview.yaml)
+  overview:
+    display_name: RasPi4
+    filesystems:
+      - slug: root
+        label: Disk
+    temp_suffix: cpu_temp
+    gpu:
+      enabled: false
+    tpu:
+      enabled: false
+    services:
+      display: auto
+    containers:
+      display: null
+
+  detail_sections:
+    - title: System Status
+      cards: [uptime, updates, health_summary]
+    - title: Time Server
+      cards: [chrony_tracking, gps_status, ntp_stats]
+    - title: CPU
+      cards: [cpu_load, cpu_temp]
+    - title: Memory
+      cards: [memory_used, swap]
+    - title: Storage
+      cards: [filesystems]
+    - title: Network
+      cards: [network_interfaces]
+    - title: Raspberry Pi
+      cards: [sbc_throttling, sbc_voltages]
+    - title: Services
+      cards: [services_status]
