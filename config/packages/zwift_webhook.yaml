@@ -247,6 +247,18 @@ template:
         unit_of_measurement: "kcal"
         state_class: total
         state: "{{ last.get('calories',0) if last else 0 }}"
+      - name: "Zwift Last Ride Avg HR"
+        unique_id: 7a3e8c12-4b5d-4f9a-8c1e-2d3f4a5b6c7d
+        unit_of_measurement: "bpm"
+        icon: "mdi:heart-pulse"
+        state_class: measurement
+        state: "{{ last.get('avgHeartRate',0) if last else 0 }}"
+      - name: "Zwift Last Ride Max HR"
+        unique_id: 8b4f9d23-5c6e-4a0b-9d2f-3e4a5b6c7d8e
+        unit_of_measurement: "bpm"
+        icon: "mdi:heart-pulse"
+        state_class: measurement
+        state: "{{ last.get('maxHeartRate',0) if last else 0 }}"
       - name: "Zwift Last Ride Image"
         unique_id: 97cd09f5-ef2a-43f1-ba94-668a812b0420
         state: "{{ last.get('primaryImageUrl','') if last else '' }}"
