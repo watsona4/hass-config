@@ -382,6 +382,8 @@ sections:
           action: more-info
         hold_action:
           action: toggle
+        grid_options:
+          columns: full
 
       # Smoke and CO Alerts
       - type: custom:auto-entities
@@ -598,6 +600,11 @@ sections:
           - type: custom:mushroom-climate-card
             entity: climate.study_space_heater
             name: Study Space Heater
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-climate-card
+            entity: climate.workshop_hvac_virtual
+            name: Shop 
             tap_action:
               action: more-info
           - type: custom:mushroom-humidifier-card

@@ -104,9 +104,9 @@ template:
         unique_id: 04f86a63-28eb-456e-a19e-4470d3f577ae
         device_class: connectivity
         icon: "mdi:radio-tower"
-        state: "{{ trigger.event.data.data.online | default(false) if trigger.event is defined else false }}"
+        state: "{{ trigger.event.data.data.online | default(false) if trigger.platform == 'event' else false }}"
         attributes:
-          world_id: "{{ trigger.event.data.data.world_id | default(none) if trigger.event is defined else none }}"
+          world_id: "{{ trigger.event.data.data.world_id | default(none) if trigger.platform == 'event' else none }}"
 
   # Profile data from webhook
   - trigger:
@@ -115,7 +115,7 @@ template:
       - platform: event
         event_type: zwift_profile_update
     variables:
-      d: "{{ trigger.event.data.data if trigger.event is defined and trigger.event.data.data is mapping else {} }}"
+      d: "{{ trigger.event.data.data if trigger.platform == 'event' and trigger.event.data.data is mapping else {} }}"
     sensor:
       - name: "Zwift Profile Data"
         unique_id: bf52126e-b555-4441-91b3-a73b44500af7
@@ -144,7 +144,7 @@ template:
       - platform: event
         event_type: zwift_activities_update
     variables:
-      d: "{{ trigger.event.data.data if trigger.event is defined and trigger.event.data.data is sequence else [] }}"
+      d: "{{ trigger.event.data.data if trigger.platform == 'event' and trigger.event.data.data is sequence else [] }}"
       last: "{{ d | first if d else {} }}"
       now_ts: "{{ as_timestamp(now()) }}"
       ride_events_json: >-
@@ -270,7 +270,7 @@ template:
       - platform: event
         event_type: zwift_world_update
     variables:
-      d: "{{ trigger.event.data.data if trigger.event is defined and trigger.event.data.data is mapping else {} }}"
+      d: "{{ trigger.event.data.data if trigger.platform == 'event' and trigger.event.data.data is mapping else {} }}"
     sensor:
       - name: "Zwift World Data"
         unique_id: 6053e751-1cfa-49bb-b325-c3fc0456b810
