@@ -2,8 +2,10 @@
 # Machine Configuration: Frigate
 # =============================================================================
 #
-# Defines which telemetry metrics to expose for the Frigate server.
-# Used by generate_hwmon_assets.py to create packages and dashboard views.
+# AZW EQ Mini PC with Intel N95 processor running Ubuntu. Serves as the main
+# home automation server running Frigate NVR, Home Assistant, and various
+# services. Features Intel iGPU for video decode and Google Coral Edge TPU
+# for ML inference. Storage: WD_BLACK SN770 2TB NVMe + WDC 2TB HDD.
 #
 # =============================================================================
 

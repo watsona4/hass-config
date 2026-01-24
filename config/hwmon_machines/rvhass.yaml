@@ -1,17 +1,18 @@
 # =============================================================================
-# Machine Configuration: Raspberry Pi 4 Time Server
+# Machine Configuration: RV Home Assistant Yellow
 # =============================================================================
 #
-# Raspberry Pi 4 running as a stratum-1 NTP time server with GPS/PPS.
-# Includes SBC-specific sensors and time server metrics.
+# Home Assistant Yellow running HAOS in the RV. Compact all-in-one HA appliance
+# with integrated Zigbee/Thread radio. Monitors system health, CPU, memory,
+# storage, and network connectivity.
 #
 # =============================================================================
 
 machine:
-  name: RasPi4
-  slug: raspi4
-  telemetry_sensor: sensor.raspi4_raspi4_hardware_telemetry
-  view_order: 7
+  name: RV Hass
+  slug: rvhass
+  telemetry_sensor: sensor.a0d7b954_ssh_a0d7b954_ssh_hardware_telemetry
+  view_order: 8
 
 # -----------------------------------------------------------------------------
 # Sections
@@ -34,26 +35,10 @@ sections:
       - updates_pending
 
   # ---------------------------------------------------------------------------
-  # Services
+  # Services (HAOS doesn't expose traditional services)
   # ---------------------------------------------------------------------------
   services:
-    enabled: true
-    include:
-      - chrony
-      - gpsd
-      - str2str-ntrip
-
-  # ---------------------------------------------------------------------------
-  # SBC (Raspberry Pi specific)
-  # ---------------------------------------------------------------------------
-  sbc:
-    enabled: true
-    metrics:
-      - throttling
-      - arm_mem_b
-      - gpu_mem_b
-      - voltages.core_v
-      - clocks.arm_hz
+    enabled: false
 
   # ---------------------------------------------------------------------------
   # CPU
@@ -98,33 +83,8 @@ sections:
   network:
     enabled: true
     include:
-      - name: eth0
+      - name: end0
         display_name: Ethernet
-
-  # ---------------------------------------------------------------------------
-  # Time Server (chrony/NTP/GPS)
-  # ---------------------------------------------------------------------------
-  time_server:
-    enabled: true
-    metrics:
-      # Chrony tracking
-      - tracking.reference_name
-      - tracking.stratum
-      - tracking.system_time_offset_s
-      - tracking.rms_offset_s
-      - tracking.frequency_ppm
-      - tracking.leap_status
-      # GPS
-      - gps.mode
-      - gps.status
-      - gps.satellites_visible
-      - gps.satellites_used
-      - gps.hdop
-      - gps.latitude
-      - gps.longitude
-      # Server stats
-      - server_stats.ntp_packets_received
-      - server_stats.client_count
 
 # -----------------------------------------------------------------------------
 # Dashboard Display Options
@@ -132,10 +92,10 @@ sections:
 dashboard:
   # Overview page configuration (01_overview.yaml)
   overview:
-    display_name: Raspberry Pi 4
+    display_name: RV HA Yellow
     filesystems:
       - slug: root
-        label: MicroSD Card
+        label: Disk
     temp_suffix: cpu_temp
     gpu:
       enabled: false
@@ -149,8 +109,6 @@ dashboard:
   detail_sections:
     - title: System Status
       cards: [uptime, updates, health_summary]
-    - title: Time Server
-      cards: [chrony_tracking, gps_status, ntp_stats]
     - title: CPU
       cards: [cpu_load, cpu_temp]
     - title: Memory
@@ -159,7 +117,3 @@ dashboard:
       cards: [filesystems]
     - title: Network
       cards: [network_interfaces]
-    - title: Pi-Specific Metrics
-      cards: [sbc_throttling, sbc_voltages]
-    - title: Services
-      cards: [services_status]

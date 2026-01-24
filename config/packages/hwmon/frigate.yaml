@@ -60,9 +60,18 @@ template:
       - name: "Frigate Updates Pending"
         unique_id: 8e363b36-41df-5d41-a64a-35748a32d147
         availability: "{{ available }}"
-        state: "{{ (health.updates.pending | default(0)) | int }}"
+        state: >-
+          {{ ((health.updates | default({})).pending | default(0)) | int }}
         icon: "mdi:update"
         state_class: measurement
+      - name: "Frigate Updates List"
+        unique_id: ff542623-1a04-569c-99bd-c790f703fa99
+        availability: "{{ available }}"
+        state: >-
+          {{ ((health.updates | default({})).get('items', []) | map(attribute='name') | list | length) }} packages
+        icon: "mdi:package-variant"
+        attributes:
+          packages: "{{ (health.updates | default({})).get('items', []) | map(attribute='name') | list }}"
       - name: "Frigate Services Checked"
         unique_id: 63822914-37fa-5763-b67b-0af44229b311
         availability: "{{ available }}"
@@ -423,7 +432,7 @@ template:
         unique_id: f21ad612-78bc-5dc1-a0fd-8925e2d7be96
         availability: "{{ available }}"
         state: >-
-          {% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{{ ((d.read_rate_bps | default(0)) + (d.write_rate_bps | default(0))) | int if d else 0 }}
+          {% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{{ (d.total_rate_bps | default(0)) | int if d else 0 }}
         icon: "mdi:harddisk"
         unit_of_measurement: "B/s"
         state_class: measurement
@@ -572,7 +581,7 @@ template:
         unique_id: 91a1bdfa-0a4a-54cf-98a2-56625315d9ef
         availability: "{{ available }}"
         state: >-
-          {% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{{ ((d.read_rate_bps | default(0)) + (d.write_rate_bps | default(0))) | int if d else 0 }}
+          {% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{{ (d.total_rate_bps | default(0)) | int if d else 0 }}
         icon: "mdi:harddisk"
         unit_of_measurement: "B/s"
         state_class: measurement

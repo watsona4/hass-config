@@ -20,8 +20,6 @@ badges:
     content: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'short_label') }}"
     tap_action:
       action: more-info
-    icon_tap_action:
-      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.opnsense_memory_percent
     icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'icon') }}"
@@ -30,8 +28,6 @@ badges:
     tap_action:
       action: more-info
 
-    icon_tap_action:
-      action: more-info
 sections:
   # System Status
   - type: grid
@@ -53,7 +49,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_updates_pending
             icon: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'icon') }}"
@@ -65,7 +61,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: binary_sensor.opnsense_status_alarm
             icon: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'icon') }}"
@@ -76,7 +72,26 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
+      - type: markdown
+        content: >-
+          **Available Updates:**
+
+          {{%- set packages = state_attr('sensor.opnsense_updates_list', 'packages') | default([]) -%}}
+          {{%- for pkg in packages -%}}
+          - {{ pkg }}
+          {{ '' }}
+          {{%- endfor -%}}
+        visibility:
+          - condition: numeric_state
+            entity: sensor.opnsense_updates_pending
+            above: 0
+        card_mod:
+          style: |
+            ha-card {
+              background: rgba(var(--rgb-primary-color), 0.1);
+              font-size: 0.9em;
+            }
 
   # CPU
   - type: grid
@@ -94,7 +109,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.opnsense_cpu_load_1m
         icon: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'icon') }}"
@@ -104,7 +119,17 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        entity: sensor.opnsense_cpu_temp
+        icon: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'icon') }}"
+        icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'color') }}"
+        primary: Temperature
+        secondary: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'label') }}"
+        tap_action:
           action: more-info
+        icon_tap_action:
+          action: toggle
 
   # Memory
   - type: grid
@@ -122,7 +147,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.opnsense_swap_percent
         icon: mdi:swap-horizontal
@@ -132,7 +157,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Filesystems
   - type: grid
@@ -154,7 +179,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_fs_logs_percent
             icon: "{{ state_attr('sensor.ui_opnsense_fs_logs_percent', 'icon') }}"
@@ -164,7 +189,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
 
   # Network
   - type: grid
@@ -186,7 +211,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_wan_ipv4
             icon: mdi:ethernet
@@ -196,7 +221,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_vlan10_ipv4
             icon: mdi:ethernet
@@ -206,7 +231,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_vlan20_ipv4
             icon: mdi:ethernet
@@ -216,7 +241,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_wireguard_ipv4
             icon: mdi:ethernet
@@ -226,7 +251,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_tailscale_ipv4
             icon: mdi:ethernet
@@ -236,7 +261,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
 
   # Services
   - type: grid
@@ -254,7 +279,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Motherboard Temps
   - type: grid
@@ -272,7 +297,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # OPNsense
   - type: grid
@@ -290,7 +315,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Zenarmor (Sensei)
   - type: grid
@@ -308,7 +333,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.opnsense_zenarmor_cloud
         icon: mdi:cloud-check
@@ -318,4 +343,4 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle

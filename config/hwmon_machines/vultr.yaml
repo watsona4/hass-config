@@ -1,17 +1,16 @@
 # =============================================================================
-# Machine Configuration: Raspberry Pi 4 Time Server
+# Machine Configuration: Vultr VPS
 # =============================================================================
 #
-# Raspberry Pi 4 running as a stratum-1 NTP time server with GPS/PPS.
-# Includes SBC-specific sensors and time server metrics.
+# Cloud VPS running on Vultr. Lightweight monitoring for a small instance.
 #
 # =============================================================================
 
 machine:
-  name: RasPi4
-  slug: raspi4
-  telemetry_sensor: sensor.raspi4_raspi4_hardware_telemetry
-  view_order: 7
+  name: Vultr
+  slug: vultr
+  telemetry_sensor: sensor.vultr_vultr_hardware_telemetry
+  view_order: 9
 
 # -----------------------------------------------------------------------------
 # Sections
@@ -39,21 +38,8 @@ sections:
   services:
     enabled: true
     include:
-      - chrony
-      - gpsd
-      - str2str-ntrip
-
-  # ---------------------------------------------------------------------------
-  # SBC (Raspberry Pi specific)
-  # ---------------------------------------------------------------------------
-  sbc:
-    enabled: true
-    metrics:
-      - throttling
-      - arm_mem_b
-      - gpu_mem_b
-      - voltages.core_v
-      - clocks.arm_hz
+      - iperf3
+      - tailscaled
 
   # ---------------------------------------------------------------------------
   # CPU
@@ -65,7 +51,6 @@ sections:
       - load_1m
       - load_5m
       - load_15m
-      - temp_c
       - num_physical_cores
       - num_logical_cores
 
@@ -87,10 +72,8 @@ sections:
   filesystems:
     enabled: true
     include:
-      - label: rootfs
+      - mountpoint: /
         display_name: Root
-      - label: bootfs
-        display_name: Boot
 
   # ---------------------------------------------------------------------------
   # Network Interfaces
@@ -98,45 +81,21 @@ sections:
   network:
     enabled: true
     include:
-      - name: eth0
-        display_name: Ethernet
-
-  # ---------------------------------------------------------------------------
-  # Time Server (chrony/NTP/GPS)
-  # ---------------------------------------------------------------------------
-  time_server:
-    enabled: true
-    metrics:
-      # Chrony tracking
-      - tracking.reference_name
-      - tracking.stratum
-      - tracking.system_time_offset_s
-      - tracking.rms_offset_s
-      - tracking.frequency_ppm
-      - tracking.leap_status
-      # GPS
-      - gps.mode
-      - gps.status
-      - gps.satellites_visible
-      - gps.satellites_used
-      - gps.hdop
-      - gps.latitude
-      - gps.longitude
-      # Server stats
-      - server_stats.ntp_packets_received
-      - server_stats.client_count
+      - name: enp1s0
+        display_name: Public
+      - name: tailscale0
+        display_name: Tailscale
 
 # -----------------------------------------------------------------------------
 # Dashboard Display Options
 # -----------------------------------------------------------------------------
 dashboard:
-  # Overview page configuration (01_overview.yaml)
   overview:
-    display_name: Raspberry Pi 4
+    display_name: Vultr VPS
     filesystems:
       - slug: root
-        label: MicroSD Card
-    temp_suffix: cpu_temp
+        label: Disk
+    temp_suffix: null  # No CPU temp available on VPS
     gpu:
       enabled: false
     tpu:
@@ -149,17 +108,13 @@ dashboard:
   detail_sections:
     - title: System Status
       cards: [uptime, updates, health_summary]
-    - title: Time Server
-      cards: [chrony_tracking, gps_status, ntp_stats]
     - title: CPU
-      cards: [cpu_load, cpu_temp]
+      cards: [cpu_load, cpu_cores]
     - title: Memory
       cards: [memory_used, swap]
     - title: Storage
       cards: [filesystems]
     - title: Network
       cards: [network_interfaces]
-    - title: Pi-Specific Metrics
-      cards: [sbc_throttling, sbc_voltages]
     - title: Services
       cards: [services_status]

@@ -1,17 +1,18 @@
 # =============================================================================
-# Machine Configuration: Raspberry Pi 4 Time Server
+# Machine Configuration: Desktop
 # =============================================================================
 #
-# Raspberry Pi 4 running as a stratum-1 NTP time server with GPS/PPS.
-# Includes SBC-specific sensors and time server metrics.
+# Dell OptiPlex 9020 Mini Tower running Windows 10 with NVIDIA GTX 1070.
+# Monitored via LibreHardwareMonitor providing CPU, memory, disk, and GPU
+# telemetry. Includes WiFi stats, drive health, and Windows service monitoring.
 #
 # =============================================================================
 
 machine:
-  name: RasPi4
-  slug: raspi4
-  telemetry_sensor: sensor.raspi4_raspi4_hardware_telemetry
-  view_order: 7
+  name: Desktop
+  slug: desktop
+  telemetry_sensor: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+  view_order: 5
 
 # -----------------------------------------------------------------------------
 # Sections
@@ -39,21 +40,10 @@ sections:
   services:
     enabled: true
     include:
-      - chrony
-      - gpsd
-      - str2str-ntrip
-
-  # ---------------------------------------------------------------------------
-  # SBC (Raspberry Pi specific)
-  # ---------------------------------------------------------------------------
-  sbc:
-    enabled: true
-    metrics:
-      - throttling
-      - arm_mem_b
-      - gpu_mem_b
-      - voltages.core_v
-      - clocks.arm_hz
+      - Dnscache
+      - LanmanServer
+      - LibreHardwareMonitor
+      - Spooler
 
   # ---------------------------------------------------------------------------
   # CPU
@@ -66,6 +56,7 @@ sections:
       - load_5m
       - load_15m
       - temp_c
+      - power_w
       - num_physical_cores
       - num_logical_cores
 
@@ -87,10 +78,25 @@ sections:
   filesystems:
     enabled: true
     include:
-      - label: rootfs
-        display_name: Root
-      - label: bootfs
-        display_name: Boot
+      - label: Windows
+        display_name: Windows (C:)
+      - label: Data
+        display_name: Data (D:)
+
+  # ---------------------------------------------------------------------------
+  # Drives (with SMART)
+  # ---------------------------------------------------------------------------
+  drives:
+    enabled: true
+    include:
+      - name: PhysicalDrive0
+        display_name: SK hynix 256GB SSD
+      - name: PhysicalDrive1
+        display_name: WD 1TB HDD
+    metrics:
+      - temp_c
+      - smart.overall_health
+      - smart.wear_leveling_pct
 
   # ---------------------------------------------------------------------------
   # Network Interfaces
@@ -98,33 +104,31 @@ sections:
   network:
     enabled: true
     include:
-      - name: eth0
-        display_name: Ethernet
+      - name: Wi-Fi 2
+        display_name: WiFi
 
   # ---------------------------------------------------------------------------
-  # Time Server (chrony/NTP/GPS)
+  # WiFi
   # ---------------------------------------------------------------------------
-  time_server:
+  wifi:
+    enabled: true
+    interface: Wi-Fi 2
+    metrics:
+      - essid
+      - signal_pct
+      - signal_dbm
+      - channel
+      - bitrate_mbps
+
+  # ---------------------------------------------------------------------------
+  # GPUs
+  # ---------------------------------------------------------------------------
+  gpus:
     enabled: true
     metrics:
-      # Chrony tracking
-      - tracking.reference_name
-      - tracking.stratum
-      - tracking.system_time_offset_s
-      - tracking.rms_offset_s
-      - tracking.frequency_ppm
-      - tracking.leap_status
-      # GPS
-      - gps.mode
-      - gps.status
-      - gps.satellites_visible
-      - gps.satellites_used
-      - gps.hdop
-      - gps.latitude
-      - gps.longitude
-      # Server stats
-      - server_stats.ntp_packets_received
-      - server_stats.client_count
+      - core.load_pct
+      - core.power_w
+      - temp_c
 
 # -----------------------------------------------------------------------------
 # Dashboard Display Options
@@ -132,34 +136,41 @@ sections:
 dashboard:
   # Overview page configuration (01_overview.yaml)
   overview:
-    display_name: Raspberry Pi 4
+    display_name: Desktop
     filesystems:
-      - slug: root
-        label: MicroSD Card
+      - slug: windows_c
+        label: SK hynix 256GB SSD
+      - slug: data_d
+        label: WD 1TB HDD
     temp_suffix: cpu_temp
     gpu:
-      enabled: false
+      enabled: true
+      suffix: gpu_utilization
+      label: NVIDIA GTX 1070
     tpu:
       enabled: false
     services:
-      display: auto
+      display: chips
+      chips:
+        - libre_hardware_monitor
+        - dnscache
+        - lanman_server
+        - spooler
     containers:
       display: null
 
   detail_sections:
     - title: System Status
       cards: [uptime, updates, health_summary]
-    - title: Time Server
-      cards: [chrony_tracking, gps_status, ntp_stats]
     - title: CPU
-      cards: [cpu_load, cpu_temp]
+      cards: [cpu_load, cpu_temp, cpu_power]
     - title: Memory
       cards: [memory_used, swap]
     - title: Storage
-      cards: [filesystems]
+      cards: [filesystems, drive_health]
     - title: Network
-      cards: [network_interfaces]
-    - title: Pi-Specific Metrics
-      cards: [sbc_throttling, sbc_voltages]
+      cards: [network_interfaces, wifi_stats]
+    - title: GPU
+      cards: [gpu_load, gpu_temp]
     - title: Services
       cards: [services_status]

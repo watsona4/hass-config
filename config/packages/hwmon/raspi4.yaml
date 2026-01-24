@@ -61,9 +61,18 @@ template:
       - name: "RasPi4 Updates Pending"
         unique_id: a0b75846-4871-5ff6-ae97-bb93d3af14fb
         availability: "{{ available }}"
-        state: "{{ (health.updates.pending | default(0)) | int }}"
+        state: >-
+          {{ ((health.updates | default({})).pending | default(0)) | int }}
         icon: "mdi:update"
         state_class: measurement
+      - name: "RasPi4 Updates List"
+        unique_id: 9cefe719-2562-5279-be2c-fe6894d29d35
+        availability: "{{ available }}"
+        state: >-
+          {{ ((health.updates | default({})).get('items', []) | map(attribute='name') | list | length) }} packages
+        icon: "mdi:package-variant"
+        attributes:
+          packages: "{{ (health.updates | default({})).get('items', []) | map(attribute='name') | list }}"
       - name: "RasPi4 Services Checked"
         unique_id: d77c874e-5ecf-5ba8-9b3b-9f0903e551b4
         availability: "{{ available }}"
@@ -235,7 +244,7 @@ template:
         unique_id: 63e1522e-c503-5a61-a26a-d745187acb4f
         availability: "{{ available }}"
         state: >-
-          {{ 'Throttled' if throttling.currently_throttled else 'OK' }}
+          {{ 'Throttled' if (throttling.currently_throttled | default(false)) else 'OK' }}
         icon: "mdi:speedometer-slow"
         attributes:
           undervoltage: "{{ throttling.undervoltage | default(false) }}"
@@ -267,7 +276,8 @@ template:
       - name: "RasPi4 Core Voltage"
         unique_id: cc83d946-8919-5be5-9842-67d0e337c147
         availability: "{{ available }}"
-        state: "{{ (sbc.voltages.core_v | default(0)) | round(2) }}"
+        state: >-
+          {{ ((sbc.voltages | default({})).core_v | default(0)) | round(2) }}
         icon: "mdi:flash"
         unit_of_measurement: "V"
         state_class: measurement
@@ -276,7 +286,7 @@ template:
         unique_id: d5245d13-2af3-5d80-ac41-f073fcdab4cb
         availability: "{{ available }}"
         state: >-
-          {{ ((sbc.clocks.arm_hz | default(0)) / 1000000) | round(0) | int }}
+          {{ (((sbc.clocks | default({})).arm_hz | default(0)) / 1000000) | round(0) | int }}
         icon: "mdi:sine-wave"
         unit_of_measurement: "MHz"
         state_class: measurement
@@ -285,19 +295,20 @@ template:
         unique_id: ecd5235f-ff14-51dc-aa85-529361ed8a42
         availability: "{{ available }}"
         state: >-
-          {{ time_server.tracking.reference_name | default('unknown') }}
+          {{ (time_server.tracking | default({})).reference_name | default('unknown') }}
         icon: "mdi:clock-check"
       - name: "RasPi4 NTP Stratum"
         unique_id: 24eab8ec-5a03-51c8-ab3b-4c9a7dc0fb25
         availability: "{{ available }}"
-        state: "{{ time_server.tracking.stratum | default(0) }}"
+        state: >-
+          {{ (time_server.tracking | default({})).stratum | default(0) }}
         icon: "mdi:layers"
         state_class: measurement
       - name: "RasPi4 Time Offset"
         unique_id: 2b5c61f8-26ef-552e-b86e-29dcfb3127ab
         availability: "{{ available }}"
         state: >-
-          {{ (time_server.tracking.system_time_offset_s | default(0) * 1000000) | round(3) }}
+          {{ (((time_server.tracking | default({})).system_time_offset_s | default(0)) * 1000000) | round(3) }}
         icon: "mdi:clock-alert"
         unit_of_measurement: "µs"
         state_class: measurement
@@ -306,7 +317,7 @@ template:
         unique_id: 83f49345-316d-54a8-a7f0-c804275d43a0
         availability: "{{ available }}"
         state: >-
-          {{ (time_server.tracking.rms_offset_s | default(0) * 1000000) | round(3) }}
+          {{ (((time_server.tracking | default({})).rms_offset_s | default(0)) * 1000000) | round(3) }}
         icon: "mdi:chart-line-variant"
         unit_of_measurement: "µs"
         state_class: measurement
@@ -315,62 +326,68 @@ template:
         unique_id: d1ff059e-012b-512c-8c67-c98fe6fb6628
         availability: "{{ available }}"
         state: >-
-          {{ (time_server.tracking.frequency_ppm | default(0)) | round(3) }}
+          {{ ((time_server.tracking | default({})).frequency_ppm | default(0)) | round(3) }}
         icon: "mdi:sine-wave"
         unit_of_measurement: "ppm"
         state_class: measurement
       - name: "RasPi4 Leap Status"
         unique_id: e2c7939b-7f94-5852-947d-9288c67df1ab
         availability: "{{ available }}"
-        state: "{{ time_server.tracking.leap_status | default('Normal') }}"
+        state: >-
+          {{ (time_server.tracking | default({})).leap_status | default('Normal') }}
         icon: "mdi:clock-fast"
       - name: "RasPi4 GPS Mode"
         unique_id: c3a84091-391b-5e56-b837-563cb44d864b
         availability: "{{ available }}"
         state: >-
-          {{ {0: 'No Fix', 1: 'No Fix', 2: '2D', 3: '3D'}.get(time_server.gps.mode | default(0), 'Unknown') }}
+          {{ {0: 'No Fix', 1: 'No Fix', 2: '2D', 3: '3D'}.get((time_server.gps | default({})).mode | default(0), 'Unknown') }}
         icon: "mdi:crosshairs-gps"
         device_class: enum
         attributes:
-          mode_text: "{{ {0: 'No Fix', 1: 'No Fix', 2: '2D', 3: '3D'}.get(time_server.gps.mode | default(0), 'Unknown') }}"
+          mode_text: "{{ {0: 'No Fix', 1: 'No Fix', 2: '2D', 3: '3D'}.get((time_server.gps | default({})).mode | default(0), 'Unknown') }}"
       - name: "RasPi4 GPS Status"
         unique_id: 6423c962-20f0-5a96-9ead-37386667763a
         availability: "{{ available }}"
         state: >-
-          {{ {0: 'Unknown', 1: 'Normal', 2: 'DGPS', 3: 'RTK Fixed', 4: 'RTK Float', 5: 'Dead Reckoning'}.get(time_server.gps.status | default(0), 'Unknown') }}
+          {{ {0: 'Unknown', 1: 'Normal', 2: 'DGPS', 3: 'RTK Fixed', 4: 'RTK Float', 5: 'Dead Reckoning'}.get((time_server.gps | default({})).status | default(0), 'Unknown') }}
         icon: "mdi:satellite-variant"
         device_class: enum
         attributes:
-          status_text: "{{ {0: 'Unknown', 1: 'Normal', 2: 'DGPS', 3: 'RTK Fixed', 4: 'RTK Float', 5: 'Dead Reckoning'}.get(time_server.gps.status | default(0), 'Unknown') }}"
+          status_text: "{{ {0: 'Unknown', 1: 'Normal', 2: 'DGPS', 3: 'RTK Fixed', 4: 'RTK Float', 5: 'Dead Reckoning'}.get((time_server.gps | default({})).status | default(0), 'Unknown') }}"
       - name: "RasPi4 GPS Satellites Visible"
         unique_id: defe55ec-5ce8-56bb-9e8c-421fde3b699f
         availability: "{{ available }}"
-        state: "{{ time_server.gps.satellites_visible | default(0) }}"
+        state: >-
+          {{ (time_server.gps | default({})).satellites_visible | default(0) }}
         icon: "mdi:satellite-variant"
         state_class: measurement
       - name: "RasPi4 GPS Satellites Used"
         unique_id: ff8ca9f3-f5d8-5a42-b657-26c221a2aa04
         availability: "{{ available }}"
-        state: "{{ time_server.gps.satellites_used | default(0) }}"
+        state: >-
+          {{ (time_server.gps | default({})).satellites_used | default(0) }}
         icon: "mdi:satellite-variant"
         state_class: measurement
       - name: "RasPi4 GPS HDOP"
         unique_id: a968f856-91af-521e-8da0-517ca86786dd
         availability: "{{ available }}"
-        state: "{{ (time_server.gps.hdop | default(99)) | round(2) }}"
+        state: >-
+          {{ ((time_server.gps | default({})).hdop | default(99)) | round(2) }}
         icon: "mdi:crosshairs-question"
         state_class: measurement
       - name: "RasPi4 GPS Latitude"
         unique_id: 80f6eec8-2594-585d-9ad2-c2bb906b61e4
         availability: "{{ available }}"
-        state: "{{ (time_server.gps.latitude | default(0)) | round(6) }}"
+        state: >-
+          {{ ((time_server.gps | default({})).latitude | default(0)) | round(6) }}
         icon: "mdi:latitude"
         unit_of_measurement: "°"
         state_class: measurement
       - name: "RasPi4 GPS Longitude"
         unique_id: d2fa03fd-428f-5525-be34-5468a0fa1c5a
         availability: "{{ available }}"
-        state: "{{ (time_server.gps.longitude | default(0)) | round(6) }}"
+        state: >-
+          {{ ((time_server.gps | default({})).longitude | default(0)) | round(6) }}
         icon: "mdi:longitude"
         unit_of_measurement: "°"
         state_class: measurement
@@ -378,13 +395,14 @@ template:
         unique_id: ef8780d5-f594-5a8f-b1fa-67dc48b67ae0
         availability: "{{ available }}"
         state: >-
-          {{ time_server.server_stats.ntp_packets_received | default(0) }}
+          {{ (time_server.server_stats | default({})).ntp_packets_received | default(0) }}
         icon: "mdi:counter"
         state_class: total_increasing
       - name: "RasPi4 NTP Client Count"
         unique_id: 669a9e8a-71e6-54ae-8386-7fb935f111c3
         availability: "{{ available }}"
-        state: "{{ time_server.server_stats.client_count | default(0) }}"
+        state: >-
+          {{ (time_server.server_stats | default({})).client_count | default(0) }}
         icon: "mdi:account-multiple"
         state_class: measurement
     binary_sensor:

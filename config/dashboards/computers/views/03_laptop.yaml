@@ -20,8 +20,6 @@ badges:
     content: "{{ state_attr('sensor.ui_laptop_cpu_utilization', 'short_label') }}"
     tap_action:
       action: more-info
-    icon_tap_action:
-      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.laptop_memory_percent
     icon: "{{ state_attr('sensor.ui_laptop_memory_percent', 'icon') }}"
@@ -30,8 +28,6 @@ badges:
     tap_action:
       action: more-info
 
-    icon_tap_action:
-      action: more-info
 sections:
   # System Status
   - type: grid
@@ -53,7 +49,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_updates_pending
             icon: "{{ state_attr('sensor.ui_laptop_updates_pending', 'icon') }}"
@@ -65,7 +61,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: binary_sensor.laptop_status_alarm
             icon: "{{ state_attr('sensor.ui_laptop_status_alarm', 'icon') }}"
@@ -76,7 +72,26 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
+      - type: markdown
+        content: >-
+          **Available Updates:**
+
+          {{%- set packages = state_attr('sensor.laptop_updates_list', 'packages') | default([]) -%}}
+          {{%- for pkg in packages -%}}
+          - {{ pkg }}
+          {{ '' }}
+          {{%- endfor -%}}
+        visibility:
+          - condition: numeric_state
+            entity: sensor.laptop_updates_pending
+            above: 0
+        card_mod:
+          style: |
+            ha-card {
+              background: rgba(var(--rgb-primary-color), 0.1);
+              font-size: 0.9em;
+            }
 
   # CPU
   - type: grid
@@ -94,7 +109,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.laptop_cpu_load_1m
         icon: "{{ state_attr('sensor.ui_laptop_cpu_load_1m', 'icon') }}"
@@ -104,7 +119,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.laptop_cpu_temp
         icon: "{{ state_attr('sensor.ui_laptop_cpu_temp', 'icon') }}"
@@ -114,7 +129,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Memory
   - type: grid
@@ -132,7 +147,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
       - type: custom:mushroom-template-card
         entity: sensor.laptop_swap_percent
         icon: mdi:swap-horizontal
@@ -142,7 +157,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Filesystems
   - type: grid
@@ -164,7 +179,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
 
   # Network
   - type: grid
@@ -186,7 +201,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_tailscale_ipv4
             icon: mdi:ethernet
@@ -196,7 +211,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
 
   # Services
   - type: grid
@@ -214,7 +229,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # GPU
   - type: grid
@@ -232,7 +247,7 @@ sections:
         tap_action:
           action: more-info
         icon_tap_action:
-          action: more-info
+          action: toggle
 
   # Battery
   - type: grid
@@ -254,7 +269,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_battery_status
             icon: "{{ 'mdi:battery-minus' if states('sensor.laptop_battery_status') == 'Discharging' else 'mdi:battery-charging' }}"
@@ -264,7 +279,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_battery_degradation
             icon: mdi:battery-heart-variant
@@ -274,7 +289,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_battery_power
             icon: mdi:flash
@@ -284,7 +299,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
 
   # Drives
   - type: grid
@@ -357,7 +372,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_wifi_signal
             icon: "{{ 'mdi:wifi-strength-4' if states('sensor.laptop_wifi_signal') | int > 75 else 'mdi:wifi-strength-3' if states('sensor.laptop_wifi_signal') | int > 50 else 'mdi:wifi-strength-2' if states('sensor.laptop_wifi_signal') | int > 25 else 'mdi:wifi-strength-1' }}"
@@ -367,7 +382,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_wifi_channel
             icon: mdi:access-point
@@ -377,7 +392,7 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.laptop_wifi_bitrate
             icon: mdi:speedometer
@@ -387,4 +402,4 @@ sections:
             tap_action:
               action: more-info
             icon_tap_action:
-              action: more-info
+              action: toggle

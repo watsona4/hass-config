@@ -11,7 +11,7 @@ machine:
   name: OPNsense
   slug: opnsense
   telemetry_sensor: sensor.opnsense_home_arpa_opnsense_home_arpa_hardware_telemetry
-  view_order: 5
+  view_order: 6
 
 # -----------------------------------------------------------------------------
 # Sections
@@ -40,7 +40,7 @@ sections:
     enabled: true
     include:
       - adguardhome
-      - kea
+      - kea-dhcp
       - crowdsec
       - cron
 
@@ -54,6 +54,7 @@ sections:
       - load_1m
       - load_5m
       - load_15m
+      - temp_c
       - num_physical_cores
       - num_logical_cores
 
@@ -135,7 +136,9 @@ dashboard:
     display_name: OPNSense
     filesystems:
       - slug: root
-        label: Disk
+        label: WD Blue SN580 500GB SSD
+      - slug: logs
+        label: Logs 
     temp_suffix: cpu_temp
     gpu:
       enabled: false
