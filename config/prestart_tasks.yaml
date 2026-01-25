@@ -14,22 +14,9 @@ tasks:
       - --out-sections=dashboards/environment/plant_sections
       - --router-file=packages/plants/plant_sensor_router.yaml
 
-  - name: render_strava_templates
+  - name: generate_hwmon_assets
     cwd: /config
     run:
       - python3
-      - scripts/render_templates.py
-      - --template-root=.
-      - --template=templates/strava.j2
-      - --out=packages/strava.yaml
-      - --var=count=20
-
-  - name: render_xert_templates
-    cwd: /config
-    run:
-      - python3
-      - scripts/render_templates.py
-      - --template-root=.
-      - --template=templates/xert_activities.j2
-      - --out=packages/xert_activities.yaml
-      - --var=count=50
+      - scripts/generate_hwmon_assets.py
+      - --all

@@ -1,0 +1,259 @@
+# =============================================================================
+# Strava Webhook Package
+# =============================================================================
+# This package consumes webhooks from the external strava-poller container.
+# All API polling is handled externally - this just defines sensors that
+# receive the webhook data.
+#
+# Setup:
+# 1. Generate a webhook ID and add to secrets.yaml:
+#    strava_webhook_id: "your-random-webhook-id-here"
+#
+# 2. Configure the strava-poller container with:
+#    STRAVA_HA_WEBHOOK_ID=your-random-webhook-id-here
+#
+# =============================================================================
+
+# Webhook trigger automation that fires events
+automation:
+  - id: 404bf285-c94c-440b-8ebd-320a1e0074ce
+    alias: "Strava: Webhook Handler"
+    mode: queued
+    max: 10
+    trigger:
+      - platform: webhook
+        webhook_id: !secret strava_webhook_id
+        allowed_methods:
+          - POST
+        local_only: true
+    variables:
+      event_type: "{{ trigger.json.event_type }}"
+      data: "{{ trigger.json.data }}"
+    action:
+      - choose:
+          - conditions: "{{ event_type == 'strava_activities_update' }}"
+            sequence:
+              - event: strava_activities_update
+                event_data:
+                  data: "{{ data }}"
+          - conditions: "{{ event_type == 'strava_latest_photos_update' }}"
+            sequence:
+              - event: strava_latest_photos_update
+                event_data:
+                  data: "{{ data }}"
+
+template:
+  # Raw activities data from webhook
+  - trigger:
+      - platform: event
+        event_type: strava_activities_update
+    variables:
+      d: "{{ trigger.event.data.data if trigger.event.data.data is mapping else {} }}"
+      available: "{{ d.available | default(false) }}"
+      activities: "{{ d.parsed | default([]) }}"
+      ratelimit: "{{ d.ratelimit | default({}) }}"
+    sensor:
+      - name: Strava Activities Raw
+        unique_id: 346af31b-cf44-48a1-bcb1-f45524cf7f61
+        state: "{{ now().isoformat() }}"
+        availability: "{{ available }}"
+        attributes:
+          activities: "{{ activities }}"
+          count: "{{ activities | count }}"
+
+      - name: Strava Rate Limit (15m)
+        unique_id: b60f7259-a8b1-4ccd-8177-a8c0be860366
+        state: "{{ ratelimit.remaining15 | default(0) }}"
+        unit_of_measurement: "calls"
+        availability: "{{ available }}"
+        attributes:
+          used: "{{ ratelimit.used15 | default(0) }}"
+          limit: "{{ ratelimit.limit15 | default(100) }}"
+
+  # Parsed activities with sorted list
+  - trigger:
+      - platform: event
+        event_type: strava_activities_update
+    variables:
+      d: "{{ trigger.event.data.data if trigger.event.data.data is mapping else {} }}"
+      available: "{{ d.available | default(false) }}"
+      root: "{{ d.parsed | default([]) }}"
+      acts: >-
+        {{ root
+           | selectattr('start_date','defined')
+           | sort(attribute='start_date', reverse=true)
+           | list }}
+      latest: "{{ acts[0] if acts|count > 0 else {} }}"
+    sensor:
+      - name: "Strava Latest Ride"
+        unique_id: 35a5d5b3-7b53-40bf-bb24-fed2937004f9
+        icon: mdi:bike
+        availability: "{{ available }}"
+        state: "{{ latest.get('start_date_local') or latest.get('start_date') or now().isoformat() }}"
+        attributes:
+          id: "{{ latest.get('id') }}"
+          title: "{{ latest.get('name') }}"
+          sport_type: "{{ latest.get('sport_type') }}"
+          distance_mi: "{{ (latest.get('distance',0) | float(0) / 1609.344) | round(2) }}"
+          moving_min: "{{ (latest.get('moving_time',0) | float(0) / 60) | round(1) }}"
+          elapsed_min: "{{ (latest.get('elapsed_time',0) | float(0) / 60) | round(1) }}"
+          elev_ft: "{{ (latest.get('total_elevation_gain',0) | float(0) * 3.28084) | round(0) }}"
+          avg_watts: "{{ latest.get('average_watts') }}"
+          max_watts: "{{ latest.get('max_watts') }}"
+          avg_hr: "{{ latest.get('average_heartrate') }}"
+          max_hr: "{{ latest.get('max_heartrate') }}"
+          avg_cadence: "{{ latest.get('average_cadence') }}"
+          weighted_watts: "{{ latest.get('weighted_average_watts') }}"
+          suffer_score: "{{ latest.get('suffer_score') }}"
+          timezone: "{{ latest.get('timezone') }}"
+          gear_id: "{{ latest.get('gear_id') }}"
+          total_photo_count: "{{ latest.get('total_photo_count') }}"
+          map_id: "{{ (latest.get('map') or {}).get('id') }}"
+          start_latlng: "{{ latest.get('start_latlng') }}"
+          end_latlng: "{{ latest.get('end_latlng') }}"
+
+      - name: "Strava Latest Ride Avg Power"
+        unique_id: 4d18c0c3-32d1-4ced-9b52-ee1c4caabd40
+        device_class: power
+        unit_of_measurement: "W"
+        state_class: measurement
+        availability: "{{ available }}"
+        state: "{{ latest.get('average_watts', 0) }}"
+
+      - name: "Strava Latest Ride Avg HR"
+        unique_id: 268182b7-ad56-4edf-a614-7c006ce18a7f
+        state_class: measurement
+        availability: "{{ available }}"
+        state: "{{ latest.get('average_heartrate', 0) }}"
+
+  # Individual activity slots (0-19)
+  - trigger:
+      - platform: event
+        event_type: strava_activities_update
+    variables:
+      d: "{{ trigger.event.data.data if trigger.event.data.data is mapping else {} }}"
+      available: "{{ d.available | default(false) }}"
+      root: "{{ d.parsed | default([]) }}"
+      acts: >-
+        {{ root
+           | selectattr('start_date','defined')
+           | sort(attribute='start_date', reverse=true)
+           | list }}
+    sensor:
+      - name: "Strava 0"
+        unique_id: a16e9d94-10a0-4f26-a12c-256e1be51466
+        availability: "{{ available }}"
+        state: "{{ acts[0].get('start_date') if acts|count > 0 else '' }}"
+        attributes:
+          id: "{{ acts[0].get('id') if acts|count > 0 else none }}"
+          title: "{{ acts[0].get('name') if acts|count > 0 else none }}"
+          sport_type: "{{ acts[0].get('sport_type') if acts|count > 0 else none }}"
+          distance_mi: "{{ ((acts[0].get('distance',0)|float(0))/1609.344)|round(2) if acts|count > 0 else none }}"
+          elev_ft: "{{ ((acts[0].get('total_elevation_gain',0)|float(0))*3.28084)|round(0) if acts|count > 0 else none }}"
+          moving_time_s: "{{ acts[0].get('moving_time') if acts|count > 0 else none }}"
+          average_watts: "{{ acts[0].get('average_watts') if acts|count > 0 else none }}"
+          average_heartrate: "{{ acts[0].get('average_heartrate') if acts|count > 0 else none }}"
+          slot_index: 0
+
+      - name: "Strava 1"
+        unique_id: 1026197c-e9f0-4fad-9998-13f217f551b7
+        availability: "{{ available }}"
+        state: "{{ acts[1].get('start_date') if acts|count > 1 else '' }}"
+        attributes:
+          id: "{{ acts[1].get('id') if acts|count > 1 else none }}"
+          title: "{{ acts[1].get('name') if acts|count > 1 else none }}"
+          sport_type: "{{ acts[1].get('sport_type') if acts|count > 1 else none }}"
+          distance_mi: "{{ ((acts[1].get('distance',0)|float(0))/1609.344)|round(2) if acts|count > 1 else none }}"
+          elev_ft: "{{ ((acts[1].get('total_elevation_gain',0)|float(0))*3.28084)|round(0) if acts|count > 1 else none }}"
+          moving_time_s: "{{ acts[1].get('moving_time') if acts|count > 1 else none }}"
+          average_watts: "{{ acts[1].get('average_watts') if acts|count > 1 else none }}"
+          average_heartrate: "{{ acts[1].get('average_heartrate') if acts|count > 1 else none }}"
+          slot_index: 1
+
+      - name: "Strava 2"
+        unique_id: e0781d82-6cb3-4301-a6ea-acf1b09f0d9a
+        availability: "{{ available }}"
+        state: "{{ acts[2].get('start_date') if acts|count > 2 else '' }}"
+        attributes:
+          id: "{{ acts[2].get('id') if acts|count > 2 else none }}"
+          title: "{{ acts[2].get('name') if acts|count > 2 else none }}"
+          sport_type: "{{ acts[2].get('sport_type') if acts|count > 2 else none }}"
+          distance_mi: "{{ ((acts[2].get('distance',0)|float(0))/1609.344)|round(2) if acts|count > 2 else none }}"
+          elev_ft: "{{ ((acts[2].get('total_elevation_gain',0)|float(0))*3.28084)|round(0) if acts|count > 2 else none }}"
+          moving_time_s: "{{ acts[2].get('moving_time') if acts|count > 2 else none }}"
+          average_watts: "{{ acts[2].get('average_watts') if acts|count > 2 else none }}"
+          average_heartrate: "{{ acts[2].get('average_heartrate') if acts|count > 2 else none }}"
+          slot_index: 2
+
+      - name: "Strava 3"
+        unique_id: ad553e3e-4836-419c-9dd5-5d0e429d9c42
+        availability: "{{ available }}"
+        state: "{{ acts[3].get('start_date') if acts|count > 3 else '' }}"
+        attributes:
+          id: "{{ acts[3].get('id') if acts|count > 3 else none }}"
+          title: "{{ acts[3].get('name') if acts|count > 3 else none }}"
+          sport_type: "{{ acts[3].get('sport_type') if acts|count > 3 else none }}"
+          distance_mi: "{{ ((acts[3].get('distance',0)|float(0))/1609.344)|round(2) if acts|count > 3 else none }}"
+          elev_ft: "{{ ((acts[3].get('total_elevation_gain',0)|float(0))*3.28084)|round(0) if acts|count > 3 else none }}"
+          moving_time_s: "{{ acts[3].get('moving_time') if acts|count > 3 else none }}"
+          average_watts: "{{ acts[3].get('average_watts') if acts|count > 3 else none }}"
+          average_heartrate: "{{ acts[3].get('average_heartrate') if acts|count > 3 else none }}"
+          slot_index: 3
+
+      - name: "Strava 4"
+        unique_id: ceb35257-3124-4056-ba0b-68e420160815
+        availability: "{{ available }}"
+        state: "{{ acts[4].get('start_date') if acts|count > 4 else '' }}"
+        attributes:
+          id: "{{ acts[4].get('id') if acts|count > 4 else none }}"
+          title: "{{ acts[4].get('name') if acts|count > 4 else none }}"
+          sport_type: "{{ acts[4].get('sport_type') if acts|count > 4 else none }}"
+          distance_mi: "{{ ((acts[4].get('distance',0)|float(0))/1609.344)|round(2) if acts|count > 4 else none }}"
+          elev_ft: "{{ ((acts[4].get('total_elevation_gain',0)|float(0))*3.28084)|round(0) if acts|count > 4 else none }}"
+          moving_time_s: "{{ acts[4].get('moving_time') if acts|count > 4 else none }}"
+          average_watts: "{{ acts[4].get('average_watts') if acts|count > 4 else none }}"
+          average_heartrate: "{{ acts[4].get('average_heartrate') if acts|count > 4 else none }}"
+          slot_index: 4
+
+  # Photos data from webhook
+  - trigger:
+      - platform: event
+        event_type: strava_latest_photos_update
+    variables:
+      d: "{{ trigger.event.data.data if trigger.event.data.data is mapping else {} }}"
+      available: "{{ d.available | default(false) }}"
+    sensor:
+      - name: Strava Latest Ride Photos
+        unique_id: 4a4b9ad9-a1e2-4f5c-87c2-41fe09fe440b
+        icon: mdi:image-multiple
+        availability: "{{ available }}"
+        state: "{{ now().isoformat() }}"
+        attributes:
+          activity_id: "{{ d.activity_id }}"
+          url: "{{ d.chosen_url }}"
+          thumb_url: "{{ d.thumb_url }}"
+          photo_count: "{{ d.photo_count | default(0) }}"
+
+  # Non-ride activity summary
+  - trigger:
+      - platform: event
+        event_type: strava_activities_update
+    variables:
+      d: "{{ trigger.event.data.data if trigger.event.data.data is mapping else {} }}"
+      available: "{{ d.available | default(false) }}"
+      root: "{{ d.parsed | default([]) }}"
+      nr: >-
+        {{ root
+           | rejectattr('sport_type','in',['Ride','VirtualRide'])
+           | sort(attribute='start_date', reverse=true)
+           | list }}
+    sensor:
+      - name: Strava Non-Ride Summary
+        unique_id: 31e52f37-a2d9-48e9-bd97-1c8738a9726c
+        icon: mdi:format-list-text
+        availability: "{{ available }}"
+        state: "{{ now().isoformat() }}"
+        attributes:
+          types: >-
+            {{ nr | map(attribute='sport_type') | select('defined') | reject('none') | reject('equalto','') | unique | list }}
+          count: "{{ nr | count }}"

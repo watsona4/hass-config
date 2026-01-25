@@ -166,7 +166,7 @@ template:
           {% endif %}
         {% endfor %}
         {{ ns.items | tojson }}
-      ride_events: "{{ ride_events_json | from_json }}"
+      ride_events: "{{ (ride_events_json | from_json) if ride_events_json and ride_events_json.strip() not in ['', '[]'] else [] }}"
       week_start_ts: "{{ as_timestamp(now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=now().weekday())) }}"
       week_end_ts: "{{ week_start_ts | float + 7*24*3600 }}"
       start_7d_ts: "{{ now_ts - 7*24*3600 }}"
