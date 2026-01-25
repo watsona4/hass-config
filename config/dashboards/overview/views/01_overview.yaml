@@ -603,8 +603,8 @@ sections:
             tap_action:
               action: more-info
           - type: custom:mushroom-climate-card
-            entity: climate.workshop_hvac_virtual
-            name: Shop 
+            entity: climate.workshop_hvac
+            name: Shop
             tap_action:
               action: more-info
           - type: custom:mushroom-humidifier-card

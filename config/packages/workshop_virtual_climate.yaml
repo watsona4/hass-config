@@ -1,22 +1,17 @@
 # ========================== Workshop Virtual Climate ===========================
-# Purpose: Track a virtual climate entity for the workshop based on:
-#  - Heater running: Shelly 1PM power
-#  - AC running: Zigbee outlet power
-#  - Temperature: temp/humidity sensor
+# Purpose: Display-only climate entity for the workshop based on:
+#  - Furnace running: detected via power sensor (dumb thermostat controlled)
+#  - AC running: detected via power sensor (dumb thermostat controlled)
+#  - Temperature: shop thermometer sensor
 #
 # Notes:
-#  - Read-only climate using the Template Climate platform.
-#  - Shows hvac_action: heating, cooling, idle, or off.
-#  - No setpoints or remote control; meant for status and history only.
-
-# ------------------------------ EDIT THESE IDS --------------------------------
-# Replace with your actual entity IDs
-# Example guesses; update to match your system
-homeassistant:
-  customize: {}
+#  - Read-only climate entity - NO control capability
+#  - Shows hvac_action: heating, cooling, or idle based on power consumption
+#  - Mode reflects current operation, not a controllable setting
+#  - Both HVAC units are controlled by independent dumb thermostats
 
 # ------------------------------ THRESHOLDS ------------------------------------
-# Tune the power thresholds that define "running"
+# Power thresholds to detect when appliances are running
 input_number:
   workshop_heater_run_w:
     name: Workshop Heater Running Threshold (W)
@@ -38,89 +33,74 @@ input_number:
     icon: mdi:snowflake
     initial: 50
 
-  workshop_power_off_w:
-    name: Noise Floor / Off Threshold (W)
-    min: 0
-    max: 200
-    step: 1
-    mode: slider
-    unit_of_measurement: W
-    icon: mdi:flash-outline
-    initial: 5
-
 # --------------------------- TEMPLATE SENSORS ---------------------------------
 template:
   - binary_sensor:
-      # Heater running state based on Shelly 1PM power
+      # Furnace running state based on power consumption
       - name: Workshop Heater Running
         unique_id: workshop_heater_running
         device_class: running
         availability: "{{ has_value('sensor.shop_furnace_switch_0_power') }}"
         state: >
-          {% set p = states('sensor.shop_furnace_switch_0_power')|float(0) %}
-          {% set on_w = states('input_number.workshop_heater_run_w')|float(0) %}
-          {% set off_w = states('input_number.workshop_power_off_w')|float(0) %}
-          {{ p >= on_w }}
+          {{ states('sensor.shop_furnace_switch_0_power')|float(0) >=
+             states('input_number.workshop_heater_run_w')|float(50) }}
         icon: mdi:fire
         delay_off:
           seconds: 10
 
-      # AC running state based on Zigbee outlet power
+      # AC running state based on power consumption
       - name: Workshop AC Running
         unique_id: workshop_ac_running
         device_class: running
         availability: "{{ has_value('sensor.shop_air_conditioner_power') }}"
         state: >
-          {% set p = states('sensor.shop_air_conditioner_power')|float(0) %}
-          {% set on_w = states('input_number.workshop_ac_run_w')|float(0) %}
-          {% set off_w = states('input_number.workshop_power_off_w')|float(0) %}
-          {{ p >= on_w }}
+          {{ states('sensor.shop_air_conditioner_power')|float(0) >=
+             states('input_number.workshop_ac_run_w')|float(50) }}
         icon: mdi:snowflake
         delay_off:
           seconds: 10
 
   - sensor:
-      # Pass-through temperature, in case you want a clean, named copy
+      # Pass-through temperature sensor
       - name: Workshop Temperature
         unique_id: workshop_temperature_passthrough
         device_class: temperature
         unit_of_measurement: "°F"
         availability: "{{ has_value('sensor.shop_thermometer_temperature') }}"
         state: "{{ states('sensor.shop_thermometer_temperature') }}"
-        attributes:
-          source_entity: sensor.shop_thermometer_temperature
 
-      # Optional humidity pass-through, if you want it on the climate device card
+      # Pass-through humidity sensor
       - name: Workshop Humidity
         unique_id: workshop_humidity_passthrough
         device_class: humidity
         unit_of_measurement: "%"
         availability: "{{ has_value('sensor.shop_thermometer_humidity') }}"
         state: "{{ states('sensor.shop_thermometer_humidity') }}"
-        attributes:
-          source_entity: sensor.shop_thermometer_humidity
 
 # ------------------------------- MQTT CLIMATE ---------------------------------
+# Read-only climate entity (no command topics = no control)
 mqtt:
   climate:
-    - name: Workshop HVAC (Virtual)
-      unique_id: climate.workshop_virtual
+    - name: Workshop HVAC
+      unique_id: workshop_virtual_climate
       modes:
         - "off"
         - "heat"
         - "cool"
-      # Read-only state topics
+        - "heat_cool"
+      # State topics only - no command topics makes it read-only
       mode_state_topic: "site/home/devices/workshop_hvac/mode"
       action_topic: "site/home/devices/workshop_hvac/action"
       current_temperature_topic: "site/home/devices/workshop_hvac/temperature"
       current_humidity_topic: "site/home/devices/workshop_hvac/humidity"
+      temperature_unit: F
       availability:
         - topic: "site/home/devices/workshop_hvac/availability"
 
 # ---------------------------- STATE PUBLISHING --------------------------------
 automation:
   - id: workshop_virtual_hvac_publish_state
-    alias: Workshop Virtual HVAC, publish state
+    alias: "Workshop Virtual HVAC: Publish State"
     mode: queued
     max: 10
     trigger:
@@ -128,64 +108,68 @@ automation:
         entity_id:
           - binary_sensor.workshop_heater_running
           - binary_sensor.workshop_ac_running
-          - sensor.workshop_temperature
-          - sensor.workshop_humidity
+          - sensor.shop_thermometer_temperature
+          - sensor.shop_thermometer_humidity
       - platform: homeassistant
         event: start
     action:
       - variables:
-          heater_on: "{{ is_state('binary_sensor.workshop_heater_running','on') }}"
-          ac_on: "{{ is_state('binary_sensor.workshop_ac_running','on') }}"
-          temp_c: >-
-            {%- from 'units/base.jinja' import u_convert_entity -%}
-            {{ u_convert_entity('sensor.workshop_temperature','f')|float(0) }}
-          hum_pct: >
-            {% if has_value('sensor.workshop_humidity') %}
-              {{ states('sensor.workshop_humidity')|float(0) }}
-            {% else %} {{ None }}
-            {% endif %}
-          mode: >
-            {% if heater_on %}heat
+          heater_on: "{{ is_state('binary_sensor.workshop_heater_running', 'on') }}"
+          ac_on: "{{ is_state('binary_sensor.workshop_ac_running', 'on') }}"
+          temp_available: "{{ has_value('sensor.shop_thermometer_temperature') }}"
+          temp_f: "{{ states('sensor.shop_thermometer_temperature') | float(0) }}"
+          humidity: "{{ states('sensor.shop_thermometer_humidity') | float(none) }}"
+          # Mode reflects what's currently happening (not controllable)
+          mode: >-
+            {% if heater_on and ac_on %}heat_cool
+            {% elif heater_on %}heat
             {% elif ac_on %}cool
             {% else %}off
             {% endif %}
-          action_now: >
+          # Action shows the current HVAC activity
+          action: >-
             {% if heater_on %}heating
             {% elif ac_on %}cooling
-            {% elif has_value('sensor.workshop_temperature') %}idle
+            {% elif temp_available %}idle
             {% else %}off
             {% endif %}
+      # Publish availability
       - service: mqtt.publish
         data:
           topic: "site/home/devices/workshop_hvac/availability"
-          payload: "online"
+          payload: "{{ 'online' if temp_available else 'offline' }}"
           retain: true
+      # Publish mode (reflects current operation)
       - service: mqtt.publish
         data:
           topic: "site/home/devices/workshop_hvac/mode"
           payload: "{{ mode }}"
           retain: true
+      # Publish action
       - service: mqtt.publish
         data:
           topic: "site/home/devices/workshop_hvac/action"
-          payload: "{{ action_now }}"
+          payload: "{{ action }}"
           retain: true
-      - service: mqtt.publish
-        data:
-          topic: "site/home/devices/workshop_hvac/temperature"
-          payload: "{{ temp_c }}"
-          retain: true
-      - choose:
-          - conditions: "{{ hum_pct is not none }}"
-            sequence:
-              - service: mqtt.publish
-                data:
-                  topic: "site/home/devices/workshop_hvac/humidity"
-                  payload: "{{ hum_pct }}"
-                  retain: true
+      # Publish temperature
+      - if: "{{ temp_available }}"
+        then:
+          - service: mqtt.publish
+            data:
+              topic: "site/home/devices/workshop_hvac/temperature"
+              payload: "{{ temp_f }}"
+              retain: true
+      # Publish humidity if available
+      - if: "{{ humidity is not none and humidity | string != 'None' }}"
+        then:
+          - service: mqtt.publish
+            data:
+              topic: "site/home/devices/workshop_hvac/humidity"
+              payload: "{{ humidity }}"
+              retain: true
 
-# -------------------------- RUNTIME STATISTICS (optional) ---------------------
-# Helpful if you want to see daily heating/cooling totals.
+# -------------------------- RUNTIME STATISTICS --------------------------------
+# Track daily heating/cooling run times
 sensor:
   - platform: history_stats
     name: Workshop Heating Today
