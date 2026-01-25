@@ -29,24 +29,29 @@ http:
 logger:
   default: warning
   logs:
-    pyatv: critical
+    annotatedyaml.constructors: error
     homeassistant.components.apple_tv: critical
-    homeassistant.components.switchbot.cover: critical
-    homeassistant.components.switchbot.coordinator: critical
-    homeassistant.components.switchbot: critical
-    homeassistant.components.bluetooth.passive_update_coordinator: critical
     homeassistant.components.bluetooth.active_update_coordinator: critical
     homeassistant.components.bluetooth.manager: critical
+    homeassistant.components.bluetooth.passive_update_coordinator: critical
     homeassistant.components.opower.coordinator: critical
     homeassistant.components.recorder: info
-    sqlalchemy.engine.Engine: warning
-    homeassistant.core: info
-    homeassistant.helpers.event: info
     homeassistant.components.rest_command: info
-    annotatedyaml.constructors: error
+    homeassistant.components.switchbot.coordinator: critical
+    homeassistant.components.switchbot.cover: critical
+    homeassistant.components.switchbot: critical
+    homeassistant.core: info
+    homeassistant.core_config: error
+    homeassistant.helpers.event: info
+    homeassistant.helpers.template: debug
+    homeassistant.loader: error
+    pyatv: critical
+    sqlalchemy.engine.Engine: warning
   filters:
     homeassistant.components.mqtt.entity:
       - "deprecated option `object_id`"
+    homeassistant.components.dhcp:
+      - "The deprecated constant DhcpServiceInfo was used from aquanta"
 
 recorder:
   db_url: "postgresql://ha:ufEOx3ZH8NBwD2HEfnJquHbk@127.0.0.1/homeassistant_db"
@@ -60,21 +65,23 @@ recorder:
       - sun
     event_types:
       - strava_activities_update
-      - strava_activity_detail_update
+      - strava_latest_photos_update
+      - xert_activity_list_update
+      - xert_training_info_update
+      - zwift_activities_update
       - zwift_profile_update
+      - zwift_status_update
       - zwift_world_update
-      - zwift_activity_update
-      - zwift_fit_parsed
     entities:
       - device_tracker.rv_gps
       - sensor.strava_activities_raw
       - sensor.zwift_activity_data
+      - sensor.xert_activity_list_raw
+      - sensor.xert_activity_list_update
       - automation.rv_gps_statestream_merged_json
       - script.single_window
       - script.window_position
       - sensor.rv_bridge_location_raw
-      - sensor.laptop_oo58t6kn_laptop_oo58t6kn_stats_bundle
-      - sensor.frigate_frigate_stats_bundle
     entity_globs:
       - sensor.ui_*
       - sensor.*_rssi
@@ -90,7 +97,7 @@ recorder:
       - sensor.openmeteo_*
       - sensor.pollen_species_list_*_today
       - sensor.pollen_forecast_*_day_*
-      - sensor.*_lhm_*
+      - sensor.*_hardware_telemetry
       - binary_sensor.webcam_running
 
 pyscript:
