@@ -1,36 +1,7 @@
-homeassistant:
-  customize:
-    anchor_container:
-      .variables: &variables
-        app: 'default'
-        state_info: >-
-          {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(trigger.entity_id, app) | from_json }}
-        state_info_vertical: >-
-          {%- from 'main.jinja' import get_device_state_info -%}
-          {{ get_device_state_info(trigger.entity_id, app, layout='vertical') | from_json }}
-      .attributes: &attributes
-        value: "{{ state_info.value }}"
-        name: "{{ state_info.name }}"
-        default_desc: "{{ state_info.default_desc }}"
-        short_desc: "{{ state_info.short_desc }}"
-        long_desc: "{{ state_info.long_desc }}"
-        full_desc: "{{ state_info.full_desc }}"
-        icon: "{{ state_info.icon }}"
-        color: "{{ state_info.color }}"
-        badge: "{{ state_info.badge }}"
-        badge_color: "{{ state_info.badge_color }}"
-        label: "{{ state_info.label }}"
-        short_label: "{{ state_info.short_label }}"
-        long_label: "{{ state_info.long_label }}"
-        label_vertical: "{{ state_info_vertical.label }}"
-        short_label_vertical: "{{ state_info_vertical.short_label }}"
-        long_label_vertical: "{{ state_info_vertical.long_label }}"
-      .sensor: &sensor
-        state: "{{ states(trigger.entity_id) }}"
-        attributes: *attributes
-
 template:
+  # ---------------------------------------------------------------------------
+  # Environment UI Sensors (no YAML anchors - all inline)
+  # ---------------------------------------------------------------------------
 
   - trigger:
       - platform: state
@@ -140,7 +111,7 @@ template:
             {{- (dom_cat or 'unknown') ~ ' · Index ' ~ (dom_val if dom_val is not none else '–') -}}
           icon_color: >-
             {% from 'main.jinja' import get_color -%}
-            {{ get_color(entity, app='pollen', options=dict(attr='dominant_value')) }}
+            {{ get_color(trigger.entity_id, app='pollen', options=dict(attr='dominant_value')) }}
       - name: ui_google_pollen_nearby_today_grass
         state: "{{ states(trigger.entity_id) }}"
         attributes:
@@ -308,11 +279,18 @@ template:
       - platform: state
         entity_id: sensor.outside_temperature_state
     variables:
-      <<: *variables
       app: 'ambient'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_outside_temperature_state
+      - name: ui_outside_temperature_state
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
 
   - trigger:
       - platform: state
@@ -343,11 +321,18 @@ template:
       - platform: state
         entity_id: sensor.outside_humidity_state
     variables:
-      <<: *variables
       app: 'ambient'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_outside_humidity_state
+      - name: ui_outside_humidity_state
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
 
   - trigger:
       - platform: state
@@ -420,11 +405,18 @@ template:
       - platform: state
         entity_id: sensor.waqi_nearby
     variables:
-      <<: *variables
       app: 'ambient'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_waqi_nearby_aqi
+      - name: ui_waqi_nearby_aqi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
       - name: ui_waqi_nearby_aqi_gauge
         state: "{{ states('sensor.waqi_nearby_aqi') }}"
         attributes:
@@ -535,11 +527,18 @@ template:
       - platform: state
         entity_id: sensor.waqi_home
     variables:
-      <<: *variables
       app: 'ambient'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_waqi_home_aqi
+      - name: ui_waqi_home_aqi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
       - name: ui_waqi_home_aqi_gauge
         state: "{{ states('sensor.waqi_home_aqi') }}"
         attributes:
@@ -614,11 +613,18 @@ template:
       - platform: state
         entity_id: sensor.waqi_rv
     variables:
-      <<: *variables
       app: 'ambient'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_waqi_rv_aqi
+      - name: ui_waqi_rv_aqi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
       - name: ui_waqi_rv_aqi_gauge
         state: "{{ states('sensor.waqi_rv_aqi') }}"
         attributes:
@@ -693,11 +699,18 @@ template:
       - platform: state
         entity_id: sensor.openmeteo_nearby_uv_index
     variables:
-      <<: *variables
       app: 'nearby_uv_index'
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
     sensor:
-      - <<: *sensor
-        name: ui_nearby_uv_index
+      - name: ui_nearby_uv_index
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
       - name: ui_nearby_uv_index_gauge
         state: "{{ states('sensor.openmeteo_nearby_uv_index') }}"
         attributes:
