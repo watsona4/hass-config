@@ -592,3 +592,82 @@
     {#- honor explicit name, then friendly_name, else app -#}
     {{- (options.get("name") or options.get('friendly_name') or app) -}}
 {% endmacro %}
+
+{% macro get_long_label(value, app, options) %}
+    {#- For alarm app, generate a concise summary of current issues instead of "Alarm condition" -#}
+    {%- import 'helpers.jinja' as H with context -%}
+    {%- set is_unavail = options.get('is_unavail', false) -%}
+    {%- set delim = options.get('delim', ' • ') -%}
+    {%- set layout = options.get('layout', 'horizontal') -%}
+    {%- set vert_delim = options.get('vert_delim', '\n') -%}
+    {%- set actual_delim = vert_delim if layout == 'vertical' else delim -%}
+
+    {#- Compute value_text: try context entity_id first, then options, then fallback -#}
+    {%- set eid = entity_id if entity_id is defined else options.get('entity_id', '') -%}
+    {%- set value_text = state_translated(eid) if eid else ('On' if value else 'Off') -%}
+    {%- if value_text in ['unavailable', 'unknown'] -%}
+        {%- set value_text = 'N/A' -%}
+    {%- endif -%}
+
+    {%- if is_unavail -%}
+        {{- (_pick_row(app, options) | from_json).get('long_desc', 'Status unavailable') -}}
+    {%- elif app == 'alarm' and value and options.summary is defined -%}
+        {#- Alarm is active - parse issues and create concise summary -#}
+        {%- set summary_text = states(options.summary) | default('', true) -%}
+        {%- if summary_text and summary_text not in ['OK', 'unknown', 'unavailable'] -%}
+            {#- Split issues by semicolon, strip "Issues: " prefix if present -#}
+            {%- set clean_text = summary_text | replace('Issues: ', '') -%}
+            {%- set issues = clean_text.split('; ') -%}
+
+            {#- Categorize issues -#}
+            {%- set ns = namespace(disk=0, service=0, container=0, update=0, other=[]) -%}
+            {%- for issue in issues -%}
+                {%- set issue_lower = issue | lower -%}
+                {%- if 'disk space' in issue_lower or 'storage' in issue_lower -%}
+                    {%- set ns.disk = ns.disk + 1 -%}
+                {%- elif issue_lower.startswith('service ') -%}
+                    {%- set ns.service = ns.service + 1 -%}
+                {%- elif issue_lower.startswith('container ') -%}
+                    {%- set ns.container = ns.container + 1 -%}
+                {%- elif 'update' in issue_lower -%}
+                    {%- set ns.update = ns.update + 1 -%}
+                {%- else -%}
+                    {%- set ns.other = ns.other + [issue] -%}
+                {%- endif -%}
+            {%- endfor -%}
+
+            {#- Build concise summary parts -#}
+            {%- set parts = [] -%}
+            {%- if ns.disk > 0 -%}
+                {%- set parts = parts + [ns.disk ~ ' disk' ~ ('s' if ns.disk > 1 else '') ~ ' low'] -%}
+            {%- endif -%}
+            {%- if ns.service > 0 -%}
+                {%- set parts = parts + [ns.service ~ ' svc' ~ ('s' if ns.service > 1 else '') ~ ' down'] -%}
+            {%- endif -%}
+            {%- if ns.container > 0 -%}
+                {%- set parts = parts + [ns.container ~ ' container' ~ ('s' if ns.container > 1 else '') ~ ' down'] -%}
+            {%- endif -%}
+            {%- if ns.update > 0 -%}
+                {%- set parts = parts + [ns.update ~ ' update' ~ ('s' if ns.update > 1 else '')] -%}
+            {%- endif -%}
+            {%- if ns.other | length > 0 -%}
+                {%- if ns.other | length == 1 -%}
+                    {#- Single other issue - show truncated text -#}
+                    {%- set other_text = ns.other[0][:30] ~ ('...' if ns.other[0] | length > 30 else '') -%}
+                    {%- set parts = parts + [other_text] -%}
+                {%- else -%}
+                    {%- set parts = parts + [ns.other | length ~ ' other issue' ~ ('s' if ns.other | length > 1 else '')] -%}
+                {%- endif -%}
+            {%- endif -%}
+
+            {%- set concise_desc = parts | join(', ') if parts else 'Issues detected' -%}
+            {{- value_text ~ actual_delim ~ concise_desc -}}
+        {%- else -%}
+            {{- value_text ~ actual_delim ~ 'Issues detected' -}}
+        {%- endif -%}
+    {%- else -%}
+        {#- Fall back to standard long_desc -#}
+        {%- set long_desc = (_pick_row(app, options) | from_json).get('long_desc', 'Error: <unknown>') -%}
+        {{- value_text ~ actual_delim ~ long_desc -}}
+    {%- endif -%}
+{% endmacro %}
