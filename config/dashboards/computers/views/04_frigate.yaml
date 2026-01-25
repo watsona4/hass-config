@@ -385,8 +385,8 @@ sections:
           - type: custom:mushroom-template-card
             entity: sensor.frigate_nvme_ssd_transfer_rate
             icon: "{{ 'mdi:harddisk' if state_attr('sensor.frigate_nvme_ssd_info', 'type') == 'HDD' else 'mdi:flash' }}"
-            icon_color: "{{ 'cyan' if states('sensor.frigate_nvme_ssd_transfer_rate') | int > 10485760 else 'blue' if states('sensor.frigate_nvme_ssd_transfer_rate') | int > 1048576 else 'grey' }}"
-            primary: "{{ state_attr('sensor.frigate_nvme_ssd_info', 'model') | default('NVMe SSD') | truncate(25, True) }}"
+            icon_color: "{{ 'cyan' if states('sensor.frigate_nvme_ssd_transfer_rate') | int(0) > 10485760 else 'blue' if states('sensor.frigate_nvme_ssd_transfer_rate') | int(0) > 1048576 else 'grey' }}"
+            primary: "{{ (state_attr('sensor.frigate_nvme_ssd_info', 'model') or 'NVMe SSD') | truncate(25, True) }}"
             secondary: >-
               {%- set used = states('sensor.frigate_nvme_ssd_used') | float(0) -%}
               {%- set avail = states('sensor.frigate_nvme_ssd_available') | float(0) -%}}
@@ -444,8 +444,8 @@ sections:
           - type: custom:mushroom-template-card
             entity: sensor.frigate_hdd_transfer_rate
             icon: "{{ 'mdi:harddisk' if state_attr('sensor.frigate_hdd_info', 'type') == 'HDD' else 'mdi:flash' }}"
-            icon_color: "{{ 'cyan' if states('sensor.frigate_hdd_transfer_rate') | int > 10485760 else 'blue' if states('sensor.frigate_hdd_transfer_rate') | int > 1048576 else 'grey' }}"
-            primary: "{{ state_attr('sensor.frigate_hdd_info', 'model') | default('HDD') | truncate(25, True) }}"
+            icon_color: "{{ 'cyan' if states('sensor.frigate_hdd_transfer_rate') | int(0) > 10485760 else 'blue' if states('sensor.frigate_hdd_transfer_rate') | int(0) > 1048576 else 'grey' }}"
+            primary: "{{ (state_attr('sensor.frigate_hdd_info', 'model') or 'HDD') | truncate(25, True) }}"
             secondary: >-
               {%- set used = states('sensor.frigate_hdd_used') | float(0) -%}
               {%- set avail = states('sensor.frigate_hdd_available') | float(0) -%}}
@@ -495,7 +495,7 @@ sections:
               {%- set cycles = state_attr('sensor.frigate_nvme_ssd_smart', 'power_cycles') | default(0) -%}}
               {%- set errors = state_attr('sensor.frigate_nvme_ssd_smart', 'media_errors') | default(0) -%}}
               {{ health }}{% if wear not in ['unknown', 'unavailable'] %} · {{ wear }}% life{% endif %}{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}
-              POH: {{ poh | int }}h · Cycles: {{ cycles }} · Errors: {{ errors }}
+              POH: {{ poh | int(0) }}h · Cycles: {{ cycles | int(0) }} · Errors: {{ errors | int(0) }}
             multiline_secondary: true
             tap_action:
               action: more-info
@@ -512,7 +512,7 @@ sections:
               {%- set cycles = state_attr('sensor.frigate_hdd_smart', 'power_cycles') | default(0) -%}}
               {%- set errors = state_attr('sensor.frigate_hdd_smart', 'media_errors') | default(0) -%}}
               {{ health }}{% if wear not in ['unknown', 'unavailable'] %} · {{ wear }}% life{% endif %}{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}
-              POH: {{ poh | int }}h · Cycles: {{ cycles }} · Errors: {{ errors }}
+              POH: {{ poh | int(0) }}h · Cycles: {{ cycles | int(0) }} · Errors: {{ errors | int(0) }}
             multiline_secondary: true
             tap_action:
               action: more-info

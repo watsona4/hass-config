@@ -458,9 +458,9 @@ template:
           warning_c: "{{ (tpus[0].thermal.warning_c | default(0)) | round(1) if tpus and tpus[0].thermal else 0 }}"
           critical_c: "{{ (tpus[0].thermal.critical_c | default(0)) | round(1) if tpus and tpus[0].thermal else 0 }}"
           throttling: "{{ tpus[0].thermal.throttling | default(false) if tpus and tpus[0].thermal else false }}"
-          dfs_enabled: "{{ tpus[0].thermal.dfs.enabled | default(false) if tpus and tpus[0].thermal and tpus[0].thermal.dfs else false }}"
-          dfs_active_state: "{{ tpus[0].thermal.dfs.active_state | default('unknown') if tpus and tpus[0].thermal and tpus[0].thermal.dfs else 'unknown' }}"
-          dfs_states: "{% set tpu = tpus[0] if tpus else none %}{% if tpu and tpu.thermal and tpu.thermal.dfs and tpu.thermal.dfs.states %}{% set states = [] %}{% for s in tpu.thermal.dfs.states %}{{ (s.trip_point_c | default(0) | round(0) | int | string) ~ '°C → ' ~ ((s.clock_limit_hz | default(0)) / 1000000 | round(0) | int | string) ~ ' MHz' }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}No states{% endif %}"
+          dfs_enabled: "{% set tpu = tpus[0] if tpus else none %}{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}{{ dfs.get('enabled', false) }}"
+          dfs_active_state: "{% set tpu = tpus[0] if tpus else none %}{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}{{ dfs.get('active_state', 'unknown') }}"
+          dfs_states: "{% set tpu = tpus[0] if tpus else none %}{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}{% set states = dfs.get('states', []) %}{% if states %}{% for s in states %}{{ (s.trip_point_c | default(0) | round(0) | int | string) ~ '°C → ' ~ ((s.clock_limit_hz | default(0)) / 1000000 | round(0) | int | string) ~ ' MHz' }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}No states{% endif %}"
       - name: "Frigate CPU Package"
         unique_id: b3bbad4d-5066-51a3-a205-b2b9b545ccf9
         availability: "{{ available }}"

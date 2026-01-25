@@ -262,7 +262,7 @@ sections:
             entity: sensor.desktop_sk_hynix_256gb_ssd_temp
             icon: "{{ 'mdi:harddisk' if state_attr('sensor.desktop_sk_hynix_256gb_ssd_info', 'type') == 'HDD' else 'mdi:flash' }}"
             icon_color: blue
-            primary: "{{ state_attr('sensor.desktop_sk_hynix_256gb_ssd_info', 'model') | default('SK hynix 256GB SSD') | truncate(25, True) }}"
+            primary: "{{ (state_attr('sensor.desktop_sk_hynix_256gb_ssd_info', 'model') or 'SK hynix 256GB SSD') | truncate(25, True) }}"
             secondary: >-
               {%- set used = states('sensor.desktop_sk_hynix_256gb_ssd_used') | float(0) -%}
               {%- set avail = states('sensor.desktop_sk_hynix_256gb_ssd_available') | float(0) -%}}
@@ -276,7 +276,7 @@ sections:
             entity: sensor.desktop_wd_1tb_hdd_temp
             icon: "{{ 'mdi:harddisk' if state_attr('sensor.desktop_wd_1tb_hdd_info', 'type') == 'HDD' else 'mdi:flash' }}"
             icon_color: blue
-            primary: "{{ state_attr('sensor.desktop_wd_1tb_hdd_info', 'model') | default('WD 1TB HDD') | truncate(25, True) }}"
+            primary: "{{ (state_attr('sensor.desktop_wd_1tb_hdd_info', 'model') or 'WD 1TB HDD') | truncate(25, True) }}"
             secondary: >-
               {%- set used = states('sensor.desktop_wd_1tb_hdd_used') | float(0) -%}
               {%- set avail = states('sensor.desktop_wd_1tb_hdd_available') | float(0) -%}}

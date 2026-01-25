@@ -314,7 +314,7 @@ sections:
             entity: sensor.laptop_nvme_ssd_temp
             icon: "{{ 'mdi:harddisk' if state_attr('sensor.laptop_nvme_ssd_info', 'type') == 'HDD' else 'mdi:flash' }}"
             icon_color: blue
-            primary: "{{ state_attr('sensor.laptop_nvme_ssd_info', 'model') | default('NVMe SSD') | truncate(25, True) }}"
+            primary: "{{ (state_attr('sensor.laptop_nvme_ssd_info', 'model') or 'NVMe SSD') | truncate(25, True) }}"
             secondary: >-
               {%- set used = states('sensor.laptop_nvme_ssd_used') | float(0) -%}
               {%- set avail = states('sensor.laptop_nvme_ssd_available') | float(0) -%}}

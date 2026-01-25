@@ -703,16 +703,21 @@ def generate_tpu_sensors(machine: dict, config: dict) -> list:
                 "{{ tpus[0].thermal.throttling | default(false) if tpus and tpus[0].thermal else false }}"
             ),
             "dfs_enabled": (
-                "{{ tpus[0].thermal.dfs.enabled | default(false) if tpus and tpus[0].thermal and tpus[0].thermal.dfs else false }}"
+                "{% set tpu = tpus[0] if tpus else none %}"
+                "{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}"
+                "{{ dfs.get('enabled', false) }}"
             ),
             "dfs_active_state": (
-                "{{ tpus[0].thermal.dfs.active_state | default('unknown') if tpus and tpus[0].thermal and tpus[0].thermal.dfs else 'unknown' }}"
+                "{% set tpu = tpus[0] if tpus else none %}"
+                "{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}"
+                "{{ dfs.get('active_state', 'unknown') }}"
             ),
             "dfs_states": (
                 "{% set tpu = tpus[0] if tpus else none %}"
-                "{% if tpu and tpu.thermal and tpu.thermal.dfs and tpu.thermal.dfs.states %}"
-                "{% set states = [] %}"
-                "{% for s in tpu.thermal.dfs.states %}"
+                "{% set dfs = tpu.thermal.get('dfs', {}) if tpu and tpu.thermal else {} %}"
+                "{% set states = dfs.get('states', []) %}"
+                "{% if states %}"
+                "{% for s in states %}"
                 "{{ (s.trip_point_c | default(0) | round(0) | int | string) ~ '°C → ' ~ ((s.clock_limit_hz | default(0)) / 1000000 | round(0) | int | string) ~ ' MHz' }}"
                 "{% if not loop.last %}, {% endif %}"
                 "{% endfor %}"
@@ -3189,15 +3194,15 @@ sections:
                     if "transfer_rate" in metrics:
                         f.write(
                             "            icon_color: \"{{ 'cyan' if"
-                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int > 10485760 else 'blue' if"
-                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int > 1048576 else 'grey' }}}}\"\n"
+                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int(0) > 10485760 else 'blue' if"
+                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int(0) > 1048576 else 'grey' }}}}\"\n"
                         )
                     else:
                         f.write("            icon_color: blue\n")
                     # Primary: name, model, type
                     f.write(
-                        f"            primary: \"{{{{ state_attr('sensor.{entity_prefix}_{drive_slug}_info', 'model') |"
-                        f" default('{display}') | truncate(25, True) }}}}\"\n"
+                        f"            primary: \"{{{{ (state_attr('sensor.{entity_prefix}_{drive_slug}_info', 'model') or"
+                        f" '{display}') | truncate(25, True) }}}}\"\n"
                     )
                     # Secondary: used/available/pct/temp
                     f.write(f"            secondary: >-\n")
@@ -3353,7 +3358,7 @@ sections:
                                 "{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}\n"
                             )
                             f.write(
-                                "              POH: {{ poh | int }}h · Cycles: {{ cycles }} · Errors: {{ errors }}\n"
+                                "              POH: {{ poh | int(0) }}h · Cycles: {{ cycles | int(0) }} · Errors: {{ errors | int(0) }}\n"
                             )
                         else:
                             f.write(
