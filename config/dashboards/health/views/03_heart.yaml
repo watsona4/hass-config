@@ -32,7 +32,7 @@ badges:
       {% elif v < 60 %}
         yellow
       {% elif v < 80 %}
-        purple  
+        purple
       {% else %}
         purple
       {% endif %}
@@ -44,36 +44,36 @@ badges:
       {% set cat = states('sensor.map_category') %}
       {% if cat == 'Normal' %}
         blue
-      {% elif cat == 'Borderline Low' %} 
-        amber 
-      {% elif cat in ['Low','Very High'] %} 
-        red 
-      {% elif cat == 'High' %} 
-        blue 
+      {% elif cat == 'Borderline Low' %}
+        amber
+      {% elif cat in ['Low','Very High'] %}
+        red
+      {% elif cat == 'High' %}
+        blue
       {% else %}
-        grey 
+        grey
       {% endif %}
     content: "{{ 'MAP ' ~ states(entity) ~ ' mmHg (' ~ states('sensor.map_category') ~ ')' }}"
   - type: custom:mushroom-template-badge
     entity: sensor.recovery_status
     icon: >-
       {% if is_state(entity,'Good') %}
-        mdi:heart 
+        mdi:heart
       {% elif is_state(entity,'OK') %}
-        mdi:heart-half-full 
+        mdi:heart-half-full
       {% elif is_state(entity,'Strained') %}
         mdi:heart-broken
       {% else %}
         mdi:heart-outline
       {% endif %}
     color: >-
-      {% if is_state(entity,'Good') %} 
-        green 
-      {% elif is_state(entity,'OK') %} 
-        yellow 
-      {% elif is_state(entity,'Strained') %} 
-        red 
-      {% else %} 
+      {% if is_state(entity,'Good') %}
+        green
+      {% elif is_state(entity,'OK') %}
+        yellow
+      {% elif is_state(entity,'Strained') %}
+        red
+      {% else %}
         grey
       {% endif %}
     content: "{{ 'Recovery: ' ~ states(entity) }}"
@@ -81,17 +81,17 @@ badges:
     entity: sensor.pixel_9_pro_xl_respiratory_rate
     icon: mdi:lungs
     color: >-
-      {% set c = states('sensor.respiratory_rate_category') %} 
-      {% if c == 'Normal' %} 
-        green 
-      {% elif c == 'Low' %} 
-        yellow 
-      {% elif c == 'Elevated' %} 
-        orange 
-      {% elif c == 'High' %} 
-        red 
-      {% else %} 
-        grey 
+      {% set c = states('sensor.respiratory_rate_category') %}
+      {% if c == 'Normal' %}
+        green
+      {% elif c == 'Low' %}
+        yellow
+      {% elif c == 'Elevated' %}
+        orange
+      {% elif c == 'High' %}
+        red
+      {% else %}
+        grey
       {% endif %}
     content: "{{ 'RR ' ~ states(entity)  ~ ' rpm (' ~ states('sensor.respiratory_rate_category') ~ ')' }}"
   - type: custom:mushroom-template-badge
@@ -99,12 +99,12 @@ badges:
     icon: mdi:stethoscope
     color: >-
       {% set p = states(entity) %}
-      {% if p in ['ISH','IDH','SDH'] %} 
-        red 
-      {% elif p == 'None' %} 
-        green 
+      {% if p in ['ISH','IDH','SDH'] %}
+        red
+      {% elif p == 'None' %}
+        green
       {% else %}
-        grey 
+        grey
       {% endif %}
     content: "{{ 'Phenotype: ' ~ states(entity) }}"
   - type: custom:mushroom-template-badge
@@ -112,14 +112,14 @@ badges:
     icon: mdi:trending-up
     color: >-
       {% set d = (states(entity) | float - states('sensor.resting_hr_7d_avg') | float) %}
-      {% if d <= -2 %} 
-        green 
+      {% if d <= -2 %}
+        green
       {% elif d <= 1 %}
-        blue 
-      {% elif d <= 3 %} 
-        yellow 
-      {% else %} 
-        red 
+        blue
+      {% elif d <= 3 %}
+        yellow
+      {% else %}
+        red
       {% endif %}
     content: "{{ 'RHR Δ ' ~ (states(entity) | float - states('sensor.resting_hr_7d_avg') | float) | round(1) ~ ' bpm' }}"
 sections:

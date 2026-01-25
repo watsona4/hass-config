@@ -137,27 +137,27 @@ template:
           {% set rr = states('sensor.pixel_9_pro_xl_respiratory_rate') | float(0) %}
           {% if rr == 0 %}
             unknown
-          {% elif rr < 10 %} 
+          {% elif rr < 10 %}
             Low
-          {% elif rr <= 20 %} 
+          {% elif rr <= 20 %}
             Normal
-          {% elif rr <= 24 %} 
+          {% elif rr <= 24 %}
             Elevated
-          {% else %} 
-            High 
+          {% else %}
+            High
           {% endif %}
         icon: >-
           {% set s = states('sensor.respiratory_rate_category') %}
-          {% if s == 'Low' %} 
+          {% if s == 'Low' %}
             mdi:arrow-down-bold
-          {% elif s == 'Normal' %} 
+          {% elif s == 'Normal' %}
             mdi:check
-          {% elif s == 'Elevated' %} 
+          {% elif s == 'Elevated' %}
             mdi:arrow-up-bold
-          {% elif s == 'High' %} 
+          {% elif s == 'High' %}
             mdi:alert
-          {% else %} 
-            mdi:help-circle-outline 
+          {% else %}
+            mdi:help-circle-outline
           {% endif %}
 
       - name: "Recovery Status"
@@ -174,19 +174,19 @@ template:
             {% else %}
               Strained
             {% endif %}
-          {% else %} 
-            unknown 
+          {% else %}
+            unknown
           {% endif %}
         icon: >-
           {% set s = states('sensor.recovery_status') %}
-          {% if s == 'Good' %} 
+          {% if s == 'Good' %}
             mdi:heart
-          {% elif s == 'OK' %} 
+          {% elif s == 'OK' %}
             mdi:heart-half-full
-          {% elif s == 'Strained' %} 
+          {% elif s == 'Strained' %}
             mdi:heart-broken
-          {% else %} 
-            mdi:heart-outline 
+          {% else %}
+            mdi:heart-outline
           {% endif %}
 
       # --- BP stage as a number (AHA/ACC) for logic/chart coloring ---
@@ -200,16 +200,16 @@ template:
             unknown
           {% elif s < 120 and d < 80 %}
             0
-          {% elif 120 <= s < 130 and d < 80 %} 
+          {% elif 120 <= s < 130 and d < 80 %}
             1
-          {% elif (130 <= s < 140) or (80 <= d < 90) %} 
+          {% elif (130 <= s < 140) or (80 <= d < 90) %}
             2
-          {% elif (140 <= s) or (90 <= d) %} 
+          {% elif (140 <= s) or (90 <= d) %}
             3
-          {% elif s >= 180 or d >= 120 %} 
+          {% elif s >= 180 or d >= 120 %}
             4
-          {% else %} 
-            unknown 
+          {% else %}
+            unknown
           {% endif %}
 
       # --- Hypertension phenotype flags ---
@@ -219,16 +219,16 @@ template:
         state: >-
           {% set s = states('sensor.pixel_9_pro_xl_systolic_blood_pressure') | int(0) %}
           {% set d = states('sensor.pixel_9_pro_xl_diastolic_blood_pressure') | int(0) %}
-          {% if s == 0 or d == 0 %} 
+          {% if s == 0 or d == 0 %}
             unknown
-          {% elif s >= 130 and d < 80 %} 
+          {% elif s >= 130 and d < 80 %}
             ISH
-          {% elif s < 130 and d >= 80 %} 
+          {% elif s < 130 and d >= 80 %}
             IDH
-          {% elif s >= 130 and d >= 80 %} 
+          {% elif s >= 130 and d >= 80 %}
             SDH
-          {% else %} 
-            None 
+          {% else %}
+            None
           {% endif %}
 
       # --- Pulse Pressure Category ---
@@ -237,18 +237,18 @@ template:
         icon: mdi:arrow-expand-vertical
         state: >-
           {% set pp = states('sensor.health_pulse_pressure') | float(0) %}
-          {% if pp == 0 %} 
+          {% if pp == 0 %}
             unknown
-          {% elif pp < 30 %} 
+          {% elif pp < 30 %}
             Low
-          {% elif pp < 50 %} 
+          {% elif pp < 50 %}
             Typical
-          {% elif pp < 60 %} 
+          {% elif pp < 60 %}
             Watch
-          {% elif pp < 80 %} 
+          {% elif pp < 80 %}
             Elevated
-          {% else %} 
-            Very High 
+          {% else %}
+            Very High
           {% endif %}
 
       # --- MAP Category ---
@@ -257,18 +257,18 @@ template:
         icon: mdi:chart-bell-curve
         state: >-
           {% set map = states('sensor.health_mean_arterial_pressure') | float(0) %}
-          {% if map==0 %} 
+          {% if map==0 %}
             unknown
-          {% elif map < 60 %} 
+          {% elif map < 60 %}
             Low
-          {% elif map < 70 %} 
+          {% elif map < 70 %}
             Borderline Low
-          {% elif map <= 100 %} 
+          {% elif map <= 100 %}
             Normal
-          {% elif map <= 110 %} 
+          {% elif map <= 110 %}
             High
-          {% else %} 
-            Very High 
+          {% else %}
+            Very High
           {% endif %}
 
       # --- Simple composite score (0–100): higher is better ---
