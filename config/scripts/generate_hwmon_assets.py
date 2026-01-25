@@ -2423,11 +2423,11 @@ sections:
               action: toggle
       - type: markdown
         content: |
+          {{% set packages = state_attr('sensor.{entity_prefix}_updates_list', 'packages') | default([]) %}}
           **Available Updates:**
-          {{%- set packages = state_attr('sensor.{entity_prefix}_updates_list', 'packages') | default([]) %}}
-          {{% for pkg in packages %}}
-          - {{{{ pkg }}}}
-          {{% endfor %}}
+          {{%- for pkg in packages %}}
+            - {{{{ pkg }}}}
+          {{%- endfor %}}
         visibility:
           - condition: numeric_state
             entity: sensor.{entity_prefix}_updates_pending

@@ -111,7 +111,7 @@ def order_unique_id(ent: CommentedMap, dict_container: bool = False) -> None:
 def ensure_unique_id_on_entity(ent: CommentedMap, used: Set[str], force: bool,
                                dict_container: bool = False) -> None:
     platform = ent.get("platform", "")
-    
+
     # Skip entities for platforms that don't support unique_id
     if platform in PLATFORMS_WITHOUT_UNIQUE_ID:
         return

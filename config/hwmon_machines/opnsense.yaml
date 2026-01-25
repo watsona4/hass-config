@@ -138,7 +138,7 @@ dashboard:
       - slug: root
         label: WD Blue SN580 500GB SSD
       - slug: logs
-        label: Logs 
+        label: Logs
     temp_suffix: cpu_temp
     gpu:
       enabled: false
