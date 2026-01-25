@@ -2,7 +2,8 @@
 {# Required reason codes (exact): nighttime, brightness, device, temperature, presence, button #}
 
 {% macro _badge_icon_for(code) -%}
-    {%- if code|lower == 'nighttime' -%}mdi:weather-night
+    {%- if code|lower == 'open' -%}mdi:blinds-open
+    {%- elif code|lower == 'nighttime' -%}mdi:weather-night
     {%- elif code|lower == 'brightness' -%}mdi:white-balance-sunny
     {%- elif code|lower == 'device' -%}mdi:television
     {%- elif code|lower == 'temperature' -%}mdi:thermometer
@@ -13,7 +14,8 @@
 {%- endmacro %}
 
 {% macro _badge_color_for(code) -%}
-    {%- if code|lower == 'nighttime' -%}blue
+    {%- if code|lower == 'open' -%}green
+    {%- elif code|lower == 'nighttime' -%}blue
     {%- elif code|lower == 'brightness' -%}amber
     {%- elif code|lower == 'device' -%}indigo
     {%- elif code|lower == 'temperature' -%}red
@@ -86,42 +88,52 @@
 
     {%- set badge_tmpl -%}
         {% raw -%}
-            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
-            {% if r == 'nighttime' %}
-                mdi:weather-night
-            {% elif r == 'brightness' %}
-                mdi:white-balance-sunny
-            {% elif r == 'device' %}
-                mdi:television
-            {% elif r == 'temperature' %}
-                mdi:thermometer
-            {% elif r == 'presence' %}
-                mdi:account-off
-            {% elif r == 'button' %}
-                mdi:gesture-tap-button
+            {% set s = states(entity) %}
+            {% if s in ['open', 'opening'] %}
+                mdi:blinds-open
             {% else %}
-                mdi:blank
+                {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
+                {% if r == 'nighttime' %}
+                    mdi:weather-night
+                {% elif r == 'brightness' %}
+                    mdi:white-balance-sunny
+                {% elif r == 'device' %}
+                    mdi:television
+                {% elif r == 'temperature' %}
+                    mdi:thermometer
+                {% elif r == 'presence' %}
+                    mdi:account-off
+                {% elif r == 'button' %}
+                    mdi:gesture-tap-button
+                {% else %}
+                    mdi:blank
+                {% endif %}
             {% endif %}
         {%- endraw %}
     {%- endset -%}
 
     {%- set badge_color_tmpl -%}
         {% raw -%}
-            {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower%}
-            {% if r == 'nighttime' %}
-                blue
-            {% elif r == 'brightness' %}
-                amber
-            {% elif r == 'device' %}
-                indigo
-            {% elif r == 'temperature' %}
-                red
-            {% elif r == 'presence' %}
-                purple
-            {% elif r == 'button' %}
-                teal
+            {% set s = states(entity) %}
+            {% if s in ['open', 'opening'] %}
+                green
             {% else %}
-                grey
+                {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
+                {% if r == 'nighttime' %}
+                    blue
+                {% elif r == 'brightness' %}
+                    amber
+                {% elif r == 'device' %}
+                    indigo
+                {% elif r == 'temperature' %}
+                    red
+                {% elif r == 'presence' %}
+                    purple
+                {% elif r == 'button' %}
+                    teal
+                {% else %}
+                    grey
+                {% endif %}
             {% endif %}
         {%- endraw %}
     {%- endset -%}
@@ -198,6 +210,39 @@
     {%- endfor -%}
 
     {{ ns.found }}
+{%- endmacro %}
+
+{% macro any_blinds_open(suffix='_window') -%}
+    {# True/False: is there at least one blind that is open/opening? #}
+    {%- set ns = namespace(found=false) -%}
+
+    {%- for c in states.cover -%}
+        {%- set eid = c.entity_id -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+        {%- if c.state in ['open','opening'] -%}
+            {%- set ns.found = true -%}
+            {%- break -%}
+        {%- endif -%}
+    {%- endfor -%}
+
+    {{ ns.found }}
+{%- endmacro %}
+
+{% macro build_open_blind_cards(suffix='_window') -%}
+    {# Build cards list for all open/opening blinds #}
+    {%- set ns = namespace(cards=[]) -%}
+
+    {%- for c in states.cover -%}
+        {%- set eid = c.entity_id -%}
+        {%- set slug = eid.split('.', 1)[1] -%}
+        {%- if not slug.endswith(suffix) -%}{% continue %}{%- endif -%}
+        {%- if c.state not in ['open','opening'] -%}{% continue %}{%- endif -%}
+
+        {%- set card_json = _card_for_cover(eid) -%}
+        {%- set ns.cards = ns.cards + [ card_json | from_json ] -%}
+    {%- endfor -%}
+    {{ ns.cards | tojson }}
 {%- endmacro %}
 
 {% macro count_blinds_closed(wanted=None, suffix='_window') -%}
