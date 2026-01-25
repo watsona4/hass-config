@@ -77,11 +77,11 @@ sections:
         content: >-
           **Available Updates:**
 
-          {{%- set packages = state_attr('sensor.desktop_updates_list', 'packages') | default([]) -%}}
-          {{%- for pkg in packages -%}}
+          {%- set packages = state_attr('sensor.desktop_updates_list', 'packages') | default([]) -%}
+          {%- for pkg in packages -%}
           - {{ pkg }}
           {{ '' }}
-          {{%- endfor -%}}
+          {%- endfor -%}
         visibility:
           - condition: numeric_state
             entity: sensor.desktop_updates_pending

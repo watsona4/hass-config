@@ -2175,11 +2175,11 @@ sections:
         content: >-
           **Available Updates:**
 
-          {{{{%- set packages = state_attr('sensor.{slug}_updates_list', 'packages') | default([]) -%}}}}
-          {{{{%- for pkg in packages -%}}}}
+          {{%- set packages = state_attr('sensor.{slug}_updates_list', 'packages') | default([]) -%}}
+          {{%- for pkg in packages -%}}
           - {{{{ pkg }}}}
           {{{{ '' }}}}
-          {{{{%- endfor -%}}}}
+          {{%- endfor -%}}
         visibility:
           - condition: numeric_state
             entity: sensor.{slug}_updates_pending
@@ -3470,7 +3470,7 @@ def _write_overview_machine_card(f, config: dict):
                     icon_color: |
                       {{{{- 'green' if is_state(entity,'on') else 'red' -}}}}
                     content: >
-                      {{{{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}}}
+                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
                       {{{{- (s.partition('Service')[2]) if 'Service' in s else '' -}}}}
                     tap_action: none
               exclude: []
@@ -3506,7 +3506,7 @@ def _write_overview_machine_card(f, config: dict):
                     icon_color: |
                       {{{{- 'green' if is_state(entity,'on') else 'red' -}}}}
                     content: >
-                      {{{{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}}}
+                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
                       {{{{- (s.partition('Container')[2]) if 'Container' in s else '' -}}}}
                     tap_action: none
               exclude: []

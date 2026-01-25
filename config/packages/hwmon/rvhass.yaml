@@ -164,54 +164,28 @@ template:
         icon: "mdi:memory"
         unit_of_measurement: "%"
         state_class: measurement
-      - name: "RV Hass FS Root Percent"
-        unique_id: c1ceac66-2ae7-5b3f-8c58-e3dbdf0c7ad2
+      - name: "RV Hass FS Data Percent"
+        unique_id: bdf8d96e-7ab2-52b9-b03f-8c33e27b94d1
         availability: "{{ available }}"
         state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'rootfs') | first | default(none) %}{{ ((fs.used_b / (fs.used_b + fs.available_b)) * 100) | round(1) if fs else 0 }}
+          {% set fs = filesystems | selectattr('mountpoint', 'eq', '/data') | first | default(none) %}{{ ((fs.used_b / (fs.used_b + fs.available_b)) * 100) | round(1) if fs else 0 }}
         icon: "mdi:harddisk"
         unit_of_measurement: "%"
         state_class: measurement
-      - name: "RV Hass FS Root Used"
-        unique_id: 68047caa-b32f-5716-a6bb-775aa37b4012
+      - name: "RV Hass FS Data Used"
+        unique_id: 9ffa4273-95d0-5302-8d0e-1d8e9a82b36d
         availability: "{{ available }}"
         state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'rootfs') | first | default(none) %}{{ ((fs.used_b | default(0)) / 1073741824) | round(2) if fs else 0 }}
+          {% set fs = filesystems | selectattr('mountpoint', 'eq', '/data') | first | default(none) %}{{ ((fs.used_b | default(0)) / 1073741824) | round(2) if fs else 0 }}
         icon: "mdi:harddisk"
         unit_of_measurement: "GiB"
         state_class: measurement
         device_class: data_size
-      - name: "RV Hass FS Root Total"
-        unique_id: 792ddbe5-9e83-5ff0-ac3c-70e055cc009e
+      - name: "RV Hass FS Data Total"
+        unique_id: a98a98b1-0d03-58fe-9102-f4e9de5d909d
         availability: "{{ available }}"
         state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'rootfs') | first | default(none) %}{{ (((fs.used_b | default(0)) + (fs.available_b | default(0))) / 1073741824) | round(2) if fs else 0 }}
-        icon: "mdi:harddisk"
-        unit_of_measurement: "GiB"
-        state_class: measurement
-        device_class: data_size
-      - name: "RV Hass FS Boot Percent"
-        unique_id: 98585ea1-0b5c-597c-9ff2-0faf459beb06
-        availability: "{{ available }}"
-        state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'bootfs') | first | default(none) %}{{ ((fs.used_b / (fs.used_b + fs.available_b)) * 100) | round(1) if fs else 0 }}
-        icon: "mdi:harddisk"
-        unit_of_measurement: "%"
-        state_class: measurement
-      - name: "RV Hass FS Boot Used"
-        unique_id: 8bd2189a-ff40-5e6d-96af-f54c59f2bc52
-        availability: "{{ available }}"
-        state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'bootfs') | first | default(none) %}{{ ((fs.used_b | default(0)) / 1073741824) | round(2) if fs else 0 }}
-        icon: "mdi:harddisk"
-        unit_of_measurement: "GiB"
-        state_class: measurement
-        device_class: data_size
-      - name: "RV Hass FS Boot Total"
-        unique_id: 7db45c5e-7141-56fd-aa45-2fcb93bd2889
-        availability: "{{ available }}"
-        state: >-
-          {% set fs = filesystems | selectattr('label', 'eq', 'bootfs') | first | default(none) %}{{ (((fs.used_b | default(0)) + (fs.available_b | default(0))) / 1073741824) | round(2) if fs else 0 }}
+          {% set fs = filesystems | selectattr('mountpoint', 'eq', '/data') | first | default(none) %}{{ (((fs.used_b | default(0)) + (fs.available_b | default(0))) / 1073741824) | round(2) if fs else 0 }}
         icon: "mdi:harddisk"
         unit_of_measurement: "GiB"
         state_class: measurement
@@ -237,6 +211,27 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "RV Hass Tailscale Upload"
+        unique_id: 5d2ffb6f-7eb5-5b2f-93f9-15f77c82e820
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ (iface.rate_up_bps | default(0)) | round(0) if iface else 0 }}
+        icon: "mdi:upload"
+        unit_of_measurement: "B/s"
+        device_class: data_rate
+      - name: "RV Hass Tailscale Download"
+        unique_id: ac7d047f-419f-5b06-ac08-bc6e1016bbed
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ (iface.rate_down_bps | default(0)) | round(0) if iface else 0 }}
+        icon: "mdi:download"
+        unit_of_measurement: "B/s"
+        device_class: data_rate
+      - name: "RV Hass Tailscale IPv4"
+        unique_id: 19b11707-9ea4-53d5-9cd1-646f147e10a4
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
     binary_sensor:
       - name: "RV Hass Overall Status OK"
         unique_id: 95c99ade-56ed-5d79-ba94-532977120a5d
@@ -577,14 +572,14 @@ template:
         event: start
       - platform: state
         entity_id:
-          - sensor.rvhass_fs_root_percent
-          - sensor.rvhass_fs_root_used
-          - sensor.rvhass_fs_root_total
+          - sensor.rvhass_fs_data_percent
+          - sensor.rvhass_fs_data_used
+          - sensor.rvhass_fs_data_total
     variables:
-      entity_id: sensor.rvhass_fs_root_percent
+      entity_id: sensor.rvhass_fs_data_percent
       app: disk_utilization
       options:
-        free: sensor.rvhass_fs_root_free
+        free: sensor.rvhass_fs_data_free
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -592,8 +587,8 @@ template:
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
     sensor:
-      - name: ui_rvhass_fs_root_percent
-        unique_id: 40064127-d9d5-5255-b454-19f24da8a27f
+      - name: ui_rvhass_fs_data_percent
+        unique_id: c39ce5b2-c317-56b0-8f92-9a5724170784
         state: "{{ states(entity_id) }}"
         attributes:
           value: "{{ state_info.value }}"
@@ -614,4 +609,4 @@ template:
           app: disk_utilization
           device_class: none
           long_desc: >-
-            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set total = u_humanize_entity('sensor.rvhass_fs_root_total') -%}{%- set used = u_humanize_entity('sensor.rvhass_fs_root_used') -%}{{- 'Total: ' ~ total ~ ' • Used: ' ~ used -}}
+            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set total = u_humanize_entity('sensor.rvhass_fs_data_total') -%}{%- set used = u_humanize_entity('sensor.rvhass_fs_data_used') -%}{{- 'Total: ' ~ total ~ ' • Used: ' ~ used -}}

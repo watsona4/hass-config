@@ -77,11 +77,11 @@ sections:
         content: >-
           **Available Updates:**
 
-          {{%- set packages = state_attr('sensor.rvhass_updates_list', 'packages') | default([]) -%}}
-          {{%- for pkg in packages -%}}
+          {%- set packages = state_attr('sensor.rvhass_updates_list', 'packages') | default([]) -%}
+          {%- for pkg in packages -%}
           - {{ pkg }}
           {{ '' }}
-          {{%- endfor -%}}
+          {%- endfor -%}
         visibility:
           - condition: numeric_state
             entity: sensor.rvhass_updates_pending
@@ -171,21 +171,11 @@ sections:
         square: false
         cards:
           - type: custom:mushroom-template-card
-            entity: sensor.rvhass_fs_root_percent
-            icon: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'color') }}"
-            primary: Root
-            secondary: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'long_desc') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.rvhass_fs_boot_percent
-            icon: "{{ state_attr('sensor.ui_rvhass_fs_boot_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_rvhass_fs_boot_percent', 'color') }}"
-            primary: Boot
-            secondary: "{{ state_attr('sensor.ui_rvhass_fs_boot_percent', 'long_desc') }}"
+            entity: sensor.rvhass_fs_data_percent
+            icon: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'color') }}"
+            primary: Data
+            secondary: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'long_desc') }}"
             tap_action:
               action: more-info
             icon_tap_action:
@@ -208,6 +198,16 @@ sections:
             icon_color: blue
             primary: Ethernet
             secondary: "{{ states('sensor.rvhass_ethernet_ipv4') }}"
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - type: custom:mushroom-template-card
+            entity: sensor.rvhass_tailscale_ipv4
+            icon: mdi:ethernet
+            icon_color: blue
+            primary: Tailscale
+            secondary: "{{ states('sensor.rvhass_tailscale_ipv4') }}"
             tap_action:
               action: more-info
             icon_tap_action:

@@ -496,7 +496,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                     tap_action: none
               exclude: []
@@ -527,7 +527,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
                     tap_action: none
               exclude: []
@@ -919,7 +919,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                     tap_action: none
               exclude: []
@@ -1085,7 +1085,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                     tap_action: none
               exclude: []
@@ -1193,13 +1193,13 @@ sections:
               - type: vertical-stack
                 cards:
                   - type: custom:mushroom-template-card
-                    entity: sensor.rvhass_fs_root_percent
-                    icon: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'icon') }}"
-                    icon_color: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'color') }}"
-                    primary: Disk
-                    secondary: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'long_desc') }}"
-                    badge_icon: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'badge') }}"
-                    badge_color: "{{ state_attr('sensor.ui_rvhass_fs_root_percent', 'badge_color') }}"
+                    entity: sensor.rvhass_fs_data_percent
+                    icon: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'icon') }}"
+                    icon_color: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'color') }}"
+                    primary: eMMC Storage
+                    secondary: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'long_desc') }}"
+                    badge_icon: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'badge') }}"
+                    badge_color: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'badge_color') }}"
                     multiline_secondary: true
                     tap_action:
                       action: more-info
@@ -1251,7 +1251,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                     tap_action: none
               exclude: []
@@ -1399,7 +1399,7 @@ sections:
                     icon_color: |
                       {{- 'green' if is_state(entity,'on') else 'red' -}}
                     content: >
-                      {{%- set s = state_attr(entity,'friendly_name') | default('', true) -%}}
+                      {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
                       {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
                     tap_action: none
               exclude: []

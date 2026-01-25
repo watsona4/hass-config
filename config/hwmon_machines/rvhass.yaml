@@ -67,15 +67,13 @@ sections:
       - virtual.load_pct
 
   # ---------------------------------------------------------------------------
-  # Filesystems
+  # Filesystems (HAOS reports mountpoints, not labels)
   # ---------------------------------------------------------------------------
   filesystems:
     enabled: true
     include:
-      - label: rootfs
-        display_name: Root
-      - label: bootfs
-        display_name: Boot
+      - mountpoint: /data
+        display_name: Data
 
   # ---------------------------------------------------------------------------
   # Network Interfaces
@@ -85,6 +83,8 @@ sections:
     include:
       - name: end0
         display_name: Ethernet
+      - name: tailscale0
+        display_name: Tailscale
 
 # -----------------------------------------------------------------------------
 # Dashboard Display Options
@@ -94,8 +94,8 @@ dashboard:
   overview:
     display_name: RV HA Yellow
     filesystems:
-      - slug: root
-        label: Disk
+      - slug: data
+        label: eMMC Storage
     temp_suffix: cpu_temp
     gpu:
       enabled: false
