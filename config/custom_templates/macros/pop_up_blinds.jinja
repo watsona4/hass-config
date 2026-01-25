@@ -2,7 +2,7 @@
 {# Required reason codes (exact): nighttime, brightness, device, temperature, presence, button #}
 
 {% macro _badge_icon_for(code) -%}
-    {%- if code|lower == 'open' -%}mdi:blinds-open
+    {%- if code|lower == 'open' -%}mdi:weather-sunny
     {%- elif code|lower == 'nighttime' -%}mdi:weather-night
     {%- elif code|lower == 'brightness' -%}mdi:white-balance-sunny
     {%- elif code|lower == 'device' -%}mdi:television
@@ -14,7 +14,7 @@
 {%- endmacro %}
 
 {% macro _badge_color_for(code) -%}
-    {%- if code|lower == 'open' -%}green
+    {%- if code|lower == 'open' -%}yellow
     {%- elif code|lower == 'nighttime' -%}blue
     {%- elif code|lower == 'brightness' -%}amber
     {%- elif code|lower == 'device' -%}indigo
@@ -90,7 +90,7 @@
         {% raw -%}
             {% set s = states(entity) %}
             {% if s in ['open', 'opening'] %}
-                mdi:blinds-open
+                mdi:weather-sunny
             {% else %}
                 {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
                 {% if r == 'nighttime' %}
@@ -116,7 +116,7 @@
         {% raw -%}
             {% set s = states(entity) %}
             {% if s in ['open', 'opening'] %}
-                green
+                yellow
             {% else %}
                 {% set r = (states('{% endraw %}{{ reason_eid }}{% raw %}') or '') | trim | lower %}
                 {% if r == 'nighttime' %}
