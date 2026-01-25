@@ -240,6 +240,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense LAN Info"
+        unique_id: c0a9a02f-37b5-5205-a303-513a5a4bf459
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 're0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense WAN Upload"
         unique_id: 49baaaa6-0b23-5ab9-bb1f-ccb8569f6d3a
         availability: "{{ available }}"
@@ -261,6 +277,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense WAN Info"
+        unique_id: ecc7dde9-4d39-51d8-ad4e-25801d824563
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 're1') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense VLAN10 Upload"
         unique_id: 7144e7d1-13e6-508b-b820-f65745a891b3
         availability: "{{ available }}"
@@ -282,6 +314,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense VLAN10 Info"
+        unique_id: ee6bafcd-6af3-58f6-a661-3e25a25ef1c2
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan10') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense VLAN20 Upload"
         unique_id: aa88fc22-c3f6-509c-8f97-73baa038eeb3
         availability: "{{ available }}"
@@ -303,6 +351,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense VLAN20 Info"
+        unique_id: daa05bd8-ecbf-5b9a-9df3-12a69f3413ad
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 're0_vlan20') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense WireGuard Upload"
         unique_id: 0e31fb69-c784-53f0-9eb5-488a274161df
         availability: "{{ available }}"
@@ -324,6 +388,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense WireGuard Info"
+        unique_id: a88a9350-cd61-57b5-8241-bb37ca5f8cb3
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'wg0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense Tailscale Upload"
         unique_id: ec0b1ebf-96ce-5db4-a9f0-f658aeaa6631
         availability: "{{ available }}"
@@ -345,6 +425,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "OPNsense Tailscale Info"
+        unique_id: 5ac9adb5-5ca9-55d8-a7e1-7773597dd7ac
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "OPNsense System Temp"
         unique_id: dbf68476-d4a8-5d1e-bfc1-5c2eaba6533e
         availability: "{{ available }}"

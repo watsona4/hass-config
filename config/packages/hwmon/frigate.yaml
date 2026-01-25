@@ -36,6 +36,7 @@ template:
       tpus: "{{ state_attr(entity_id, 'tpus') or [] }}"
       motherboard_temps: "{{ state_attr(entity_id, 'motherboard').get('temps', []) if state_attr(entity_id, 'motherboard') else [] }}"
       drives: "{{ state_attr(entity_id, 'drives') or [] }}"
+      backup_providers: "{{ state_attr(entity_id, 'backup_providers') or [] }}"
     sensor:
       - name: "Frigate Uptime (s)"
         unique_id: 42cbc752-e428-517f-91b3-ca0258f11c0f
@@ -369,6 +370,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "Frigate Ethernet Info"
+        unique_id: 2bddd0e2-86e1-558b-bfa7-1ffd7d40473d
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'enp1s0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "Frigate Tailscale Upload"
         unique_id: 723ecf3d-d56a-51c0-b955-b5677166998f
         availability: "{{ available }}"
@@ -390,6 +407,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "Frigate Tailscale Info"
+        unique_id: 4bd64a9a-fde8-5dfd-923b-1151c8771949
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "Frigate GPU Utilization"
         unique_id: 53edee30-28fe-50ba-a4a0-d688d99d65e9
         availability: "{{ available }}"
@@ -412,6 +445,22 @@ template:
         state: >-
           {{ tpus[0].thermal.throttling | default(false) if tpus else false }}
         icon: "mdi:thermometer-alert"
+      - name: "Frigate Coral TPU Thermal Info"
+        unique_id: 14f87743-7d58-5b78-bdbb-9fadf6a7a832
+        availability: "{{ available }}"
+        state: >-
+          {% set tpu = tpus[0] if tpus else none %}{% if tpu and tpu.thermal %}{% if tpu.thermal.throttling | default(false) %}Throttling{% else %}OK{% endif %}{% else %}Unknown{% endif %}
+        icon: "mdi:chip"
+        attributes:
+          name: "{{ tpus[0].name | default('Unknown') if tpus else 'Unknown' }}"
+          model: "{{ tpus[0].model | default('Coral Edge TPU') if tpus else 'Unknown' }}"
+          temp_c: "{{ (tpus[0].temp_c | default(0)) | round(1) if tpus else 0 }}"
+          warning_c: "{{ (tpus[0].thermal.warning_c | default(0)) | round(1) if tpus and tpus[0].thermal else 0 }}"
+          critical_c: "{{ (tpus[0].thermal.critical_c | default(0)) | round(1) if tpus and tpus[0].thermal else 0 }}"
+          throttling: "{{ tpus[0].thermal.throttling | default(false) if tpus and tpus[0].thermal else false }}"
+          dfs_enabled: "{{ tpus[0].thermal.dfs.enabled | default(false) if tpus and tpus[0].thermal and tpus[0].thermal.dfs else false }}"
+          dfs_active_state: "{{ tpus[0].thermal.dfs.active_state | default('unknown') if tpus and tpus[0].thermal and tpus[0].thermal.dfs else 'unknown' }}"
+          dfs_states: "{% set tpu = tpus[0] if tpus else none %}{% if tpu and tpu.thermal and tpu.thermal.dfs and tpu.thermal.dfs.states %}{% set states = [] %}{% for s in tpu.thermal.dfs.states %}{{ (s.trip_point_c | default(0) | round(0) | int | string) ~ '°C → ' ~ ((s.clock_limit_hz | default(0)) / 1000000 | round(0) | int | string) ~ ' MHz' }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}No states{% endif %}"
       - name: "Frigate CPU Package"
         unique_id: b3bbad4d-5066-51a3-a205-b2b9b545ccf9
         availability: "{{ available }}"
@@ -696,6 +745,29 @@ template:
           encrypted: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('encrypted', false) if p else false }}"
           encryption_scheme: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('scheme', 'none') if p else 'none' }}"
           encryption_unlocked: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p else false }}"
+      - name: "Frigate Borg Backup"
+        unique_id: 190053f9-6726-5f97-8462-35a0674e1229
+        availability: "{{ available }}"
+        state: >-
+          {% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{% if bp %}{% if bp.ok %}OK{% else %}Error{% endif %}{% else %}Unknown{% endif %}
+        icon: "mdi:backup-restore"
+        attributes:
+          name: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.name | default('Unknown') if bp else 'Unknown' }}"
+          type: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.type | default('Unknown') if bp else 'Unknown' }}"
+          repo: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.repo | default('Unknown') if bp else 'Unknown' }}"
+          ok: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.ok | default(false) if bp else false }}"
+          last_run: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{% if bp and bp.last_run_ts %}{{ (bp.last_run_ts | as_datetime).strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}"
+          last_run_ago: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{% if bp and bp.last_run_ts %}{{ (bp.last_run_ts | as_datetime | as_local) | relative_time }}{% else %}Never{% endif %}"
+          last_success: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{% if bp and bp.last_success_ts %}{{ (bp.last_success_ts | as_datetime).strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}"
+          last_status: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.last_status | default('unknown') if bp else 'unknown' }}"
+          last_error: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.last_error | default('') if bp else '' }}"
+          duration_s: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.duration_s | default(0) if bp else 0 }}"
+          bytes_added: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.bytes_added | default(0) if bp else 0 }}"
+          repo_size_b: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.repo_size_b | default(0) if bp else 0 }}"
+          compression: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.compression | default('Unknown') if bp else 'Unknown' }}"
+          encryption: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.encryption | default('Unknown') if bp else 'Unknown' }}"
+          snapshots: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.retention.snapshots | default(0) if bp and bp.retention else 0 }}"
+          retention_policy: "{% set bp = backup_providers | selectattr('name', 'eq', 'borg') | first | default(none) %}{{ bp.retention.policy | default('Unknown') if bp and bp.retention else 'Unknown' }}"
     binary_sensor:
       - name: "Frigate Overall Status OK"
         unique_id: c94283a8-a7ec-5089-9670-5f18b08b7736

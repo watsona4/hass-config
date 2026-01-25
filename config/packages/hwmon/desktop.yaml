@@ -246,6 +246,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "Desktop WiFi Info"
+        unique_id: 8588ed3f-c841-5bdc-ba33-158d18a2aaaf
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi 2') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "Desktop GPU Utilization"
         unique_id: 645239e6-4572-5cb2-a7c5-41716b01e3aa
         availability: "{{ available }}"

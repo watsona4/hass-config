@@ -221,6 +221,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "Laptop WiFi Info"
+        unique_id: 5fd0c1b8-59b1-578d-b098-87c274a4b368
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'Wi-Fi') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "Laptop Tailscale Upload"
         unique_id: 31de8354-36d5-5c4f-af71-b4309697dd36
         availability: "{{ available }}"
@@ -242,6 +258,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "Laptop Tailscale Info"
+        unique_id: f7ea155e-3b53-5ebb-8700-ce1c2b411024
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'Tailscale') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "Laptop GPU Utilization"
         unique_id: 3b77fda4-27fe-5dbd-a0d0-0ee620f22ed5
         availability: "{{ available }}"

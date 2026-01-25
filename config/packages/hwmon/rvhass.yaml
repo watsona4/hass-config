@@ -211,6 +211,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "RV Hass Ethernet Info"
+        unique_id: 9e741863-bdfa-5d6e-8427-203327c82557
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'end0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
       - name: "RV Hass Tailscale Upload"
         unique_id: 5d2ffb6f-7eb5-5b2f-93f9-15f77c82e820
         availability: "{{ available }}"
@@ -232,6 +248,22 @@ template:
         availability: "{{ available }}"
         state: >-
           {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('unknown') if iface else 'unknown' }}
+      - name: "RV Hass Tailscale Info"
+        unique_id: 737a312e-3354-5f76-8086-812847e83c89
+        availability: "{{ available }}"
+        state: >-
+          {% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}
+        icon: "mdi:ethernet"
+        attributes:
+          name: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.name | default('Unknown') if iface else 'Unknown' }}"
+          mac: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mac | default('Unknown') if iface else 'Unknown' }}"
+          ipv4: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv4 | default('None') if iface else 'None' }}"
+          ipv6: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.ipv6 | default('None') if iface else 'None' }}"
+          link_speed_mbps: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.link_speed_mbps | default(0) if iface else 0 }}"
+          duplex: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.duplex | default('unknown') if iface else 'unknown' }}"
+          mtu: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.mtu | default(0) if iface else 0 }}"
+          carrier: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.carrier | default(false) if iface else false }}"
+          driver: "{% set iface = ifaces | selectattr('name', 'eq', 'tailscale0') | first | default(none) %}{{ iface.driver | default('Unknown') if iface else 'Unknown' }}"
     binary_sensor:
       - name: "RV Hass Overall Status OK"
         unique_id: 95c99ade-56ed-5d79-ba94-532977120a5d
@@ -251,9 +283,9 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.rvhass_cpu_utilization
+        entity_id: sensor.rv_hass_cpu_utilization
     variables:
-      entity_id: sensor.rvhass_cpu_utilization
+      entity_id: sensor.rv_hass_cpu_utilization
       app: cpu_utilization
       options: {}
       state_info: >-
@@ -289,13 +321,13 @@ template:
         event: start
       - platform: state
         entity_id:
-          - sensor.rvhass_cpu_utilization
-          - sensor.rvhass_cpu_load_1m
+          - sensor.rv_hass_cpu_utilization
+          - sensor.rv_hass_cpu_load_1m
     variables:
-      entity_id: sensor.rvhass_cpu_utilization
+      entity_id: sensor.rv_hass_cpu_utilization
       app: cpu_utilization
       options:
-        load: sensor.rvhass_cpu_load_1m
+        load: sensor.rv_hass_cpu_load_1m
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -329,15 +361,15 @@ template:
         event: start
       - platform: state
         entity_id:
-          - sensor.rvhass_cpu_load_1m
-          - sensor.rvhass_cpu_load_5m
-          - sensor.rvhass_cpu_load_15m
-          - sensor.rvhass_cpu_logical_cores
+          - sensor.rv_hass_cpu_load_1m
+          - sensor.rv_hass_cpu_load_5m
+          - sensor.rv_hass_cpu_load_15m
+          - sensor.rv_hass_cpu_logical_cores
     variables:
-      entity_id: sensor.rvhass_cpu_load_1m
+      entity_id: sensor.rv_hass_cpu_load_1m
       app: cpu_load
       options:
-        cores: sensor.rvhass_cpu_logical_cores
+        cores: sensor.rv_hass_cpu_logical_cores
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -367,21 +399,21 @@ template:
           app: cpu_load
           device_class: none
           long_desc: >-
-            {%- set m1 = states('sensor.rvhass_cpu_load_1m')|float(0) -%}{%- set m5 = states('sensor.rvhass_cpu_load_5m')|float(0) -%}{%- set m15 = states('sensor.rvhass_cpu_load_15m')|float(0) -%}{%- set c = states('sensor.rvhass_cpu_logical_cores')|int(0) -%}{{- '1m: ' ~ m1 ~ ' • 5m: ' ~ m5 ~ ' • 15m: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
+            {%- set m1 = states('sensor.rv_hass_cpu_load_1m')|float(0) -%}{%- set m5 = states('sensor.rv_hass_cpu_load_5m')|float(0) -%}{%- set m15 = states('sensor.rv_hass_cpu_load_15m')|float(0) -%}{%- set c = states('sensor.rv_hass_cpu_logical_cores')|int(0) -%}{{- '1m: ' ~ m1 ~ ' • 5m: ' ~ m5 ~ ' • 15m: ' ~ m15 ~ ' • ' ~ c ~ ' cores' -}}
   - trigger:
       - platform: homeassistant
         event: start
       - platform: state
         entity_id:
-          - sensor.rvhass_memory_percent
-          - sensor.rvhass_memory_used
-          - sensor.rvhass_memory_total
-          - sensor.rvhass_memory_available
+          - sensor.rv_hass_memory_percent
+          - sensor.rv_hass_memory_used
+          - sensor.rv_hass_memory_total
+          - sensor.rv_hass_memory_available
     variables:
-      entity_id: sensor.rvhass_memory_percent
+      entity_id: sensor.rv_hass_memory_percent
       app: memory_utilization
       options:
-        used: sensor.rvhass_memory_used
+        used: sensor.rv_hass_memory_used
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -411,14 +443,14 @@ template:
           app: memory_utilization
           device_class: none
           long_desc: >-
-            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set mem_used = u_humanize_entity('sensor.rvhass_memory_used') -%}{%- set mem_total = u_humanize_entity('sensor.rvhass_memory_total') -%}{%- set mem_free = u_humanize_entity('sensor.rvhass_memory_available') -%}{{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ '\nFree: ' ~ mem_free -}}
+            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set mem_used = u_humanize_entity('sensor.rv_hass_memory_used') -%}{%- set mem_total = u_humanize_entity('sensor.rv_hass_memory_total') -%}{%- set mem_free = u_humanize_entity('sensor.rv_hass_memory_available') -%}{{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ '\nFree: ' ~ mem_free -}}
   - trigger:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.rvhass_uptime_s
+        entity_id: sensor.rv_hass_uptime_s
     variables:
-      entity_id: sensor.rvhass_uptime_s
+      entity_id: sensor.rv_hass_uptime_s
       app: uptime
       options:
         device_class: duration
@@ -455,9 +487,9 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.rvhass_updates_pending
+        entity_id: sensor.rv_hass_updates_pending
     variables:
-      entity_id: sensor.rvhass_updates_pending
+      entity_id: sensor.rv_hass_updates_pending
       app: count_pending
       options: {}
       state_info: >-
@@ -493,14 +525,14 @@ template:
         event: start
       - platform: state
         entity_id:
-          - binary_sensor.rvhass_status_alarm
-          - sensor.rvhass_overall_status_summary
+          - binary_sensor.rv_hass_status_alarm
+          - sensor.rv_hass_overall_status_summary
     variables:
-      entity_id: binary_sensor.rvhass_status_alarm
+      entity_id: binary_sensor.rv_hass_status_alarm
       app: alarm
       options:
         device_class: binary
-        summary: sensor.rvhass_overall_status_summary
+        summary: sensor.rv_hass_overall_status_summary
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -533,9 +565,9 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.rvhass_cpu_temp
+        entity_id: sensor.rv_hass_cpu_temp
     variables:
-      entity_id: sensor.rvhass_cpu_temp
+      entity_id: sensor.rv_hass_cpu_temp
       app: cpu
       options:
         device_class: temperature
@@ -572,14 +604,14 @@ template:
         event: start
       - platform: state
         entity_id:
-          - sensor.rvhass_fs_data_percent
-          - sensor.rvhass_fs_data_used
-          - sensor.rvhass_fs_data_total
+          - sensor.rv_hass_fs_data_percent
+          - sensor.rv_hass_fs_data_used
+          - sensor.rv_hass_fs_data_total
     variables:
-      entity_id: sensor.rvhass_fs_data_percent
+      entity_id: sensor.rv_hass_fs_data_percent
       app: disk_utilization
       options:
-        free: sensor.rvhass_fs_data_free
+        free: sensor.rv_hass_fs_data_free
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
@@ -609,4 +641,4 @@ template:
           app: disk_utilization
           device_class: none
           long_desc: >-
-            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set total = u_humanize_entity('sensor.rvhass_fs_data_total') -%}{%- set used = u_humanize_entity('sensor.rvhass_fs_data_used') -%}{{- 'Total: ' ~ total ~ ' • Used: ' ~ used -}}
+            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set total = u_humanize_entity('sensor.rv_hass_fs_data_total') -%}{%- set used = u_humanize_entity('sensor.rv_hass_fs_data_used') -%}{{- 'Total: ' ~ total ~ ' • Used: ' ~ used -}}
