@@ -74,14 +74,12 @@ sections:
             icon_tap_action:
               action: toggle
       - type: markdown
-        content: >-
+        content: |
           **Available Updates:**
-
-          {%- set packages = state_attr('sensor.laptop_updates_list', 'packages') | default([]) -%}
-          {%- for pkg in packages -%}
+          {%- set packages = state_attr('sensor.laptop_updates_list', 'packages') | default([]) %}
+          {% for pkg in packages %}
           - {{ pkg }}
-          {{ '' }}
-          {%- endfor -%}
+          {% endfor %}
         visibility:
           - condition: numeric_state
             entity: sensor.laptop_updates_pending
