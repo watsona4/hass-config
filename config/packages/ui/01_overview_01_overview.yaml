@@ -594,3 +594,12 @@ template:
           blinds: >-
             {%- from 'macros/pop_up_blinds.jinja' import build_blind_cards -%}
             {{ build_blind_cards('nighttime') | from_json }}
+      - name: ui_blinds_open
+        unique_id: 7f2a3b4c-5d6e-4a8b-9c0d-1e2f3a4b5c6d
+        state: >-
+          {%- from 'macros/pop_up_blinds.jinja' import any_blinds_open -%}
+          {{ any_blinds_open() | trim }}
+        attributes:
+          blinds: >-
+            {%- from 'macros/pop_up_blinds.jinja' import build_open_blind_cards -%}
+            {{ build_open_blind_cards() | from_json }}

@@ -630,9 +630,34 @@ sections:
       # Blinds Title
       - type: custom:mushroom-title-card
         title: "Blinds & Shades"
-        subtitle: "Closed status • Reasons • Automation"
+        subtitle: "Open & Closed status • Reasons • Automation"
         grid_options:
           columns: full
+
+      # Open Blinds
+      - type: heading
+        icon: mdi:blinds-open
+        heading: Open
+        heading_style: subtitle
+        visibility:
+          - condition: state
+            entity: binary_sensor.blinds_open
+            state: 'on'
+      - type: custom:auto-entities
+        card:
+          type: grid
+          columns: 2
+          square: false
+        card_param: cards
+        show_empty: false
+        filter:
+          template: >-
+            {%- set ns = namespace(out=[]) -%}
+            {%- set devices = state_attr('sensor.ui_blinds_open','blinds') or [] -%}
+            {%- for d in devices -%}
+              {%- set ns.out = ns.out + [d | combine({'type': 'custom:mushroom-template-card'})] -%}
+            {%- endfor -%}
+            {{ ns.out }}
 
       # Closed for Brightness
       - type: heading

@@ -311,14 +311,15 @@ template:
         minutes: "/1"
     variables:
       closed: >-
-        {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed %}
+        {% from 'macros/pop_up_blinds.jinja' import any_blinds_closed, any_blinds_open %}
         {{ {
           'brightness': any_blinds_closed('brightness') | bool,
           'temperature': any_blinds_closed('temperature') | bool,
           'presence': any_blinds_closed('presence') | bool,
           'device': any_blinds_closed('device') | bool,
           'button': any_blinds_closed('button') | bool,
-          'nighttime': any_blinds_closed('nighttime') | bool
+          'nighttime': any_blinds_closed('nighttime') | bool,
+          'open': any_blinds_open() | bool
         } }}
     binary_sensor:
       - name: "Closed Brightness"
@@ -339,3 +340,6 @@ template:
       - name: "Closed Nighttime"
         unique_id: 2c3c910a-7f9d-42bd-a1f7-d00332d0205c
         state: "{{ closed.nighttime }}"
+      - name: "Blinds Open"
+        unique_id: 3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a
+        state: "{{ closed.open }}"
