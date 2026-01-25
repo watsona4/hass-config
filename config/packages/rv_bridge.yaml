@@ -35,8 +35,11 @@
 #     - sensor.rv_tire_fl_psi, sensor.rv_tire_fr_psi, sensor.rv_tire_rl_psi, sensor.rv_tire_rr_psi
 #     - sensor.rv_tire_fl_temp, sensor.rv_tire_fr_temp, sensor.rv_tire_rl_temp, sensor.rv_tire_rr_temp
 #     - sensor.rv_bridge_location_raw
+#     - sensor.rv_last_seen (heartbeat with expire_after)
 #
 #   Binary Sensors (MQTT):
+#     - binary_sensor.rv_mqtt_status (LWT online/offline)
+#     - binary_sensor.rv_bridge_state (bridge running 1/0)
 #     - binary_sensor.rv_inverter_enabled
 #     - binary_sensor.rv_charger_enabled
 #     - binary_sensor.rv_shore_power
@@ -278,10 +281,36 @@ mqtt:
       state_topic: site/rv/bridge/location
       value_template: "{{ value }}"
 
+    # ---------------------------------------------------------------------------
+    # Sensors: Connectivity / Heartbeat
+    # ---------------------------------------------------------------------------
+    - name: "RV Last Seen"
+      unique_id: 6c8d4e2f-7a9b-4c5d-8e1f-3a2b5c6d7e8f
+      state_topic: site/rv/heartbeat
+      device_class: timestamp
+      expire_after: 300  # 5 minutes - triggers unavailable if no heartbeat
+
+  # ---------------------------------------------------------------------------
+  # Binary Sensors: Connectivity / Status
+  # ---------------------------------------------------------------------------
+  binary_sensor:
+    - name: "RV MQTT Status"
+      unique_id: 8f2e1d3c-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+      state_topic: site/rv/status
+      payload_on: "online"
+      payload_off: "offline"
+      device_class: connectivity
+
+    - name: "RV Bridge State"
+      unique_id: 9a3f2e4d-5c6b-7d8e-9f0a-1b2c3d4e5f6a
+      state_topic: site/rv/bridge/state
+      payload_on: "1"
+      payload_off: "0"
+      device_class: connectivity
+
   # ---------------------------------------------------------------------------
   # Binary Sensors: Electrical / Power
   # ---------------------------------------------------------------------------
-  binary_sensor:
     - name: "RV Inverter Enabled"
       unique_id: fe8fb1dc-6f62-4a01-bdd5-a4a6debb9080
       state_topic: site/rv/statestream/binary_sensor/rv_inverter_likely/state
@@ -476,8 +505,7 @@ automation:
   - alias: "RV GPS Statestream Merged JSON"
     id: dc86b90d-27c3-4cdb-9c32-b721c5514158
     description: Merge incoming Statestream GPS attributes into a single JSON document
-    mode: queued
-    max: 100
+    mode: restart
     trigger:
       - platform: mqtt
         topic: "site/rv/statestream/device_tracker/rv_gps/#"
