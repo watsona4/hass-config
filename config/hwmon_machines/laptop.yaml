@@ -56,6 +56,7 @@ sections:
       - load_15m
       - temp_c
       - power_w
+      - voltage_core_v
       - num_physical_cores
       - num_logical_cores
 
@@ -70,6 +71,9 @@ sections:
       - system.available_b
       - system.total_b
       - virtual.load_pct
+      - virtual.used_b
+      - virtual.available_b
+      - virtual.total_b
 
   # ---------------------------------------------------------------------------
   # Filesystems
@@ -79,6 +83,15 @@ sections:
     include:
       - label: Windows
         display_name: Windows (C:)
+    metrics:
+      - used_b
+      - available_b
+      - read_rate_bps
+      - write_rate_bps
+      - format
+      - uuid
+      - encryption.encrypted
+      - encryption.scheme
 
   # ---------------------------------------------------------------------------
   # Drives (with SMART)
@@ -87,11 +100,24 @@ sections:
     enabled: true
     include:
       - name: PhysicalDrive0
-        display_name: NVMe SSD
+        display_name: SAMSUNG MZVL2512HDJD-00BLL
     metrics:
-      - temp_c
-      - smart.overall_health
-      - smart.wear_leveling_pct
+      - status    # Comprehensive sensor with all drive data (health, wear, capacity, R/W, partitions)
+      - temp_c    # For temperature display in detail page
+
+  # ---------------------------------------------------------------------------
+  # Partitions (display names only - data from drive status sensor)
+  # ---------------------------------------------------------------------------
+  partitions:
+    include:
+      - name: Disk 0 Partition 1
+        display_name: EFI System
+      - name: Disk 0 Partition 2
+        display_name: Windows Boot Manager
+      - name: Disk 0 Partition 3
+        display_name: Data Partition (C:)
+      - name: Disk 0 Partition 4
+        display_name: Windows Recovery Environment
 
   # ---------------------------------------------------------------------------
   # Network Interfaces
@@ -103,6 +129,7 @@ sections:
         display_name: WiFi
       - name: Tailscale
         display_name: Tailscale
+    metrics:
 
   # ---------------------------------------------------------------------------
   # WiFi
@@ -116,6 +143,8 @@ sections:
       - signal_dbm
       - channel
       - bitrate_mbps
+      - radio_type
+      - authentication
 
   # ---------------------------------------------------------------------------
   # Batteries
@@ -140,6 +169,9 @@ sections:
       - core.load_pct
       - core.power_w
       - temp_c
+      - soc.voltage_v
+      - soc.power_w
+      - engines
 
 # -----------------------------------------------------------------------------
 # Dashboard Display Options
@@ -170,18 +202,20 @@ dashboard:
 
   detail_sections:
     - title: System Status
-      cards: [uptime, updates, health_summary]
-    - title: CPU
-      cards: [cpu_load, cpu_temp, cpu_power]
-    - title: Memory
-      cards: [memory_used, swap]
-    - title: Storage
-      cards: [filesystems, drive_health]
+      cards: [health_summary, system, updates]
+    - title: CPU & Memory
+      cards: [cpu_utilization, cpu_load, memory, swap]
+    - title: Device Temperatures
+      cards: [cpu_temp, drive_temp, gpu_temp]
+    - title: Filesystems
+      cards: [filesystems]
+    - title: Drives & Partitions
+      cards: [drives, partitions]
     - title: Network
       cards: [network_interfaces, wifi_stats]
     - title: Battery
       cards: [battery_status, battery_health]
     - title: GPU
-      cards: [gpu_load, gpu_temp]
+      cards: [gpu_load, engines]
     - title: Services
       cards: [services_status]
