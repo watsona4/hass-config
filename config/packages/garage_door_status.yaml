@@ -14,6 +14,7 @@ template:
           - binary_sensor.dark_outside
           - binary_sensor.daytime
           - binary_sensor.rainy
+          - binary_sensor.snowy
           - binary_sensor.windy
           - binary_sensor.ratgdov25i_f6128e_obstruction
           - binary_sensor.ratgdov25i_f6128e_motion
@@ -34,13 +35,14 @@ template:
       dark_outside: "{{ is_state('binary_sensor.dark_outside', 'on') }}"
       daytime: "{{ is_state('binary_sensor.daytime', 'on') }}"
       rainy: "{{ is_state('binary_sensor.rainy', 'on') }}"
+      snowy: "{{ is_state('binary_sensor.snowy', 'on') }}"
       windy: "{{ is_state('binary_sensor.windy', 'on') }}"
       obstruction: "{{ is_state('binary_sensor.ratgdov25i_f6128e_obstruction', 'on') }}"
       motion: "{{ is_state('binary_sensor.ratgdov25i_f6128e_motion', 'on') }}"
       timer_active: "{{ is_state('timer.garage_door_delay', 'active') }}"
 
       # Good weather conditions for door to be open
-      good_conditions: "{{ daytime and not dark_outside and not rainy and not windy and someone_home and not home_alone }}"
+      good_conditions: "{{ daytime and not dark_outside and not rainy and not snowy and not windy and someone_home and not home_alone }}"
 
       # Determine reason based on current state and conditions
       reason: >-
@@ -69,6 +71,8 @@ template:
             Obstruction detected
           {%- elif windy -%}
             Windy conditions
+          {%- elif snowy -%}
+            Snowy weather
           {%- elif rainy -%}
             Rainy weather
           {%- elif dark_outside -%}
@@ -109,7 +113,7 @@ template:
         {%- elif is_open -%}
           {%- if good_conditions -%}
             green
-          {%- elif windy or rainy -%}
+          {%- elif windy or rainy or snowy -%}
             orange
           {%- elif not someone_home -%}
             red
@@ -117,7 +121,7 @@ template:
             blue
           {%- endif -%}
         {%- elif is_closed -%}
-          {%- if windy or rainy -%}
+          {%- if windy or rainy or snowy -%}
             green
           {%- else -%}
             grey
@@ -140,6 +144,7 @@ template:
           dark_outside: "{{ dark_outside }}"
           daytime: "{{ daytime }}"
           rainy: "{{ rainy }}"
+          snowy: "{{ snowy }}"
           windy: "{{ windy }}"
           obstruction: "{{ obstruction }}"
           motion: "{{ motion }}"

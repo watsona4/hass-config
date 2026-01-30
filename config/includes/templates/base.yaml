@@ -808,6 +808,22 @@
         weather_state: "{{ states('weather.forecast_home') }}"
 
 # ===============================
+# Snowy (uses OpenMeteo weather state since rain sensor unreliable for snow)
+# ===============================
+- binary_sensor:
+    - name: Snowy
+      unique_id: snowy
+      icon: "{{ 'mdi:weather-snowy-heavy' if is_state(this.entity_id,'on') else 'mdi:weather-partly-cloudy' }}"
+      availability: "{{ has_value('weather.openmeteo_weather_home') }}"
+      state: >-
+        {% set snowy_states = ['snowy','snowy-heavy','snowy-rainy'] %}
+        {{ states('weather.openmeteo_weather_home') in snowy_states }}
+      delay_on: "00:00:30"
+      delay_off: "00:05:00"
+      attributes:
+        weather_state: "{{ states('weather.openmeteo_weather_home') }}"
+
+# ===============================
 # Mold Status and Upstairs HVAC action
 # ===============================
 - select:

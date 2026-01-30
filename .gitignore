@@ -34,7 +34,7 @@ config/packages/strava.yaml
 config/packages/xert_activities.yaml
 
 # Ignore heavy binary assets, allow config assets
-config/www/community 
+config/www/community
 config/www/**/*.jpg
 config/www/**/*.jpeg
 config/www/**/*.png

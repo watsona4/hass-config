@@ -4,11 +4,9 @@
 title: Home
 max_columns: 2
 sections:
-
   # Overall Overview
   - type: grid
     cards:
-
       # Climate and Quick Setpoints
       - type: custom:mushroom-title-card
         title: Home Status
@@ -132,7 +130,6 @@ sections:
   # Outside Weather and Stats
   - type: grid
     cards:
-
       # Outside Title
       - type: custom:mushroom-title-card
         title: "Outdoor Conditions"
@@ -175,7 +172,6 @@ sections:
         columns: 2
         square: false
         cards:
-
           # Temperature and Humidity
           - type: custom:mushroom-template-card
             entity: sensor.outside_temperature_state
@@ -365,7 +361,6 @@ sections:
   # Status - Lights, Doors, Smoke/CO
   - type: grid
     cards:
-
       # Status Title
       - type: custom:mushroom-title-card
         title: Status
@@ -396,7 +391,7 @@ sections:
         filter:
           include:
             - entity_id: binary_sensor.nest_protect_*_smoke_status
-              state: 'on'
+              state: "on"
               options:
                 type: custom:mushroom-template-card
                 entity: this.entity_id
@@ -406,7 +401,7 @@ sections:
                 tap_action:
                   action: more-info
             - entity_id: binary_sensor.nest_protect_*_co_status
-              state: 'on'
+              state: "on"
               options:
                 type: custom:mushroom-template-card
                 entity: this.entity_id
@@ -428,7 +423,7 @@ sections:
         filter:
           include:
             - domain: light
-              state: 'on'
+              state: "on"
               options:
                 type: custom:mushroom-light-card
                 tap_action:
@@ -449,7 +444,7 @@ sections:
             - domain: binary_sensor
               attributes:
                 device_class: door
-              state: 'on'
+              state: "on"
               options:
                 type: custom:mushroom-template-card
                 primary: "{{ state_attr(entity, 'friendly_name') }}"
@@ -460,7 +455,7 @@ sections:
             - domain: binary_sensor
               attributes:
                 device_class: window
-              state: 'on'
+              state: "on"
               options:
                 type: custom:mushroom-template-card
                 primary: "{{ state_attr(entity, 'friendly_name') }}"
@@ -473,7 +468,6 @@ sections:
   # Unavailable Devices
   - type: grid
     cards:
-
       # Unavailable Title
       - type: custom:mushroom-title-card
         title: Unavailable Devices
@@ -531,7 +525,6 @@ sections:
     column_span: 2
     square: false
     cards:
-
       # Cameras Title
       - type: custom:mushroom-title-card
         title: Cameras
@@ -558,7 +551,6 @@ sections:
   # Climate Details
   - type: grid
     cards:
-
       # Climate Title
       - type: custom:mushroom-title-card
         title: "Climate Control"
@@ -570,7 +562,6 @@ sections:
         columns: 2
         square: false
         cards:
-
           # Climate and Humidity Cards
           - type: custom:mushroom-climate-card
             entity: climate.downstairs_thermostat
@@ -626,7 +617,6 @@ sections:
   # Blinds Details
   - type: grid
     cards:
-
       # Blinds Title
       - type: custom:mushroom-title-card
         title: "Blinds & Shades"
@@ -642,7 +632,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.blinds_open
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -667,7 +657,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_brightness
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -692,7 +682,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_temperature
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -717,7 +707,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_presence
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -742,7 +732,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_devices
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -767,7 +757,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_button
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid
@@ -792,7 +782,7 @@ sections:
         visibility:
           - condition: state
             entity: binary_sensor.closed_nighttime
-            state: 'on'
+            state: "on"
       - type: custom:auto-entities
         card:
           type: grid

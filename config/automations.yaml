@@ -29,6 +29,7 @@
   - trigger: state
     entity_id:
     - binary_sensor.rainy
+    - binary_sensor.snowy
     - binary_sensor.windy
     id: Weather
     to:
@@ -103,6 +104,32 @@
       target:
         entity_id: cover.ratgdov25i_f6128e_door
     - stop: Windy so closing door
+  - if:
+    - condition: trigger
+      id:
+      - Weather
+    - condition: state
+      entity_id: binary_sensor.snowy
+      state: 'on'
+    - condition: state
+      entity_id: cover.ratgdov25i_f6128e_door
+      state: open
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: opening
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: closing
+    - condition: state
+      entity_id: input_boolean.garage_engine_recent_start
+      state: 'off'
+    then:
+    - action: cover.close_cover
+      target:
+        entity_id: cover.ratgdov25i_f6128e_door
+    - stop: Snowy so closing door
   - wait_template: '{{ is_state(''timer.garage_door_delay'', ''idle'') }}'
     continue_on_timeout: false
     timeout: 00:10:00
@@ -235,6 +262,9 @@
         state: 'on'
       - condition: state
         entity_id: binary_sensor.rainy
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.snowy
         state: 'off'
       - condition: state
         entity_id: binary_sensor.windy
