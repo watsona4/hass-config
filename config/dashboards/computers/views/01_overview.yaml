@@ -171,7 +171,7 @@ sections:
                 entity: sensor.laptop_memory_percent
                 icon: "{{ state_attr('sensor.ui_laptop_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_laptop_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_laptop_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_laptop_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_laptop_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_laptop_memory_percent', 'badge_color') }}"
@@ -365,7 +365,7 @@ sections:
                 entity: sensor.frigate_memory_percent
                 icon: "{{ state_attr('sensor.ui_frigate_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_frigate_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_frigate_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_frigate_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_frigate_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_frigate_memory_percent', 'badge_color') }}"
@@ -618,7 +618,7 @@ sections:
                 entity: sensor.desktop_memory_percent
                 icon: "{{ state_attr('sensor.ui_desktop_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_desktop_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_desktop_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_desktop_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_desktop_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_desktop_memory_percent', 'badge_color') }}"
@@ -828,7 +828,7 @@ sections:
                 entity: sensor.opnsense_memory_percent
                 icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_opnsense_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'badge_color') }}"
@@ -1010,7 +1010,7 @@ sections:
                 entity: sensor.raspi4_memory_percent
                 icon: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_raspi4_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'badge_color') }}"
@@ -1176,7 +1176,7 @@ sections:
                 entity: sensor.rv_hass_memory_percent
                 icon: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_rvhass_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'badge_color') }}"
@@ -1342,7 +1342,7 @@ sections:
                 entity: sensor.vultr_memory_percent
                 icon: "{{ state_attr('sensor.ui_vultr_memory_percent', 'icon') }}"
                 icon_color: "{{ state_attr('sensor.ui_vultr_memory_percent', 'color') }}"
-                primary: Memory
+                primary: "Memory ({{ state_attr('sensor.ui_vultr_memory_percent', 'value') }} used)"
                 secondary: "{{ state_attr('sensor.ui_vultr_memory_percent', 'long_desc') }}"
                 badge_icon: "{{ state_attr('sensor.ui_vultr_memory_percent', 'badge') }}"
                 badge_color: "{{ state_attr('sensor.ui_vultr_memory_percent', 'badge_color') }}"

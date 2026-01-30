@@ -338,6 +338,63 @@
             "full_desc": "Memory almost exhausted; risk of out-of-memory errors."
         }
     ],
+    "swap_utilization": [
+        {
+            "min_value": none,
+            "default_desc": "Unavailable",
+            "short_desc": "Disabled",
+            "long_desc": "Sensor unavailable",
+            "icon": "mdi:eye-off",
+            "color": "disabled",
+            "badge": "mdi:circle",
+            "full_desc": "Sensor not currently available."
+        },
+        {
+            "min_value": 0,
+            "default_desc": "Unused",
+            "short_desc": "Unused",
+            "long_desc": "No Swap Activity",
+            "icon": "mdi:swap-horizontal",
+            "color": "#22c55e",
+            "full_desc": "No swap in use; all memory fits in RAM."
+        },
+        {
+            "min_value": 10,
+            "default_desc": "Light",
+            "short_desc": "Light",
+            "long_desc": "Light Swap Activity",
+            "icon": "mdi:swap-horizontal",
+            "color": "#84cc16",
+            "full_desc": "Minor swap usage; slight memory pressure but no impact."
+        },
+        {
+            "min_value": 25,
+            "default_desc": "Moderate",
+            "short_desc": "Moderate",
+            "long_desc": "Moderate Swap Activity",
+            "icon": "mdi:swap-horizontal",
+            "color": "#eab308",
+            "full_desc": "Noticeable swap usage; may see occasional slowdowns."
+        },
+        {
+            "min_value": 50,
+            "default_desc": "Heavy",
+            "short_desc": "Heavy",
+            "long_desc": "Heavy Swap Activity",
+            "icon": "mdi:swap-horizontal",
+            "color": "#f97316",
+            "full_desc": "Significant swap usage; performance degradation likely."
+        },
+        {
+            "min_value": 75,
+            "default_desc": "Critical",
+            "short_desc": "Critical",
+            "long_desc": "Critical Swap Pressure",
+            "icon": "mdi:alert-octagon",
+            "color": "#dc2626",
+            "full_desc": "Heavy swapping; system may thrash and become unresponsive."
+        }
+    ],
     "disk_utilization": [
         {
             "min_value": none,

@@ -3619,7 +3619,7 @@ def _write_overview_machine_card(f, config: dict):
                 entity: sensor.{entity_prefix}_memory_percent
                 icon: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'icon') }}}}"
                 icon_color: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'color') }}}}"
-                primary: Memory
+                primary: "Memory ({{{{ state_attr('sensor.ui_{slug}_memory_percent', 'value') }}}} used)"
                 secondary: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'long_desc') }}}}"
                 badge_icon: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'badge') }}}}"
                 badge_color: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'badge_color') }}}}"

@@ -24,6 +24,7 @@ badges:
     entity: sensor.laptop_memory_percent
     icon: "{{ state_attr('sensor.ui_laptop_memory_percent', 'icon') }}"
     color: "{{ state_attr('sensor.ui_laptop_memory_percent', 'color') }}"
+    label: Memory
     content: "{{ state_attr('sensor.ui_laptop_memory_percent', 'short_label') }}"
     tap_action:
       action: more-info
