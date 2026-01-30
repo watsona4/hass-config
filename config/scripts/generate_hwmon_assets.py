@@ -43,7 +43,116 @@ def generate_uuid(seed: str) -> str:
 
 def slugify(name: str) -> str:
     """Convert a name to a valid Home Assistant entity slug."""
-    return name.lower().replace(" ", "_").replace("-", "_").replace("@", "_").replace(".", "_")
+    import re
+    # Replace common separators with underscores
+    slug = name.lower().replace(" ", "_").replace("-", "_").replace("@", "_").replace(".", "_")
+    # Remove any characters that aren't alphanumeric or underscore
+    slug = re.sub(r"[^a-z0-9_]", "", slug)
+    # Collapse multiple underscores
+    slug = re.sub(r"_+", "_", slug)
+    # Strip leading/trailing underscores
+    return slug.strip("_")
+
+
+def _build_partitions_display_template(status_sensor: str, partitions_config: dict) -> str:
+    """Build the Jinja2 template for partitions_display extra_attr.
+
+    Incorporates custom display names from the partitions config section.
+
+    Args:
+        status_sensor: The drive status sensor entity ID
+        partitions_config: The partitions section from machine config
+
+    Returns:
+        A Jinja2 template string that outputs JSON array of partition display data
+    """
+    # Build display name mapping from config
+    includes = partitions_config.get("include", [])
+    display_names = {}
+    for p in includes:
+        name = p.get("name", "")
+        display = p.get("display_name", "")
+        if name and display:
+            display_names[name] = display
+
+    # Build the Jinja2 dict literal for display_names
+    if display_names:
+        display_names_str = ", ".join(
+            f"'{k}': '{v}'" for k, v in display_names.items()
+        )
+        display_names_decl = "{%- set display_names = {" + display_names_str + "} -%}"
+    else:
+        display_names_decl = "{%- set display_names = {} -%}"
+
+    return (
+        "{%- from 'units/base.jinja' import u_humanize_value -%}"
+        "{%- set partitions = state_attr('" + status_sensor + "', 'partitions') | default([], true) -%}"
+        + display_names_decl +
+        "{%- set guid_names = {"
+        "'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', "
+        "'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', "
+        "'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', "
+        "'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'"
+        "} -%}"
+        "{%- set type_icons = {"
+        "'EFI': 'mdi:chip', "
+        "'Reserved': 'mdi:lock', "
+        "'Data': 'mdi:harddisk', "
+        "'Recovery': 'mdi:backup-restore'"
+        "} -%}"
+        "{%- set type_colors = {"
+        "'EFI': 'orange', "
+        "'Reserved': 'purple', "
+        "'Data': 'blue', "
+        "'Recovery': 'teal'"
+        "} -%}"
+        "{%- set ns = namespace(result=[]) -%}"
+        "{%- for p in partitions -%}"
+        "{%- set raw_name = p.name | default('') -%}"
+        "{%- set custom_name = display_names.get(raw_name, '') -%}"
+        "{%- set is_generic = raw_name.startswith('Disk ') or raw_name == '' -%}"
+        "{%- set guid_clean = (p.type_guid | default('')) | replace('{', '') | replace('}', '') | lower -%}"
+        "{%- set type_name = guid_names.get(guid_clean, p.type | default('Unknown')) -%}"
+        "{%- set label = custom_name or p.label | default(type_name if is_generic else raw_name) -%}"
+        "{%- set size = u_humanize_value(p.size_b | default(0), 'B') -%}"
+        "{%- set offset = u_humanize_value(p.start_offset_b | default(0), 'B') -%}"
+        "{%- set vol_guid = (p.volume_guid | default('')) | replace('{', '') | replace('}', '') -%}"
+        "{%- set drive_letter = p.drive_letter | default('') -%}"
+        "{%- set is_hidden = p.is_hidden | default(false) -%}"
+        "{%- set is_boot = p.is_boot | default(false) -%}"
+        "{%- set is_system = p.is_system | default(false) -%}"
+        "{%- set icon = 'mdi:eye-off' if is_hidden else type_icons.get(type_name, 'mdi:harddisk') -%}"
+        "{%- set icon_color = 'grey' if is_hidden else type_colors.get(type_name, 'grey') -%}"
+        "{%- set primary = label ~ (' (' ~ drive_letter ~ ':)' if drive_letter else '') -%}"
+        "{%- set flags = [] -%}"
+        "{%- if is_boot -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}"
+        "{%- if is_system -%}{%- set flags = flags + ['System'] -%}{%- endif -%}"
+        "{%- if is_hidden -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}"
+        "{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}"
+        "{%- set line2 = flags | join(', ') if flags else '' -%}"
+        "{%- set line3 = vol_guid[:36] if vol_guid else '' -%}"
+        "{%- set lines = [line1] -%}"
+        "{%- if line2 -%}{%- set lines = lines + [line2] -%}{%- endif -%}"
+        "{%- if line3 -%}{%- set lines = lines + [line3] -%}{%- endif -%}"
+        "{%- set secondary = lines | join('\\n') -%}"
+        "{%- set entry = {"
+        "'primary': primary, "
+        "'secondary': secondary, "
+        "'icon': icon, "
+        "'icon_color': icon_color, "
+        "'type_name': type_name, "
+        "'size': size, "
+        "'offset': offset, "
+        "'volume_guid': vol_guid, "
+        "'drive_letter': drive_letter, "
+        "'is_boot': is_boot, "
+        "'is_system': is_system, "
+        "'is_hidden': is_hidden"
+        "} -%}"
+        "{%- set ns.result = ns.result + [entry] -%}"
+        "{%- endfor -%}"
+        "{{- ns.result | tojson -}}"
+    )
 
 
 def load_machine_config(config_path: Path) -> dict:
@@ -400,6 +509,39 @@ def generate_memory_sensors(machine: dict, config: dict) -> list:
             "state_class": "measurement",
         })
 
+    if "virtual.used_b" in metrics:
+        sensors.append({
+            "name": f"{name} Swap Used",
+            "unique_id": generate_uuid(f"{slug}_swap_used"),
+            "availability": "{{ available }}",
+            "state": "{{ ((memory.virtual.used_b | default(0)) / 1073741824) | round(2) }}",
+            "unit_of_measurement": "GiB",
+            "device_class": "data_size",
+            "state_class": "measurement",
+        })
+
+    if "virtual.available_b" in metrics:
+        sensors.append({
+            "name": f"{name} Swap Available",
+            "unique_id": generate_uuid(f"{slug}_swap_available"),
+            "availability": "{{ available }}",
+            "state": "{{ ((memory.virtual.available_b | default(0)) / 1073741824) | round(2) }}",
+            "unit_of_measurement": "GiB",
+            "device_class": "data_size",
+            "state_class": "measurement",
+        })
+
+    if "virtual.total_b" in metrics:
+        sensors.append({
+            "name": f"{name} Swap Total",
+            "unique_id": generate_uuid(f"{slug}_swap_total"),
+            "availability": "{{ available }}",
+            "state": "{{ ((memory.virtual.total_b | default(0)) / 1073741824) | round(2) }}",
+            "unit_of_measurement": "GiB",
+            "device_class": "data_size",
+            "state_class": "measurement",
+        })
+
     return sensors
 
 
@@ -628,15 +770,72 @@ def generate_gpu_sensors(machine: dict, config: dict) -> list:
     if not gpu_config.get("enabled", False):
         return sensors
 
-    sensors.append({
-        "name": f"{name} GPU Utilization",
-        "unique_id": generate_uuid(f"{slug}_gpu_utilization"),
-        "availability": "{{ available }}",
-        "state": "{{ (gpus[0].core.load_pct | default(0)) | round(1) if gpus else 0 }}",
-        "icon": "mdi:gpu",
-        "unit_of_measurement": "%",
-        "state_class": "measurement",
-    })
+    metrics = gpu_config.get("metrics", [])
+
+    # GPU Utilization (core load)
+    if "core.load_pct" in metrics:
+        sensors.append({
+            "name": f"{name} GPU Utilization",
+            "unique_id": generate_uuid(f"{slug}_gpu_utilization"),
+            "availability": "{{ available }}",
+            "state": "{{ (gpus[0].core.load_pct | default(0)) | round(1) if gpus else 0 }}",
+            "icon": "mdi:gpu",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+        })
+
+    # GPU Temperature
+    if "temp_c" in metrics:
+        sensors.append({
+            "name": f"{name} GPU Temp",
+            "unique_id": generate_uuid(f"{slug}_gpu_temp"),
+            "availability": "{{ available }}",
+            "state": "{{ (gpus[0].temp_c | default(0)) | round(0) | int if gpus else 0 }}",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature",
+        })
+
+    # GPU Power
+    if "core.power_w" in metrics:
+        sensors.append({
+            "name": f"{name} GPU Power",
+            "unique_id": generate_uuid(f"{slug}_gpu_power"),
+            "availability": "{{ available }}",
+            "state": "{{ (gpus[0].core.power_w | default(0)) | round(1) if gpus else 0 }}",
+            "icon": "mdi:lightning-bolt",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power",
+        })
+
+    # GPU Engine sensors (for mini-graph-card visualization)
+    if "engines" in metrics:
+        # Get engine configuration - can specify which engines to create sensors for
+        engine_config = gpu_config.get("engine_sensors", [])
+        if not engine_config:
+            # Default to common GPU engines if not specified
+            engine_config = [
+                {"name": "GPU Core", "slug": "gpu_core"},
+                {"name": "D3D 3D", "slug": "d3d_3d"},
+                {"name": "D3D Copy", "slug": "d3d_copy"},
+                {"name": "D3D Video Codec 0", "slug": "d3d_video_codec"},
+            ]
+
+        for engine in engine_config:
+            engine_name = engine.get("name", "")
+            engine_slug = engine.get("slug", engine_name.lower().replace(" ", "_").replace("-", "_"))
+            # Use slug-based display name for consistent entity_id generation
+            slug_display = engine_slug.replace('_', ' ').title()
+            sensors.append({
+                "name": f"{name} GPU Engine {slug_display}",
+                "unique_id": generate_uuid(f"{slug}_gpu_engine_{engine_slug}"),
+                "availability": "{{ available }}",
+                "state": f"{{{{ ((gpus[0]['engines'] | default([]) | selectattr('name', 'eq', '{engine_name}') | first | default({{}}))['load_pct'] | default(0)) | round(0) | int if gpus else 0 }}}}",
+                "icon": "mdi:engine",
+                "unit_of_measurement": "%",
+                "state_class": "measurement",
+            })
 
     return sensors
 
@@ -1391,6 +1590,95 @@ def generate_drive_sensors(machine: dict, config: dict) -> list:
                 },
             })
 
+        # Comprehensive drive status sensor with all key metrics
+        if "status" in metrics:
+            sensors.append({
+                "name": f"{name} {display} Status",
+                "unique_id": generate_uuid(f"{slug}_{drive_slug}_status"),
+                "availability": "{{ available }}",
+                "state": (
+                    f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                    "{{ d.get('smart', {}).get('overall_health', 'Unknown') if d else 'Unknown' }}"
+                ),
+                "icon": "mdi:harddisk",
+                "attributes": {
+                    "name": f"{display}",
+                    "model": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.model | default('Unknown') if d else 'Unknown' }}"
+                    ),
+                    "type": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.type | default('Unknown') if d else 'Unknown' }}"
+                    ),
+                    "serial_number": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.serial_number | default('Unknown') if d else 'Unknown' }}"
+                    ),
+                    "firmware_version": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.firmware_version | default('Unknown') if d else 'Unknown' }}"
+                    ),
+                    "capacity_gb": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.listed_cap_b | default(0)) / 1000000000) | round(0) | int if d else 0 }}"
+                    ),
+                    "used_gb": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.used_b | default(0)) / 1073741824) | round(1) if d else 0 }}"
+                    ),
+                    "available_gb": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.available_b | default(0)) / 1073741824) | round(1) if d else 0 }}"
+                    ),
+                    "used_pct": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{% if d %}{% set used = d.used_b | default(0) %}{% set avail = d.available_b | default(0) %}"
+                        "{% set total = used + avail %}{{ ((used / total) * 100) | round(1) if total > 0 else 0 }}{% else %}0{% endif %}"
+                    ),
+                    "temp_c": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.temp_c | default(0) | int if d else 0 }}"
+                    ),
+                    "health": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.get('smart', {}).get('overall_health', 'Unknown') if d else 'Unknown' }}"
+                    ),
+                    "wear_level_pct": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ (100 - d.get('smart', {}).get('percentage_used_pct', 0)) | int if d else 100 }}"
+                    ),
+                    "total_read_tb": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.total_read_b | default(0)) / 1099511627776) | round(2) if d else 0 }}"
+                    ),
+                    "total_write_tb": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.total_write_b | default(0)) / 1099511627776) | round(2) if d else 0 }}"
+                    ),
+                    "read_rate_mbps": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.read_rate_bps | default(0)) / 1048576) | round(1) if d else 0 }}"
+                    ),
+                    "write_rate_mbps": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ ((d.write_rate_bps | default(0)) / 1048576) | round(1) if d else 0 }}"
+                    ),
+                    "read_activity_pct": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.read_activity_pct | default(0) | round(1) if d else 0 }}"
+                    ),
+                    "write_activity_pct": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ d.write_activity_pct | default(0) | round(1) if d else 0 }}"
+                    ),
+                    "partitions": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}"
+                        "{{ (d.partitions | default([])) | tojson if d else '[]' }}"
+                    ),
+                },
+            })
+
         # Partition sensors
         partitions = drive.get("partitions", [])
         for partition in partitions:
@@ -1455,6 +1743,16 @@ def generate_drive_sensors(machine: dict, config: dict) -> list:
                         f" set p = (d.partitions | default([]) | selectattr('name', 'eq', '{part_name}') | first |"
                         " default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p"
                         " else false }}"
+                    ),
+                    "type_name": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}{{%"
+                        f" set p = (d.partitions | default([]) | selectattr('name', 'eq', '{part_name}') | first |"
+                        " default(none)) if d else none %}{{ p.type_name | default('') if p else '' }}"
+                    ),
+                    "type_guid": (
+                        f"{{% set d = drives | selectattr('name', 'eq', '{drive_name}') | first | default(none) %}}{{%"
+                        f" set p = (d.partitions | default([]) | selectattr('name', 'eq', '{part_name}') | first |"
+                        " default(none)) if d else none %}{{ p.type_guid | default('') if p else '' }}"
                     ),
                 },
             })
@@ -1888,6 +2186,7 @@ def generate_ui_sensors(machine_config: dict) -> list:
     slug = machine["slug"]
     entity_prefix = machine.get("entity_prefix", slug)
     name = machine["name"]
+    telemetry_sensor = machine["telemetry_sensor"]
     blocks = []
 
     cpu_config = sections.get("cpu", {})
@@ -1905,7 +2204,7 @@ def generate_ui_sensors(machine_config: dict) -> list:
     if "load_1m" in cpu_metrics:
         blocks.append({
             "entity": f"sensor.{entity_prefix}_cpu_utilization",
-            "triggers": [f"sensor.{entity_prefix}_cpu_load_1m"],
+            "triggers": [telemetry_sensor, f"sensor.{entity_prefix}_cpu_load_1m"],
             "name": f"ui_{slug}_cpu_utilization_load",
             "app": "cpu_utilization",
             "options": {"load": f"sensor.{entity_prefix}_cpu_load_1m"},
@@ -1913,6 +2212,7 @@ def generate_ui_sensors(machine_config: dict) -> list:
     else:
         blocks.append({
             "entity": f"sensor.{entity_prefix}_cpu_utilization",
+            "triggers": [telemetry_sensor],
             "name": f"ui_{slug}_cpu_utilization_load",
             "app": "cpu_utilization",
         })
@@ -1950,6 +2250,7 @@ def generate_ui_sensors(machine_config: dict) -> list:
     # Memory Percent with detailed info
     mem_metrics = mem_config.get("metrics", [])
     has_mem_details = all(m in mem_metrics for m in ["system.load_pct", "system.used_b", "system.total_b"])
+    has_swap_details = all(m in mem_metrics for m in ["virtual.load_pct", "virtual.used_b", "virtual.total_b"])
     if "system.load_pct" in mem_metrics:
         triggers = []
         options = {}
@@ -1982,6 +2283,38 @@ def generate_ui_sensors(machine_config: dict) -> list:
             )
         blocks.append(block)
 
+    if "virtual.load_pct" in mem_metrics:
+        triggers = []
+        options = {}
+        if "virtual.used_b" in mem_metrics:
+            triggers.append(f"sensor.{entity_prefix}_swap_used")
+            options["used"] = f"sensor.{entity_prefix}_swap_used"
+        if "virtual.total_b" in mem_metrics:
+            triggers.append(f"sensor.{entity_prefix}_swap_total")
+        if "virtual.available_b" in mem_metrics:
+            triggers.append(f"sensor.{entity_prefix}_swap_available")
+
+        block = {
+            "entity": f"sensor.{entity_prefix}_swap_percent",
+            "name": f"ui_{slug}_swap_percent",
+            "app": "swap_utilization",
+        }
+        if triggers:
+            block["triggers"] = triggers
+        if options:
+            block["options"] = options
+        if has_swap_details:
+            block["info"] = (
+                "{%- from 'units/base.jinja' import u_humanize_entity -%}{%- set mem_used = u_humanize_entity('sensor."
+                + entity_prefix
+                + "_swap_used') -%}{%- set mem_total = u_humanize_entity('sensor."
+                + entity_prefix
+                + "_swap_total') -%}{%- set mem_free = u_humanize_entity('sensor."
+                + entity_prefix
+                + "_swap_available') -%}{{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ '\\nFree: ' ~ mem_free -}}"
+            )
+        blocks.append(block)
+
     # Uptime - app matches duration.jinja levels
     blocks.append({
         "entity": f"sensor.{entity_prefix}_uptime_s",
@@ -2000,7 +2333,7 @@ def generate_ui_sensors(machine_config: dict) -> list:
     # Status Alarm (for overview status card) - with summary reference
     blocks.append({
         "entity": f"binary_sensor.{entity_prefix}_status_alarm",
-        "triggers": [f"sensor.{entity_prefix}_overall_status_summary"],
+        "triggers": [telemetry_sensor, f"sensor.{entity_prefix}_overall_status_summary"],
         "name": f"ui_{slug}_status_alarm",
         "app": "alarm",
         "options": {
@@ -2050,6 +2383,103 @@ def generate_ui_sensors(machine_config: dict) -> list:
             }
             blocks.append(block)
 
+    # Filesystem UI sensors from sections config (for detail page) - with extra_attrs
+    fs_metrics = fs_config.get("metrics", [])
+    for fs in fs_includes:
+        label = fs.get("label", "")
+        mountpoint = fs.get("mountpoint", "")
+        display = fs.get("display_name", (label or mountpoint).title())
+        fs_slug = slugify(display)
+
+        # Determine match criteria
+        if label:
+            match_attr = "label"
+            match_val = label
+        else:
+            match_attr = "mountpoint"
+            match_val = mountpoint
+
+        percent_sensor = f"sensor.{entity_prefix}_fs_{fs_slug}_percent"
+        blocks.append({
+            "entity": percent_sensor,
+            "triggers": [
+                telemetry_sensor,
+                f"sensor.{entity_prefix}_fs_{fs_slug}_used",
+                f"sensor.{entity_prefix}_fs_{fs_slug}_total",
+            ],
+            "name": f"ui_{slug}_fs_{fs_slug}",
+            "app": "disk_utilization",
+            "extra_attrs": {
+                "fs_icon": (
+                    "{%- set telemetry = state_attr('" + telemetry_sensor + "', 'filesystems') | default([]) -%}"
+                    "{%- set drives = state_attr('" + telemetry_sensor + "', 'drives') | default([]) -%}"
+                    f"{{%- set fs = telemetry | selectattr('{match_attr}', 'eq', '{match_val}') | first | default(none) -%}}"
+                    "{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}"
+                    "{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}"
+                    "{%- set partition = none -%}"
+                    "{%- if drive and drive.partitions is defined -%}"
+                    "{%- for p in drive.partitions -%}"
+                    "{%- if p.label is defined and p.label == (fs.label | default('')) -%}"
+                    "{%- set partition = p -%}"
+                    "{%- endif -%}"
+                    "{%- endfor -%}"
+                    "{%- endif -%}"
+                    "{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}"
+                    "{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}"
+                ),
+                "fs_color": (
+                    "{%- set pct = states('" + percent_sensor + "') | float(0) -%}"
+                    "{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}"
+                ),
+                "fs_secondary": (
+                    "{%- from 'units/base.jinja' import u_humanize_value -%}"
+                    "{%- set telemetry = state_attr('" + telemetry_sensor + "', 'filesystems') | default([], true) -%}"
+                    "{%- set drives = state_attr('" + telemetry_sensor + "', 'drives') | default([], true) -%}"
+                    f"{{%- set fs = telemetry | selectattr('{match_attr}', 'eq', '{match_val}') | first | default(none) -%}}"
+                    "{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}"
+                    "{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}"
+                    "{%- set total_b = used_b + avail_b -%}"
+                    "{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}"
+                    "{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}"
+                    "{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}"
+                    "{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}"
+                    "{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}"
+                    "{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}"
+                    "{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}"
+                    "{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}"
+                    # Find partition by drive letter (more reliable on Windows)
+                    "{%- set fs_drive_letter = mnt | replace(':\\\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}"
+                    "{%- set partition = none -%}"
+                    "{%- if drive and drive.partitions is defined -%}"
+                    "{%- for p in drive.partitions -%}"
+                    "{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}"
+                    "{%- set partition = p -%}"
+                    "{%- endif -%}"
+                    "{%- endfor -%}"
+                    "{%- endif -%}"
+                    # Check encryption from filesystem or partition
+                    "{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}"
+                    "{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}"
+                    "{%- set encrypted = fs_encrypted or part_encrypted -%}"
+                    "{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}"
+                    "{%- set ns = namespace(lines=[]) -%}"
+                    "{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}"
+                    "{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}"
+                    "{%- if read_rate > 0 or write_rate > 0 -%}"
+                    "{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}"
+                    "{%- endif -%}"
+                    "{%- if encrypted -%}"
+                    "{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}"
+                    "{%- set ns.lines = ns.lines + [enc_text] -%}"
+                    "{%- endif -%}"
+                    "{%- if fs_uuid -%}"
+                    "{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}"
+                    "{%- endif -%}"
+                    "{{- ns.lines | join('\\n') -}}"
+                ),
+            },
+        })
+
     # GPU sensor - generate if enabled in overview OR sections
     # Track which sensors we've already generated to avoid duplicates
     generated_sensors = set()
@@ -2076,6 +2506,126 @@ def generate_ui_sensors(machine_config: dict) -> list:
             })
             generated_sensors.add(sensor_name)
 
+        # GPU Temp sensor
+        gpu_metrics = gpu_sections.get("metrics", [])
+        if "temp_c" in gpu_metrics:
+            blocks.append({
+                "entity": f"sensor.{entity_prefix}_gpu_temp",
+                "name": f"ui_{slug}_gpu_temp",
+                "app": "cpu",
+                "options": {"device_class": "temperature"},
+            })
+
+        # GPU Engines sensor (for mini-graph-card icon color)
+        if "engines" in gpu_metrics:
+            blocks.append({
+                "entity": f"sensor.{entity_prefix}_gpu_engine_gpu_core",
+                "name": f"ui_{slug}_gpu_engines",
+                "app": "cpu_utilization",
+            })
+
+    # Drive temp sensors for each drive
+    drv_sections = sections.get("drives", {})
+    if drv_sections.get("enabled", False):
+        drv_metrics = drv_sections.get("metrics", [])
+        if "temp_c" in drv_metrics:
+            for drive in drv_sections.get("include", []):
+                drive_name = drive.get("name", "")
+                display = drive.get("display_name", drive_name)
+                drive_slug = slugify(display)
+                blocks.append({
+                    "entity": f"sensor.{entity_prefix}_{drive_slug}_temp",
+                    "name": f"ui_{slug}_{drive_slug}_temp",
+                    "app": "cpu",
+                    "options": {"device_class": "temperature"},
+                })
+
+        # Drive status UI sensor with comprehensive info
+        if "status" in drv_metrics:
+            for drive in drv_sections.get("include", []):
+                drive_name = drive.get("name", "")
+                display = drive.get("display_name", drive_name)
+                drive_slug = slugify(display)
+                status_sensor = f"sensor.{entity_prefix}_{drive_slug}_status"
+                blocks.append({
+                    "entity": status_sensor,
+                    "triggers": [
+                        telemetry_sensor,
+                        f"sensor.{entity_prefix}_{drive_slug}_temp",
+                    ],
+                    "name": f"ui_{slug}_{drive_slug}_status",
+                    "app": "connectivity",
+                    "options": {"attr": "health", "device_class": "binary"},
+                    "info": (
+                        "{%- set s = '" + status_sensor + "' -%}"
+                        "{%- set health = state_attr(s, 'health') | default('Unknown', true) -%}"
+                        "{%- set temp = state_attr(s, 'temp_c') | default(0, true) -%}"
+                        "{%- set wear = state_attr(s, 'wear_level_pct') | default(100, true) -%}"
+                        "{%- set used_pct = state_attr(s, 'used_pct') | default(0, true) | float -%}"
+                        "{%- set used_gb = state_attr(s, 'used_gb') | default(0, true) | float -%}"
+                        "{%- set avail_gb = state_attr(s, 'available_gb') | default(0, true) | float -%}"
+                        "{%- set total_read = state_attr(s, 'total_read_tb') | default(0, true) | float -%}"
+                        "{%- set total_write = state_attr(s, 'total_write_tb') | default(0, true) | float -%}"
+                        "{%- set read_rate = state_attr(s, 'read_rate_mbps') | default(0, true) | float -%}"
+                        "{%- set write_rate = state_attr(s, 'write_rate_mbps') | default(0, true) | float -%}"
+                        "{%- set partitions = state_attr(s, 'partitions') | default([], true) -%}"
+                        "{%- set lines = [] -%}"
+                        "{%- set lines = lines + ['Health: ' ~ health ~ ' | Wear: ' ~ wear ~ '%'] -%}"
+                        "{%- set lines = lines + ['Temp: ' ~ temp ~ '°C'] -%}"
+                        "{%- set lines = lines + ['Used: ' ~ used_gb | round(0) ~ ' GB / ' ~ (used_gb + avail_gb) | round(0) ~ ' GB (' ~ used_pct | round(0) ~ '%)'] -%}"
+                        "{%- set lines = lines + ['Total R/W: ' ~ total_read ~ ' / ' ~ total_write ~ ' TB'] -%}"
+                        "{%- if read_rate > 0 or write_rate > 0 -%}"
+                        "{%- set lines = lines + ['Activity: R ' ~ read_rate ~ ' / W ' ~ write_rate ~ ' MB/s'] -%}"
+                        "{%- endif -%}"
+                        "{%- if partitions -%}"
+                        "{%- set part_names = [] -%}"
+                        "{%- for p in partitions -%}"
+                        "{%- set pn = (p.label | default('')) or (p.type_name | default('')) or (p.name | default('')) or ('Part ' ~ (p.number | default(loop.index))) -%}"
+                        "{%- set part_names = part_names + [pn] -%}"
+                        "{%- endfor -%}"
+                        "{%- set lines = lines + ['Partitions: ' ~ part_names | join(', ')] -%}"
+                        "{%- endif -%}"
+                        "{{- lines | join('\\n') -}}"
+                    ),
+                    "extra_attrs": {
+                        "drive_icon": (
+                            "{%- set health = state_attr('" + status_sensor + "', 'health') | default('Unknown') | lower -%}"
+                            "{{- 'mdi:harddisk' if health in ['passed', 'healthy'] else 'mdi:harddisk-remove' -}}"
+                        ),
+                        "drive_color": (
+                            "{%- set health = state_attr('" + status_sensor + "', 'health') | default('Unknown', true) | lower -%}"
+                            "{%- set wear = state_attr('" + status_sensor + "', 'wear_level_pct') | default(0, true) | int -%}"
+                            "{%- set temp = state_attr('" + status_sensor + "', 'temp_c') | default(0, true) | int -%}"
+                            "{%- if health not in ['passed', 'healthy'] -%}#dc2626"
+                            "{%- elif wear > 80 or temp > 70 -%}#f59e0b"
+                            "{%- elif wear > 50 or temp > 60 -%}#eab308"
+                            "{%- else -%}#22c55e{%- endif -%}"
+                        ),
+                        "drive_secondary": (
+                            "{%- from 'units/base.jinja' import u_humanize_value -%}"
+                            "{%- set s = '" + status_sensor + "' -%}"
+                            "{%- set health = state_attr(s, 'health') | default('Unknown', true) -%}"
+                            "{%- set wear = state_attr(s, 'wear_level_pct') | default(0, true) | int -%}"
+                            "{%- set temp = state_attr(s, 'temp_c') | default(0, true) | int -%}"
+                            "{%- set firmware = state_attr(s, 'firmware_version') | default('', true) -%}"
+                            "{%- set listed_cap_b = (state_attr(s, 'listed_cap_gb') | default(0, true) | float) * 1073741824 -%}"
+                            "{%- set used_b = (state_attr(s, 'used_gb') | default(0, true) | float) * 1073741824 -%}"
+                            "{%- set avail_b = (state_attr(s, 'available_gb') | default(0, true) | float) * 1073741824 -%}"
+                            "{%- set total_b = used_b + avail_b -%}"
+                            "{%- set used_pct = state_attr(s, 'used_pct') | default(0, true) | round(0) | int -%}"
+                            "{%- set total_read_b = (state_attr(s, 'total_read_tb') | default(0, true) | float) * 1099511627776 -%}"
+                            "{%- set total_write_b = (state_attr(s, 'total_write_tb') | default(0, true) | float) * 1099511627776 -%}"
+                            "{{- 'Health: ' ~ health ~ ' | Wear: ' ~ wear ~ '% | Temp: ' ~ temp ~ '°C\\n' -}}"
+                            "{{- 'Listed: ' ~ u_humanize_value(listed_cap_b, 'B') ~ ' | Used: ' ~ u_humanize_value(used_b, 'B') ~ ' (' ~ used_pct ~ '%)\\n' -}}"
+                            "{{- 'Lifetime R/W: ' ~ u_humanize_value(total_read_b, 'B') ~ ' / ' ~ u_humanize_value(total_write_b, 'B') -}}"
+                            "{%- if firmware %}{{- '\\nFirmware: ' ~ firmware -}}{%- endif %}"
+                        ),
+                        "partitions_display": _build_partitions_display_template(
+                            status_sensor, sections.get("partitions", {})
+                        ),
+                    },
+                })
+
     # TPU sensor - generate if enabled in overview OR sections
     tpu_overview = overview.get("tpu", {})
     if tpu_overview.get("enabled", False):
@@ -2099,6 +2649,414 @@ def generate_ui_sensors(machine_config: dict) -> list:
                 "app": "cpu",
                 "options": {"device_class": "temperature"},
             })
+
+    # Network interface UI sensors
+    net_config = sections.get("network", {})
+    if net_config.get("enabled", False):
+        for iface in net_config.get("include", []):
+            iface_name = iface.get("name", "")
+            display = iface.get("display_name", iface_name)
+            iface_slug = slugify(display)
+            # Detect if WiFi interface for icon selection
+            is_wifi = "wifi" in display.lower() or "wi-fi" in iface_name.lower()
+            # UI sensor tracks the Info sensor's carrier attribute for connectivity status
+            info_sensor = f"sensor.{entity_prefix}_{iface_slug}_info"
+            blocks.append({
+                "entity": info_sensor,
+                "triggers": [
+                    telemetry_sensor,
+                    f"sensor.{entity_prefix}_{iface_slug}_upload",
+                    f"sensor.{entity_prefix}_{iface_slug}_download",
+                ],
+                "name": f"ui_{slug}_network_{iface_slug}",
+                "app": "connectivity",
+                "options": {"attr": "carrier", "device_class": "binary"},
+                "info": (
+                    "{%- set carrier = state_attr('" + info_sensor + "', 'carrier') | default(false, true) -%}"
+                    "{%- set bad = ['n/a', 'unknown', 'unavailable', 'none', ''] -%}"
+                    "{%- set mac = state_attr('" + info_sensor + "', 'mac') | default('', true) -%}"
+                    "{%- set ipv4 = state_attr('" + info_sensor + "', 'ipv4') | default('', true) -%}"
+                    "{%- set ipv6 = state_attr('" + info_sensor + "', 'ipv6') | default('', true) -%}"
+                    "{%- set speed_mbps = state_attr('" + info_sensor + "', 'link_speed_mbps') | default(0, true) | float -%}"
+                    "{%- set speed = ((speed_mbps / 1000) | round(1) ~ ' Gbps' if speed_mbps >= 1000 else (speed_mbps | int ~ ' Mbps')) if speed_mbps > 0 else none -%}"
+                    "{%- set lines = [] -%}"
+                    "{%- if mac and (mac | lower) not in bad -%}{%- set lines = lines + ['MAC: ' ~ mac] -%}{%- endif -%}"
+                    "{%- if ipv4 and (ipv4 | lower) not in bad -%}{%- set lines = lines + ['IPv4: ' ~ ipv4] -%}{%- endif -%}"
+                    "{%- if ipv6 and (ipv6 | lower) not in bad -%}{%- set lines = lines + ['IPv6: ' ~ ipv6] -%}{%- endif -%}"
+                    "{%- if speed -%}{%- set lines = lines + ['Speed: ' ~ speed] -%}{%- endif -%}"
+                    "{{- lines | join('\\n') if lines else ('Connected' if carrier else 'Disconnected') -}}"
+                ),
+                "extra_attrs": {
+                    "iface_icon": (
+                        "{{- 'mdi:wifi' if state_attr('" + info_sensor + "', 'carrier') else 'mdi:wifi-off' -}}"
+                        if is_wifi else
+                        "{{- 'mdi:lan-connect' if state_attr('" + info_sensor + "', 'carrier') else 'mdi:lan-disconnect' -}}"
+                    ),
+                    "iface_color": "{{- '#22c55e' if state_attr('" + info_sensor + "', 'carrier') else '#dc2626' -}}",
+                },
+            })
+
+    # System UI sensor (host info card)
+    blocks.append({
+        "entity": telemetry_sensor,
+        "triggers": [telemetry_sensor],
+        "name": f"ui_{slug}_system",
+        "app": "connectivity",
+        "options": {"attr": "host", "device_class": "binary"},
+        "extra_attrs": {
+            "system_icon": (
+                "{%- set host = state_attr('" + telemetry_sensor + "', 'host') | default({}) -%}"
+                "{%- set chassis = (host['chassis_type'] | default('Desktop')) | lower -%}"
+                "{%- set icons = {'notebook': 'mdi:laptop', 'laptop': 'mdi:laptop', 'desktop': 'mdi:desktop-tower', 'server': 'mdi:server', 'tablet': 'mdi:tablet'} -%}"
+                "{{- icons.get(chassis, 'mdi:desktop-tower') -}}"
+            ),
+            "system_color": (
+                "{%- set host = state_attr('" + telemetry_sensor + "', 'host') | default({}) -%}"
+                "{%- set os = (host['system'] | default('')) | lower -%}"
+                "{{- 'blue' if 'windows' in os else ('orange' if 'linux' in os else ('purple' if 'freebsd' in os else 'grey')) -}}"
+            ),
+            "system_primary": (
+                "{%- set host = state_attr('" + telemetry_sensor + "', 'host') | default({}) -%}"
+                "{{- host['name'] | default('Unknown') -}}"
+            ),
+            "system_secondary": (
+                "{%- set h = state_attr('" + telemetry_sensor + "', 'host') | default({}) -%}"
+                "{%- set model = h['model'] | default('Unknown') -%}"
+                "{%- set serial = h['serial'] | default('N/A') -%}"
+                "{%- set system = h['system'] | default('Unknown') -%}"
+                "{%- set release = h['release'] | default('') -%}"
+                "{%- set machine = h['machine'] | default('') -%}"
+                "{%- set os_str = h['os'] | default('') -%}"
+                "{%- set build = os_str.split('-')[2] if '-' in os_str else os_str -%}"
+                "{{- model ~ ' (Serial: ' ~ serial ~ ')\\n' ~ system ~ ' ' ~ release ~ ' (' ~ machine ~ ')\\nBuild: ' ~ build -}}"
+            ),
+        },
+    })
+
+    # WiFi stats UI sensor
+    wifi_config = sections.get("wifi", {})
+    if wifi_config.get("enabled", False):
+        blocks.append({
+            "entity": f"sensor.{entity_prefix}_wifi_signal",
+            "triggers": [
+                telemetry_sensor,
+                f"sensor.{entity_prefix}_wifi_network",
+                f"sensor.{entity_prefix}_wifi_signal_dbm",
+                f"sensor.{entity_prefix}_wifi_channel",
+                f"sensor.{entity_prefix}_wifi_bitrate",
+            ],
+            "name": f"ui_{slug}_wifi_stats",
+            "app": "connectivity",
+            "options": {"device_class": "binary"},
+            "extra_attrs": {
+                "wifi_icon": (
+                    "{%- set sig = states('sensor." + entity_prefix + "_wifi_signal') | int(0) -%}"
+                    "{{- 'mdi:wifi-strength-4' if sig > 75 else 'mdi:wifi-strength-3' if sig > 50 else 'mdi:wifi-strength-2' if sig > 25 else 'mdi:wifi-strength-1' if sig > 0 else 'mdi:wifi-off' -}}"
+                ),
+                "wifi_color": (
+                    "{%- set sig = states('sensor." + entity_prefix + "_wifi_signal') | int(0) -%}"
+                    "{{- 'green' if sig > 60 else 'orange' if sig > 30 else 'red' -}}"
+                ),
+                "wifi_primary": (
+                    "{{- states('sensor." + entity_prefix + "_wifi_network') | default('Not Connected') -}}"
+                ),
+                "wifi_secondary": (
+                    "{%- set sig = states('sensor." + entity_prefix + "_wifi_signal') | default('?') -%}"
+                    "{%- set dbm = states('sensor." + entity_prefix + "_wifi_signal_dbm') | default('?') -%}"
+                    "{%- set ch = states('sensor." + entity_prefix + "_wifi_channel') | default('?') -%}"
+                    "{%- set rate = states('sensor." + entity_prefix + "_wifi_bitrate') | default('?') -%}"
+                    "{%- set auth = states('sensor." + entity_prefix + "_wifi_auth') | default('') -%}"
+                    "{%- set radio = states('sensor." + entity_prefix + "_wifi_radio') | default('') -%}"
+                    "{{- sig ~ '% (' ~ dbm ~ ' dBm) | Ch ' ~ ch ~ '\\n' ~ rate ~ ' Mbps' ~ (' | ' ~ radio if radio else '') ~ (' | ' ~ auth if auth else '') -}}"
+                ),
+            },
+        })
+
+    # Battery status UI sensor
+    bat_config = sections.get("batteries", {})
+    if bat_config.get("enabled", False):
+        blocks.append({
+            "entity": telemetry_sensor,
+            "triggers": [telemetry_sensor],
+            "name": f"ui_{slug}_battery_status",
+            "app": "connectivity",
+            "options": {"device_class": "binary"},
+            "extra_attrs": {
+                "battery_icon": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}"
+                    "{%- set discharging = (b['discharging'] | default(false)) if b else false -%}"
+                    "{%- if not b -%}mdi:battery-unknown"
+                    "{%- elif discharging -%}mdi:battery-{{- (level // 10 * 10) | int -}}-bluetooth"
+                    "{%- elif level >= 100 -%}mdi:battery-charging-100"
+                    "{%- else -%}mdi:battery-charging-{{- (level // 10 * 10) | int -}}"
+                    "{%- endif -%}"
+                ),
+                "battery_color": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}"
+                    "{%- set discharging = (b['discharging'] | default(false)) if b else false -%}"
+                    "{%- if not b -%}grey"
+                    "{%- elif level <= 20 -%}red"
+                    "{%- elif level <= 50 -%}orange"
+                    "{%- elif discharging -%}yellow"
+                    "{%- else -%}green"
+                    "{%- endif -%}"
+                ),
+                "battery_primary": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}"
+                    "{{- 'Battery (' ~ level ~ '%)' -}}"
+                ),
+                "battery_secondary": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- if not b -%}No battery data"
+                    "{%- else -%}"
+                    "{%- set discharging = b['discharging'] | default(false) -%}"
+                    "{%- set power = b['power_w'] | default(0) | round(1) -%}"
+                    "{%- set voltage = b['voltage_v'] | default(0) | round(2) -%}"
+                    "{%- set current = b['current_a'] | default(0) | round(2) -%}"
+                    "{%- set status = 'Discharging' if discharging else 'Charging' if power > 0 else 'Idle (Full)' -%}"
+                    "{%- set ns = namespace(lines=[]) -%}"
+                    "{%- set ns.lines = ns.lines + [status] -%}"
+                    "{%- if power > 0 or voltage > 0 -%}"
+                    "{%- set pv_line = (power | string ~ ' W') if power > 0 else '' -%}"
+                    "{%- set pv_line = pv_line ~ (' | ' if pv_line and voltage > 0 else '') ~ (voltage | string ~ ' V' if voltage > 0 else '') -%}"
+                    "{%- set ns.lines = ns.lines + [pv_line] if pv_line else ns.lines -%}"
+                    "{%- endif -%}"
+                    "{%- if current != 0 -%}"
+                    "{%- set ns.lines = ns.lines + [current | abs | string ~ ' A ' ~ ('draw' if current < 0 else 'charge')] -%}"
+                    "{%- endif -%}"
+                    "{{- ns.lines | join('\\n') -}}"
+                    "{%- endif -%}"
+                ),
+            },
+        })
+
+        # Battery health UI sensor
+        blocks.append({
+            "entity": telemetry_sensor,
+            "triggers": [telemetry_sensor],
+            "name": f"ui_{slug}_battery_health",
+            "app": "connectivity",
+            "options": {"device_class": "binary"},
+            "extra_attrs": {
+                "health_icon": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}"
+                    "{%- if not b -%}mdi:battery-unknown"
+                    "{%- elif degradation < 10 -%}mdi:battery-heart-variant"
+                    "{%- elif degradation < 20 -%}mdi:battery-heart-outline"
+                    "{%- else -%}mdi:battery-alert-variant-outline"
+                    "{%- endif -%}"
+                ),
+                "health_color": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}"
+                    "{%- if not b -%}grey"
+                    "{%- elif degradation < 10 -%}green"
+                    "{%- elif degradation < 20 -%}orange"
+                    "{%- else -%}red"
+                    "{%- endif -%}"
+                ),
+                "health_primary": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}"
+                    "{%- set health = (100 - degradation) | round(1) -%}"
+                    "{{- 'Battery Health (' ~ health ~ '%)' -}}"
+                ),
+                "health_secondary": (
+                    "{%- set bats = state_attr('" + telemetry_sensor + "', 'batteries') | default([], true) -%}"
+                    "{%- set b = bats[0] if bats and bats | length > 0 else none -%}"
+                    "{%- if not b -%}No battery data"
+                    "{%- else -%}"
+                    "{%- set degradation = b['degradation_pct'] | default(0) | float -%}"
+                    "{%- set design_mwh = b['design_cap_mwh'] | default(0) | int -%}"
+                    "{%- set full_mwh = b['full_cap_mwh'] | default(0) | int -%}"
+                    "{%- set remain_mwh = b['remain_cap_mwh'] | default(0) | int -%}"
+                    "{%- set design_wh = design_mwh / 1000 -%}"
+                    "{%- set full_wh = full_mwh / 1000 -%}"
+                    "{%- set remain_wh = remain_mwh / 1000 -%}"
+                    "{%- set ns = namespace(lines=[]) -%}"
+                    "{%- set ns.lines = ns.lines + [degradation | round(1) | string ~ '% wear'] -%}"
+                    "{%- if design_wh > 0 or full_wh > 0 -%}"
+                    "{%- set cap_line = full_wh | round(1) | string ~ ' / ' ~ design_wh | round(1) | string ~ ' Wh capacity' -%}"
+                    "{%- set ns.lines = ns.lines + [cap_line] -%}"
+                    "{%- endif -%}"
+                    "{%- if remain_wh > 0 -%}"
+                    "{%- set ns.lines = ns.lines + [remain_wh | round(1) | string ~ ' Wh remaining'] -%}"
+                    "{%- endif -%}"
+                    "{{- ns.lines | join('\\n') -}}"
+                    "{%- endif -%}"
+                ),
+            },
+        })
+
+    # GPU load UI sensor
+    gpu_sections = sections.get("gpus", {})
+    if gpu_sections.get("enabled", False):
+        blocks.append({
+            "entity": telemetry_sensor,
+            "triggers": [telemetry_sensor],
+            "name": f"ui_{slug}_gpu_load",
+            "app": "cpu_utilization",
+            "extra_attrs": {
+                "gpu_icon": "mdi:expansion-card",
+                "gpu_color": (
+                    "{%- set gpus = state_attr('" + telemetry_sensor + "', 'gpus') | default([], true) -%}"
+                    "{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}"
+                    "{%- set core = g['core'] | default({}) if g else {} -%}"
+                    "{%- set load = core['load_pct'] | default(0) | float -%}"
+                    "{%- if load > 90 -%}red"
+                    "{%- elif load > 70 -%}orange"
+                    "{%- elif load > 30 -%}yellow"
+                    "{%- else -%}green"
+                    "{%- endif -%}"
+                ),
+                "gpu_primary": (
+                    "{%- set gpus = state_attr('" + telemetry_sensor + "', 'gpus') | default([], true) -%}"
+                    "{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}"
+                    "{%- set core = g['core'] | default({}) if g else {} -%}"
+                    "{%- set load = core['load_pct'] | default(0) | round(0) | int -%}"
+                    "{{- 'GPU (' ~ load ~ '%)' -}}"
+                ),
+                "gpu_secondary": (
+                    "{%- set gpus = state_attr('" + telemetry_sensor + "', 'gpus') | default([], true) -%}"
+                    "{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}"
+                    "{%- if not g -%}No GPU data"
+                    "{%- else -%}"
+                    "{%- set temp = g['temp_c'] | default(0) | round(0) | int -%}"
+                    "{%- set core = g['core'] | default({}) -%}"
+                    "{%- set soc = g['soc'] | default({}) -%}"
+                    "{%- set core_power = core['power_w'] | default(0) | round(1) -%}"
+                    "{%- set soc_power = soc['power_w'] | default(0) | round(1) -%}"
+                    "{%- set voltage = soc['voltage_v'] | default(0) | round(2) -%}"
+                    "{%- set total_power = core_power + soc_power -%}"
+                    "{%- set ns = namespace(lines=[]) -%}"
+                    "{%- if temp > 0 -%}{%- set ns.lines = ns.lines + [temp | string ~ '°C'] -%}{%- endif -%}"
+                    "{%- if total_power > 0 -%}{%- set ns.lines = ns.lines + [total_power | round(1) | string ~ ' W'] -%}{%- endif -%}"
+                    "{%- if voltage > 0 -%}{%- set ns.lines = ns.lines + [voltage | string ~ ' V'] -%}{%- endif -%}"
+                    "{{- ns.lines | join(' | ') if ns.lines else 'Idle' -}}"
+                    "{%- endif -%}"
+                ),
+            },
+        })
+
+    # Services status UI sensor
+    svc_config = sections.get("services", {})
+    if svc_config.get("enabled", False):
+        blocks.append({
+            "entity": f"binary_sensor.{entity_prefix}_services_ok",
+            "triggers": [f"sensor.{entity_prefix}_services_checked"],
+            "name": f"ui_{slug}_services_status",
+            "app": "running",
+            "extra_attrs": {
+                "services_icon": "mdi:cog",
+                "services_color": (
+                    "{{- 'green' if is_state('binary_sensor." + entity_prefix + "_services_ok', 'on') else 'red' -}}"
+                ),
+                "services_primary": "Services Status",
+                "services_secondary": (
+                    "{{- states('sensor." + entity_prefix + "_services_checked') ~ ' monitored' -}}"
+                ),
+            },
+        })
+
+    # Partition UI sensors for each partition in the config
+    drv_config = sections.get("drives", {})
+    part_config = sections.get("partitions", {})
+    if drv_config.get("enabled", False) and "status" in drv_config.get("metrics", []):
+        drives = drv_config.get("include", [])
+        if drives:
+            drive = drives[0]
+            display = drive.get("display_name", drive.get("name", ""))
+            drive_slug = slugify(display)
+            status_sensor = f"sensor.{entity_prefix}_{drive_slug}_status"
+
+            for part in part_config.get("include", []):
+                part_name = part.get("name", "")
+                part_display = part.get("display_name", part_name)
+                part_slug = slugify(part_display)
+                blocks.append({
+                    "entity": status_sensor,
+                    "triggers": [status_sensor],
+                    "name": f"ui_{slug}_partition_{part_slug}",
+                    "app": "connectivity",
+                    "options": {"device_class": "binary"},
+                    "extra_attrs": {
+                        "partition_icon": (
+                            "{%- set partitions = state_attr('" + status_sensor + "', 'partitions') | default([], true) -%}"
+                            "{%- set p = partitions | selectattr('name', 'eq', '" + part_name + "') | first | default(none) -%}"
+                            "{%- set guid_icons = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'mdi:chip', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'mdi:lock', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'mdi:harddisk', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'mdi:backup-restore'} -%}"
+                            "{%- if p -%}"
+                            "{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}"
+                            "{%- set is_hidden = p['is_hidden'] | default(false) -%}"
+                            "{%- set enc = p['encryption'] | default({}) -%}"
+                            "{%- set is_encrypted = enc['encrypted'] | default(false) -%}"
+                            "{%- set enc_unlocked = enc['unlocked'] | default(false) -%}"
+                            "{%- if is_hidden -%}mdi:eye-off"
+                            "{%- elif is_encrypted -%}{{- 'mdi:lock-open-variant' if enc_unlocked else 'mdi:lock' -}}"
+                            "{%- else -%}{{- guid_icons.get(guid, 'mdi:harddisk') -}}"
+                            "{%- endif -%}"
+                            "{%- else -%}mdi:harddisk{%- endif -%}"
+                        ),
+                        "partition_color": (
+                            "{%- set partitions = state_attr('" + status_sensor + "', 'partitions') | default([], true) -%}"
+                            "{%- set p = partitions | selectattr('name', 'eq', '" + part_name + "') | first | default(none) -%}"
+                            "{%- set guid_colors = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'orange', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'purple', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'blue', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'teal'} -%}"
+                            "{%- if p -%}"
+                            "{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}"
+                            "{%- set is_hidden = p['is_hidden'] | default(false) -%}"
+                            "{{- 'grey' if is_hidden else guid_colors.get(guid, 'grey') -}}"
+                            "{%- else -%}grey{%- endif -%}"
+                        ),
+                        "partition_primary": (
+                            "{%- set partitions = state_attr('" + status_sensor + "', 'partitions') | default([], true) -%}"
+                            "{%- set p = partitions | selectattr('name', 'eq', '" + part_name + "') | first | default(none) -%}"
+                            "{%- if p -%}"
+                            "{%- set dl = p['drive_letter'] | default('') -%}"
+                            "{{- '" + part_display + "' ~ (' (' ~ dl ~ ':)' if dl else '') -}}"
+                            "{%- else -%}" + part_display + "{%- endif -%}"
+                        ),
+                        "partition_secondary": (
+                            "{%- from 'units/base.jinja' import u_humanize_value -%}"
+                            "{%- set partitions = state_attr('" + status_sensor + "', 'partitions') | default([], true) -%}"
+                            "{%- set p = partitions | selectattr('name', 'eq', '" + part_name + "') | first | default(none) -%}"
+                            "{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}"
+                            "{%- if p -%}"
+                            "{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}"
+                            "{%- set type_name = guid_names.get(guid, p['type'] | default('Unknown')) -%}"
+                            "{%- set size = u_humanize_value(p['size_b'] | default(0), 'B') -%}"
+                            "{%- set offset = u_humanize_value(p['start_offset_b'] | default(0), 'B') -%}"
+                            "{%- set vol_guid = (p['volume_guid'] | default('')) | replace('{', '') | replace('}', '') -%}"
+                            "{%- set enc = p['encryption'] | default({}) -%}"
+                            "{%- set is_encrypted = enc['encrypted'] | default(false) -%}"
+                            "{%- set enc_scheme = enc['scheme'] | default('') -%}"
+                            "{%- set enc_unlocked = enc['unlocked'] | default(false) -%}"
+                            "{%- set flags = [] -%}"
+                            "{%- if p['is_boot'] | default(false) -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}"
+                            "{%- if p['is_system'] | default(false) -%}{%- set flags = flags + ['System'] -%}{%- endif -%}"
+                            "{%- if p['is_hidden'] | default(false) -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}"
+                            "{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}"
+                            "{%- set lines = [line1] -%}"
+                            "{%- if flags -%}{%- set lines = lines + [flags | join(', ')] -%}{%- endif -%}"
+                            "{%- if is_encrypted -%}"
+                            "{%- set enc_status = ('🔓 ' if enc_unlocked else '🔒 ') ~ (enc_scheme if enc_scheme else 'Encrypted') -%}"
+                            "{%- set lines = lines + [enc_status] -%}"
+                            "{%- endif -%}"
+                            "{%- if vol_guid -%}{%- set lines = lines + [vol_guid] -%}{%- endif -%}"
+                            "{{- lines | join('\\n') -}}"
+                            "{%- else -%}Partition not found{%- endif -%}"
+                        ),
+                    },
+                })
 
     return blocks
 
@@ -2328,19 +3286,472 @@ def generate_package(machine_config: dict, output_dir: Path) -> Path:
           long_desc: >-
             {block['info']}
 """)
+            if "extra_attrs" in block:
+                for attr_name, attr_template in block["extra_attrs"].items():
+                    f.write(f"""\
+          {attr_name}: >-
+            {attr_template}
+""")
 
     return output_path
+
+
+def _generate_card(card_name: str, ctx: dict) -> str:
+    """Generate YAML for a specific card type.
+
+    Args:
+        card_name: Name of the card to generate (e.g., 'cpu_utilization', 'filesystems')
+        ctx: Context dict with entity_prefix, slug, sections, telemetry_sensor, etc.
+
+    Returns:
+        YAML string for the card(s), or empty string if card not applicable
+    """
+    entity_prefix = ctx["entity_prefix"]
+    slug = ctx["slug"]
+    sections = ctx["sections"]
+    telemetry_sensor = ctx["telemetry_sensor"]
+
+    # Card generators
+    if card_name == "health_summary":
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.{entity_prefix}_status_alarm
+            icon: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'color') }}}}"
+            primary: Health Status
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'long_desc') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "system":
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: {telemetry_sensor}
+            icon: "{{{{ state_attr('sensor.ui_{slug}_system', 'system_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_system', 'system_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_system', 'system_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_system', 'system_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "updates":
+        return f"""\
+          - type: markdown
+            content: |
+              {{% set packages = state_attr('sensor.{entity_prefix}_updates_list', 'packages') | default([]) %}}
+              **Available Updates:**
+              {{%- for pkg in packages %}}
+                - {{{{ pkg }}}}
+              {{%- endfor %}}
+            visibility:
+              - condition: numeric_state
+                entity: sensor.{entity_prefix}_updates_pending
+                above: 0
+            card_mod:
+              style: |
+                ha-card {{
+                  background: rgba(var(--rgb-primary-color), 0.1);
+                  font-size: 0.9em;
+                }}
+"""
+
+    elif card_name == "cpu_utilization":
+        cpu_config = sections.get("cpu", {})
+        if not cpu_config.get("enabled", False):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_cpu_utilization
+            icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'color') }}}}"
+            primary: CPU Utilization
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'label') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "cpu_load":
+        cpu_config = sections.get("cpu", {})
+        if not cpu_config.get("enabled", False) or "load_1m" not in cpu_config.get("metrics", []):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_cpu_load_1m
+            icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'color') }}}}"
+            primary: CPU Load (1m/5m/15m)
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'long_desc') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "memory":
+        mem_config = sections.get("memory", {})
+        if not mem_config.get("enabled", False):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_memory_percent
+            icon: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'color') }}}}"
+            primary: "Memory ({{{{ state_attr('sensor.ui_{slug}_memory_percent', 'value') }}}} used)"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'long_desc') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "swap":
+        mem_config = sections.get("memory", {})
+        if not mem_config.get("enabled", False) or "virtual.load_pct" not in mem_config.get("metrics", []):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_swap_percent
+            icon: "{{{{ state_attr('sensor.ui_{slug}_swap_percent', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_swap_percent', 'color') }}}}"
+            primary: "Swap ({{{{ state_attr('sensor.ui_{slug}_swap_percent', 'value') }}}} used)"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_swap_percent', 'long_desc') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "cpu_temp":
+        cpu_config = sections.get("cpu", {})
+        if not cpu_config.get("enabled", False) or "temp_c" not in cpu_config.get("metrics", []):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_cpu_temp
+            icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'color') }}}}"
+            primary: CPU Temperature
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'label') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "drive_temp":
+        drv_config = sections.get("drives", {})
+        if not drv_config.get("enabled", False) or "temp_c" not in drv_config.get("metrics", []):
+            return ""
+        cards = ""
+        for drive in drv_config.get("include", []):
+            display = drive.get("display_name", drive.get("name", ""))
+            drive_slug = slugify(display)
+            cards += f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_{drive_slug}_temp
+            icon: "{{{{ state_attr('sensor.ui_{slug}_{drive_slug}_temp', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_{drive_slug}_temp', 'color') }}}}"
+            primary: {display} Temperature
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_{drive_slug}_temp', 'label') }}}}"
+            tap_action:
+              action: more-info
+"""
+        return cards
+
+    elif card_name == "gpu_temp":
+        gpu_config = sections.get("gpus", {})
+        if not gpu_config.get("enabled", False) or "temp_c" not in gpu_config.get("metrics", []):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_gpu_temp
+            icon: "{{{{ state_attr('sensor.ui_{slug}_gpu_temp', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_gpu_temp', 'color') }}}}"
+            primary: GPU Temperature
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_gpu_temp', 'label') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "filesystems":
+        fs_config = sections.get("filesystems", {})
+        if not fs_config.get("enabled", False):
+            return ""
+        cards = ""
+        for fs in fs_config.get("include", []):
+            label = fs.get("label", "")
+            mountpoint = fs.get("mountpoint", "")
+            display = fs.get("display_name", (label or mountpoint).title())
+            fs_slug = slugify(display)
+            ui_sensor = f"sensor.ui_{slug}_fs_{fs_slug}"
+            cards += f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_fs_{fs_slug}_percent
+            icon: "{{{{ state_attr('{ui_sensor}', 'fs_icon') | default('mdi:folder') }}}}"
+            icon_color: "{{{{ state_attr('{ui_sensor}', 'fs_color') | default('green') }}}}"
+            primary: {display}
+            secondary: "{{{{ state_attr('{ui_sensor}', 'fs_secondary') | default('') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+        return cards
+
+    elif card_name == "drives":
+        drv_config = sections.get("drives", {})
+        if not drv_config.get("enabled", False) or "status" not in drv_config.get("metrics", []):
+            return ""
+        cards = ""
+        for drive in drv_config.get("include", []):
+            display = drive.get("display_name", drive.get("name", ""))
+            drive_slug = slugify(display)
+            ui_sensor = f"sensor.ui_{slug}_{drive_slug}_status"
+            status_sensor = f"sensor.{entity_prefix}_{drive_slug}_status"
+            cards += f"""\
+          - type: custom:mushroom-template-card
+            entity: {status_sensor}
+            icon: "{{{{ state_attr('{ui_sensor}', 'drive_icon') }}}}"
+            icon_color: "{{{{ state_attr('{ui_sensor}', 'drive_color') }}}}"
+            primary: "{{{{ state_attr('{status_sensor}', 'model') | default('{display}') }}}}"
+            secondary: "{{{{ state_attr('{ui_sensor}', 'drive_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+        return cards
+
+    elif card_name == "partitions":
+        drv_config = sections.get("drives", {})
+        part_config = sections.get("partitions", {})
+        if not drv_config.get("enabled", False) or "status" not in drv_config.get("metrics", []):
+            return ""
+        # Get the first drive (for now, assuming single drive)
+        drives = drv_config.get("include", [])
+        if not drives:
+            return ""
+        drive = drives[0]
+        display = drive.get("display_name", drive.get("name", ""))
+        drive_slug = slugify(display)
+        status_sensor = f"sensor.{entity_prefix}_{drive_slug}_status"
+
+        # Generate static cards for each partition in the config via UI sensors
+        cards = ""
+        part_includes = part_config.get("include", [])
+
+        for part in part_includes:
+            part_name = part.get("name", "")
+            part_display = part.get("display_name", part_name)
+            part_slug = slugify(part_display)
+            ui_sensor = f"sensor.ui_{slug}_partition_{part_slug}"
+            cards += f"""\
+          - type: custom:mushroom-template-card
+            entity: {status_sensor}
+            icon: "{{{{ state_attr('{ui_sensor}', 'partition_icon') }}}}"
+            icon_color: "{{{{ state_attr('{ui_sensor}', 'partition_color') }}}}"
+            primary: "{{{{ state_attr('{ui_sensor}', 'partition_primary') }}}}"
+            secondary: "{{{{ state_attr('{ui_sensor}', 'partition_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+        return cards
+
+    elif card_name == "network_interfaces":
+        net_config = sections.get("network", {})
+        if not net_config.get("enabled", False):
+            return ""
+        cards = ""
+        for iface in net_config.get("include", []):
+            display = iface.get("display_name", iface.get("name", ""))
+            iface_slug = slugify(display)
+            cards += f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_{iface_slug}_info
+            icon: "{{{{ state_attr('sensor.ui_{slug}_network_{iface_slug}','iface_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_network_{iface_slug}','iface_color') }}}}"
+            primary: "{{{{ state_attr('sensor.{entity_prefix}_{iface_slug}_info', 'name') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_network_{iface_slug}','long_desc') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+        return cards
+
+    elif card_name == "wifi_stats":
+        wifi_config = sections.get("wifi", {})
+        if not wifi_config.get("enabled", False):
+            return ""
+        # Build a single merged WiFi card with all stats via UI sensor
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_wifi_signal
+            icon: "{{{{ state_attr('sensor.ui_{slug}_wifi_stats', 'wifi_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_wifi_stats', 'wifi_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_wifi_stats', 'wifi_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_wifi_stats', 'wifi_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "battery_status":
+        bat_config = sections.get("batteries", {})
+        if not bat_config.get("enabled", False):
+            return ""
+        # Battery status card via UI sensor
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: {telemetry_sensor}
+            icon: "{{{{ state_attr('sensor.ui_{slug}_battery_status', 'battery_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_battery_status', 'battery_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_battery_status', 'battery_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_battery_status', 'battery_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "battery_health":
+        bat_config = sections.get("batteries", {})
+        if not bat_config.get("enabled", False):
+            return ""
+        # Battery health card via UI sensor
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: {telemetry_sensor}
+            icon: "{{{{ state_attr('sensor.ui_{slug}_battery_health', 'health_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_battery_health', 'health_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_battery_health', 'health_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_battery_health', 'health_secondary') }}}}"
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "gpu_load":
+        gpu_config = sections.get("gpus", {})
+        if not gpu_config.get("enabled", False):
+            return ""
+        # GPU load card via UI sensor
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: {telemetry_sensor}
+            icon: "{{{{ state_attr('sensor.ui_{slug}_gpu_load', 'gpu_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_gpu_load', 'gpu_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_gpu_load', 'gpu_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_gpu_load', 'gpu_secondary') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "engines":
+        gpu_config = sections.get("gpus", {})
+        if not gpu_config.get("enabled", False) or "engines" not in gpu_config.get("metrics", []):
+            return ""
+
+        # Get engine configuration for mini-graph-card
+        engine_config = gpu_config.get("engine_sensors", [])
+        if not engine_config:
+            # Default engines
+            engine_config = [
+                {"name": "GPU Core", "slug": "gpu_core"},
+                {"name": "D3D 3D", "slug": "d3d_3d"},
+                {"name": "D3D Copy", "slug": "d3d_copy"},
+                {"name": "D3D Video Codec 0", "slug": "d3d_video_codec"},
+            ]
+
+        # Build entity list for mini-graph-card
+        entities_yaml = ""
+        for engine in engine_config:
+            engine_name = engine.get("name", "")
+            engine_slug = engine.get("slug", engine_name.lower().replace(" ", "_").replace("-", "_"))
+            display_name = engine_name.replace("D3D ", "").replace(" 0", "")
+            entities_yaml += f"""
+              - entity: sensor.{entity_prefix}_gpu_engine_{engine_slug}
+                name: {display_name}"""
+
+        # Mini-graph-card with bar visualization and dynamic icon color via UI sensor
+        return f"""\
+          - type: custom:mini-graph-card
+            name: GPU Engines
+            icon: mdi:engine
+            entities:{entities_yaml}
+            hours_to_show: 0.5
+            points_per_hour: 120
+            line_width: 2
+            show:
+              graph: bar
+              labels: true
+              fill: fade
+            card_mod:
+              style: |
+                ha-card {{
+                  --icon-color: {{{{ state_attr('sensor.ui_{entity_prefix}_gpu_engines', 'color') }}}};
+                }}
+                .icon {{
+                  color: var(--icon-color) !important;
+                }}
+"""
+
+    elif card_name == "services_status":
+        svc_config = sections.get("services", {})
+        if not svc_config.get("enabled", False):
+            return ""
+        # Services status card via UI sensor
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.{entity_prefix}_services_ok
+            icon: "{{{{ state_attr('sensor.ui_{slug}_services_status', 'services_icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_services_status', 'services_color') }}}}"
+            primary: "{{{{ state_attr('sensor.ui_{slug}_services_status', 'services_primary') }}}}"
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_services_status', 'services_secondary') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "containers_status":
+        ctr_config = sections.get("containers", {})
+        if not ctr_config.get("enabled", False):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.{entity_prefix}_containers_ok
+            icon: mdi:docker
+            icon_color: "{{{{ 'green' if is_state('binary_sensor.{entity_prefix}_containers_ok', 'on') else 'red' }}}}"
+            primary: Containers Status
+            secondary: "{{{{ states('sensor.{entity_prefix}_containers_checked') }}}} monitored"
+            tap_action:
+              action: more-info
+"""
+
+    elif card_name == "tpu":
+        tpu_config = sections.get("tpus", {})
+        if not tpu_config.get("enabled", False):
+            return ""
+        return f"""\
+          - type: custom:mushroom-template-card
+            entity: sensor.{entity_prefix}_coral_tpu_temp
+            icon: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'icon') }}}}"
+            icon_color: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'color') }}}}"
+            primary: TPU Temperature
+            secondary: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'label') }}}}"
+            tap_action:
+              action: more-info
+"""
+
+    # Unknown card type
+    return ""
 
 
 def generate_dashboard_view(machine_config: dict, output_dir: Path) -> Path:
     """Generate a dashboard view YAML for a machine."""
     machine = machine_config["machine"]
     sections = machine_config.get("sections", {})
+    dashboard = machine_config.get("dashboard", {})
 
     name = machine["name"]
     slug = machine["slug"]
     entity_prefix = machine.get("entity_prefix", slug)
     view_order = machine.get("view_order", 5)
+    telemetry_sensor = machine["telemetry_sensor"]
+
+    # Get detail_sections from dashboard config, or use default
+    detail_sections = dashboard.get("detail_sections", [])
 
     output_path = output_dir / f"{view_order:02d}_{slug}.yaml"
 
@@ -2358,1089 +3769,126 @@ def generate_dashboard_view(machine_config: dict, output_dir: Path) -> Path:
 title: {name}
 path: {slug}
 type: sections
-max_columns: 2
+max_columns: 3
+cards: []
 
 badges:
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.{entity_prefix}_status_alarm
+    icon: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'icon') }}}}"
+    color: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'color') }}}}"
+    label: Status
+    content: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'short_label') }}}}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.{entity_prefix}_uptime_s
+    icon: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'icon') }}}}"
+    color: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'color') }}}}"
+    label: Uptime
+    content: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'short_label') }}}}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.{entity_prefix}_cpu_load_1m
+    icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'icon') }}}}"
+    color: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'color') }}}}"
+    label: CPU Load
+    content: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'short_label') }}}}"
+    tap_action:
+      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.{entity_prefix}_cpu_utilization
     icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'icon') }}}}"
     color: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'color') }}}}"
+    label: CPU
     content: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'short_label') }}}}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.{entity_prefix}_cpu_temp
+    icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'icon') }}}}"
+    color: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'color') }}}}"
+    label: CPU Temp
+    content: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'short_label') }}}}"
     tap_action:
       action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.{entity_prefix}_memory_percent
     icon: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'icon') }}}}"
     color: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'color') }}}}"
+    label: Memory
     content: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'short_label') }}}}"
     tap_action:
       action: more-info
 
 sections:
-  # System Status
-  - type: grid
-    column_span: 2
-    cards:
-      - type: custom:mushroom-title-card
-        title: {name}
-        subtitle: "{{{{ states('sensor.{entity_prefix}_overall_status_summary') }}}}"
-      - type: horizontal-stack
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_uptime_s
-            icon: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'icon') }}}}"
-            icon_color: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'color') }}}}"
-            primary: Uptime
-            secondary: "{{{{ state_attr('sensor.ui_{slug}_uptime_s', 'label_vertical') }}}}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_updates_pending
-            icon: "{{{{ state_attr('sensor.ui_{slug}_updates_pending', 'icon') }}}}"
-            icon_color: "{{{{ state_attr('sensor.ui_{slug}_updates_pending', 'color') }}}}"
-            primary: Updates
-            secondary: "{{{{ state_attr('sensor.ui_{slug}_updates_pending', 'label_vertical') }}}}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: binary_sensor.{entity_prefix}_status_alarm
-            icon: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'icon') }}}}"
-            icon_color: "{{{{ state_attr('sensor.ui_{slug}_status_alarm', 'color') }}}}"
-            primary: Status
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-      - type: markdown
-        content: |
-          {{% set packages = state_attr('sensor.{entity_prefix}_updates_list', 'packages') | default([]) %}}
-          **Available Updates:**
-          {{%- for pkg in packages %}}
-            - {{{{ pkg }}}}
-          {{%- endfor %}}
-        visibility:
-          - condition: numeric_state
-            entity: sensor.{entity_prefix}_updates_pending
-            above: 0
-        card_mod:
-          style: |
-            ha-card {{
-              background: rgba(var(--rgb-primary-color), 0.1);
-              font-size: 0.9em;
-            }}
 """)
 
-        # ---------------------------------------------------------------------
-        # CPU Section
-        # ---------------------------------------------------------------------
-        cpu_config = sections.get("cpu", {})
-        if cpu_config.get("enabled", False):
-            f.write(f"""
-  # CPU
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: CPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_cpu_utilization
-        icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'color') }}}}"
-        primary: Utilization
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_utilization', 'label') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-            # CPU Load
-            if "load_1m" in cpu_config.get("metrics", []):
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_cpu_load_1m
-        icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'color') }}}}"
-        primary: Load Average
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_load_1m', 'long_desc') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-            # CPU Temp
-            if "temp_c" in cpu_config.get("metrics", []):
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_cpu_temp
-        icon: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'color') }}}}"
-        primary: Temperature
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_cpu_temp', 'label') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
+        # Build context for card generators
+        ctx = {
+            "entity_prefix": entity_prefix,
+            "slug": slug,
+            "sections": sections,
+            "telemetry_sensor": telemetry_sensor,
+        }
 
-        # ---------------------------------------------------------------------
-        # Memory Section
-        # ---------------------------------------------------------------------
-        mem_config = sections.get("memory", {})
-        if mem_config.get("enabled", False):
-            f.write(f"""
-  # Memory
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Memory
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_memory_percent
-        icon: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'color') }}}}"
-        primary: Usage
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_memory_percent', 'long_desc') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-            # Swap
-            if "virtual.load_pct" in mem_config.get("metrics", []):
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_swap_percent
-        icon: mdi:swap-horizontal
-        icon_color: purple
-        primary: Swap
-        secondary: "{{{{ states('sensor.{entity_prefix}_swap_percent') }}}}%"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
+        # Section title to subtitle mapping
+        section_subtitles = {
+            "System Status": "Health overview and pending updates",
+            "CPU & Memory": "Utilization, load average, and memory pressure",
+            "Device Temperatures": "Thermal status across components",
+            "Filesystems": "Mounted volumes and storage capacity",
+            "Drives & Partitions": "Physical disks, SMART health, and partition layout",
+            "Drives": "Physical disk health and capacity",
+            "Partitions": "Disk partition layout",
+            "Network": "Interface status and connectivity",
+            "WiFi": "Wireless connection details",
+            "Battery": "Charge level and power status",
+            "GPU": "Graphics processor load and thermals",
+            "Services": "Monitored system services",
+            "Containers": "Docker container health",
+            "TPU": "ML accelerator status",
+            "Storage": "Disk capacity and performance",
+            "Time Server": "NTP synchronization status",
+            "GPS": "Satellite positioning data",
+            "Motherboard": "Board sensor readings",
+            "OPNsense": "Firewall status",
+            "Zenarmor": "DPI engine status",
+            "SBC": "Single-board computer metrics",
+        }
 
-        # ---------------------------------------------------------------------
-        # Filesystems Section
-        # ---------------------------------------------------------------------
-        fs_config = sections.get("filesystems", {})
-        if fs_config.get("enabled", False):
-            includes = fs_config.get("include", [])
-            if includes:
-                f.write("""
-  # Filesystems
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Filesystems
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-                for fs in includes:
-                    label = fs.get("label", "")
-                    mountpoint = fs.get("mountpoint", "")
-                    display = fs.get("display_name", (label or mountpoint).title())
-                    fs_slug = slugify(display)
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_fs_{fs_slug}_percent
-            icon: "{{{{ state_attr('sensor.ui_{slug}_fs_{fs_slug}_percent', 'icon') }}}}"
-            icon_color: "{{{{ state_attr('sensor.ui_{slug}_fs_{fs_slug}_percent', 'color') }}}}"
-            primary: {display}
-            secondary: "{{{{ state_attr('sensor.ui_{slug}_fs_{fs_slug}_percent', 'long_desc') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
+        # Generate sections from detail_sections config
+        if detail_sections:
+            for section in detail_sections:
+                title = section.get("title", "")
+                subtitle = section.get("subtitle", section_subtitles.get(title, ""))
+                cards = section.get("cards", [])
 
-        # ---------------------------------------------------------------------
-        # Network Section
-        # ---------------------------------------------------------------------
-        net_config = sections.get("network", {})
-        if net_config.get("enabled", False):
-            includes = net_config.get("include", [])
-            if includes:
-                f.write("""
-  # Network
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Network Interfaces
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-                for iface in includes:
-                    display = iface.get("display_name", iface.get("name", ""))
-                    iface_slug = slugify(iface.get("name", ""))
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_{display.lower()}_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: {display}
-            secondary: "{{{{ states('sensor.{entity_prefix}_{display.lower()}_ipv4') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
+                if not cards:
+                    continue
 
-        # ---------------------------------------------------------------------
-        # Services Section
-        # ---------------------------------------------------------------------
-        svc_config = sections.get("services", {})
-        if svc_config.get("enabled", False):
-            includes = svc_config.get("include", [])
-            if includes:
+                # Generate cards for this section
+                cards_yaml = ""
+                for card_name in cards:
+                    card_yaml = _generate_card(card_name, ctx)
+                    if card_yaml:
+                        cards_yaml += card_yaml
+
+                if not cards_yaml:
+                    continue
+
+                # Write the section with optional subtitle
+                subtitle_line = f"\n            subtitle: {subtitle}" if subtitle else ""
                 f.write(f"""
-  # Services
   - type: grid
     column_span: 1
     cards:
-      - type: heading
-        heading: Services
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: binary_sensor.{entity_prefix}_services_ok
-        icon: mdi:cog
-        icon_color: "{{{{ 'green' if is_state('binary_sensor.{entity_prefix}_services_ok', 'on') else 'red' }}}}"
-        primary: Services Status
-        secondary: "{{{{ states('sensor.{entity_prefix}_services_checked') }}}} monitored"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Containers Section
-        # ---------------------------------------------------------------------
-        ctr_config = sections.get("containers", {})
-        if ctr_config.get("enabled", False):
-            includes = ctr_config.get("include", [])
-            if includes:
-                f.write(f"""
-  # Containers
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Containers
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: binary_sensor.{entity_prefix}_containers_ok
-        icon: mdi:docker
-        icon_color: "{{{{ 'green' if is_state('binary_sensor.{entity_prefix}_containers_ok', 'on') else 'red' }}}}"
-        primary: Containers Status
-        secondary: "{{{{ states('sensor.{entity_prefix}_containers_checked') }}}} monitored"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # GPU Section
-        # ---------------------------------------------------------------------
-        gpu_config = sections.get("gpus", {})
-        if gpu_config.get("enabled", False):
-            f.write(f"""
-  # GPU
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: GPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_gpu_utilization
-        icon: "{{{{ state_attr('sensor.ui_{slug}_gpu_utilization', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_gpu_utilization', 'color') }}}}"
-        primary: GPU Utilization
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_gpu_utilization', 'label') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # TPU Section
-        # ---------------------------------------------------------------------
-        tpu_config = sections.get("tpus", {})
-        if tpu_config.get("enabled", False):
-            f.write(f"""
-  # TPU (Coral)
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Coral TPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_coral_tpu_temp
-        icon: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'icon') }}}}"
-        icon_color: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'color') }}}}"
-        primary: TPU Temperature
-        secondary: "{{{{ state_attr('sensor.ui_{slug}_coral_tpu_temp', 'label') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # SBC Section (Raspberry Pi)
-        # ---------------------------------------------------------------------
-        sbc_config = sections.get("sbc", {})
-        if sbc_config.get("enabled", False):
-            metrics = sbc_config.get("metrics", [])
-            f.write("""
-  # Raspberry Pi
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Raspberry Pi
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
+      - type: vertical-stack
         cards:
-""")
-            # Throttling status
-            if "throttling" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_throttling_status
-            icon: mdi:speedometer-slow
-            icon_color: "{{{{ 'red' if states('sensor.{entity_prefix}_throttling_status') == 'Throttled' else 'green' }}}}"
-            primary: Throttling
-            secondary: "{{{{ states('sensor.{entity_prefix}_throttling_status') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # Core voltage
-            if "voltages.core_v" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_core_voltage
-            icon: mdi:flash
-            icon_color: yellow
-            primary: Core Voltage
-            secondary: "{{{{ states('sensor.{entity_prefix}_core_voltage') }}}} V"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # ARM clock
-            if "clocks.arm_hz" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_arm_clock
-            icon: mdi:sine-wave
-            icon_color: blue
-            primary: ARM Clock
-            secondary: "{{{{ states('sensor.{entity_prefix}_arm_clock') }}}} MHz"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # Memory split
-            if "arm_mem_b" in metrics and "gpu_mem_b" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_arm_memory
-            icon: mdi:memory
-            icon_color: purple
-            primary: Memory Split
-            secondary: "ARM {{{{ states('sensor.{entity_prefix}_arm_memory') }}}} / GPU {{{{ states('sensor.{entity_prefix}_gpu_memory') }}}} MiB"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Time Server Section (chrony/NTP/GPS)
-        # ---------------------------------------------------------------------
-        ts_config = sections.get("time_server", {})
-        if ts_config.get("enabled", False):
-            metrics = ts_config.get("metrics", [])
-            f.write("""
-  # Time Server
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Time Server
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-            # NTP Reference & Stratum
-            if "tracking.reference_name" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_ntp_reference
-            icon: mdi:clock-check
-            icon_color: green
-            primary: NTP Reference
-            secondary: "{{{{ states('sensor.{entity_prefix}_ntp_reference') }}}} (Stratum {{{{ states('sensor.{entity_prefix}_ntp_stratum') }}}})"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # Time Offset
-            if "tracking.system_time_offset_s" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_time_offset
-            icon: mdi:clock-alert
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_time_offset') | float(0) | abs < 100 else 'orange' if states('sensor.{entity_prefix}_time_offset') | float(0) | abs < 1000 else 'red' }}}}"
-            primary: Time Offset
-            secondary: "{{{{ states('sensor.{entity_prefix}_time_offset') }}}} µs"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # Frequency Offset
-            if "tracking.frequency_ppm" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_frequency_offset
-            icon: mdi:sine-wave
-            icon_color: blue
-            primary: Frequency Offset
-            secondary: "{{{{ states('sensor.{entity_prefix}_frequency_offset') }}}} ppm"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            # Leap Status
-            if "tracking.leap_status" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_leap_status
-            icon: mdi:clock-fast
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_leap_status') == 'Normal' else 'orange' }}}}"
-            primary: Leap Status
-            secondary: "{{{{ states('sensor.{entity_prefix}_leap_status') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-
-            # GPS Section (if any GPS metrics are enabled)
-            gps_metrics = [m for m in metrics if m.startswith("gps.")]
-            if gps_metrics:
-                f.write("""
-  # GPS
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: GPS
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-                # GPS Mode
-                if "gps.mode" in metrics:
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_gps_mode
-            icon: mdi:crosshairs-gps
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_gps_mode') | int(0) >= 2 else 'red' }}}}"
-            primary: GPS Fix
-            secondary: "{{{{ state_attr('sensor.{entity_prefix}_gps_mode', 'mode_text') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-                # Satellites
-                if "gps.satellites_used" in metrics:
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_gps_satellites_used
-            icon: mdi:satellite-variant
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_gps_satellites_used') | int(0) >= 4 else 'orange' if states('sensor.{entity_prefix}_gps_satellites_used') | int(0) >= 1 else 'red' }}}}"
-            primary: Satellites
-            secondary: "{{{{ states('sensor.{entity_prefix}_gps_satellites_used') }}}} used / {{{{ states('sensor.{entity_prefix}_gps_satellites_visible') }}}} visible"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-                # HDOP
-                if "gps.hdop" in metrics:
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_gps_hdop
-            icon: mdi:crosshairs-question
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_gps_hdop') | float(99) < 2 else 'orange' if states('sensor.{entity_prefix}_gps_hdop') | float(99) < 5 else 'red' }}}}"
-            primary: HDOP
-            secondary: "{{{{ states('sensor.{entity_prefix}_gps_hdop') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-                # Location
-                if "gps.latitude" in metrics and "gps.longitude" in metrics:
-                    f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_gps_latitude
-            icon: mdi:map-marker
-            icon_color: teal
-            primary: Location
-            secondary: "{{{{ states('sensor.{entity_prefix}_gps_latitude') }}}}°, {{{{ states('sensor.{entity_prefix}_gps_longitude') }}}}°"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-
-            # NTP Server Stats (if enabled)
-            server_metrics = [m for m in metrics if m.startswith("server_stats.")]
-            if server_metrics:
-                f.write("""
-  # NTP Server Stats
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: NTP Server Stats
-        heading_style: subtitle
-""")
-                if "server_stats.ntp_packets_received" in metrics:
-                    f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_ntp_packets_received
-        icon: mdi:counter
-        icon_color: blue
-        primary: Packets Received
-        secondary: "{{{{ states('sensor.{entity_prefix}_ntp_packets_received') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-                if "server_stats.client_count" in metrics:
-                    f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_ntp_client_count
-        icon: mdi:account-multiple
-        icon_color: green
-        primary: NTP Clients
-        secondary: "{{{{ states('sensor.{entity_prefix}_ntp_client_count') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Motherboard Temps Section
-        # ---------------------------------------------------------------------
-        mb_config = sections.get("motherboard", {})
-        if mb_config.get("enabled", False):
-            temps_config = mb_config.get("temps", {})
-            includes = temps_config.get("include", [])
-            if includes:
-                f.write("""
-  # Motherboard Temps
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Temperatures
-        heading_style: subtitle
-""")
-                for temp in includes:
-                    display = temp.get("display_name", temp.get("pattern", ""))
-                    temp_slug = slugify(display)
-                    f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_{temp_slug}
-        icon: mdi:thermometer
-        icon_color: "{{{{ 'red' if states('sensor.{entity_prefix}_{temp_slug}') | float(0) > 80 else 'orange' if states('sensor.{entity_prefix}_{temp_slug}') | float(0) > 60 else 'green' }}}}"
-        primary: {display}
-        secondary: "{{{{ states('sensor.{entity_prefix}_{temp_slug}') }}}}°C"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # OPNsense Section
-        # ---------------------------------------------------------------------
-        opn_config = sections.get("opnsense", {})
-        if opn_config.get("enabled", False):
-            f.write(f"""
-  # OPNsense
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: OPNsense
-        heading_style: subtitle
-""")
-            if "plugins_count" in opn_config.get("metrics", []):
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_plugins_count
-        icon: mdi:puzzle
-        icon_color: blue
-        primary: Plugins
-        secondary: "{{{{ states('sensor.{entity_prefix}_plugins_count') }}}} installed"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Zenarmor Section
-        # ---------------------------------------------------------------------
-        za_config = sections.get("zenarmor", {})
-        if za_config.get("enabled", False):
-            metrics = za_config.get("metrics", [])
-            f.write("""
-  # Zenarmor (Sensei)
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Zenarmor
-        heading_style: subtitle
-""")
-            if "engine_running" in metrics:
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_zenarmor_engine
-        icon: mdi:engine
-        icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_zenarmor_engine') == 'Running' else 'red' }}}}"
-        primary: Engine
-        secondary: "{{{{ states('sensor.{entity_prefix}_zenarmor_engine') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-            if "cloud_running" in metrics:
-                f.write(f"""\
-      - type: custom:mushroom-template-card
-        entity: sensor.{entity_prefix}_zenarmor_cloud
-        icon: mdi:cloud-check
-        icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_zenarmor_cloud') == 'Running' else 'orange' }}}}"
-        primary: Cloud
-        secondary: "{{{{ states('sensor.{entity_prefix}_zenarmor_cloud') }}}}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Battery Section
-        # ---------------------------------------------------------------------
-        bat_config = sections.get("batteries", {})
-        if bat_config.get("enabled", False):
-            metrics = bat_config.get("metrics", [])
-            f.write("""
-  # Battery
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Battery
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-            if "charge_level_pct" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_battery_level
-            icon: "{{{{ 'mdi:battery' if states('sensor.{entity_prefix}_battery_level') | int > 90 else 'mdi:battery-' ~ (states('sensor.{entity_prefix}_battery_level') | int // 10 * 10) | string }}}}"
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_battery_level') | int > 50 else 'orange' if states('sensor.{entity_prefix}_battery_level') | int > 20 else 'red' }}}}"
-            primary: Battery Level
-            secondary: "{{{{ states('sensor.{entity_prefix}_battery_level') }}}}%"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "discharging" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_battery_status
-            icon: "{{{{ 'mdi:battery-minus' if states('sensor.{entity_prefix}_battery_status') == 'Discharging' else 'mdi:battery-charging' }}}}"
-            icon_color: "{{{{ 'orange' if states('sensor.{entity_prefix}_battery_status') == 'Discharging' else 'green' }}}}"
-            primary: Status
-            secondary: "{{{{ states('sensor.{entity_prefix}_battery_status') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "degradation_pct" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_battery_degradation
-            icon: mdi:battery-heart-variant
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_battery_degradation') | float < 10 else 'orange' if states('sensor.{entity_prefix}_battery_degradation') | float < 20 else 'red' }}}}"
-            primary: Health
-            secondary: "{{{{ (100 - states('sensor.{entity_prefix}_battery_degradation') | float) | round(1) }}}}% capacity"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "power_w" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_battery_power
-            icon: mdi:flash
-            icon_color: yellow
-            primary: Power Draw
-            secondary: "{{{{ states('sensor.{entity_prefix}_battery_power') }}}} W"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-
-        # ---------------------------------------------------------------------
-        # Drives Section
-        # ---------------------------------------------------------------------
-        drv_config = sections.get("drives", {})
-        if drv_config.get("enabled", False):
-            includes = drv_config.get("include", [])
-            metrics = drv_config.get("metrics", [])
-            if includes:
-                f.write("""
-  # Drives
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Storage
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-
-                for drive in includes:
-                    drive_name = drive.get("name", "")
-                    display = drive.get("display_name", drive_name)
-                    drive_slug = slugify(display)
-
-                    # Drive overview card with transfer rate icon/color
-                    f.write("          - type: custom:mushroom-template-card\n")
-                    if "transfer_rate" in metrics:
-                        f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_transfer_rate\n")
-                    elif "info" in metrics:
-                        f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_info\n")
-                    else:
-                        f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_temp\n")
-
-                    # Icon based on drive type
-                    f.write(
-                        f"            icon: \"{{{{ 'mdi:harddisk' if state_attr('sensor.{entity_prefix}_{drive_slug}_info',"
-                        " 'type') == 'HDD' else 'mdi:flash' }}\"\n"
-                    )
-                    # Icon color based on transfer rate (activity indicator)
-                    if "transfer_rate" in metrics:
-                        f.write(
-                            "            icon_color: \"{{ 'cyan' if"
-                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int(0) > 10485760 else 'blue' if"
-                            f" states('sensor.{entity_prefix}_{drive_slug}_transfer_rate') | int(0) > 1048576 else 'grey' }}}}\"\n"
-                        )
-                    else:
-                        f.write("            icon_color: blue\n")
-                    # Primary: name, model, type
-                    f.write(
-                        f"            primary: \"{{{{ (state_attr('sensor.{entity_prefix}_{drive_slug}_info', 'model') or"
-                        f" '{display}') | truncate(25, True) }}}}\"\n"
-                    )
-                    # Secondary: used/available/pct/temp
-                    f.write(f"            secondary: >-\n")
-                    f.write(
-                        f"              {{%- set used = states('sensor.{entity_prefix}_{drive_slug}_used') | float(0) -%}}\n"
-                    )
-                    f.write(
-                        f"              {{%- set avail = states('sensor.{entity_prefix}_{drive_slug}_available') | float(0)"
-                        " -%}}\n"
-                    )
-                    f.write(
-                        f"              {{%- set pct = states('sensor.{entity_prefix}_{drive_slug}_pct_used') | float(0)"
-                        " -%}}\n"
-                    )
-                    f.write(f"              {{%- set temp = states('sensor.{entity_prefix}_{drive_slug}_temp') -%}}\n")
-                    f.write(
-                        "              {{ used | round(0) }}G used · {{ avail | round(0) }}G free · {{ pct | round(0)"
-                        " }}%{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}\n"
-                    )
-                    f.write("            multiline_secondary: true\n")
-                    f.write("            tap_action:\n")
-                    f.write("              action: more-info\n")
-
-                    # Partition cards (if partitions are defined)
-                    partitions = drive.get("partitions", [])
-                    for partition in partitions:
-                        part_name = partition.get("name", "")
-                        part_display = partition.get("display_name", part_name)
-                        part_slug = slugify(part_display)
-
-                        f.write("          - type: custom:mushroom-template-card\n")
-                        f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_{part_slug}_info\n")
-                        # Icon based on content type
-                        f.write(
-                            '            icon: "{%- set content ='
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'content') -%}}{{{{"
-                            " 'mdi:lock' if content == 'encrypted' else 'mdi:swap-horizontal' if content == 'swap'"
-                            " else 'mdi:database' if content == 'lvm_pv' else 'mdi:folder' }}\"\n"
-                        )
-                        # Icon color based on encryption status
-                        f.write(
-                            '            icon_color: "{%- set encrypted ='
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encrypted') | default(false)"
-                            " -%}}{{ 'green' if encrypted else 'blue' }}\"\n"
-                        )
-                        # Primary: label, name, fstype
-                        f.write(
-                            '            primary: "{%- set label ='
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'label') -%}}{{%- set"
-                            f" fstype = state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'fstype') -%}}{{{{"
-                            f" label if label else '{part_display}' }}}} ({{{{ fstype }}}})\"\n"
-                        )
-                        # Secondary: size and encryption info
-                        f.write(f"            secondary: >-\n")
-                        f.write(
-                            f"              {{%- set size = state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info',"
-                            " 'size_gb') | float(0) -%}}\n"
-                        )
-                        f.write(
-                            "              {%- set encrypted ="
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encrypted') | default(false)"
-                            " -%}}\n"
-                        )
-                        f.write(
-                            "              {%- set scheme ="
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encryption_scheme') |"
-                            " default('none') -%}}\n"
-                        )
-                        f.write(
-                            "              {%- set unlocked ="
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encryption_unlocked') |"
-                            " default(false) -%}}\n"
-                        )
-                        f.write(
-                            "              {{ size | round(1) }} GiB{% if encrypted %} · {{ scheme | upper }}{% if"
-                            " unlocked %} (unlocked){% else %} (locked){% endif %}{% endif %}\n"
-                        )
-                        # Badge for encryption
-                        f.write(
-                            '            badge_icon: "{%- set encrypted ='
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encrypted') | default(false)"
-                            " -%}}{{ 'mdi:shield-lock' if encrypted else '' }}\"\n"
-                        )
-                        f.write(
-                            '            badge_color: "{%- set unlocked ='
-                            f" state_attr('sensor.{entity_prefix}_{drive_slug}_{part_slug}_info', 'encryption_unlocked') |"
-                            " default(false) -%}}{{ 'green' if unlocked else 'orange' }}\"\n"
-                        )
-                        f.write("            tap_action:\n")
-                        f.write("              action: more-info\n")
-
-                # SMART info section (separate)
-                has_smart = any(m.startswith("smart.") for m in metrics)
-                if has_smart:
-                    f.write("""
-  # SMART Info
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Drive Health (SMART)
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-
-                    for drive in includes:
-                        drive_name = drive.get("name", "")
-                        display = drive.get("display_name", drive_name)
-                        drive_slug = slugify(display)
-
-                        f.write("          - type: custom:mushroom-template-card\n")
-                        if "smart.info" in metrics:
-                            f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_smart\n")
-                        elif "smart.overall_health" in metrics:
-                            f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_health\n")
-                        else:
-                            f.write(f"            entity: sensor.{entity_prefix}_{drive_slug}_temp\n")
-
-                        # Icon based on health status
-                        f.write(
-                            f"            icon: \"{{%- set health = states('sensor.{entity_prefix}_{drive_slug}_health')"
-                            " -%}}{{ 'mdi:heart-pulse' if health == 'PASSED' else 'mdi:heart-broken' }}\"\n"
-                        )
-                        f.write(
-                            f"            icon_color: \"{{{{ 'green' if states('sensor.{entity_prefix}_{drive_slug}_health') =="
-                            " 'PASSED' else 'red' }}\"\n"
-                        )
-                        f.write(f'            primary: "{display}"\n')
-                        # Secondary: comprehensive SMART info
-                        f.write(f"            secondary: >-\n")
-                        f.write(f"              {{%- set health = states('sensor.{entity_prefix}_{drive_slug}_health') -%}}\n")
-                        f.write(f"              {{%- set wear = states('sensor.{entity_prefix}_{drive_slug}_wear_level') -%}}\n")
-                        f.write(f"              {{%- set temp = states('sensor.{entity_prefix}_{drive_slug}_temp') -%}}\n")
-                        if "smart.info" in metrics:
-                            f.write(
-                                f"              {{%- set poh = state_attr('sensor.{entity_prefix}_{drive_slug}_smart',"
-                                " 'power_on_hours') | default(0) -%}}\n"
-                            )
-                            f.write(
-                                f"              {{%- set cycles = state_attr('sensor.{entity_prefix}_{drive_slug}_smart',"
-                                " 'power_cycles') | default(0) -%}}\n"
-                            )
-                            f.write(
-                                f"              {{%- set errors = state_attr('sensor.{entity_prefix}_{drive_slug}_smart',"
-                                " 'media_errors') | default(0) -%}}\n"
-                            )
-                            f.write(
-                                "              {{ health }}"
-                                "{% if wear not in ['unknown', 'unavailable'] %} · {{ wear }}% life{% endif %}"
-                                "{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}\n"
-                            )
-                            f.write(
-                                "              POH: {{ poh | int(0) }}h · Cycles: {{ cycles | int(0) }} · Errors: {{ errors | int(0) }}\n"
-                            )
-                        else:
-                            f.write(
-                                "              {{ health }}"
-                                "{% if wear not in ['unknown', 'unavailable'] %} · {{ wear }}% life{% endif %}"
-                                "{% if temp not in ['unknown', 'unavailable'] %} · {{ temp }}°C{% endif %}\n"
-                            )
-                        f.write("            multiline_secondary: true\n")
-                        f.write("            tap_action:\n")
-                        f.write("              action: more-info\n")
-
-        # ---------------------------------------------------------------------
-        # WiFi Section
-        # ---------------------------------------------------------------------
-        wifi_config = sections.get("wifi", {})
-        if wifi_config.get("enabled", False):
-            metrics = wifi_config.get("metrics", [])
-            f.write("""
-  # WiFi
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: WiFi
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-""")
-            if "essid" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_wifi_network
-            icon: mdi:wifi
-            icon_color: blue
-            primary: Network
-            secondary: "{{{{ states('sensor.{entity_prefix}_wifi_network') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "signal_pct" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_wifi_signal
-            icon: "{{{{ 'mdi:wifi-strength-4' if states('sensor.{entity_prefix}_wifi_signal') | int > 75 else 'mdi:wifi-strength-3' if states('sensor.{entity_prefix}_wifi_signal') | int > 50 else 'mdi:wifi-strength-2' if states('sensor.{entity_prefix}_wifi_signal') | int > 25 else 'mdi:wifi-strength-1' }}}}"
-            icon_color: "{{{{ 'green' if states('sensor.{entity_prefix}_wifi_signal') | int > 60 else 'orange' if states('sensor.{entity_prefix}_wifi_signal') | int > 30 else 'red' }}}}"
-            primary: Signal
-            secondary: "{{{{ states('sensor.{entity_prefix}_wifi_signal') }}}}% ({{{{ states('sensor.{entity_prefix}_wifi_signal_dbm') }}}} dBm)"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "channel" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_wifi_channel
-            icon: mdi:access-point
-            icon_color: purple
-            primary: Channel
-            secondary: "{{{{ states('sensor.{entity_prefix}_wifi_channel') }}}}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
-            if "bitrate_mbps" in metrics:
-                f.write(f"""\
-          - type: custom:mushroom-template-card
-            entity: sensor.{entity_prefix}_wifi_bitrate
-            icon: mdi:speedometer
-            icon_color: teal
-            primary: Link Speed
-            secondary: "{{{{ states('sensor.{entity_prefix}_wifi_bitrate') }}}} Mbps"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-""")
+          - type: custom:mushroom-title-card
+            title: {title}{subtitle_line}
+{cards_yaml}""")
 
     return output_path
 

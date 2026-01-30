@@ -174,6 +174,30 @@ template:
         icon: "mdi:memory"
         unit_of_measurement: "%"
         state_class: measurement
+      - name: "Laptop Swap Used"
+        unique_id: c490c58b-13a1-56d2-b469-d6641ad0f675
+        availability: "{{ available }}"
+        state: >-
+          {{ ((memory.virtual.used_b | default(0)) / 1073741824) | round(2) }}
+        unit_of_measurement: "GiB"
+        state_class: measurement
+        device_class: data_size
+      - name: "Laptop Swap Available"
+        unique_id: f847a327-5ab3-5c03-8531-a33e4e5fcce9
+        availability: "{{ available }}"
+        state: >-
+          {{ ((memory.virtual.available_b | default(0)) / 1073741824) | round(2) }}
+        unit_of_measurement: "GiB"
+        state_class: measurement
+        device_class: data_size
+      - name: "Laptop Swap Total"
+        unique_id: 5dde10ec-c322-579f-8f9b-281ab9ec8731
+        availability: "{{ available }}"
+        state: >-
+          {{ ((memory.virtual.total_b | default(0)) / 1073741824) | round(2) }}
+        unit_of_measurement: "GiB"
+        state_class: measurement
+        device_class: data_size
       - name: "Laptop FS Windows (C:) Percent"
         unique_id: 0c8a2a5d-531a-5823-bd6c-c6d48ae8ebef
         availability: "{{ available }}"
@@ -282,6 +306,55 @@ template:
         icon: "mdi:gpu"
         unit_of_measurement: "%"
         state_class: measurement
+      - name: "Laptop GPU Temp"
+        unique_id: 704726ec-3bd2-5849-973e-a32135852dd7
+        availability: "{{ available }}"
+        state: >-
+          {{ (gpus[0].temp_c | default(0)) | round(0) | int if gpus else 0 }}
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+      - name: "Laptop GPU Power"
+        unique_id: 6c35110e-2116-5fd8-a43b-8a256c688707
+        availability: "{{ available }}"
+        state: >-
+          {{ (gpus[0].core.power_w | default(0)) | round(1) if gpus else 0 }}
+        icon: "mdi:lightning-bolt"
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+      - name: "Laptop GPU Engine Gpu Core"
+        unique_id: de65d909-e0aa-53bd-9793-1690be829625
+        availability: "{{ available }}"
+        state: >-
+          {{ ((gpus[0]['engines'] | default([]) | selectattr('name', 'eq', 'GPU Core') | first | default({}))['load_pct'] | default(0)) | round(0) | int if gpus else 0 }}
+        icon: "mdi:engine"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop GPU Engine D3D 3D"
+        unique_id: 5e65d03c-a329-5362-9bf7-e39881af351a
+        availability: "{{ available }}"
+        state: >-
+          {{ ((gpus[0]['engines'] | default([]) | selectattr('name', 'eq', 'D3D 3D') | first | default({}))['load_pct'] | default(0)) | round(0) | int if gpus else 0 }}
+        icon: "mdi:engine"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop GPU Engine D3D Copy"
+        unique_id: b51ba926-1166-57ca-97f3-a16333c4acd4
+        availability: "{{ available }}"
+        state: >-
+          {{ ((gpus[0]['engines'] | default([]) | selectattr('name', 'eq', 'D3D Copy') | first | default({}))['load_pct'] | default(0)) | round(0) | int if gpus else 0 }}
+        icon: "mdi:engine"
+        unit_of_measurement: "%"
+        state_class: measurement
+      - name: "Laptop GPU Engine D3D Video Codec"
+        unique_id: 71af108e-7cc2-5b41-a8e8-efd3903c7355
+        availability: "{{ available }}"
+        state: >-
+          {{ ((gpus[0]['engines'] | default([]) | selectattr('name', 'eq', 'D3D Video Codec 0') | first | default({}))['load_pct'] | default(0)) | round(0) | int if gpus else 0 }}
+        icon: "mdi:engine"
+        unit_of_measurement: "%"
+        state_class: measurement
       - name: "Laptop Battery Level"
         unique_id: f2e30c12-d13d-56a4-a2e4-2768dc98c79e
         availability: "{{ available }}"
@@ -339,28 +412,40 @@ template:
         icon: "mdi:battery"
         unit_of_measurement: "Wh"
         device_class: energy
-      - name: "Laptop NVMe SSD Temp"
-        unique_id: bae8de25-076f-5d48-9ad0-9824f4fa9821
+      - name: "Laptop SAMSUNG MZVL2512HDJD-00BLL Temp"
+        unique_id: 4223e139-02aa-58a5-aa07-fb306f601b53
         availability: "{{ available }}"
         state: >-
           {% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ (d.temp_c | default(0)) | round(0) | int if d else 0 }}
         unit_of_measurement: "°C"
         state_class: measurement
         device_class: temperature
-      - name: "Laptop NVMe SSD Health"
-        unique_id: d8d656a4-a7fb-5736-a5e9-91103e9de098
+      - name: "Laptop SAMSUNG MZVL2512HDJD-00BLL Status"
+        unique_id: 55d73664-f71c-5b4d-850c-18bf29569ecd
         availability: "{{ available }}"
         state: >-
           {% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.get('smart', {}).get('overall_health', 'Unknown') if d else 'Unknown' }}
         icon: "mdi:harddisk"
-      - name: "Laptop NVMe SSD Wear Level"
-        unique_id: d4f78570-9ba2-57c1-a2bc-16ddc816f6e2
-        availability: "{{ available }}"
-        state: >-
-          {% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ (100 - d.get('smart', {}).get('percentage_used_pct', 0)) | int if d else 100 }}
-        icon: "mdi:disc"
-        unit_of_measurement: "%"
-        state_class: measurement
+        attributes:
+          name: "SAMSUNG MZVL2512HDJD-00BLL"
+          model: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.model | default('Unknown') if d else 'Unknown' }}"
+          type: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.type | default('Unknown') if d else 'Unknown' }}"
+          serial_number: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.serial_number | default('Unknown') if d else 'Unknown' }}"
+          firmware_version: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.firmware_version | default('Unknown') if d else 'Unknown' }}"
+          capacity_gb: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.listed_cap_b | default(0)) / 1000000000) | round(0) | int if d else 0 }}"
+          used_gb: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.used_b | default(0)) / 1073741824) | round(1) if d else 0 }}"
+          available_gb: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.available_b | default(0)) / 1073741824) | round(1) if d else 0 }}"
+          used_pct: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{% if d %}{% set used = d.used_b | default(0) %}{% set avail = d.available_b | default(0) %}{% set total = used + avail %}{{ ((used / total) * 100) | round(1) if total > 0 else 0 }}{% else %}0{% endif %}"
+          temp_c: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.temp_c | default(0) | int if d else 0 }}"
+          health: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.get('smart', {}).get('overall_health', 'Unknown') if d else 'Unknown' }}"
+          wear_level_pct: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ (100 - d.get('smart', {}).get('percentage_used_pct', 0)) | int if d else 100 }}"
+          total_read_tb: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.total_read_b | default(0)) / 1099511627776) | round(2) if d else 0 }}"
+          total_write_tb: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.total_write_b | default(0)) / 1099511627776) | round(2) if d else 0 }}"
+          read_rate_mbps: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.read_rate_bps | default(0)) / 1048576) | round(1) if d else 0 }}"
+          write_rate_mbps: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ ((d.write_rate_bps | default(0)) / 1048576) | round(1) if d else 0 }}"
+          read_activity_pct: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.read_activity_pct | default(0) | round(1) if d else 0 }}"
+          write_activity_pct: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ d.write_activity_pct | default(0) | round(1) if d else 0 }}"
+          partitions: "{% set d = drives | selectattr('name', 'eq', 'PhysicalDrive0') | first | default(none) %}{{ (d.partitions | default([])) | tojson if d else '[]' }}"
       - name: "Laptop WiFi Network"
         unique_id: 0d658bcb-3ff4-5c4a-86f5-cfe99f40f16a
         availability: "{{ available }}"
@@ -503,6 +588,7 @@ template:
       - platform: state
         entity_id:
           - sensor.laptop_cpu_utilization
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
           - sensor.laptop_cpu_load_1m
     variables:
       entity_id: sensor.laptop_cpu_utilization
@@ -629,6 +715,50 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
+        entity_id:
+          - sensor.laptop_swap_percent
+          - sensor.laptop_swap_used
+          - sensor.laptop_swap_total
+          - sensor.laptop_swap_available
+    variables:
+      entity_id: sensor.laptop_swap_percent
+      app: swap_utilization
+      options:
+        used: sensor.laptop_swap_used
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_swap_percent
+        unique_id: d6054129-e262-53c7-85d2-053425c3a0af
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: swap_utilization
+          device_class: none
+          long_desc: >-
+            {%- from 'units/base.jinja' import u_humanize_entity -%}{%- set mem_used = u_humanize_entity('sensor.laptop_swap_used') -%}{%- set mem_total = u_humanize_entity('sensor.laptop_swap_total') -%}{%- set mem_free = u_humanize_entity('sensor.laptop_swap_available') -%}{{- 'Used: ' ~ mem_used ~ ' / ' ~ mem_total ~ '\nFree: ' ~ mem_free -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
         entity_id: sensor.laptop_uptime_s
     variables:
       entity_id: sensor.laptop_uptime_s
@@ -707,6 +837,7 @@ template:
       - platform: state
         entity_id:
           - binary_sensor.laptop_status_alarm
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
           - sensor.laptop_overall_status_summary
     variables:
       entity_id: binary_sensor.laptop_status_alarm
@@ -827,6 +958,53 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
+        entity_id:
+          - sensor.laptop_fs_windows_c_percent
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_fs_windows_c_used
+          - sensor.laptop_fs_windows_c_total
+    variables:
+      entity_id: sensor.laptop_fs_windows_c_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_fs_windows_c
+        unique_id: 6e7d1314-68bc-55ee-9c0a-ab9cbceb8ca0
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.laptop_fs_windows_c_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
         entity_id: sensor.laptop_gpu_utilization
     variables:
       entity_id: sensor.laptop_gpu_utilization
@@ -860,3 +1038,749 @@ template:
           long_label_vertical: "{{ state_info_vertical.long_label }}"
           app: cpu_utilization
           device_class: none
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: sensor.laptop_gpu_temp
+    variables:
+      entity_id: sensor.laptop_gpu_temp
+      app: cpu
+      options:
+        device_class: temperature
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_gpu_temp
+        unique_id: 816e8d33-1443-5b5c-8cd5-a508c0b76aad
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu
+          device_class: temperature
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: sensor.laptop_gpu_engine_gpu_core
+    variables:
+      entity_id: sensor.laptop_gpu_engine_gpu_core
+      app: cpu_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_gpu_engines
+        unique_id: 57d54e57-30d2-5c9e-8647-74cbb04f1286
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu_utilization
+          device_class: none
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_temp
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_temp
+      app: cpu
+      options:
+        device_class: temperature
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_samsung_mzvl2512hdjd_00bll_temp
+        unique_id: d41bfff1-df70-5f65-8b30-ce84e2667369
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu
+          device_class: temperature
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_temp
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+      app: connectivity
+      options:
+        attr: health
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_samsung_mzvl2512hdjd_00bll_status
+        unique_id: 2c11a6c0-005c-56b2-b8d7-85be38e60c81
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          long_desc: >-
+            {%- set s = 'sensor.laptop_samsung_mzvl2512hdjd_00bll_status' -%}{%- set health = state_attr(s, 'health') | default('Unknown', true) -%}{%- set temp = state_attr(s, 'temp_c') | default(0, true) -%}{%- set wear = state_attr(s, 'wear_level_pct') | default(100, true) -%}{%- set used_pct = state_attr(s, 'used_pct') | default(0, true) | float -%}{%- set used_gb = state_attr(s, 'used_gb') | default(0, true) | float -%}{%- set avail_gb = state_attr(s, 'available_gb') | default(0, true) | float -%}{%- set total_read = state_attr(s, 'total_read_tb') | default(0, true) | float -%}{%- set total_write = state_attr(s, 'total_write_tb') | default(0, true) | float -%}{%- set read_rate = state_attr(s, 'read_rate_mbps') | default(0, true) | float -%}{%- set write_rate = state_attr(s, 'write_rate_mbps') | default(0, true) | float -%}{%- set partitions = state_attr(s, 'partitions') | default([], true) -%}{%- set lines = [] -%}{%- set lines = lines + ['Health: ' ~ health ~ ' | Wear: ' ~ wear ~ '%'] -%}{%- set lines = lines + ['Temp: ' ~ temp ~ '°C'] -%}{%- set lines = lines + ['Used: ' ~ used_gb | round(0) ~ ' GB / ' ~ (used_gb + avail_gb) | round(0) ~ ' GB (' ~ used_pct | round(0) ~ '%)'] -%}{%- set lines = lines + ['Total R/W: ' ~ total_read ~ ' / ' ~ total_write ~ ' TB'] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set lines = lines + ['Activity: R ' ~ read_rate ~ ' / W ' ~ write_rate ~ ' MB/s'] -%}{%- endif -%}{%- if partitions -%}{%- set part_names = [] -%}{%- for p in partitions -%}{%- set pn = (p.label | default('')) or (p.type_name | default('')) or (p.name | default('')) or ('Part ' ~ (p.number | default(loop.index))) -%}{%- set part_names = part_names + [pn] -%}{%- endfor -%}{%- set lines = lines + ['Partitions: ' ~ part_names | join(', ')] -%}{%- endif -%}{{- lines | join('\n') -}}
+          drive_icon: >-
+            {%- set health = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'health') | default('Unknown') | lower -%}{{- 'mdi:harddisk' if health in ['passed', 'healthy'] else 'mdi:harddisk-remove' -}}
+          drive_color: >-
+            {%- set health = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'health') | default('Unknown', true) | lower -%}{%- set wear = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'wear_level_pct') | default(0, true) | int -%}{%- set temp = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'temp_c') | default(0, true) | int -%}{%- if health not in ['passed', 'healthy'] -%}#dc2626{%- elif wear > 80 or temp > 70 -%}#f59e0b{%- elif wear > 50 or temp > 60 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          drive_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set s = 'sensor.laptop_samsung_mzvl2512hdjd_00bll_status' -%}{%- set health = state_attr(s, 'health') | default('Unknown', true) -%}{%- set wear = state_attr(s, 'wear_level_pct') | default(0, true) | int -%}{%- set temp = state_attr(s, 'temp_c') | default(0, true) | int -%}{%- set firmware = state_attr(s, 'firmware_version') | default('', true) -%}{%- set listed_cap_b = (state_attr(s, 'listed_cap_gb') | default(0, true) | float) * 1073741824 -%}{%- set used_b = (state_attr(s, 'used_gb') | default(0, true) | float) * 1073741824 -%}{%- set avail_b = (state_attr(s, 'available_gb') | default(0, true) | float) * 1073741824 -%}{%- set total_b = used_b + avail_b -%}{%- set used_pct = state_attr(s, 'used_pct') | default(0, true) | round(0) | int -%}{%- set total_read_b = (state_attr(s, 'total_read_tb') | default(0, true) | float) * 1099511627776 -%}{%- set total_write_b = (state_attr(s, 'total_write_tb') | default(0, true) | float) * 1099511627776 -%}{{- 'Health: ' ~ health ~ ' | Wear: ' ~ wear ~ '% | Temp: ' ~ temp ~ '°C\n' -}}{{- 'Listed: ' ~ u_humanize_value(listed_cap_b, 'B') ~ ' | Used: ' ~ u_humanize_value(used_b, 'B') ~ ' (' ~ used_pct ~ '%)\n' -}}{{- 'Lifetime R/W: ' ~ u_humanize_value(total_read_b, 'B') ~ ' / ' ~ u_humanize_value(total_write_b, 'B') -}}{%- if firmware %}{{- '\nFirmware: ' ~ firmware -}}{%- endif %}
+          partitions_display: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set display_names = {'Disk 0 Partition 1': 'EFI System', 'Disk 0 Partition 2': 'Windows Boot Manager', 'Disk 0 Partition 3': 'Data Partition (C:)', 'Disk 0 Partition 4': 'Windows Recovery Environment'} -%}{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}{%- set type_icons = {'EFI': 'mdi:chip', 'Reserved': 'mdi:lock', 'Data': 'mdi:harddisk', 'Recovery': 'mdi:backup-restore'} -%}{%- set type_colors = {'EFI': 'orange', 'Reserved': 'purple', 'Data': 'blue', 'Recovery': 'teal'} -%}{%- set ns = namespace(result=[]) -%}{%- for p in partitions -%}{%- set raw_name = p.name | default('') -%}{%- set custom_name = display_names.get(raw_name, '') -%}{%- set is_generic = raw_name.startswith('Disk ') or raw_name == '' -%}{%- set guid_clean = (p.type_guid | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set type_name = guid_names.get(guid_clean, p.type | default('Unknown')) -%}{%- set label = custom_name or p.label | default(type_name if is_generic else raw_name) -%}{%- set size = u_humanize_value(p.size_b | default(0), 'B') -%}{%- set offset = u_humanize_value(p.start_offset_b | default(0), 'B') -%}{%- set vol_guid = (p.volume_guid | default('')) | replace('{', '') | replace('}', '') -%}{%- set drive_letter = p.drive_letter | default('') -%}{%- set is_hidden = p.is_hidden | default(false) -%}{%- set is_boot = p.is_boot | default(false) -%}{%- set is_system = p.is_system | default(false) -%}{%- set icon = 'mdi:eye-off' if is_hidden else type_icons.get(type_name, 'mdi:harddisk') -%}{%- set icon_color = 'grey' if is_hidden else type_colors.get(type_name, 'grey') -%}{%- set primary = label ~ (' (' ~ drive_letter ~ ':)' if drive_letter else '') -%}{%- set flags = [] -%}{%- if is_boot -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}{%- if is_system -%}{%- set flags = flags + ['System'] -%}{%- endif -%}{%- if is_hidden -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}{%- set line2 = flags | join(', ') if flags else '' -%}{%- set line3 = vol_guid[:36] if vol_guid else '' -%}{%- set lines = [line1] -%}{%- if line2 -%}{%- set lines = lines + [line2] -%}{%- endif -%}{%- if line3 -%}{%- set lines = lines + [line3] -%}{%- endif -%}{%- set secondary = lines | join('\n') -%}{%- set entry = {'primary': primary, 'secondary': secondary, 'icon': icon, 'icon_color': icon_color, 'type_name': type_name, 'size': size, 'offset': offset, 'volume_guid': vol_guid, 'drive_letter': drive_letter, 'is_boot': is_boot, 'is_system': is_system, 'is_hidden': is_hidden} -%}{%- set ns.result = ns.result + [entry] -%}{%- endfor -%}{{- ns.result | tojson -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_wifi_info
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_wifi_upload
+          - sensor.laptop_wifi_download
+    variables:
+      entity_id: sensor.laptop_wifi_info
+      app: connectivity
+      options:
+        attr: carrier
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_network_wifi
+        unique_id: c60ff2aa-f6b3-5367-b318-0659154afc41
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          long_desc: >-
+            {%- set carrier = state_attr('sensor.laptop_wifi_info', 'carrier') | default(false, true) -%}{%- set bad = ['n/a', 'unknown', 'unavailable', 'none', ''] -%}{%- set mac = state_attr('sensor.laptop_wifi_info', 'mac') | default('', true) -%}{%- set ipv4 = state_attr('sensor.laptop_wifi_info', 'ipv4') | default('', true) -%}{%- set ipv6 = state_attr('sensor.laptop_wifi_info', 'ipv6') | default('', true) -%}{%- set speed_mbps = state_attr('sensor.laptop_wifi_info', 'link_speed_mbps') | default(0, true) | float -%}{%- set speed = ((speed_mbps / 1000) | round(1) ~ ' Gbps' if speed_mbps >= 1000 else (speed_mbps | int ~ ' Mbps')) if speed_mbps > 0 else none -%}{%- set lines = [] -%}{%- if mac and (mac | lower) not in bad -%}{%- set lines = lines + ['MAC: ' ~ mac] -%}{%- endif -%}{%- if ipv4 and (ipv4 | lower) not in bad -%}{%- set lines = lines + ['IPv4: ' ~ ipv4] -%}{%- endif -%}{%- if ipv6 and (ipv6 | lower) not in bad -%}{%- set lines = lines + ['IPv6: ' ~ ipv6] -%}{%- endif -%}{%- if speed -%}{%- set lines = lines + ['Speed: ' ~ speed] -%}{%- endif -%}{{- lines | join('\n') if lines else ('Connected' if carrier else 'Disconnected') -}}
+          iface_icon: >-
+            {{- 'mdi:wifi' if state_attr('sensor.laptop_wifi_info', 'carrier') else 'mdi:wifi-off' -}}
+          iface_color: >-
+            {{- '#22c55e' if state_attr('sensor.laptop_wifi_info', 'carrier') else '#dc2626' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_tailscale_info
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_tailscale_upload
+          - sensor.laptop_tailscale_download
+    variables:
+      entity_id: sensor.laptop_tailscale_info
+      app: connectivity
+      options:
+        attr: carrier
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_network_tailscale
+        unique_id: 37fd00f0-f5da-5372-84f9-3bc00fab3e61
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          long_desc: >-
+            {%- set carrier = state_attr('sensor.laptop_tailscale_info', 'carrier') | default(false, true) -%}{%- set bad = ['n/a', 'unknown', 'unavailable', 'none', ''] -%}{%- set mac = state_attr('sensor.laptop_tailscale_info', 'mac') | default('', true) -%}{%- set ipv4 = state_attr('sensor.laptop_tailscale_info', 'ipv4') | default('', true) -%}{%- set ipv6 = state_attr('sensor.laptop_tailscale_info', 'ipv6') | default('', true) -%}{%- set speed_mbps = state_attr('sensor.laptop_tailscale_info', 'link_speed_mbps') | default(0, true) | float -%}{%- set speed = ((speed_mbps / 1000) | round(1) ~ ' Gbps' if speed_mbps >= 1000 else (speed_mbps | int ~ ' Mbps')) if speed_mbps > 0 else none -%}{%- set lines = [] -%}{%- if mac and (mac | lower) not in bad -%}{%- set lines = lines + ['MAC: ' ~ mac] -%}{%- endif -%}{%- if ipv4 and (ipv4 | lower) not in bad -%}{%- set lines = lines + ['IPv4: ' ~ ipv4] -%}{%- endif -%}{%- if ipv6 and (ipv6 | lower) not in bad -%}{%- set lines = lines + ['IPv6: ' ~ ipv6] -%}{%- endif -%}{%- if speed -%}{%- set lines = lines + ['Speed: ' ~ speed] -%}{%- endif -%}{{- lines | join('\n') if lines else ('Connected' if carrier else 'Disconnected') -}}
+          iface_icon: >-
+            {{- 'mdi:lan-connect' if state_attr('sensor.laptop_tailscale_info', 'carrier') else 'mdi:lan-disconnect' -}}
+          iface_color: >-
+            {{- '#22c55e' if state_attr('sensor.laptop_tailscale_info', 'carrier') else '#dc2626' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+    variables:
+      entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+      app: connectivity
+      options:
+        attr: host
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_system
+        unique_id: c1c24783-bfd5-5a93-8894-0c8b550b15b6
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          system_icon: >-
+            {%- set host = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'host') | default({}) -%}{%- set chassis = (host['chassis_type'] | default('Desktop')) | lower -%}{%- set icons = {'notebook': 'mdi:laptop', 'laptop': 'mdi:laptop', 'desktop': 'mdi:desktop-tower', 'server': 'mdi:server', 'tablet': 'mdi:tablet'} -%}{{- icons.get(chassis, 'mdi:desktop-tower') -}}
+          system_color: >-
+            {%- set host = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'host') | default({}) -%}{%- set os = (host['system'] | default('')) | lower -%}{{- 'blue' if 'windows' in os else ('orange' if 'linux' in os else ('purple' if 'freebsd' in os else 'grey')) -}}
+          system_primary: >-
+            {%- set host = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'host') | default({}) -%}{{- host['name'] | default('Unknown') -}}
+          system_secondary: >-
+            {%- set h = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'host') | default({}) -%}{%- set model = h['model'] | default('Unknown') -%}{%- set serial = h['serial'] | default('N/A') -%}{%- set system = h['system'] | default('Unknown') -%}{%- set release = h['release'] | default('') -%}{%- set machine = h['machine'] | default('') -%}{%- set os_str = h['os'] | default('') -%}{%- set build = os_str.split('-')[2] if '-' in os_str else os_str -%}{{- model ~ ' (Serial: ' ~ serial ~ ')\n' ~ system ~ ' ' ~ release ~ ' (' ~ machine ~ ')\nBuild: ' ~ build -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_wifi_signal
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_wifi_network
+          - sensor.laptop_wifi_signal_dbm
+          - sensor.laptop_wifi_channel
+          - sensor.laptop_wifi_bitrate
+    variables:
+      entity_id: sensor.laptop_wifi_signal
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_wifi_stats
+        unique_id: ebc38cb6-c6e6-54f9-8d98-667f90104705
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          wifi_icon: >-
+            {%- set sig = states('sensor.laptop_wifi_signal') | int(0) -%}{{- 'mdi:wifi-strength-4' if sig > 75 else 'mdi:wifi-strength-3' if sig > 50 else 'mdi:wifi-strength-2' if sig > 25 else 'mdi:wifi-strength-1' if sig > 0 else 'mdi:wifi-off' -}}
+          wifi_color: >-
+            {%- set sig = states('sensor.laptop_wifi_signal') | int(0) -%}{{- 'green' if sig > 60 else 'orange' if sig > 30 else 'red' -}}
+          wifi_primary: >-
+            {{- states('sensor.laptop_wifi_network') | default('Not Connected') -}}
+          wifi_secondary: >-
+            {%- set sig = states('sensor.laptop_wifi_signal') | default('?') -%}{%- set dbm = states('sensor.laptop_wifi_signal_dbm') | default('?') -%}{%- set ch = states('sensor.laptop_wifi_channel') | default('?') -%}{%- set rate = states('sensor.laptop_wifi_bitrate') | default('?') -%}{%- set auth = states('sensor.laptop_wifi_auth') | default('') -%}{%- set radio = states('sensor.laptop_wifi_radio') | default('') -%}{{- sig ~ '% (' ~ dbm ~ ' dBm) | Ch ' ~ ch ~ '\n' ~ rate ~ ' Mbps' ~ (' | ' ~ radio if radio else '') ~ (' | ' ~ auth if auth else '') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+    variables:
+      entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_battery_status
+        unique_id: 1a227b0a-3c9f-5ee4-93ae-2d26250dde25
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          battery_icon: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}{%- set discharging = (b['discharging'] | default(false)) if b else false -%}{%- if not b -%}mdi:battery-unknown{%- elif discharging -%}mdi:battery-{{- (level // 10 * 10) | int -}}-bluetooth{%- elif level >= 100 -%}mdi:battery-charging-100{%- else -%}mdi:battery-charging-{{- (level // 10 * 10) | int -}}{%- endif -%}
+          battery_color: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}{%- set discharging = (b['discharging'] | default(false)) if b else false -%}{%- if not b -%}grey{%- elif level <= 20 -%}red{%- elif level <= 50 -%}orange{%- elif discharging -%}yellow{%- else -%}green{%- endif -%}
+          battery_primary: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set level = (b['charge_level_pct'] | default(0) | int) if b else 0 -%}{{- 'Battery (' ~ level ~ '%)' -}}
+          battery_secondary: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- if not b -%}No battery data{%- else -%}{%- set discharging = b['discharging'] | default(false) -%}{%- set power = b['power_w'] | default(0) | round(1) -%}{%- set voltage = b['voltage_v'] | default(0) | round(2) -%}{%- set current = b['current_a'] | default(0) | round(2) -%}{%- set status = 'Discharging' if discharging else 'Charging' if power > 0 else 'Idle (Full)' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [status] -%}{%- if power > 0 or voltage > 0 -%}{%- set pv_line = (power | string ~ ' W') if power > 0 else '' -%}{%- set pv_line = pv_line ~ (' | ' if pv_line and voltage > 0 else '') ~ (voltage | string ~ ' V' if voltage > 0 else '') -%}{%- set ns.lines = ns.lines + [pv_line] if pv_line else ns.lines -%}{%- endif -%}{%- if current != 0 -%}{%- set ns.lines = ns.lines + [current | abs | string ~ ' A ' ~ ('draw' if current < 0 else 'charge')] -%}{%- endif -%}{{- ns.lines | join('\n') -}}{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+    variables:
+      entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_battery_health
+        unique_id: cf91ad56-d4ca-55da-8e7a-0c86efb6de16
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          health_icon: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}{%- if not b -%}mdi:battery-unknown{%- elif degradation < 10 -%}mdi:battery-heart-variant{%- elif degradation < 20 -%}mdi:battery-heart-outline{%- else -%}mdi:battery-alert-variant-outline{%- endif -%}
+          health_color: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}{%- if not b -%}grey{%- elif degradation < 10 -%}green{%- elif degradation < 20 -%}orange{%- else -%}red{%- endif -%}
+          health_primary: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- set degradation = (b['degradation_pct'] | default(0) | float) if b else 0 -%}{%- set health = (100 - degradation) | round(1) -%}{{- 'Battery Health (' ~ health ~ '%)' -}}
+          health_secondary: >-
+            {%- set bats = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'batteries') | default([], true) -%}{%- set b = bats[0] if bats and bats | length > 0 else none -%}{%- if not b -%}No battery data{%- else -%}{%- set degradation = b['degradation_pct'] | default(0) | float -%}{%- set design_mwh = b['design_cap_mwh'] | default(0) | int -%}{%- set full_mwh = b['full_cap_mwh'] | default(0) | int -%}{%- set remain_mwh = b['remain_cap_mwh'] | default(0) | int -%}{%- set design_wh = design_mwh / 1000 -%}{%- set full_wh = full_mwh / 1000 -%}{%- set remain_wh = remain_mwh / 1000 -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [degradation | round(1) | string ~ '% wear'] -%}{%- if design_wh > 0 or full_wh > 0 -%}{%- set cap_line = full_wh | round(1) | string ~ ' / ' ~ design_wh | round(1) | string ~ ' Wh capacity' -%}{%- set ns.lines = ns.lines + [cap_line] -%}{%- endif -%}{%- if remain_wh > 0 -%}{%- set ns.lines = ns.lines + [remain_wh | round(1) | string ~ ' Wh remaining'] -%}{%- endif -%}{{- ns.lines | join('\n') -}}{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+          - sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+    variables:
+      entity_id: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+      app: cpu_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_gpu_load
+        unique_id: 7624e400-e17c-593e-8b86-a6ddfa7ae9c8
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu_utilization
+          device_class: none
+          gpu_icon: >-
+            mdi:expansion-card
+          gpu_color: >-
+            {%- set gpus = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- set core = g['core'] | default({}) if g else {} -%}{%- set load = core['load_pct'] | default(0) | float -%}{%- if load > 90 -%}red{%- elif load > 70 -%}orange{%- elif load > 30 -%}yellow{%- else -%}green{%- endif -%}
+          gpu_primary: >-
+            {%- set gpus = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- set core = g['core'] | default({}) if g else {} -%}{%- set load = core['load_pct'] | default(0) | round(0) | int -%}{{- 'GPU (' ~ load ~ '%)' -}}
+          gpu_secondary: >-
+            {%- set gpus = state_attr('sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- if not g -%}No GPU data{%- else -%}{%- set temp = g['temp_c'] | default(0) | round(0) | int -%}{%- set core = g['core'] | default({}) -%}{%- set soc = g['soc'] | default({}) -%}{%- set core_power = core['power_w'] | default(0) | round(1) -%}{%- set soc_power = soc['power_w'] | default(0) | round(1) -%}{%- set voltage = soc['voltage_v'] | default(0) | round(2) -%}{%- set total_power = core_power + soc_power -%}{%- set ns = namespace(lines=[]) -%}{%- if temp > 0 -%}{%- set ns.lines = ns.lines + [temp | string ~ '°C'] -%}{%- endif -%}{%- if total_power > 0 -%}{%- set ns.lines = ns.lines + [total_power | round(1) | string ~ ' W'] -%}{%- endif -%}{%- if voltage > 0 -%}{%- set ns.lines = ns.lines + [voltage | string ~ ' V'] -%}{%- endif -%}{{- ns.lines | join(' | ') if ns.lines else 'Idle' -}}{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - binary_sensor.laptop_services_ok
+          - sensor.laptop_services_checked
+    variables:
+      entity_id: binary_sensor.laptop_services_ok
+      app: running
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_services_status
+        unique_id: deed2507-87a1-5622-ae61-0abb4e8e760e
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: running
+          device_class: none
+          services_icon: >-
+            mdi:cog
+          services_color: >-
+            {{- 'green' if is_state('binary_sensor.laptop_services_ok', 'on') else 'red' -}}
+          services_primary: >-
+            Services Status
+          services_secondary: >-
+            {{- states('sensor.laptop_services_checked') ~ ' monitored' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_partition_efi_system
+        unique_id: 602c494c-7863-5a75-b254-c5ec60078772
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          partition_icon: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 1') | first | default(none) -%}{%- set guid_icons = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'mdi:chip', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'mdi:lock', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'mdi:harddisk', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'mdi:backup-restore'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- if is_hidden -%}mdi:eye-off{%- elif is_encrypted -%}{{- 'mdi:lock-open-variant' if enc_unlocked else 'mdi:lock' -}}{%- else -%}{{- guid_icons.get(guid, 'mdi:harddisk') -}}{%- endif -%}{%- else -%}mdi:harddisk{%- endif -%}
+          partition_color: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 1') | first | default(none) -%}{%- set guid_colors = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'orange', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'purple', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'blue', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'teal'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{{- 'grey' if is_hidden else guid_colors.get(guid, 'grey') -}}{%- else -%}grey{%- endif -%}
+          partition_primary: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 1') | first | default(none) -%}{%- if p -%}{%- set dl = p['drive_letter'] | default('') -%}{{- 'EFI System' ~ (' (' ~ dl ~ ':)' if dl else '') -}}{%- else -%}EFI System{%- endif -%}
+          partition_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 1') | first | default(none) -%}{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set type_name = guid_names.get(guid, p['type'] | default('Unknown')) -%}{%- set size = u_humanize_value(p['size_b'] | default(0), 'B') -%}{%- set offset = u_humanize_value(p['start_offset_b'] | default(0), 'B') -%}{%- set vol_guid = (p['volume_guid'] | default('')) | replace('{', '') | replace('}', '') -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_scheme = enc['scheme'] | default('') -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- set flags = [] -%}{%- if p['is_boot'] | default(false) -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}{%- if p['is_system'] | default(false) -%}{%- set flags = flags + ['System'] -%}{%- endif -%}{%- if p['is_hidden'] | default(false) -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}{%- set lines = [line1] -%}{%- if flags -%}{%- set lines = lines + [flags | join(', ')] -%}{%- endif -%}{%- if is_encrypted -%}{%- set enc_status = ('🔓 ' if enc_unlocked else '🔒 ') ~ (enc_scheme if enc_scheme else 'Encrypted') -%}{%- set lines = lines + [enc_status] -%}{%- endif -%}{%- if vol_guid -%}{%- set lines = lines + [vol_guid] -%}{%- endif -%}{{- lines | join('\n') -}}{%- else -%}Partition not found{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_partition_windows_boot_manager
+        unique_id: 88711422-f541-5f58-9d42-07249c43cbcf
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          partition_icon: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 2') | first | default(none) -%}{%- set guid_icons = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'mdi:chip', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'mdi:lock', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'mdi:harddisk', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'mdi:backup-restore'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- if is_hidden -%}mdi:eye-off{%- elif is_encrypted -%}{{- 'mdi:lock-open-variant' if enc_unlocked else 'mdi:lock' -}}{%- else -%}{{- guid_icons.get(guid, 'mdi:harddisk') -}}{%- endif -%}{%- else -%}mdi:harddisk{%- endif -%}
+          partition_color: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 2') | first | default(none) -%}{%- set guid_colors = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'orange', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'purple', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'blue', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'teal'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{{- 'grey' if is_hidden else guid_colors.get(guid, 'grey') -}}{%- else -%}grey{%- endif -%}
+          partition_primary: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 2') | first | default(none) -%}{%- if p -%}{%- set dl = p['drive_letter'] | default('') -%}{{- 'Windows Boot Manager' ~ (' (' ~ dl ~ ':)' if dl else '') -}}{%- else -%}Windows Boot Manager{%- endif -%}
+          partition_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 2') | first | default(none) -%}{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set type_name = guid_names.get(guid, p['type'] | default('Unknown')) -%}{%- set size = u_humanize_value(p['size_b'] | default(0), 'B') -%}{%- set offset = u_humanize_value(p['start_offset_b'] | default(0), 'B') -%}{%- set vol_guid = (p['volume_guid'] | default('')) | replace('{', '') | replace('}', '') -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_scheme = enc['scheme'] | default('') -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- set flags = [] -%}{%- if p['is_boot'] | default(false) -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}{%- if p['is_system'] | default(false) -%}{%- set flags = flags + ['System'] -%}{%- endif -%}{%- if p['is_hidden'] | default(false) -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}{%- set lines = [line1] -%}{%- if flags -%}{%- set lines = lines + [flags | join(', ')] -%}{%- endif -%}{%- if is_encrypted -%}{%- set enc_status = ('🔓 ' if enc_unlocked else '🔒 ') ~ (enc_scheme if enc_scheme else 'Encrypted') -%}{%- set lines = lines + [enc_status] -%}{%- endif -%}{%- if vol_guid -%}{%- set lines = lines + [vol_guid] -%}{%- endif -%}{{- lines | join('\n') -}}{%- else -%}Partition not found{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_partition_data_partition_c
+        unique_id: 3a89ed25-79dd-57ba-8e89-7f5663289f4a
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          partition_icon: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 3') | first | default(none) -%}{%- set guid_icons = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'mdi:chip', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'mdi:lock', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'mdi:harddisk', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'mdi:backup-restore'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- if is_hidden -%}mdi:eye-off{%- elif is_encrypted -%}{{- 'mdi:lock-open-variant' if enc_unlocked else 'mdi:lock' -}}{%- else -%}{{- guid_icons.get(guid, 'mdi:harddisk') -}}{%- endif -%}{%- else -%}mdi:harddisk{%- endif -%}
+          partition_color: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 3') | first | default(none) -%}{%- set guid_colors = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'orange', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'purple', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'blue', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'teal'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{{- 'grey' if is_hidden else guid_colors.get(guid, 'grey') -}}{%- else -%}grey{%- endif -%}
+          partition_primary: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 3') | first | default(none) -%}{%- if p -%}{%- set dl = p['drive_letter'] | default('') -%}{{- 'Data Partition (C:)' ~ (' (' ~ dl ~ ':)' if dl else '') -}}{%- else -%}Data Partition (C:){%- endif -%}
+          partition_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 3') | first | default(none) -%}{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set type_name = guid_names.get(guid, p['type'] | default('Unknown')) -%}{%- set size = u_humanize_value(p['size_b'] | default(0), 'B') -%}{%- set offset = u_humanize_value(p['start_offset_b'] | default(0), 'B') -%}{%- set vol_guid = (p['volume_guid'] | default('')) | replace('{', '') | replace('}', '') -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_scheme = enc['scheme'] | default('') -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- set flags = [] -%}{%- if p['is_boot'] | default(false) -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}{%- if p['is_system'] | default(false) -%}{%- set flags = flags + ['System'] -%}{%- endif -%}{%- if p['is_hidden'] | default(false) -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}{%- set lines = [line1] -%}{%- if flags -%}{%- set lines = lines + [flags | join(', ')] -%}{%- endif -%}{%- if is_encrypted -%}{%- set enc_status = ('🔓 ' if enc_unlocked else '🔒 ') ~ (enc_scheme if enc_scheme else 'Encrypted') -%}{%- set lines = lines + [enc_status] -%}{%- endif -%}{%- if vol_guid -%}{%- set lines = lines + [vol_guid] -%}{%- endif -%}{{- lines | join('\n') -}}{%- else -%}Partition not found{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+          - sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+    variables:
+      entity_id: sensor.laptop_samsung_mzvl2512hdjd_00bll_status
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_laptop_partition_windows_recovery_environment
+        unique_id: 2fe6e0b6-f68d-5bca-a1a2-0f853968cfe2
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          partition_icon: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 4') | first | default(none) -%}{%- set guid_icons = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'mdi:chip', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'mdi:lock', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'mdi:harddisk', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'mdi:backup-restore'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- if is_hidden -%}mdi:eye-off{%- elif is_encrypted -%}{{- 'mdi:lock-open-variant' if enc_unlocked else 'mdi:lock' -}}{%- else -%}{{- guid_icons.get(guid, 'mdi:harddisk') -}}{%- endif -%}{%- else -%}mdi:harddisk{%- endif -%}
+          partition_color: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 4') | first | default(none) -%}{%- set guid_colors = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'orange', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'purple', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'blue', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'teal'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set is_hidden = p['is_hidden'] | default(false) -%}{{- 'grey' if is_hidden else guid_colors.get(guid, 'grey') -}}{%- else -%}grey{%- endif -%}
+          partition_primary: >-
+            {%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 4') | first | default(none) -%}{%- if p -%}{%- set dl = p['drive_letter'] | default('') -%}{{- 'Windows Recovery Environment' ~ (' (' ~ dl ~ ':)' if dl else '') -}}{%- else -%}Windows Recovery Environment{%- endif -%}
+          partition_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set partitions = state_attr('sensor.laptop_samsung_mzvl2512hdjd_00bll_status', 'partitions') | default([], true) -%}{%- set p = partitions | selectattr('name', 'eq', 'Disk 0 Partition 4') | first | default(none) -%}{%- set guid_names = {'c12a7328-f81f-11d2-ba4b-00a0c93ec93b': 'EFI', 'e3c9e316-0b5c-4db8-817d-f92df00215ae': 'Reserved', 'ebd0a0a2-b9e5-4433-87c0-68b6b72699c7': 'Data', 'de94bba4-06d1-4d40-a16a-bfd50179d6ac': 'Recovery'} -%}{%- if p -%}{%- set guid = (p['type_guid'] | default('')) | replace('{', '') | replace('}', '') | lower -%}{%- set type_name = guid_names.get(guid, p['type'] | default('Unknown')) -%}{%- set size = u_humanize_value(p['size_b'] | default(0), 'B') -%}{%- set offset = u_humanize_value(p['start_offset_b'] | default(0), 'B') -%}{%- set vol_guid = (p['volume_guid'] | default('')) | replace('{', '') | replace('}', '') -%}{%- set enc = p['encryption'] | default({}) -%}{%- set is_encrypted = enc['encrypted'] | default(false) -%}{%- set enc_scheme = enc['scheme'] | default('') -%}{%- set enc_unlocked = enc['unlocked'] | default(false) -%}{%- set flags = [] -%}{%- if p['is_boot'] | default(false) -%}{%- set flags = flags + ['Boot'] -%}{%- endif -%}{%- if p['is_system'] | default(false) -%}{%- set flags = flags + ['System'] -%}{%- endif -%}{%- if p['is_hidden'] | default(false) -%}{%- set flags = flags + ['Hidden'] -%}{%- endif -%}{%- set line1 = type_name ~ ' | ' ~ size ~ ' @ ' ~ offset -%}{%- set lines = [line1] -%}{%- if flags -%}{%- set lines = lines + [flags | join(', ')] -%}{%- endif -%}{%- if is_encrypted -%}{%- set enc_status = ('🔓 ' if enc_unlocked else '🔒 ') ~ (enc_scheme if enc_scheme else 'Encrypted') -%}{%- set lines = lines + [enc_status] -%}{%- endif -%}{%- if vol_guid -%}{%- set lines = lines + [vol_guid] -%}{%- endif -%}{{- lines | join('\n') -}}{%- else -%}Partition not found{%- endif -%}

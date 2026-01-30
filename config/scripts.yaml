@@ -957,3 +957,80 @@ announce:
   description: ''
   mode: queued
   max: 10
+test:
+  sequence:
+  - variables:
+      now_dt: '2026-01-01 00:56:52.534434-05:00'
+      override_on: '{{ is_state(''input_boolean.daytime_override'', ''on'') }}'
+      anchor_offset: '{{ -1 if now_dt|as_datetime < today_at(''02:00:00'') else 0
+        }}'
+      anchor_dt: '{{ now_dt|as_datetime + timedelta(days=anchor_offset) }}'
+      is_weekend: '{{ (anchor_dt|as_datetime).weekday() >= 5 }}'
+      is_weekday: '{{ not is_weekend|bool }}'
+      raw_msg: '{{ state_attr(''calendar.holidays_in_united_states'', ''message'')
+        or '''' }}'
+      holiday_name: '{{ raw_msg | regex_replace(''\s*\([^)]*\)\s*$'', '''') | trim
+        | replace(''Day'',''Eve'' if anchor_offset == -1 else ''Day'') }}'
+      off_day_holidays:
+      - New Year's Day
+      - Martin Luther King Jr. Day
+      - Presidents' Day
+      - Memorial Day
+      - Juneteenth
+      - Independence Day
+      - Labor Day
+      - Columbus Day
+      - Halloween
+      - Veterans Day
+      - Thanksgiving Day
+      - Black Friday
+      - Christmas Eve
+      - Christmas Day
+      - New Year's Eve
+      calendar_on: '{{ is_state(''calendar.holidays_in_united_states'', ''on'') }}'
+      is_holiday: '{{ calendar_on and (holiday_name in off_day_holidays) }}'
+      default_day_start: 05:00
+      weekend_day_start: 06:30
+      holiday_day_start: 06:30
+      default_day_end: '20:30'
+      weekend_day_end: '20:30'
+      holiday_day_end: '20:30'
+      default_eve_duration: 2
+      weekend_eve_duration: 2
+      holiday_eve_duration: 2
+      late_cutover_time: '18:30'
+      exceptions:
+        Halloween:
+          day_end: '22:30'
+          eve_duration: 1.5
+        Christmas Eve:
+          day_end: '22:30'
+          eve_duration: 1.5
+        New Year's Eve:
+          day_end: 00:30
+          eve_duration: 1
+      exception: '{{ exceptions.get(holiday_name, {}) }}'
+      day_start_time: '{{ weekend_day_start if is_weekend else exception.get(''day_start'',
+        holiday_day_start) if is_holiday else default_day_start }}'
+      day_end_time: '{{ weekend_day_end if is_weekend else exception.get(''day_end'',
+        holiday_day_end) if is_holiday else default_day_end }}'
+      day_start: '{{ today_at(day_start_time) + timedelta(days=anchor_offset) }}'
+      day_end_base: '{{ today_at(day_end_time) + timedelta(days=anchor_offset) }}'
+      day_end: '{{ day_end_base|as_datetime + timedelta(days=1) if day_end_base|as_datetime
+        <= day_start|as_datetime else day_end_base|as_datetime }}'
+      eve_start: '{{ day_end }}'
+      eve_duration_hours: '{{ weekend_eve_duration if is_weekend else exception.get(''eve_duration'',
+        holiday_eve_duration) if is_holiday else default_eve_duration }}'
+      eve_end: '{{ eve_start|as_datetime + timedelta(hours=eve_duration_hours) }}'
+      in_daytime: '{{ now_dt|as_datetime >= day_start|as_datetime and now_dt|as_datetime
+        < day_end|as_datetime }}'
+      in_evening: '{{ now_dt|as_datetime >= eve_start|as_datetime and now_dt|as_datetime
+        < eve_end|as_datetime }}'
+      late_cutover: '{{ today_at(late_cutover_time) + timedelta(days=anchor_offset)
+        }}'
+      is_late: '{{ now_dt|as_datetime >= late_cutover|as_datetime }}'
+      effective_evening: '{{ in_evening or (override_on and is_late) }}'
+      effective_daytime: '{{ (in_daytime or (override_on and not is_late)) and not
+        effective_evening }}'
+  alias: Test
+  description: ''

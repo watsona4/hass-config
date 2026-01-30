@@ -10,405 +10,193 @@
 title: RasPi4
 path: raspi4
 type: sections
-max_columns: 2
+max_columns: 3
+cards: []
 
 badges:
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.raspi4_status_alarm
+    icon: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'color') }}"
+    label: Status
+    content: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.raspi4_uptime_s
+    icon: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'color') }}"
+    label: Uptime
+    content: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.raspi4_cpu_load_1m
+    icon: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'color') }}"
+    label: CPU Load
+    content: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'short_label') }}"
+    tap_action:
+      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.raspi4_cpu_utilization
     icon: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'icon') }}"
     color: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'color') }}"
+    label: CPU
     content: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.raspi4_cpu_temp
+    icon: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'color') }}"
+    label: CPU Temp
+    content: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'short_label') }}"
     tap_action:
       action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.raspi4_memory_percent
     icon: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'icon') }}"
     color: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'color') }}"
+    label: Memory
     content: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'short_label') }}"
     tap_action:
       action: more-info
 
 sections:
-  # System Status
+
   - type: grid
-    column_span: 2
+    column_span: 1
     cards:
-      - type: custom:mushroom-title-card
-        title: RasPi4
-        subtitle: "{{ states('sensor.raspi4_overall_status_summary') }}"
-      - type: horizontal-stack
+      - type: vertical-stack
         cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_uptime_s
-            icon: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'color') }}"
-            primary: Uptime
-            secondary: "{{ state_attr('sensor.ui_raspi4_uptime_s', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_updates_pending
-            icon: "{{ state_attr('sensor.ui_raspi4_updates_pending', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_raspi4_updates_pending', 'color') }}"
-            primary: Updates
-            secondary: "{{ state_attr('sensor.ui_raspi4_updates_pending', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
+          - type: custom:mushroom-title-card
+            title: System Status
+            subtitle: Health overview and pending updates
+          - type: markdown
+            content: |
+              {% set packages = state_attr('sensor.raspi4_updates_list', 'packages') | default([]) %}
+              **Available Updates:**
+              {%- for pkg in packages %}
+                - {{ pkg }}
+              {%- endfor %}
+            visibility:
+              - condition: numeric_state
+                entity: sensor.raspi4_updates_pending
+                above: 0
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(var(--rgb-primary-color), 0.1);
+                  font-size: 0.9em;
+                }
           - type: custom:mushroom-template-card
             entity: binary_sensor.raspi4_status_alarm
             icon: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'color') }}"
-            primary: Status
-            layout: vertical
+            primary: Health Status
+            secondary: "{{ state_attr('sensor.ui_raspi4_status_alarm', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU
+          - type: custom:mushroom-template-card
+            entity: sensor.raspi4_cpu_load_1m
+            icon: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'color') }}"
+            primary: CPU Load (1m/5m/15m)
+            secondary: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'long_desc') }}"
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.raspi4_cpu_temp
+            icon: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'color') }}"
+            primary: CPU Temperature
+            secondary: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'label') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Memory
+          - type: custom:mushroom-template-card
+            entity: sensor.raspi4_swap_percent
+            icon: "{{ state_attr('sensor.ui_raspi4_swap_percent', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_swap_percent', 'color') }}"
+            primary: "Swap ({{ state_attr('sensor.ui_raspi4_swap_percent', 'value') }} used)"
+            secondary: "{{ state_attr('sensor.ui_raspi4_swap_percent', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Storage
+            subtitle: Disk capacity and performance
+          - type: custom:mushroom-template-card
+            entity: sensor.raspi4_fs_root_percent
+            icon: "{{ state_attr('sensor.ui_raspi4_fs_root', 'fs_icon') | default('mdi:folder') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_fs_root', 'fs_color') | default('green') }}"
+            primary: Root
+            secondary: "{{ state_attr('sensor.ui_raspi4_fs_root', 'fs_secondary') | default('') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-      - type: markdown
-        content: |
-          **Available Updates:**
-          {%- set packages = state_attr('sensor.raspi4_updates_list', 'packages') | default([]) %}
-          {% for pkg in packages %}
-          - {{ pkg }}
-          {% endfor %}
-        visibility:
-          - condition: numeric_state
-            entity: sensor.raspi4_updates_pending
-            above: 0
-        card_mod:
-          style: |
-            ha-card {
-              background: rgba(var(--rgb-primary-color), 0.1);
-              font-size: 0.9em;
-            }
-
-  # CPU
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: CPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_cpu_utilization
-        icon: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'color') }}"
-        primary: Utilization
-        secondary: "{{ state_attr('sensor.ui_raspi4_cpu_utilization', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_cpu_load_1m
-        icon: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'color') }}"
-        primary: Load Average
-        secondary: "{{ state_attr('sensor.ui_raspi4_cpu_load_1m', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_cpu_temp
-        icon: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'color') }}"
-        primary: Temperature
-        secondary: "{{ state_attr('sensor.ui_raspi4_cpu_temp', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Memory
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Memory
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_memory_percent
-        icon: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'color') }}"
-        primary: Usage
-        secondary: "{{ state_attr('sensor.ui_raspi4_memory_percent', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_swap_percent
-        icon: mdi:swap-horizontal
-        icon_color: purple
-        primary: Swap
-        secondary: "{{ states('sensor.raspi4_swap_percent') }}%"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Filesystems
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Filesystems
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_fs_root_percent
-            icon: "{{ state_attr('sensor.ui_raspi4_fs_root_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_raspi4_fs_root_percent', 'color') }}"
-            primary: Root
-            secondary: "{{ state_attr('sensor.ui_raspi4_fs_root_percent', 'long_desc') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.raspi4_fs_boot_percent
-            icon: "{{ state_attr('sensor.ui_raspi4_fs_boot_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_raspi4_fs_boot_percent', 'color') }}"
+            icon: "{{ state_attr('sensor.ui_raspi4_fs_boot', 'fs_icon') | default('mdi:folder') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_fs_boot', 'fs_color') | default('green') }}"
             primary: Boot
-            secondary: "{{ state_attr('sensor.ui_raspi4_fs_boot_percent', 'long_desc') }}"
+            secondary: "{{ state_attr('sensor.ui_raspi4_fs_boot', 'fs_secondary') | default('') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
 
-  # Network
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Network Interfaces
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_ethernet_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: Ethernet
-            secondary: "{{ states('sensor.raspi4_ethernet_ipv4') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-
-  # Services
   - type: grid
     column_span: 1
     cards:
-      - type: heading
-        heading: Services
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: binary_sensor.raspi4_services_ok
-        icon: mdi:cog
-        icon_color: "{{ 'green' if is_state('binary_sensor.raspi4_services_ok', 'on') else 'red' }}"
-        primary: Services Status
-        secondary: "{{ states('sensor.raspi4_services_checked') }} monitored"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Raspberry Pi
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Raspberry Pi
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
+      - type: vertical-stack
         cards:
+          - type: custom:mushroom-title-card
+            title: Network
+            subtitle: Interface status and connectivity
           - type: custom:mushroom-template-card
-            entity: sensor.raspi4_throttling_status
-            icon: mdi:speedometer-slow
-            icon_color: "{{ 'red' if states('sensor.raspi4_throttling_status') == 'Throttled' else 'green' }}"
-            primary: Throttling
-            secondary: "{{ states('sensor.raspi4_throttling_status') }}"
+            entity: sensor.raspi4_ethernet_info
+            icon: "{{ state_attr('sensor.ui_raspi4_network_ethernet','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_raspi4_network_ethernet','iface_color') }}"
+            primary: "{{ state_attr('sensor.raspi4_ethernet_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_raspi4_network_ethernet','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_core_voltage
-            icon: mdi:flash
-            icon_color: yellow
-            primary: Core Voltage
-            secondary: "{{ states('sensor.raspi4_core_voltage') }} V"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_arm_clock
-            icon: mdi:sine-wave
-            icon_color: blue
-            primary: ARM Clock
-            secondary: "{{ states('sensor.raspi4_arm_clock') }} MHz"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_arm_memory
-            icon: mdi:memory
-            icon_color: purple
-            primary: Memory Split
-            secondary: "ARM {{ states('sensor.raspi4_arm_memory') }} / GPU {{ states('sensor.raspi4_gpu_memory') }} MiB"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
 
-  # Time Server
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Time Server
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_ntp_reference
-            icon: mdi:clock-check
-            icon_color: green
-            primary: NTP Reference
-            secondary: "{{ states('sensor.raspi4_ntp_reference') }} (Stratum {{ states('sensor.raspi4_ntp_stratum') }})"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_time_offset
-            icon: mdi:clock-alert
-            icon_color: "{{ 'green' if states('sensor.raspi4_time_offset') | float(0) | abs < 100 else 'orange' if states('sensor.raspi4_time_offset') | float(0) | abs < 1000 else 'red' }}"
-            primary: Time Offset
-            secondary: "{{ states('sensor.raspi4_time_offset') }} µs"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_frequency_offset
-            icon: mdi:sine-wave
-            icon_color: blue
-            primary: Frequency Offset
-            secondary: "{{ states('sensor.raspi4_frequency_offset') }} ppm"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_leap_status
-            icon: mdi:clock-fast
-            icon_color: "{{ 'green' if states('sensor.raspi4_leap_status') == 'Normal' else 'orange' }}"
-            primary: Leap Status
-            secondary: "{{ states('sensor.raspi4_leap_status') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-
-  # GPS
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: GPS
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_gps_mode
-            icon: mdi:crosshairs-gps
-            icon_color: "{{ 'green' if states('sensor.raspi4_gps_mode') | int(0) >= 2 else 'red' }}"
-            primary: GPS Fix
-            secondary: "{{ state_attr('sensor.raspi4_gps_mode', 'mode_text') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_gps_satellites_used
-            icon: mdi:satellite-variant
-            icon_color: "{{ 'green' if states('sensor.raspi4_gps_satellites_used') | int(0) >= 4 else 'orange' if states('sensor.raspi4_gps_satellites_used') | int(0) >= 1 else 'red' }}"
-            primary: Satellites
-            secondary: "{{ states('sensor.raspi4_gps_satellites_used') }} used / {{ states('sensor.raspi4_gps_satellites_visible') }} visible"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_gps_hdop
-            icon: mdi:crosshairs-question
-            icon_color: "{{ 'green' if states('sensor.raspi4_gps_hdop') | float(99) < 2 else 'orange' if states('sensor.raspi4_gps_hdop') | float(99) < 5 else 'red' }}"
-            primary: HDOP
-            secondary: "{{ states('sensor.raspi4_gps_hdop') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.raspi4_gps_latitude
-            icon: mdi:map-marker
-            icon_color: teal
-            primary: Location
-            secondary: "{{ states('sensor.raspi4_gps_latitude') }}°, {{ states('sensor.raspi4_gps_longitude') }}°"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-
-  # NTP Server Stats
   - type: grid
     column_span: 1
     cards:
-      - type: heading
-        heading: NTP Server Stats
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_ntp_packets_received
-        icon: mdi:counter
-        icon_color: blue
-        primary: Packets Received
-        secondary: "{{ states('sensor.raspi4_ntp_packets_received') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.raspi4_ntp_client_count
-        icon: mdi:account-multiple
-        icon_color: green
-        primary: NTP Clients
-        secondary: "{{ states('sensor.raspi4_ntp_client_count') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Services
+            subtitle: Monitored system services
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.raspi4_services_ok
+            icon: mdi:cog
+            icon_color: "{{ 'green' if is_state('binary_sensor.raspi4_services_ok', 'on') else 'red' }}"
+            primary: Services Status
+            secondary: "{{ states('sensor.raspi4_services_checked') }} monitored"
+            tap_action:
+              action: more-info

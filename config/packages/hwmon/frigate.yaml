@@ -431,6 +431,15 @@ template:
         icon: "mdi:gpu"
         unit_of_measurement: "%"
         state_class: measurement
+      - name: "Frigate GPU Power"
+        unique_id: 33d8cbc2-cff8-540c-aebf-608a3b23aa06
+        availability: "{{ available }}"
+        state: >-
+          {{ (gpus[0].core.power_w | default(0)) | round(1) if gpus else 0 }}
+        icon: "mdi:lightning-bolt"
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
       - name: "Frigate Coral TPU Temp"
         unique_id: 1d2555fb-bfeb-5467-89cd-266f2208c49d
         availability: "{{ available }}"
@@ -596,6 +605,8 @@ template:
           encrypted: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('encrypted', false) if p else false }}"
           encryption_scheme: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('scheme', 'none') if p else 'none' }}"
           encryption_unlocked: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p else false }}"
+          type_name: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p1') | first | default(none)) if d else none %}{{ p.type_name | default('') if p else '' }}"
+          type_guid: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p1') | first | default(none)) if d else none %}{{ p.type_guid | default('') if p else '' }}"
       - name: "Frigate NVMe SSD Boot"
         unique_id: f5e30c46-4a3a-51f9-89ee-ac025e14780d
         availability: "{{ available }}"
@@ -611,6 +622,8 @@ template:
           encrypted: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p2') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('encrypted', false) if p else false }}"
           encryption_scheme: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p2') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('scheme', 'none') if p else 'none' }}"
           encryption_unlocked: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p2') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p else false }}"
+          type_name: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p2') | first | default(none)) if d else none %}{{ p.type_name | default('') if p else '' }}"
+          type_guid: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p2') | first | default(none)) if d else none %}{{ p.type_guid | default('') if p else '' }}"
       - name: "Frigate NVMe SSD LVM"
         unique_id: a5f1ef16-a1cb-566f-8252-a238c8b700a5
         availability: "{{ available }}"
@@ -626,6 +639,8 @@ template:
           encrypted: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p3') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('encrypted', false) if p else false }}"
           encryption_scheme: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p3') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('scheme', 'none') if p else 'none' }}"
           encryption_unlocked: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p3') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p else false }}"
+          type_name: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p3') | first | default(none)) if d else none %}{{ p.type_name | default('') if p else '' }}"
+          type_guid: "{% set d = drives | selectattr('name', 'eq', 'nvme0n1') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/nvme0n1p3') | first | default(none)) if d else none %}{{ p.type_guid | default('') if p else '' }}"
       - name: "Frigate HDD Transfer Rate"
         unique_id: 91a1bdfa-0a4a-54cf-98a2-56625315d9ef
         availability: "{{ available }}"
@@ -745,6 +760,8 @@ template:
           encrypted: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('encrypted', false) if p else false }}"
           encryption_scheme: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('scheme', 'none') if p else 'none' }}"
           encryption_unlocked: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.get('encryption', {}).get('unlocked', false) if p else false }}"
+          type_name: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.type_name | default('') if p else '' }}"
+          type_guid: "{% set d = drives | selectattr('name', 'eq', 'sda') | first | default(none) %}{% set p = (d.partitions | default([]) | selectattr('name', 'eq', '/dev/sda1') | first | default(none)) if d else none %}{{ p.type_guid | default('') if p else '' }}"
       - name: "Frigate Borg Backup"
         unique_id: 190053f9-6726-5f97-8462-35a0674e1229
         availability: "{{ available }}"
@@ -988,6 +1005,7 @@ template:
       - platform: state
         entity_id:
           - sensor.frigate_cpu_utilization
+          - sensor.frigate_frigate_hardware_telemetry
           - sensor.frigate_cpu_load_1m
     variables:
       entity_id: sensor.frigate_cpu_utilization
@@ -1114,6 +1132,43 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
+        entity_id: sensor.frigate_swap_percent
+    variables:
+      entity_id: sensor.frigate_swap_percent
+      app: swap_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_swap_percent
+        unique_id: 88798994-efc5-54fd-8c52-21490e286134
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: swap_utilization
+          device_class: none
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
         entity_id: sensor.frigate_uptime_s
     variables:
       entity_id: sensor.frigate_uptime_s
@@ -1192,6 +1247,7 @@ template:
       - platform: state
         entity_id:
           - binary_sensor.frigate_status_alarm
+          - sensor.frigate_frigate_hardware_telemetry
           - sensor.frigate_overall_status_summary
     variables:
       entity_id: binary_sensor.frigate_status_alarm
@@ -1355,6 +1411,335 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
+        entity_id:
+          - sensor.frigate_fs_root_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_root_used
+          - sensor.frigate_fs_root_total
+    variables:
+      entity_id: sensor.frigate_fs_root_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_root
+        unique_id: 077eaf1d-03c0-5df4-b355-e9c4d030d1e7
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'root') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_root_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'root') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_home_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_home_used
+          - sensor.frigate_fs_home_total
+    variables:
+      entity_id: sensor.frigate_fs_home_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_home
+        unique_id: c52586f9-9be8-5535-8bf5-0cf57d65e6e7
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'home') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_home_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'home') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_var_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_var_used
+          - sensor.frigate_fs_var_total
+    variables:
+      entity_id: sensor.frigate_fs_var_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_var
+        unique_id: 0113b3e8-0632-5562-9f7f-bf23044de39c
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'var') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_var_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'var') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_docker_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_docker_used
+          - sensor.frigate_fs_docker_total
+    variables:
+      entity_id: sensor.frigate_fs_docker_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_docker
+        unique_id: 19562e6e-4002-522e-a8aa-e71123bd5395
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'docker') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_docker_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'docker') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_postgresql_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_postgresql_used
+          - sensor.frigate_fs_postgresql_total
+    variables:
+      entity_id: sensor.frigate_fs_postgresql_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_postgresql
+        unique_id: 65ab18bf-65c8-52dd-b927-df1d65962567
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'pgsql') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_postgresql_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'pgsql') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_frigate_hot_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_frigate_hot_used
+          - sensor.frigate_fs_frigate_hot_total
+    variables:
+      entity_id: sensor.frigate_fs_frigate_hot_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_frigate_hot
+        unique_id: a1388fe6-f947-5d17-b5ba-8c8ad6ca5d05
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'frigatehot') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_frigate_hot_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'frigatehot') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_fs_data_percent
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_fs_data_used
+          - sensor.frigate_fs_data_total
+    variables:
+      entity_id: sensor.frigate_fs_data_percent
+      app: disk_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_fs_data
+        unique_id: c3ac1b80-a7a6-527a-97fa-c0e6ed9ffa39
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: disk_utilization
+          device_class: none
+          fs_icon: >-
+            {%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'data') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+          fs_color: >-
+            {%- set pct = states('sensor.frigate_fs_data_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
+          fs_secondary: >-
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.frigate_frigate_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.frigate_frigate_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'data') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
         entity_id: sensor.frigate_gpu_utilization
     variables:
       entity_id: sensor.frigate_gpu_utilization
@@ -1388,6 +1773,82 @@ template:
           long_label_vertical: "{{ state_info_vertical.long_label }}"
           app: cpu_utilization
           device_class: none
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: sensor.frigate_nvme_ssd_temp
+    variables:
+      entity_id: sensor.frigate_nvme_ssd_temp
+      app: cpu
+      options:
+        device_class: temperature
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_nvme_ssd_temp
+        unique_id: 5235c379-ace2-51a4-a29b-0c5610e375c6
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu
+          device_class: temperature
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: sensor.frigate_hdd_temp
+    variables:
+      entity_id: sensor.frigate_hdd_temp
+      app: cpu
+      options:
+        device_class: temperature
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_hdd_temp
+        unique_id: a7214a4b-271a-539a-a691-651a6d4496c2
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu
+          device_class: temperature
   - trigger:
       - platform: homeassistant
         event: start
@@ -1426,3 +1887,101 @@ template:
           long_label_vertical: "{{ state_info_vertical.long_label }}"
           app: cpu
           device_class: temperature
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_ethernet_info
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_ethernet_upload
+          - sensor.frigate_ethernet_download
+    variables:
+      entity_id: sensor.frigate_ethernet_info
+      app: connectivity
+      options:
+        attr: carrier
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_network_ethernet
+        unique_id: 317b1c90-f72d-584d-8f0c-f667ac72e40f
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          long_desc: >-
+            {%- set carrier = state_attr('sensor.frigate_ethernet_info', 'carrier') | default(false, true) -%}{%- set bad = ['n/a', 'unknown', 'unavailable', 'none', ''] -%}{%- set mac = state_attr('sensor.frigate_ethernet_info', 'mac') | default('', true) -%}{%- set ipv4 = state_attr('sensor.frigate_ethernet_info', 'ipv4') | default('', true) -%}{%- set ipv6 = state_attr('sensor.frigate_ethernet_info', 'ipv6') | default('', true) -%}{%- set speed_mbps = state_attr('sensor.frigate_ethernet_info', 'link_speed_mbps') | default(0, true) | float -%}{%- set speed = ((speed_mbps / 1000) | round(1) ~ ' Gbps' if speed_mbps >= 1000 else (speed_mbps | int ~ ' Mbps')) if speed_mbps > 0 else none -%}{%- set lines = [] -%}{%- if mac and (mac | lower) not in bad -%}{%- set lines = lines + ['MAC: ' ~ mac] -%}{%- endif -%}{%- if ipv4 and (ipv4 | lower) not in bad -%}{%- set lines = lines + ['IPv4: ' ~ ipv4] -%}{%- endif -%}{%- if ipv6 and (ipv6 | lower) not in bad -%}{%- set lines = lines + ['IPv6: ' ~ ipv6] -%}{%- endif -%}{%- if speed -%}{%- set lines = lines + ['Speed: ' ~ speed] -%}{%- endif -%}{{- lines | join('\n') if lines else ('Connected' if carrier else 'Disconnected') -}}
+          iface_icon: >-
+            {{- 'mdi:lan-connect' if state_attr('sensor.frigate_ethernet_info', 'carrier') else 'mdi:lan-disconnect' -}}
+          iface_color: >-
+            {{- '#22c55e' if state_attr('sensor.frigate_ethernet_info', 'carrier') else '#dc2626' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.frigate_tailscale_info
+          - sensor.frigate_frigate_hardware_telemetry
+          - sensor.frigate_tailscale_upload
+          - sensor.frigate_tailscale_download
+    variables:
+      entity_id: sensor.frigate_tailscale_info
+      app: connectivity
+      options:
+        attr: carrier
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_frigate_network_tailscale
+        unique_id: 58df6213-9394-5c77-9593-d4559f60fbba
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          long_desc: >-
+            {%- set carrier = state_attr('sensor.frigate_tailscale_info', 'carrier') | default(false, true) -%}{%- set bad = ['n/a', 'unknown', 'unavailable', 'none', ''] -%}{%- set mac = state_attr('sensor.frigate_tailscale_info', 'mac') | default('', true) -%}{%- set ipv4 = state_attr('sensor.frigate_tailscale_info', 'ipv4') | default('', true) -%}{%- set ipv6 = state_attr('sensor.frigate_tailscale_info', 'ipv6') | default('', true) -%}{%- set speed_mbps = state_attr('sensor.frigate_tailscale_info', 'link_speed_mbps') | default(0, true) | float -%}{%- set speed = ((speed_mbps / 1000) | round(1) ~ ' Gbps' if speed_mbps >= 1000 else (speed_mbps | int ~ ' Mbps')) if speed_mbps > 0 else none -%}{%- set lines = [] -%}{%- if mac and (mac | lower) not in bad -%}{%- set lines = lines + ['MAC: ' ~ mac] -%}{%- endif -%}{%- if ipv4 and (ipv4 | lower) not in bad -%}{%- set lines = lines + ['IPv4: ' ~ ipv4] -%}{%- endif -%}{%- if ipv6 and (ipv6 | lower) not in bad -%}{%- set lines = lines + ['IPv6: ' ~ ipv6] -%}{%- endif -%}{%- if speed -%}{%- set lines = lines + ['Speed: ' ~ speed] -%}{%- endif -%}{{- lines | join('\n') if lines else ('Connected' if carrier else 'Disconnected') -}}
+          iface_icon: >-
+            {{- 'mdi:lan-connect' if state_attr('sensor.frigate_tailscale_info', 'carrier') else 'mdi:lan-disconnect' -}}
+          iface_color: >-
+            {{- '#22c55e' if state_attr('sensor.frigate_tailscale_info', 'carrier') else '#dc2626' -}}

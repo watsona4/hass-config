@@ -10,203 +10,176 @@
 title: RV Hass
 path: rvhass
 type: sections
-max_columns: 2
+max_columns: 3
+cards: []
 
 badges:
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.rv_hass_status_alarm
+    icon: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'color') }}"
+    label: Status
+    content: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.rv_hass_uptime_s
+    icon: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'color') }}"
+    label: Uptime
+    content: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.rv_hass_cpu_load_1m
+    icon: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'color') }}"
+    label: CPU Load
+    content: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'short_label') }}"
+    tap_action:
+      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.rv_hass_cpu_utilization
     icon: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'icon') }}"
     color: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'color') }}"
+    label: CPU
     content: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.rv_hass_cpu_temp
+    icon: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'color') }}"
+    label: CPU Temp
+    content: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'short_label') }}"
     tap_action:
       action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.rv_hass_memory_percent
     icon: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'icon') }}"
     color: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'color') }}"
+    label: Memory
     content: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'short_label') }}"
     tap_action:
       action: more-info
 
 sections:
-  # System Status
+
   - type: grid
-    column_span: 2
+    column_span: 1
     cards:
-      - type: custom:mushroom-title-card
-        title: RV Hass
-        subtitle: "{{ states('sensor.rv_hass_overall_status_summary') }}"
-      - type: horizontal-stack
+      - type: vertical-stack
         cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.rv_hass_uptime_s
-            icon: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'color') }}"
-            primary: Uptime
-            secondary: "{{ state_attr('sensor.ui_rvhass_uptime_s', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.rv_hass_updates_pending
-            icon: "{{ state_attr('sensor.ui_rvhass_updates_pending', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_rvhass_updates_pending', 'color') }}"
-            primary: Updates
-            secondary: "{{ state_attr('sensor.ui_rvhass_updates_pending', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
+          - type: custom:mushroom-title-card
+            title: System Status
+            subtitle: Health overview and pending updates
+          - type: markdown
+            content: |
+              {% set packages = state_attr('sensor.rv_hass_updates_list', 'packages') | default([]) %}
+              **Available Updates:**
+              {%- for pkg in packages %}
+                - {{ pkg }}
+              {%- endfor %}
+            visibility:
+              - condition: numeric_state
+                entity: sensor.rv_hass_updates_pending
+                above: 0
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(var(--rgb-primary-color), 0.1);
+                  font-size: 0.9em;
+                }
           - type: custom:mushroom-template-card
             entity: binary_sensor.rv_hass_status_alarm
             icon: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'color') }}"
-            primary: Status
-            layout: vertical
+            primary: Health Status
+            secondary: "{{ state_attr('sensor.ui_rvhass_status_alarm', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU
+          - type: custom:mushroom-template-card
+            entity: sensor.rv_hass_cpu_load_1m
+            icon: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'color') }}"
+            primary: CPU Load (1m/5m/15m)
+            secondary: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'long_desc') }}"
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: sensor.rv_hass_cpu_temp
+            icon: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'color') }}"
+            primary: CPU Temperature
+            secondary: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'label') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Memory
+          - type: custom:mushroom-template-card
+            entity: sensor.rv_hass_swap_percent
+            icon: "{{ state_attr('sensor.ui_rvhass_swap_percent', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_swap_percent', 'color') }}"
+            primary: "Swap ({{ state_attr('sensor.ui_rvhass_swap_percent', 'value') }} used)"
+            secondary: "{{ state_attr('sensor.ui_rvhass_swap_percent', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Storage
+            subtitle: Disk capacity and performance
+          - type: custom:mushroom-template-card
+            entity: sensor.rv_hass_fs_data_percent
+            icon: "{{ state_attr('sensor.ui_rvhass_fs_data', 'fs_icon') | default('mdi:folder') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_fs_data', 'fs_color') | default('green') }}"
+            primary: Data
+            secondary: "{{ state_attr('sensor.ui_rvhass_fs_data', 'fs_secondary') | default('') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-      - type: markdown
-        content: |
-          **Available Updates:**
-          {%- set packages = state_attr('sensor.rv_hass_updates_list', 'packages') | default([]) %}
-          {% for pkg in packages %}
-          - {{ pkg }}
-          {% endfor %}
-        visibility:
-          - condition: numeric_state
-            entity: sensor.rv_hass_updates_pending
-            above: 0
-        card_mod:
-          style: |
-            ha-card {
-              background: rgba(var(--rgb-primary-color), 0.1);
-              font-size: 0.9em;
-            }
 
-  # CPU
   - type: grid
     column_span: 1
     cards:
-      - type: heading
-        heading: CPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.rv_hass_cpu_utilization
-        icon: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'color') }}"
-        primary: Utilization
-        secondary: "{{ state_attr('sensor.ui_rvhass_cpu_utilization', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.rv_hass_cpu_load_1m
-        icon: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'color') }}"
-        primary: Load Average
-        secondary: "{{ state_attr('sensor.ui_rvhass_cpu_load_1m', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.rv_hass_cpu_temp
-        icon: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'color') }}"
-        primary: Temperature
-        secondary: "{{ state_attr('sensor.ui_rvhass_cpu_temp', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Memory
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Memory
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.rv_hass_memory_percent
-        icon: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'color') }}"
-        primary: Usage
-        secondary: "{{ state_attr('sensor.ui_rvhass_memory_percent', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.rv_hass_swap_percent
-        icon: mdi:swap-horizontal
-        icon_color: purple
-        primary: Swap
-        secondary: "{{ states('sensor.rv_hass_swap_percent') }}%"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Filesystems
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Filesystems
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
+      - type: vertical-stack
         cards:
+          - type: custom:mushroom-title-card
+            title: Network
+            subtitle: Interface status and connectivity
           - type: custom:mushroom-template-card
-            entity: sensor.rv_hass_fs_data_percent
-            icon: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'color') }}"
-            primary: Data
-            secondary: "{{ state_attr('sensor.ui_rvhass_fs_data_percent', 'long_desc') }}"
+            entity: sensor.rv_hass_ethernet_info
+            icon: "{{ state_attr('sensor.ui_rvhass_network_ethernet','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_network_ethernet','iface_color') }}"
+            primary: "{{ state_attr('sensor.rv_hass_ethernet_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_rvhass_network_ethernet','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-
-  # Network
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Network Interfaces
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
           - type: custom:mushroom-template-card
-            entity: sensor.rv_hass_ethernet_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: Ethernet
-            secondary: "{{ states('sensor.rv_hass_ethernet_ipv4') }}"
+            entity: sensor.rv_hass_tailscale_info
+            icon: "{{ state_attr('sensor.ui_rvhass_network_tailscale','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_rvhass_network_tailscale','iface_color') }}"
+            primary: "{{ state_attr('sensor.rv_hass_tailscale_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_rvhass_network_tailscale','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.rv_hass_tailscale_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: Tailscale
-            secondary: "{{ states('sensor.rv_hass_tailscale_ipv4') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle

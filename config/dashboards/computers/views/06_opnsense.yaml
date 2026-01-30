@@ -10,335 +10,230 @@
 title: OPNsense
 path: opnsense
 type: sections
-max_columns: 2
+max_columns: 3
+cards: []
 
 badges:
+  - type: custom:mushroom-template-badge
+    entity: binary_sensor.opnsense_status_alarm
+    icon: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'color') }}"
+    label: Status
+    content: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.opnsense_uptime_s
+    icon: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'color') }}"
+    label: Uptime
+    content: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.opnsense_cpu_load_1m
+    icon: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'color') }}"
+    label: CPU Load
+    content: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'short_label') }}"
+    tap_action:
+      action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.opnsense_cpu_utilization
     icon: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'icon') }}"
     color: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'color') }}"
+    label: CPU
     content: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'short_label') }}"
+    tap_action:
+      action: more-info
+  - type: custom:mushroom-template-badge
+    entity: sensor.opnsense_cpu_temp
+    icon: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'icon') }}"
+    color: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'color') }}"
+    label: CPU Temp
+    content: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'short_label') }}"
     tap_action:
       action: more-info
   - type: custom:mushroom-template-badge
     entity: sensor.opnsense_memory_percent
     icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'icon') }}"
     color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'color') }}"
+    label: Memory
     content: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'short_label') }}"
     tap_action:
       action: more-info
 
 sections:
-  # System Status
+
   - type: grid
-    column_span: 2
+    column_span: 1
     cards:
-      - type: custom:mushroom-title-card
-        title: OPNsense
-        subtitle: "{{ states('sensor.opnsense_overall_status_summary') }}"
-      - type: horizontal-stack
+      - type: vertical-stack
         cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.opnsense_uptime_s
-            icon: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'color') }}"
-            primary: Uptime
-            secondary: "{{ state_attr('sensor.ui_opnsense_uptime_s', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            entity: sensor.opnsense_updates_pending
-            icon: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'color') }}"
-            primary: Updates
-            secondary: "{{ state_attr('sensor.ui_opnsense_updates_pending', 'label_vertical') }}"
-            layout: vertical
-            multiline_secondary: true
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
+          - type: custom:mushroom-title-card
+            title: System Status
+            subtitle: Health overview and pending updates
+          - type: markdown
+            content: |
+              {% set packages = state_attr('sensor.opnsense_updates_list', 'packages') | default([]) %}
+              **Available Updates:**
+              {%- for pkg in packages %}
+                - {{ pkg }}
+              {%- endfor %}
+            visibility:
+              - condition: numeric_state
+                entity: sensor.opnsense_updates_pending
+                above: 0
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(var(--rgb-primary-color), 0.1);
+                  font-size: 0.9em;
+                }
           - type: custom:mushroom-template-card
             entity: binary_sensor.opnsense_status_alarm
             icon: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'color') }}"
-            primary: Status
-            layout: vertical
+            primary: Health Status
+            secondary: "{{ state_attr('sensor.ui_opnsense_status_alarm', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: CPU
+          - type: custom:mushroom-template-card
+            entity: sensor.opnsense_cpu_load_1m
+            icon: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'color') }}"
+            primary: CPU Load (1m/5m/15m)
+            secondary: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Memory
+          - type: custom:mushroom-template-card
+            entity: sensor.opnsense_swap_percent
+            icon: "{{ state_attr('sensor.ui_opnsense_swap_percent', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_swap_percent', 'color') }}"
+            primary: "Swap ({{ state_attr('sensor.ui_opnsense_swap_percent', 'value') }} used)"
+            secondary: "{{ state_attr('sensor.ui_opnsense_swap_percent', 'long_desc') }}"
+            tap_action:
+              action: more-info
+
+  - type: grid
+    column_span: 1
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Storage
+            subtitle: Disk capacity and performance
+          - type: custom:mushroom-template-card
+            entity: sensor.opnsense_fs_root_percent
+            icon: "{{ state_attr('sensor.ui_opnsense_fs_root', 'fs_icon') | default('mdi:folder') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_fs_root', 'fs_color') | default('green') }}"
+            primary: Root
+            secondary: "{{ state_attr('sensor.ui_opnsense_fs_root', 'fs_secondary') | default('') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
-      - type: markdown
-        content: |
-          **Available Updates:**
-          {%- set packages = state_attr('sensor.opnsense_updates_list', 'packages') | default([]) %}
-          {% for pkg in packages %}
-          - {{ pkg }}
-          {% endfor %}
-        visibility:
-          - condition: numeric_state
-            entity: sensor.opnsense_updates_pending
-            above: 0
-        card_mod:
-          style: |
-            ha-card {
-              background: rgba(var(--rgb-primary-color), 0.1);
-              font-size: 0.9em;
-            }
-
-  # CPU
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: CPU
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_cpu_utilization
-        icon: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'color') }}"
-        primary: Utilization
-        secondary: "{{ state_attr('sensor.ui_opnsense_cpu_utilization', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_cpu_load_1m
-        icon: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'color') }}"
-        primary: Load Average
-        secondary: "{{ state_attr('sensor.ui_opnsense_cpu_load_1m', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_cpu_temp
-        icon: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'color') }}"
-        primary: Temperature
-        secondary: "{{ state_attr('sensor.ui_opnsense_cpu_temp', 'label') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Memory
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Memory
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_memory_percent
-        icon: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'icon') }}"
-        icon_color: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'color') }}"
-        primary: Usage
-        secondary: "{{ state_attr('sensor.ui_opnsense_memory_percent', 'long_desc') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_swap_percent
-        icon: mdi:swap-horizontal
-        icon_color: purple
-        primary: Swap
-        secondary: "{{ states('sensor.opnsense_swap_percent') }}%"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Filesystems
-  - type: grid
-    column_span: 2
-    cards:
-      - type: heading
-        heading: Filesystems
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-template-card
-            entity: sensor.opnsense_fs_root_percent
-            icon: "{{ state_attr('sensor.ui_opnsense_fs_root_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_opnsense_fs_root_percent', 'color') }}"
-            primary: Root
-            secondary: "{{ state_attr('sensor.ui_opnsense_fs_root_percent', 'long_desc') }}"
-            tap_action:
-              action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
             entity: sensor.opnsense_fs_logs_percent
-            icon: "{{ state_attr('sensor.ui_opnsense_fs_logs_percent', 'icon') }}"
-            icon_color: "{{ state_attr('sensor.ui_opnsense_fs_logs_percent', 'color') }}"
+            icon: "{{ state_attr('sensor.ui_opnsense_fs_logs', 'fs_icon') | default('mdi:folder') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_fs_logs', 'fs_color') | default('green') }}"
             primary: Logs
-            secondary: "{{ state_attr('sensor.ui_opnsense_fs_logs_percent', 'long_desc') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_fs_logs', 'fs_secondary') | default('') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
 
-  # Network
   - type: grid
-    column_span: 2
+    column_span: 1
     cards:
-      - type: heading
-        heading: Network Interfaces
-        heading_style: subtitle
-      - type: grid
-        columns: 2
-        square: false
+      - type: vertical-stack
         cards:
+          - type: custom:mushroom-title-card
+            title: Network
+            subtitle: Interface status and connectivity
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_lan_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: LAN
-            secondary: "{{ states('sensor.opnsense_lan_ipv4') }}"
+            entity: sensor.opnsense_lan_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_lan','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_lan','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_lan_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_lan','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_wan_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: WAN
-            secondary: "{{ states('sensor.opnsense_wan_ipv4') }}"
+            entity: sensor.opnsense_wan_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_wan','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_wan','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_wan_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_wan','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_vlan10_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: VLAN10
-            secondary: "{{ states('sensor.opnsense_vlan10_ipv4') }}"
+            entity: sensor.opnsense_vlan10_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_vlan10','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_vlan10','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_vlan10_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_vlan10','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_vlan20_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: VLAN20
-            secondary: "{{ states('sensor.opnsense_vlan20_ipv4') }}"
+            entity: sensor.opnsense_vlan20_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_vlan20','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_vlan20','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_vlan20_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_vlan20','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_wireguard_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: WireGuard
-            secondary: "{{ states('sensor.opnsense_wireguard_ipv4') }}"
+            entity: sensor.opnsense_wireguard_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_wireguard','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_wireguard','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_wireguard_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_wireguard','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
-            entity: sensor.opnsense_tailscale_ipv4
-            icon: mdi:ethernet
-            icon_color: blue
-            primary: Tailscale
-            secondary: "{{ states('sensor.opnsense_tailscale_ipv4') }}"
+            entity: sensor.opnsense_tailscale_info
+            icon: "{{ state_attr('sensor.ui_opnsense_network_tailscale','iface_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_opnsense_network_tailscale','iface_color') }}"
+            primary: "{{ state_attr('sensor.opnsense_tailscale_info', 'name') }}"
+            secondary: "{{ state_attr('sensor.ui_opnsense_network_tailscale','long_desc') }}"
+            multiline_secondary: true
             tap_action:
               action: more-info
-            icon_tap_action:
-              action: toggle
 
-  # Services
   - type: grid
     column_span: 1
     cards:
-      - type: heading
-        heading: Services
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: binary_sensor.opnsense_services_ok
-        icon: mdi:cog
-        icon_color: "{{ 'green' if is_state('binary_sensor.opnsense_services_ok', 'on') else 'red' }}"
-        primary: Services Status
-        secondary: "{{ states('sensor.opnsense_services_checked') }} monitored"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Motherboard Temps
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Temperatures
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_system_temp
-        icon: mdi:thermometer
-        icon_color: "{{ 'red' if states('sensor.opnsense_system_temp') | float(0) > 80 else 'orange' if states('sensor.opnsense_system_temp') | float(0) > 60 else 'green' }}"
-        primary: System Temp
-        secondary: "{{ states('sensor.opnsense_system_temp') }}°C"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # OPNsense
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: OPNsense
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_plugins_count
-        icon: mdi:puzzle
-        icon_color: blue
-        primary: Plugins
-        secondary: "{{ states('sensor.opnsense_plugins_count') }} installed"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-
-  # Zenarmor (Sensei)
-  - type: grid
-    column_span: 1
-    cards:
-      - type: heading
-        heading: Zenarmor
-        heading_style: subtitle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_zenarmor_engine
-        icon: mdi:engine
-        icon_color: "{{ 'green' if states('sensor.opnsense_zenarmor_engine') == 'Running' else 'red' }}"
-        primary: Engine
-        secondary: "{{ states('sensor.opnsense_zenarmor_engine') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
-      - type: custom:mushroom-template-card
-        entity: sensor.opnsense_zenarmor_cloud
-        icon: mdi:cloud-check
-        icon_color: "{{ 'green' if states('sensor.opnsense_zenarmor_cloud') == 'Running' else 'orange' }}"
-        primary: Cloud
-        secondary: "{{ states('sensor.opnsense_zenarmor_cloud') }}"
-        tap_action:
-          action: more-info
-        icon_tap_action:
-          action: toggle
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Services
+            subtitle: Monitored system services
+          - type: custom:mushroom-template-card
+            entity: binary_sensor.opnsense_services_ok
+            icon: mdi:cog
+            icon_color: "{{ 'green' if is_state('binary_sensor.opnsense_services_ok', 'on') else 'red' }}"
+            primary: Services Status
+            secondary: "{{ states('sensor.opnsense_services_checked') }} monitored"
+            tap_action:
+              action: more-info
