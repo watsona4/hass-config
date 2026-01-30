@@ -98,7 +98,7 @@ recorder:
       - sensor.pollen_species_list_*_today
       - sensor.pollen_forecast_*_day_*
       - sensor.*_hardware_telemetry
-      - binary_sensor.webcam_running
+      - binary_sensor.usb_current_monitor_webcam_running
 
 pyscript:
   allow_all_imports: true

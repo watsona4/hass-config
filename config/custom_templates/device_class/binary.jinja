@@ -362,6 +362,35 @@
             "full_desc":"Child is home alone—heightened attention recommended."
         }
     ],
+    "in_a_meeting": [
+        {
+            "min_value": none,
+            "default_desc":"Unavailable",
+            "short_desc":"N/A",
+            "long_desc":"Meeting status unavailable",
+            "icon":"mdi:close-circle",
+            "color":"disabled",
+            "full_desc":"No meeting status data."
+        },
+        {
+            "min_value": 0,
+            "default_desc":"Available",
+            "short_desc":"Free",
+            "long_desc":"Not in a meeting",
+            "icon":"mdi:video-off",
+            "color":"disabled",
+            "full_desc":"No active meeting or call."
+        },
+        {
+            "min_value": 1,
+            "default_desc":"In Meeting",
+            "short_desc":"Busy",
+            "long_desc":"In a Teams meeting",
+            "icon":"mdi:video",
+            "color":"#8b5cf6",
+            "full_desc":"Currently in a video call or meeting—do not disturb."
+        }
+    ],
     "battery": [
         { "min_value": none, "default_desc": "Unavailable", "short_desc": "N/A", "long_desc": "Battery status unavailable", "icon": "mdi:close-circle", "color": "disabled", "full_desc": "No battery status reported." },
         { "min_value": 0,    "default_desc": "OK",           "short_desc": "OK", "long_desc": "Battery normal", "icon": "mdi:battery", "color": "#22c55e", "full_desc": "Battery level is acceptable." },

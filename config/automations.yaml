@@ -5809,12 +5809,12 @@
     '
   triggers:
   - trigger: state
-    entity_id: binary_sensor.webcam_running
+    entity_id: binary_sensor.study_usb_monitor_webcam_running
     to: 'on'
     id: webcam_on
   - trigger: state
     entity_id:
-    - binary_sensor.webcam_running
+    - binary_sensor.study_usb_monitor_webcam_running
     to: 'off'
     id: webcam_off
     for:
@@ -5826,28 +5826,29 @@
         %}\n  off\n{% elif trigger.id == 'button' %}\n  {% if current == 'on' %}\n
         \   off\n  {% else %}\n    on\n  {% endif %}\n{% else %}\n  {{ current }}\n{%
         endif %}"
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ intended != current }}'
-      sequence:
-      - action: input_boolean.turn_{{ intended }}
-        target:
-          entity_id: input_boolean.in_a_teams_meeting
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ intended == ''on'' }}'
-      sequence:
-      - if:
-        - condition: state
-          entity_id: media_player.study
-          state: playing
-        then:
-        - action: media_player.media_pause
-          target:
-            entity_id: media_player.study
-          data: {}
+  - if:
+    - condition: template
+      value_template: '{{ intended != current }}'
+    then:
+    - action: input_boolean.turn_{{ intended }}
+      target:
+        entity_id: input_boolean.in_a_teams_meeting
+    - action: script.window_position
+      data:
+        entities:
+        - cover.study_west_window
+        action: Closed Up
+        reason: Device
+  - if:
+    - condition: template
+      value_template: '{{ intended == ''on'' }}'
+    - condition: state
+      entity_id: media_player.study
+      state: playing
+    then:
+    - action: media_player.media_pause
+      target:
+        entity_id: media_player.study
   mode: single
 - id: '1747133593742'
   alias: Home Alone

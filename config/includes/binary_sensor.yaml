@@ -1,10 +1,3 @@
-- platform: threshold
-  name: Webcam Running
-  entity_id: sensor.usb_current_monitor_ina219_current
-  upper: 0.15                                # turn ON at ≥ 0.15 A
-  hysteresis: 0.05                           # turn OFF at ≤ 0.10 A (0.15 - 0.05)
-  device_class: running
-
 - platform: bayesian
   name: Aaron Probably Home
   unique_id: 7e2b8c8a-4e3c-4b7a-9e2a-8c2e4b7a9e2a

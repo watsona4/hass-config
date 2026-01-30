@@ -77,6 +77,30 @@ template:
 
   - trigger:
       - platform: state
+        entity_id: input_boolean.in_a_teams_meeting
+    variables:
+      entity_id: input_boolean.in_a_teams_meeting
+      app: in_a_meeting
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+    sensor:
+      - name: ui_in_a_teams_meeting_chip
+        unique_id: a7c3e2d1-8f4b-4c5a-9e6d-1b2a3c4d5e6f
+        state: "{{ states(entity_id) }}"
+        attributes:
+          name: "{{ state_info.name }}"
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          label_vertical: "{{ state_info.long_label }}"
+
+  - trigger:
+      - platform: state
         entity_id:
           - binary_sensor.daytime
           - binary_sensor.evening

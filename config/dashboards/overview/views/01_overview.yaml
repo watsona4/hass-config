@@ -167,6 +167,13 @@ sections:
             icon_color: "{{ state_attr('sensor.ui_hot_inside_chip', 'color') }}"
             tap_action:
               action: more-info
+          - type: template
+            entity: input_boolean.in_a_teams_meeting
+            content: "{{ state_attr('sensor.ui_in_a_teams_meeting_chip', 'label') }}"
+            icon: "{{ state_attr('sensor.ui_in_a_teams_meeting_chip', 'icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_in_a_teams_meeting_chip', 'color') }}"
+            tap_action:
+              action: more-info
 
       - type: grid
         columns: 2
