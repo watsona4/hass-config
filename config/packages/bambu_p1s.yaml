@@ -1,0 +1,254 @@
+---
+# File: packages/bambu_p1s.yaml
+# Description: Bambu Lab P1S 3D printer monitoring
+#
+# Entities created:
+#   - sensor.bambu_p1s_last_filament_type
+#   - sensor.bambu_p1s_last_filament_name
+#   - sensor.bambu_p1s_last_bed_type
+#   - sensor.bambu_p1s_bed_removal_threshold
+#   - automation.bambu_p1s_bed_cool_notification
+#
+# Depends on (Bambu Lab integration):
+#   - sensor.p1s_01p00c5c0603366_print_status
+#   - sensor.p1s_01p00c5c0603366_active_tray
+#   - sensor.p1s_01p00c5c0603366_print_bed_type
+#   - sensor.p1s_01p00c5c0603366_bed_temperature
+
+template:
+  # Persist the last valid filament/bed values so
+  # they survive the active tray resetting to "none"
+  # after a print finishes.
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.p1s_01p00c5c0603366_active_tray
+    sensor:
+      - name: "Bambu P1S Last Filament Type"
+        unique_id: bambu_p1s_last_filament_type
+        icon: mdi:printer-3d-nozzle
+        state: >-
+          {% set val = state_attr(
+            'sensor.p1s_01p00c5c0603366_active_tray',
+            'type') %}
+          {% if val not in [
+              none, 'none', 'None', 'Empty',
+              '', 'unknown', 'unavailable'] %}
+            {{ val }}
+          {% else %}
+            {{ this.state | default('unknown') }}
+          {% endif %}
+      - name: "Bambu P1S Last Filament Name"
+        unique_id: bambu_p1s_last_filament_name
+        icon: mdi:printer-3d-nozzle
+        state: >-
+          {% set val = states(
+            'sensor.p1s_01p00c5c0603366_active_tray'
+          ) %}
+          {% if val not in [
+              'none', 'None', 'Empty',
+              '', 'unknown', 'unavailable'] %}
+            {{ val }}
+          {% else %}
+            {{ this.state | default('unknown') }}
+          {% endif %}
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.p1s_01p00c5c0603366_print_bed_type
+    sensor:
+      - name: "Bambu P1S Last Bed Type"
+        unique_id: bambu_p1s_last_bed_type
+        icon: mdi:printer-3d
+        state: >-
+          {% set val = states(
+            'sensor.p1s_01p00c5c0603366_print_bed_type'
+          ) %}
+          {% set norm = {
+            "Textured plate": "textured_plate",
+            "Smooth PEI Plate / High Temp Plate":
+              "hot_plate",
+            "Cool Plate / PLA Plate": "cool_plate",
+            "Engineering Plate": "eng_plate",
+            "Cool Plate SuperTack":
+              "supertack_plate",
+          } %}
+          {% if val not in [
+              'unknown', 'unavailable', ''] %}
+            {{ norm.get(val, val) }}
+          {% else %}
+            {{ this.state | default('unknown') }}
+          {% endif %}
+
+  - sensor:
+      - name: "Bambu P1S Bed Removal Threshold"
+        unique_id: bambu_p1s_bed_removal_threshold
+        icon: mdi:thermometer-check
+        unit_of_measurement: "°C"
+        state: >-
+          {% set filament = states(
+            'sensor.bambu_p1s_last_filament_type') %}
+          {% set bed = states(
+            'sensor.bambu_p1s_last_bed_type') %}
+          {% if filament in [
+              'unknown', 'unavailable']
+            or bed in [
+              'unknown', 'unavailable'] %}
+            unknown
+          {% else %}
+            {% set t = {
+              ("PLA", "textured_plate"): 35,
+              ("PLA", "hot_plate"): 30,
+              ("PLA-S", "textured_plate"): 35,
+              ("PLA-S", "hot_plate"): 30,
+              ("PETG", "textured_plate"): "N/A",
+              ("PETG", "hot_plate"): 40,
+              ("TPU", "textured_plate"): 25,
+              ("TPU", "hot_plate"): "N/A",
+              ("ABS", "textured_plate"): 35,
+              ("ABS", "hot_plate"): 35,
+              ("ASA", "textured_plate"): 35,
+              ("ASA", "hot_plate"): 35,
+              ("PA", "textured_plate"): 30,
+              ("PA", "hot_plate"): 30,
+              ("PC", "textured_plate"): 40,
+              ("PC", "hot_plate"): 40,
+              ("PLA-CF", "textured_plate"): 35,
+              ("PLA-CF", "hot_plate"): 30,
+              ("PETG-CF", "textured_plate"): "N/A",
+              ("PETG-CF", "hot_plate"): 40,
+            } %}
+            {{ t.get((filament, bed), 'unknown') }}
+          {% endif %}
+        attributes:
+          filament_type: >-
+            {{ states(
+              'sensor.bambu_p1s_last_filament_type'
+            ) }}
+          bed_type: >-
+            {{ states(
+              'sensor.bambu_p1s_last_bed_type') }}
+
+automation:
+  - id: bambu_p1s_bed_cool_notification
+    alias: "Bambu P1S - Bed Cool Notification"
+    description: >-
+      Notify when the 3D printer bed has cooled
+      to a safe removal temperature after a print
+      finishes. Threshold depends on filament type
+      and PEI plate.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id:
+          - sensor.p1s_01p00c5c0603366_print_status
+        to: "finish"
+        id: finish
+      - trigger: state
+        entity_id:
+          - sensor.p1s_01p00c5c0603366_print_status
+        to: "running"
+        id: running
+    conditions:
+      - condition: trigger
+        id: finish
+    actions:
+      - variables:
+          filament: >-
+            {{ states(
+              'sensor.bambu_p1s_last_filament_type'
+            ) }}
+          filament_name: >-
+            {{ states(
+              'sensor.bambu_p1s_last_filament_name'
+            ) }}
+          bed: >-
+            {{ states(
+              'sensor.bambu_p1s_last_bed_type') }}
+          bed_friendly: >-
+            {% set names = {
+              "textured_plate": "Textured PEI",
+              "hot_plate": "Smooth PEI",
+              "cool_plate": "Cool Plate",
+              "eng_plate": "Engineering Plate",
+              "supertack_plate": "SuperTack Plate",
+            } %}
+            {{ names.get(states(
+              'sensor.bambu_p1s_last_bed_type'
+            ), 'Unknown Plate') }}
+          thresholds: >-
+            {{ {
+              ("PLA", "textured_plate"): 35,
+              ("PLA", "hot_plate"): 30,
+              ("PLA-S", "textured_plate"): 35,
+              ("PLA-S", "hot_plate"): 30,
+              ("PETG", "textured_plate"): "N/A",
+              ("PETG", "hot_plate"): 40,
+              ("TPU", "textured_plate"): 25,
+              ("TPU", "hot_plate"): "N/A",
+              ("ABS", "textured_plate"): 35,
+              ("ABS", "hot_plate"): 35,
+              ("ASA", "textured_plate"): 35,
+              ("ASA", "hot_plate"): 35,
+              ("PA", "textured_plate"): 30,
+              ("PA", "hot_plate"): 30,
+              ("PC", "textured_plate"): 40,
+              ("PC", "hot_plate"): 40,
+              ("PLA-CF", "textured_plate"): 35,
+              ("PLA-CF", "hot_plate"): 30,
+              ("PETG-CF", "textured_plate"): "N/A",
+              ("PETG-CF", "hot_plate"): 40,
+            } }}
+      - variables:
+          threshold: >-
+            {{ thresholds.get(
+              (filament, bed), 'unknown') }}
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >-
+                  {{ threshold == 'N/A' }}
+            sequence:
+              - action: notify.aaron_phones
+                data:
+                  title: "Bambu P1S - Warning"
+                  message: >-
+                    Print finished using
+                    {{ filament_name }}
+                    ({{ filament }}) on
+                    {{ bed_friendly }}. This
+                    filament/plate combination
+                    is not recommended!
+          - conditions:
+              - condition: template
+                value_template: >-
+                  {{ threshold == 'unknown' }}
+            sequence:
+              - action: notify.aaron_phones
+                data:
+                  title: "Bambu P1S - Print Complete"
+                  message: >-
+                    Print finished using
+                    {{ filament_name }}
+                    ({{ filament }}) on
+                    {{ bed_friendly }}. Unable to
+                    determine safe removal
+                    temperature for this
+                    combination.
+        default:
+          - wait_template: >-
+              {{ states(
+                'sensor.p1s_01p00c5c0603366_bed_temperature'
+              ) | float(999)
+              <= threshold | float }}
+            timeout: "02:00:00"
+          - action: notify.aaron_phones
+            data:
+              title: "Bambu P1S - Print Ready"
+              message: >-
+                Bed cooled to {{ states(
+                'sensor.p1s_01p00c5c0603366_bed_temperature'
+                ) }}°C (threshold: {{ threshold
+                }}°C). Safe to remove your
+                {{ filament_name }} print from
+                the {{ bed_friendly }}.
