@@ -1615,6 +1615,7 @@
     - input_number.furnace_temperature
     - automation.thermostats
     - input_boolean.coming_home
+    - input_boolean.space_heater_in_laundry_room
     id: Target
     trigger: state
     to:
@@ -1746,7 +1747,8 @@
       - action: climate.set_temperature
         metadata: {}
         data:
-          temperature: 50
+          temperature: "{% if is_state('input_boolean.space_heater_in_laundry_room',
+            'on') %}\n  75\n{% else %}\n  50\n{% endif %}"
         target:
           entity_id: climate.study_space_heater
     - conditions:
@@ -1949,6 +1951,7 @@
                 entity_id: b3171e9d44e389886ab08cb8e3c21a49
                 type: select_option
                 option: home
+            enabled: false
           - action: climate.set_hvac_mode
             target:
               entity_id: climate.study_space_heater
@@ -1956,9 +1959,15 @@
               hvac_mode: heat
           - action: climate.set_temperature
             data:
-              temperature: '{{study_heater}}'
+              temperature: "{% if is_state('input_boolean.space_heater_in_laundry_room',
+                'on') %}\n  75\n{% else %}\n  {{study_heater}}\n{% endif %}"
             target:
               entity_id: climate.study_space_heater
+          - device_id: ffa24dba7efe667f7b158707766c6736
+            domain: select
+            entity_id: b3171e9d44e389886ab08cb8e3c21a49
+            type: select_option
+            option: home
         - conditions:
           - condition: state
             entity_id: binary_sensor.daytime
@@ -2009,6 +2018,7 @@
                 entity_id: b3171e9d44e389886ab08cb8e3c21a49
                 type: select_option
                 option: sleep
+            enabled: false
           - action: climate.set_hvac_mode
             target:
               entity_id: climate.study_space_heater
@@ -2016,9 +2026,15 @@
               hvac_mode: heat
           - action: climate.set_temperature
             data:
-              temperature: 60
+              temperature: "{% if is_state('input_boolean.space_heater_in_laundry_room',
+                'on') %}\n  75\n{% else %}\n  60\n{% endif %}"
             target:
               entity_id: climate.study_space_heater
+          - device_id: ffa24dba7efe667f7b158707766c6736
+            domain: select
+            entity_id: b3171e9d44e389886ab08cb8e3c21a49
+            type: select_option
+            option: sleep
   - if:
     - condition: trigger
       id:

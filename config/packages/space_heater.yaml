@@ -1,0 +1,35 @@
+---
+# File: packages/space_heater.yaml
+# Description: Space heater location tracking
+#
+# When the space heater is moved to the laundry room
+# for freeze prevention, the generic_thermostat proxy
+# sensor switches to the laundry room thermometer and
+# automations override the target temperature to 75°F.
+#
+# Entities created:
+#   - input_boolean.space_heater_in_laundry_room
+#   - sensor.space_heater_thermometer
+
+input_boolean:
+  space_heater_in_laundry_room:
+    name: "Space Heater in Laundry Room"
+    icon: mdi:radiator
+
+template:
+  - sensor:
+      - name: "Space Heater Thermometer"
+        unique_id: faa96289-d7fa-4cfe-8bcf-86b32f0060af
+        device_class: temperature
+        unit_of_measurement: "°F"
+        state_class: measurement
+        state: >-
+          {% if is_state(
+            'input_boolean.space_heater_in_laundry_room',
+            'on') %}
+            {{ states('sensor.lb4k_temperature') }}
+          {% else %}
+            {{ states(
+              'sensor.study_thermometer_temperature'
+            ) }}
+          {% endif %}
