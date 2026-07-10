@@ -1201,7 +1201,7 @@
     trigger: time
   - trigger: numeric_state
     entity_id:
-    - sensor.ambientweather_wh31e_1_167_temperature
+    - sensor.ambient_sensor_1_temperature
     below: 35
   conditions: []
   actions:
@@ -1237,7 +1237,7 @@
             priority: high
   - if:
     - condition: numeric_state
-      entity_id: sensor.ambientweather_wh31e_1_167_temperature
+      entity_id: sensor.ambient_sensor_1_temperature
       below: 35
     then:
     - wait_template: '{{ states(''timer.water_freezing_timer'', ''idle'') }}'
@@ -1742,8 +1742,21 @@
         target:
           entity_id:
           - climate.upstairs_thermostat
-          - climate.gym_minisplit_setall_gym_minisplit
-          - climate.playroom_minisplit_setall_playroom_minisplit
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: input_boolean.drying_wood
+            state: 'on'
+        then:
+        - action: climate.set_preset_mode
+          metadata: {}
+          data:
+            preset_mode: away
+          target:
+            entity_id:
+            - climate.gym_minisplit_setall_gym_minisplit
+            - climate.playroom_minisplit_setall_playroom_minisplit
       - action: climate.set_temperature
         metadata: {}
         data:
@@ -1875,28 +1888,41 @@
         target:
           entity_id:
           - climate.upstairs_thermostat
-          - climate.gym_minisplit_setall_gym_minisplit
-          - climate.playroom_minisplit_setall_playroom_minisplit
       - data:
           temperature: '{{upstairs}}'
           hvac_mode: cool
         target:
           entity_id: climate.upstairs_thermostat
         action: climate.set_temperature
-      - action: climate.set_temperature
-        metadata: {}
-        data:
-          temperature: 64
-          hvac_mode: auto
-        target:
-          entity_id: climate.gym_minisplit_setall_gym_minisplit
-      - action: climate.set_temperature
-        metadata: {}
-        data:
-          temperature: 69
-          hvac_mode: auto
-        target:
-          entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: input_boolean.drying_wood
+            state: 'on'
+        then:
+        - action: climate.set_preset_mode
+          metadata: {}
+          data:
+            preset_mode: none
+          target:
+            entity_id:
+            - climate.gym_minisplit_setall_gym_minisplit
+            - climate.playroom_minisplit_setall_playroom_minisplit
+        - action: climate.set_temperature
+          metadata: {}
+          data:
+            temperature: 64
+            hvac_mode: auto
+          target:
+            entity_id: climate.gym_minisplit_setall_gym_minisplit
+        - action: climate.set_temperature
+          metadata: {}
+          data:
+            temperature: 69
+            hvac_mode: auto
+          target:
+            entity_id: climate.playroom_minisplit_setall_playroom_minisplit
       - type: turn_off
         device_id: bf504d65da756f4a151f42fac791dd08
         entity_id: bec34548b2f45c3381a3824ccc8fb41b
@@ -3352,6 +3378,11 @@
     - input_boolean.home_alone
     to: 'off'
     id: Home Alone Off
+  - trigger: state
+    entity_id:
+    - input_boolean.home_alone
+    to: 'on'
+    id: Home Alone On
   conditions:
   - condition: template
     value_template: '{{ (now() - states(''sensor.uptime'')|as_datetime|as_local) >
@@ -3425,7 +3456,7 @@
     - action: input_boolean.turn_on
       metadata: {}
       target:
-        entity_id: input_boolean.someone_is_home_raw
+        entity_id: input_boolean.someone_is_home
       data: {}
     - action: input_boolean.turn_off
       metadata: {}
@@ -3546,7 +3577,7 @@
     else:
     - action: input_boolean.turn_off
       target:
-        entity_id: input_boolean.someone_is_home_raw
+        entity_id: input_boolean.someone_is_home
       data: {}
   mode: queued
   trace:
@@ -3695,15 +3726,22 @@
   mode: single
 - id: '1714213889654'
   alias: Side Door Lock
-  description: ''
+  description: 'Consolidated automation for the side door lock (lock.side_door): auto-lock/
+    auto-unlock behavior based on presence and time of day, plus connectivity monitoring
+    (hourly alert while offline for more than an hour, notice when it comes back online).
+    One automation per device, per user preference; combines the former "Side Door
+    Lock", "Side Door Lock Offline", and "Side Door Lock Restored" automations.'
+  mode: parallel
+  max: 10
   triggers:
-  - entity_id:
+  - id: context
+    trigger: state
+    entity_id:
     - binary_sensor.daytime
     - input_boolean.someone_is_home
     - binary_sensor.dark_outside
-    trigger: state
-    to:
-  - device_id: 6c9aed40494e1b52b2cf82d499f60d0b
+  - id: unlocked
+    device_id: 6c9aed40494e1b52b2cf82d499f60d0b
     domain: lock
     entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
     type: unlocked
@@ -3712,10 +3750,23 @@
       minutes: 0
       seconds: 2
     trigger: device
+  - id: hourly_check
+    trigger: time_pattern
+    hours: /1
+  - id: start
+    trigger: homeassistant
+    event: start
+  - id: state_change
+    trigger: state
+    entity_id: lock.side_door
   conditions: []
   actions:
   - choose:
     - conditions:
+      - condition: trigger
+        id:
+        - context
+        - unlocked
       - condition: or
         conditions:
         - condition: state
@@ -3771,6 +3822,10 @@
           entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
           type: lock
     - conditions:
+      - condition: trigger
+        id:
+        - context
+        - unlocked
       - condition: state
         entity_id: input_boolean.someone_is_home
         state: 'on'
@@ -3790,7 +3845,37 @@
         domain: lock
         entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
         type: unlock
-  mode: single
+    - conditions:
+      - condition: trigger
+        id:
+        - hourly_check
+        - start
+      - condition: state
+        entity_id: lock.side_door
+        state: unavailable
+        for:
+          hours: 1
+      sequence:
+      - action: notify.aaron_phones
+        metadata: {}
+        data:
+          title: Side Door Lock
+          message: Side door lock has been offline for over an hour ({{ ((now() -
+            states.lock.side_door.last_changed).total_seconds() / 3600) | round(1)
+            }}h).
+    - conditions:
+      - condition: trigger
+        id: state_change
+      - condition: template
+        value_template: "{{ trigger.from_state is not none\n   and trigger.from_state.state
+          == 'unavailable'\n   and trigger.to_state is not none\n   and trigger.to_state.state
+          != 'unavailable' }}"
+      sequence:
+      - action: notify.aaron_phones
+        metadata: {}
+        data:
+          title: Side Door Lock
+          message: Side door lock is back online.
   trace:
     stored_traces: 100
 - id: '1714473824822'
@@ -5817,7 +5902,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.ambientweather_wh31e_1_167_battery
+    - binary_sensor.ambient_sensor_1_battery
     to: 'on'
     for:
       hours: 0
@@ -5885,139 +5970,6 @@
     - action: media_player.media_pause
       target:
         entity_id: media_player.study
-  mode: single
-- id: '1747133593742'
-  alias: Home Alone
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - person.ashley_watson
-    - person.aaron_watson
-    to: home
-    for:
-      hours: 0
-      minutes: 30
-      seconds: 0
-    id: Parents Home
-  - trigger: state
-    entity_id:
-    - person.aaron_watson
-    - person.ashley_watson
-    from: home
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    id: Parents Away
-  - trigger: state
-    entity_id:
-    - binary_sensor.before_school_time
-    to: 'off'
-    id: School Time Over
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id:
-        - Parents Away
-      - condition: state
-        entity_id: input_boolean.home_alone
-        state: 'off'
-      - condition: state
-        entity_id: binary_sensor.before_school_time
-        state: 'on'
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: person.aaron_watson
-          state: home
-        - condition: state
-          entity_id: person.ashley_watson
-          state: home
-      sequence:
-      - variables:
-          action_yes: '{{ ''YES_'' ~ context.id }}'
-          action_no: '{{ ''NO_'' ~ context.id }}'
-      - action: notify.mobile_app_pixel_9_pro_xl
-        data:
-          title: Home Alone
-          message: Is someone home alone today?
-          data:
-            actions:
-            - action: '{{ action_yes }}'
-              title: 'Yes'
-            - action: '{{ action_no }}'
-              title: 'No'
-      - action: notify.mobile_app_ashleys_iphone
-        data:
-          title: Home Alone
-          message: Is someone home alone today? (Press and hold to respond)
-          data:
-            actions:
-            - action: '{{ action_yes }}'
-              title: 'Yes'
-            - action: '{{ action_no }}'
-              title: 'No'
-      - wait_for_trigger:
-        - event_type: mobile_app_notification_action
-          event_data:
-            action: '{{ action_yes }}'
-          trigger: event
-        - event_type: mobile_app_notification_action
-          event_data:
-            action: '{{ action_no }}'
-          trigger: event
-        timeout:
-          minutes: 30
-      - if:
-        - condition: template
-          value_template: '{{ wait.trigger.event.data.action == action_yes }}'
-        then:
-        - action: input_boolean.turn_on
-          target:
-            entity_id:
-            - input_boolean.home_alone
-          data: {}
-          metadata: {}
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
-        - action: input_boolean.turn_on
-          target:
-            entity_id:
-            - input_boolean.home_alone
-          data: {}
-          metadata: {}
-    - conditions:
-      - condition: trigger
-        id:
-        - Parents Home
-      - condition: state
-        entity_id: input_boolean.home_alone
-        state: 'on'
-      sequence:
-      - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.home_alone
-    - conditions:
-      - condition: trigger
-        id:
-        - School Time Over
-      - condition: state
-        entity_id: input_boolean.home_alone
-        state: 'on'
-      sequence:
-      - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.home_alone
   mode: single
 - id: '1747574542794'
   alias: Chicken Roosting Box
@@ -6330,125 +6282,210 @@
 
       '
 - id: '1771033359293'
-  alias: Bambu P1S - Bed Cool Notification
-  description: Notify when the 3D printer bed has cooled to a safe removal temperature
-    after a print finishes. Threshold depends on filament type and PEI plate.
+  alias: Bambu P1S 3D Printer
+  description: 'Consolidated automation for the Bambu P1S 3D printer: notifies when
+    the bed has cooled to a safe removal temperature after a print finishes (threshold
+    depends on filament/plate), pauses at a target layer for interior support removal,
+    tracks remaining-time snapshots for the support-removal ETA calc, records bed-cooling
+    history for cooldown ETA prediction, and turns the exhaust fan on while printing.
+    Combines the former "Bambu P1S - Bed Cool Notification", "Bambu P1S - Pause for
+    Support Removal", "Bambu P1S - Track firmware remaining snapshots", "Record P1S
+    bed cooling readings", and "Printer Exhaust" automations into one (one automation
+    per device).
+
+    Uses mode: parallel (not the original Bed Cool Notification''s mode: restart)
+    so the very frequent remaining_time/bed_temperature/stage triggers can''t cancel
+    the Bed Cool Notification''s up-to-2h wait. That wait now exits early on its own
+    the moment print_status leaves ''finish'' (a new print started), and only sends
+    the notification if still ''finish'' afterward - replicating the old restart-cancellation
+    without depending on it.'
+  mode: parallel
+  max: 10
   triggers:
-  - trigger: state
+  - id: status_finish
+    trigger: state
     entity_id:
     - sensor.p1s_01p00c5c0603366_print_status
     to: finish
-    id: finish
-  - trigger: state
+  - id: status_any
+    trigger: state
     entity_id:
     - sensor.p1s_01p00c5c0603366_print_status
-    to: running
-    id: running
-  conditions: []
-  actions:
-  - if:
-    - condition: trigger
-      id: running
-    then:
-    - stop: New print started, cancelling cool-down notification
-  - variables:
-      filament: "{{ states(\n  'sensor.bambu_p1s_last_filament_type'\n) }}"
-      filament_name: "{{ states(\n  'sensor.bambu_p1s_last_filament_name'\n) }}"
-      bed: "{{ states(\n  'sensor.bambu_p1s_last_bed_type') }}"
-      bed_friendly: "{% set names = {\n  \"textured_plate\": \"Textured PEI\",\n  \"hot_plate\":
-        \"Smooth PEI\",\n  \"cool_plate\": \"Cool Plate\",\n  \"eng_plate\": \"Engineering
-        Plate\",\n  \"supertack_plate\": \"SuperTack Plate\",\n} %} {{ names.get(states(\n
-        \ 'sensor.bambu_p1s_last_bed_type'\n), 'Unknown Plate') }}"
-      thresholds: "{{ {\n  (\"PLA\", \"textured_plate\"): 35,\n  (\"PLA\", \"cool_plate\"):
-        35,\n  (\"PLA\", \"hot_plate\"): 30,\n  (\"PLA\", \"supertack_plate\"): 35,\n
-        \ (\"PLA\", \"eng_plate\"): 30,\n  (\"PLA-S\", \"textured_plate\"): 35,\n
-        \ (\"PLA-S\", \"cool_plate\"): 35,\n  (\"PLA-S\", \"hot_plate\"): 30,\n  (\"PLA-S\",
-        \"supertack_plate\"): 35,\n  (\"PLA-S\", \"eng_plate\"): 30,\n  (\"PETG\",
-        \"hot_plate\"): 40,\n  (\"PETG\", \"supertack_plate\"): 35,\n  (\"PETG\",
-        \"eng_plate\"): 40,\n  (\"PCTG\", \"hot_plate\"): 40,\n  (\"PCTG\", \"supertack_plate\"):
-        35,\n  (\"PCTG\", \"eng_plate\"): 40,\n  (\"TPU\", \"textured_plate\"): 25,\n
-        \ (\"TPU\", \"eng_plate\"): 25,\n  (\"ABS\", \"textured_plate\"): 35,\n  (\"ABS\",
-        \"hot_plate\"): 35,\n  (\"ABS\", \"eng_plate\"): 35,\n  (\"ASA\", \"textured_plate\"):
-        35,\n  (\"ASA\", \"hot_plate\"): 35,\n  (\"ASA\", \"eng_plate\"): 35,\n  (\"PA\",
-        \"textured_plate\"): 30,\n  (\"PA\", \"hot_plate\"): 30,\n  (\"PA\", \"eng_plate\"):
-        30,\n  (\"PC\", \"textured_plate\"): 40,\n  (\"PC\", \"hot_plate\"): 40,\n
-        \ (\"PC\", \"eng_plate\"): 40,\n  (\"PLA-CF\", \"textured_plate\"): 35,\n
-        \ (\"PLA-CF\", \"cool_plate\"): 35,\n  (\"PLA-CF\", \"hot_plate\"): 30,\n
-        \ (\"PLA-CF\", \"supertack_plate\"): 35,\n  (\"PLA-CF\", \"eng_plate\"): 30,\n
-        \ (\"PETG-CF\", \"hot_plate\"): 40,\n  (\"PETG-CF\", \"supertack_plate\"):
-        35,\n  (\"PETG-CF\", \"eng_plate\"): 40,\n} }}"
-  - variables:
-      threshold: "{{ thresholds.get(\n  (filament, bed), 'unknown') }}"
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ threshold == ''N/A'' }}'
-      sequence:
-      - action: notify.aaron_phones
-        data:
-          title: Bambu P1S - Warning
-          message: Print finished using {{ filament_name }} ({{ filament }}) on {{
-            bed_friendly }}. This filament/plate combination is not recommended!
-    - conditions:
-      - condition: template
-        value_template: '{{ threshold == ''unknown'' }}'
-      sequence:
-      - action: notify.aaron_phones
-        data:
-          title: Bambu P1S - Print Complete
-          message: Print finished using {{ filament_name }} ({{ filament }}) on {{
-            bed_friendly }}. Unable to determine safe removal temperature for this
-            combination.
-    default:
-    - wait_template: "{{ states(\n  'sensor.p1s_01p00c5c0603366_bed_temperature'\n)
-        | float(999) <= threshold | float }}"
-      timeout: 02:00:00
-    - action: notify.aaron_phones
-      data:
-        title: Bambu P1S - Print Ready
-        message: 'Bed cooled to {{ states( ''sensor.p1s_01p00c5c0603366_bed_temperature''
-          ) }}°C (threshold: {{ threshold }}°C). Safe to remove your {{ filament_name
-          }} print from the {{ bed_friendly }}.'
-  mode: restart
-- id: '1771066716280'
-  alias: Bambu P1S - Pause for Support Removal
-  description: Pauses P1S at target layer for interior support removal
-  triggers:
-  - trigger: numeric_state
+  - id: layer_threshold
+    trigger: numeric_state
     entity_id:
     - sensor.p1s_01p00c5c0603366_current_layer
     above: input_number.bambu_p1s_target_layer
-  conditions:
-  - condition: numeric_state
-    entity_id: input_number.bambu_p1s_target_layer
-    above: 0
-  actions:
-  - action: button.press
-    target:
-      entity_id: button.p1s_01p00c5c0603366_pause_printing
-  - action: notify.persistent_notification
-    data:
-      title: 3D Printer Paused
-      message: P1S paused at layer {{ states('input_number.bambu_p1s_target_layer')
-        }}. Remove interior supports before resuming.
-  mode: single
-- id: '1771104872116'
-  alias: Bambu P1S - Track firmware remaining snapshots
-  description: ''
-  triggers:
-  - entity_id: sensor.p1s_01p00c5c0603366_remaining_time
+  - id: remaining_time_change
+    entity_id: sensor.p1s_01p00c5c0603366_remaining_time
     trigger: state
+  - id: bed_temp_change
+    trigger: state
+    entity_id: sensor.p1s_01p00c5c0603366_bed_temperature
+  - id: stage_change
+    trigger: state
+    entity_id: sensor.p1s_01p00c5c0603366_current_stage
+  conditions: []
   actions:
-  - target:
-      entity_id: input_number.support_eta_prev_remaining
-    data:
-      value: '{{ trigger.from_state.state | float(0) * 3600 }}'
-    action: input_number.set_value
-  - target:
-      entity_id: input_datetime.support_eta_prev_timestamp
-    data:
-      datetime: '{{ trigger.from_state.last_changed.isoformat() }}'
-    action: input_datetime.set_datetime
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: status_finish
+      sequence:
+      - variables:
+          filament: "{{ states(\n  'sensor.bambu_p1s_last_filament_type'\n) }}"
+          filament_name: "{{ states(\n  'sensor.bambu_p1s_last_filament_name'\n) }}"
+          bed: "{{ states(\n  'sensor.bambu_p1s_last_bed_type') }}"
+          bed_friendly: "{% set names = {\n  \"textured_plate\": \"Textured PEI\",\n
+            \ \"hot_plate\": \"Smooth PEI\",\n  \"cool_plate\": \"Cool Plate\",\n
+            \ \"eng_plate\": \"Engineering Plate\",\n  \"supertack_plate\": \"SuperTack
+            Plate\",\n} %} {{ names.get(states(\n  'sensor.bambu_p1s_last_bed_type'\n),
+            'Unknown Plate') }}"
+          thresholds: "{{ {\n  (\"PLA\", \"textured_plate\"): 35,\n  (\"PLA\", \"cool_plate\"):
+            35,\n  (\"PLA\", \"hot_plate\"): 30,\n  (\"PLA\", \"supertack_plate\"):
+            35,\n  (\"PLA\", \"eng_plate\"): 30,\n  (\"PLA-S\", \"textured_plate\"):
+            35,\n  (\"PLA-S\", \"cool_plate\"): 35,\n  (\"PLA-S\", \"hot_plate\"):
+            30,\n  (\"PLA-S\", \"supertack_plate\"): 35,\n  (\"PLA-S\", \"eng_plate\"):
+            30,\n  (\"PETG\", \"hot_plate\"): 40,\n  (\"PETG\", \"supertack_plate\"):
+            35,\n  (\"PETG\", \"eng_plate\"): 40,\n  (\"PCTG\", \"hot_plate\"): 40,\n
+            \ (\"PCTG\", \"supertack_plate\"): 35,\n  (\"PCTG\", \"eng_plate\"): 40,\n
+            \ (\"TPU\", \"textured_plate\"): 25,\n  (\"TPU\", \"eng_plate\"): 25,\n
+            \ (\"ABS\", \"textured_plate\"): 35,\n  (\"ABS\", \"hot_plate\"): 35,\n
+            \ (\"ABS\", \"eng_plate\"): 35,\n  (\"ASA\", \"textured_plate\"): 35,\n
+            \ (\"ASA\", \"hot_plate\"): 35,\n  (\"ASA\", \"eng_plate\"): 35,\n  (\"PA\",
+            \"textured_plate\"): 30,\n  (\"PA\", \"hot_plate\"): 30,\n  (\"PA\", \"eng_plate\"):
+            30,\n  (\"PC\", \"textured_plate\"): 40,\n  (\"PC\", \"hot_plate\"): 40,\n
+            \ (\"PC\", \"eng_plate\"): 40,\n  (\"PLA-CF\", \"textured_plate\"): 35,\n
+            \ (\"PLA-CF\", \"cool_plate\"): 35,\n  (\"PLA-CF\", \"hot_plate\"): 30,\n
+            \ (\"PLA-CF\", \"supertack_plate\"): 35,\n  (\"PLA-CF\", \"eng_plate\"):
+            30,\n  (\"PETG-CF\", \"hot_plate\"): 40,\n  (\"PETG-CF\", \"supertack_plate\"):
+            35,\n  (\"PETG-CF\", \"eng_plate\"): 40,\n} }}"
+      - variables:
+          threshold: "{{ thresholds.get(\n  (filament, bed), 'unknown') }}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ threshold == ''N/A'' }}'
+          sequence:
+          - action: notify.aaron_phones
+            data:
+              title: Bambu P1S - Warning
+              message: Print finished using {{ filament_name }} ({{ filament }}) on
+                {{ bed_friendly }}. This filament/plate combination is not recommended!
+        - conditions:
+          - condition: template
+            value_template: '{{ threshold == ''unknown'' }}'
+          sequence:
+          - action: notify.aaron_phones
+            data:
+              title: Bambu P1S - Print Complete
+              message: Print finished using {{ filament_name }} ({{ filament }}) on
+                {{ bed_friendly }}. Unable to determine safe removal temperature for
+                this combination.
+        default:
+        - action: notify.aaron_phones
+          data:
+            title: Bambu P1S - Print Finished
+            message: Print finished using {{ filament_name }} ({{ filament }}) on
+              {{ bed_friendly }}. Waiting for the bed to cool to {{ threshold }}°C
+              before notifying you it's safe to remove.
+        - wait_template: "{{ (states('sensor.p1s_01p00c5c0603366_bed_temperature')
+            | float(999) <= threshold | float)\n   or (states('sensor.p1s_01p00c5c0603366_print_status')
+            != 'finish') }}"
+          timeout: 02:00:00
+        - if:
+          - condition: state
+            entity_id: sensor.p1s_01p00c5c0603366_print_status
+            state: finish
+          then:
+          - action: notify.aaron_phones
+            data:
+              title: Bambu P1S - Print Ready
+              message: 'Bed cooled to {{ states( ''sensor.p1s_01p00c5c0603366_bed_temperature''
+                ) }}°C (threshold: {{ threshold }}°C). Safe to remove your {{ filament_name
+                }} print from the {{ bed_friendly }}.'
+    - conditions:
+      - condition: trigger
+        id: layer_threshold
+      - condition: numeric_state
+        entity_id: input_number.bambu_p1s_target_layer
+        above: 0
+      sequence:
+      - action: button.press
+        target:
+          entity_id: button.p1s_01p00c5c0603366_pause_printing
+      - action: notify.persistent_notification
+        data:
+          title: 3D Printer Paused
+          message: P1S paused at layer {{ states('input_number.bambu_p1s_target_layer')
+            }}. Remove interior supports before resuming.
+    - conditions:
+      - condition: trigger
+        id: remaining_time_change
+      sequence:
+      - target:
+          entity_id: input_number.support_eta_prev_remaining
+        data:
+          value: '{{ trigger.from_state.state | float(0) * 3600 }}'
+        action: input_number.set_value
+      - target:
+          entity_id: input_datetime.support_eta_prev_timestamp
+        data:
+          datetime: '{{ trigger.from_state.last_changed.isoformat() }}'
+        action: input_datetime.set_datetime
+    - conditions:
+      - condition: trigger
+        id:
+        - stage_change
+        - bed_temp_change
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.entity_id == ''sensor.p1s_01p00c5c0603366_current_stage''
+              and trigger.to_state.state != ''idle'' }}'
+          sequence:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.p1s_bed_cooling_history
+            data:
+              value: '[]'
+        - conditions:
+          - condition: state
+            entity_id: sensor.p1s_01p00c5c0603366_current_stage
+            state: idle
+          - condition: template
+            value_template: '{{ states(''sensor.p1s_01p00c5c0603366_bed_temperature'')
+              | float(0) > states(''sensor.bambu_p1s_bed_removal_threshold'') | float(35)
+              }}'
+          sequence:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.p1s_bed_cooling_history
+            data:
+              value: '{{ (((states(''input_text.p1s_bed_cooling_history'') | from_json)
+                + [{''t'': now() | as_timestamp, ''v'': states(''sensor.p1s_01p00c5c0603366_bed_temperature'')
+                | float(0)}])[-5:]) | to_json }}'
+    - conditions:
+      - condition: trigger
+        id: status_any
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: sensor.p1s_01p00c5c0603366_print_status
+            state:
+            - running
+          sequence:
+          - type: turn_on
+            device_id: 85eb2d0b675ac078f4ef8dffbe0c8cca
+            entity_id: 608148fe368d2fb96074a02efa91e345
+            domain: switch
+        default:
+        - type: turn_off
+          device_id: 85eb2d0b675ac078f4ef8dffbe0c8cca
+          entity_id: 608148fe368d2fb96074a02efa91e345
+          domain: switch
 - id: '1771294193709'
   alias: Electric Blanket
   description: ''
@@ -6480,108 +6517,53 @@
         entity_id: switch.master_bedroom_electric_blanket_switch
       action: switch.turn_on
   mode: restart
-- id: p1s_bed_cooling_record
-  alias: Record P1S bed cooling readings
-  description: Records bed temperature readings when printer is idle and cooling,
-    for cooldown ETA prediction
-  triggers:
-  - trigger: state
-    entity_id: sensor.p1s_01p00c5c0603366_bed_temperature
-  - trigger: state
-    entity_id: sensor.p1s_01p00c5c0603366_current_stage
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.entity_id == ''sensor.p1s_01p00c5c0603366_current_stage''
-          and trigger.to_state.state != ''idle'' }}'
-      sequence:
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.p1s_bed_cooling_history
-        data:
-          value: '[]'
-    - conditions:
-      - condition: state
-        entity_id: sensor.p1s_01p00c5c0603366_current_stage
-        state: idle
-      - condition: template
-        value_template: '{{ states(''sensor.p1s_01p00c5c0603366_bed_temperature'')
-          | float(0) > states(''sensor.bambu_p1s_bed_removal_threshold'') | float(35)
-          }}'
-      sequence:
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.p1s_bed_cooling_history
-        data:
-          value: '{{ (((states(''input_text.p1s_bed_cooling_history'') | from_json)
-            + [{''t'': now() | as_timestamp, ''v'': states(''sensor.p1s_01p00c5c0603366_bed_temperature'')
-            | float(0)}])[-5:]) | to_json }}'
-  mode: single
-- id: '1778276228747'
-  alias: Printer Exhaust
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.p1s_01p00c5c0603366_print_status
-    to:
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: sensor.p1s_01p00c5c0603366_print_status
-        state:
-        - running
-      sequence:
-      - type: turn_on
-        device_id: 85eb2d0b675ac078f4ef8dffbe0c8cca
-        entity_id: 608148fe368d2fb96074a02efa91e345
-        domain: switch
-    default:
-    - type: turn_off
-      device_id: 85eb2d0b675ac078f4ef8dffbe0c8cca
-      entity_id: 608148fe368d2fb96074a02efa91e345
-      domain: switch
-  mode: single
 - id: lightning_alert_main
   alias: Lightning Alert
-  description: >-
-    Notifies on new lightning strikes. First alert fires immediately. Follow-up
-    alerts require 5-min cooldown AND the new strike must be closer than the
-    first. Resets 2 hours after the first strike.
+  description: Notifies on new lightning strikes. First alert fires immediately. Follow-up
+    alerts require 5-min cooldown AND the new strike must be closer than the closest
+    strike reported so far (the tracked distance advances each time it gets closer).
+    Resets 2 hours after the first strike. Combines the former "Lightning Alert" and
+    "Lightning Alert Reset" automations into one (one automation per logical device).
+  mode: single
   triggers:
-  - platform: state
-    entity_id: sensor.my_weather_station_last_lightning_strike
+  - id: strike
+    trigger: state
+    entity_id: sensor.ambient_last_lightning_strike
     not_from:
     - unavailable
     - unknown
     not_to:
     - unavailable
     - unknown
+  - id: reset_timer
+    trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.lightning_reset_timer
   conditions: []
   actions:
   - variables:
-      strike_time: "{{ as_timestamp(states('sensor.my_weather_station_last_lightning_strike')) | timestamp_custom('%-I:%M:%S %p', true) }}"
-      strike_dist: "{{ states('sensor.my_weather_station_last_lightning_strike_distance') }}"
-      first_dist: "{{ states('input_number.lightning_first_strike_distance') }}"
+      strike_time: '{{ as_timestamp(states(''sensor.ambient_last_lightning_strike''))
+        | timestamp_custom(''%-I:%M:%S %p'', true) }}'
+      strike_dist: '{{ states(''sensor.ambient_lightning_distance'') }}'
+      first_dist: '{{ states(''input_number.lightning_first_strike_distance'') }}'
   - choose:
     - conditions:
+      - condition: trigger
+        id: strike
       - condition: state
         entity_id: input_boolean.lightning_alert_active
-        state: "off"
+        state: 'off'
       sequence:
       - action: notify.aaron_and_ashley_phones
         data:
-          title: "⚡ Lightning Detected"
+          title: ⚡ Lightning Detected
           message: Strike at {{ strike_time }} — {{ strike_dist }} mi away
       - action: input_number.set_value
         target:
           entity_id: input_number.lightning_first_strike_distance
         data:
-          value: "{{ strike_dist | float(0) }}"
+          value: '{{ strike_dist | float(0) }}'
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.lightning_alert_active
@@ -6589,51 +6571,543 @@
         target:
           entity_id: timer.lightning_reset_timer
         data:
-          duration: "02:00:00"
+          duration: 02:00:00
       - action: timer.start
         target:
           entity_id: timer.lightning_cooldown_timer
         data:
-          duration: "00:05:00"
+          duration: 00:05:00
     - conditions:
+      - condition: trigger
+        id: strike
       - condition: state
         entity_id: input_boolean.lightning_alert_active
-        state: "on"
+        state: 'on'
       - condition: state
         entity_id: timer.lightning_cooldown_timer
         state: idle
       - condition: template
-        value_template: "{{ strike_dist | float(999) < first_dist | float(0) }}"
+        value_template: '{{ strike_dist | float(999) < first_dist | float(0) }}'
       sequence:
       - action: notify.aaron_and_ashley_phones
         data:
-          title: "⚡ Lightning Getting Closer"
-          message: Strike at {{ strike_time }} — {{ strike_dist }} mi (first was {{ first_dist }} mi)
+          title: ⚡ Lightning Getting Closer
+          message: Strike at {{ strike_time }} — {{ strike_dist }} mi (previous was
+            {{ first_dist }} mi)
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.lightning_first_strike_distance
+        data:
+          value: '{{ strike_dist | float(0) }}'
       - action: timer.start
         target:
           entity_id: timer.lightning_cooldown_timer
         data:
-          duration: "00:05:00"
-  mode: single
-- id: lightning_alert_reset
-  alias: Lightning Alert Reset
-  description: Resets the lightning alert state 2 hours after the first strike.
+          duration: 00:05:00
+    - conditions:
+      - condition: trigger
+        id: reset_timer
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.lightning_alert_active
+      - action: timer.cancel
+        target:
+          entity_id: timer.lightning_cooldown_timer
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.lightning_first_strike_distance
+        data:
+          value: 0
+- id: c6237f31
+  alias: Coming Home Flag
+  description: Sets input_boolean.coming_home while en route home from a work/activity
+    zone so the thermostat can pre-heat/cool. Cleared on arrival home (by 'Someone
+    is Home'), on settling at a different zone, or after a 2-hour safety timeout.
   triggers:
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.lightning_reset_timer
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    from: Knolls
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    from: Liberty Street
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    from: Hershey
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    from: Taekwondo
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    from: Willard
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.ashley_watson
+    from: Ashley Work
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.ashley_watson
+    from: Glens Falls Hospital
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.ashley_watson
+    from: Taekwondo
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - person.ashley_watson
+    from: Willard
+    for:
+      seconds: 10
+    id: Departing
+  - trigger: state
+    entity_id:
+    - input_boolean.coming_home
+    to: 'on'
+    for:
+      hours: 2
+    id: Timeout
+  - trigger: state
+    entity_id:
+    - person.aaron_watson
+    - person.ashley_watson
+    for:
+      minutes: 2
+    id: Diverted
   conditions: []
   actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Departing
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.coming_home
+    - conditions:
+      - condition: trigger
+        id: Timeout
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.coming_home
+    - conditions:
+      - condition: trigger
+        id: Diverted
+      - condition: state
+        entity_id: input_boolean.coming_home
+        state: 'on'
+      - condition: template
+        value_template: '{{ trigger.to_state.state not in [''home'', ''not_home'',
+          ''unknown'', ''unavailable''] }}'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.coming_home
+  mode: queued
+- id: kids_home_alone
+  alias: Kids Home Alone
+  description: Whenever a kid is home and both parents are away, turn input_boolean.home_alone
+    on and keep it on (through door locks / GPS blips) until a parent comes home or
+    no kid is home. Relies on Eleanor's reliable phone location. home_alone cascades
+    into someone_is_home (and the A/C) via the "Someone is Home" automation, so the
+    house stays occupied on early-dismissal days, after school, weekends and breaks.
+  mode: queued
+  triggers:
+  - trigger: state
+    entity_id:
+    - person.eleanor_watson
+    - person.michael_watson
+    - person.aaron_watson
+    - person.ashley_watson
+  - trigger: homeassistant
+    event: start
+  actions:
+  - variables:
+      parents_home: "{{ is_state('person.aaron_watson', 'home')\n   or is_state('person.ashley_watson',
+        'home') }}"
+      kid_home: "{{ is_state('person.eleanor_watson', 'home')\n   or is_state('person.michael_watson',
+        'home') }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ kid_home and not parents_home }}'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.home_alone
+    default:
     - action: input_boolean.turn_off
       target:
-        entity_id: input_boolean.lightning_alert_active
-    - action: timer.cancel
-      target:
-        entity_id: timer.lightning_cooldown_timer
-    - action: input_number.set_value
-      target:
-        entity_id: input_number.lightning_first_strike_distance
-      data:
-        value: 0
+        entity_id: input_boolean.home_alone
+- id: sync_school_in_session
+  alias: Sync School In Session
+  description: 'Sets input_boolean.school_in_session from the Greenwich CSD Google
+    calendar: school is in session on weekdays with no all-day "No School" event today.
+    Runs daily at 00:05, on HA start, and whenever the calendar changes. The only
+    yearly maintenance is adding next year''s "No School" events to calendar.greenwich_csd.'
   mode: single
+  triggers:
+  - trigger: time
+    at: 00:05:00
+  - trigger: homeassistant
+    event: start
+  - trigger: state
+    entity_id: calendar.greenwich_csd
+  actions:
+  - action: calendar.get_events
+    target:
+      entity_id: calendar.greenwich_csd
+    data:
+      start_date_time: '{{ today_at(''00:00'') }}'
+      end_date_time: '{{ today_at(''23:59'') }}'
+    response_variable: cal
+  - variables:
+      summaries: "{{ (cal.get('calendar.greenwich_csd', {}).get('events', []) if cal
+        is mapping else [])\n   | selectattr('summary', 'defined') | map(attribute='summary')\n
+        \  | join(' || ') | lower }}"
+      in_session: '{{ now().weekday() < 5 and ''no school'' not in summaries }}'
+  - if:
+    - condition: template
+      value_template: '{{ in_session }}'
+    then:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.school_in_session
+    else:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.school_in_session
+- id: school_calendar_update_reminder
+  alias: School Calendar Update Reminder
+  description: Once a year (Jan 15) reminds to add next school year's dates to the
+    Greenwich CSD Google calendar. The district has no live feed (PNG images only),
+    so this is the only yearly maintenance.
+  mode: single
+  triggers:
+  - trigger: time
+    at: 09:00:00
+  conditions:
+  - condition: template
+    value_template: '{{ now().month == 1 and now().day == 15 }}'
+  actions:
+  - action: notify.aaron_phones
+    data:
+      title: Update school calendar
+      message: Add next school year's Greenwich CSD dates to the "Greenwich CSD" Google
+        calendar (first/last day + all "No School" breaks & holidays). The district
+        posts it at greenwichcsd.org -> Calendars.
+  - action: persistent_notification.create
+    data:
+      notification_id: school_calendar_update
+      title: Update school calendar
+      message: Add next year's Greenwich CSD "No School" events to calendar.greenwich_csd.
+- id: drying_wood_mode
+  alias: Drying Wood Mode
+  description: "Keeps the Gym at 85F for drying wood, using the Playroom mini-split
+    to avoid wasting the shared compressor when the Gym has to switch modes. The two
+    units can run simultaneously as long as they're in the SAME hvac mode (heat+heat
+    or cool+cool); mismatched modes conflict, so a mismatched unit goes to off instead.\nOn
+    activation, checks the Gym's current temperature to classify this drying session
+    as \"cooling\" (already >85F, e.g. a hot day) or \"heating\" (<=85F) and stores
+    it in input_boolean.drying_wood_cooling_season for the rest of the session. Baseline
+    per session type:\n  - heating session: Gym heat/85, Playroom heat (mirrors Gym)\n
+    \ - cooling session: Gym heat/85, Playroom off (until the Gym overheats)\nIf the
+    Gym's actual temperature climbs above 85 (ambient heat overpowering heat mode),
+    both switch to cool/85 - Playroom ALWAYS cools too here, regardless of session
+    type, since an actively-overheating Gym means it's genuinely hot and the Playroom
+    needs cooling too (same hvac mode = no compressor conflict). Once the Gym drops
+    meaningfully below 85 again (<=82, a 3F margin to avoid short- cycling), both
+    return to the baseline for the session type - Playroom heat for a heating session,
+    off for a cooling session. Also turns on the Gym floor and pedestal fans (fan.gym_floor_fan,
+    fan.gym_pedestal_fan) on activation for air circulation, and off again on deactivation.
+    Turning the toggle off returns both mini-splits to auto."
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.drying_wood
+    to: 'on'
+    id: activate
+  - trigger: state
+    entity_id: input_boolean.drying_wood
+    to: 'off'
+    id: deactivate
+  - trigger: state
+    entity_id: sensor.both_temperature_f1d21c499c25
+    id: temp_change
+  - trigger: homeassistant
+    event: start
+    id: start
+  - trigger: time_pattern
+    minutes: /15
+    id: periodic
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger is not none and trigger.id == ''activate'' }}'
+      sequence:
+      - variables:
+          gym_temp: '{{ states(''sensor.both_temperature_f1d21c499c25'') | float(70)
+            }}'
+      - if:
+        - condition: template
+          value_template: '{{ gym_temp > 85 }}'
+        then:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.drying_wood_cooling_season
+        - action: climate.set_hvac_mode
+          target:
+            entity_id: climate.gym_minisplit_setall_gym_minisplit
+          data:
+            hvac_mode: cool
+        - action: climate.set_temperature
+          target:
+            entity_id: climate.gym_minisplit_setall_gym_minisplit
+          data:
+            temperature: 85
+        - action: climate.set_hvac_mode
+          target:
+            entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+          data:
+            hvac_mode: cool
+        - action: climate.set_temperature
+          target:
+            entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+          data:
+            temperature: 69
+        else:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.drying_wood_cooling_season
+        - action: climate.set_hvac_mode
+          target:
+            entity_id: climate.gym_minisplit_setall_gym_minisplit
+          data:
+            hvac_mode: heat
+        - action: climate.set_temperature
+          target:
+            entity_id: climate.gym_minisplit_setall_gym_minisplit
+          data:
+            temperature: 85
+        - action: climate.set_hvac_mode
+          target:
+            entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+          data:
+            hvac_mode: heat
+        - action: climate.set_temperature
+          target:
+            entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+          data:
+            temperature: 69
+      - action: fan.turn_on
+        target:
+          entity_id:
+          - fan.gym_floor_fan
+          - fan.gym_pedestal_fan
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger is not none and trigger.id in ['temp_change',
+          'start', 'periodic']\n   and is_state('input_boolean.drying_wood', 'on')
+          }}"
+      sequence:
+      - variables:
+          gym_temp: '{{ states(''sensor.both_temperature_f1d21c499c25'') | float(70)
+            }}'
+          gym_mode: '{{ states(''climate.gym_minisplit_setall_gym_minisplit'') }}'
+          cooling_season: '{{ is_state(''input_boolean.drying_wood_cooling_season'',
+            ''on'') }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ gym_mode == ''heat'' and gym_temp > 85 }}'
+          sequence:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.gym_minisplit_setall_gym_minisplit
+            data:
+              hvac_mode: cool
+          - action: climate.set_temperature
+            target:
+              entity_id: climate.gym_minisplit_setall_gym_minisplit
+            data:
+              temperature: 85
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+            data:
+              hvac_mode: cool
+          - action: climate.set_temperature
+            target:
+              entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+            data:
+              temperature: 69
+        - conditions:
+          - condition: template
+            value_template: '{{ gym_mode == ''cool'' and gym_temp <= 82 }}'
+          sequence:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.gym_minisplit_setall_gym_minisplit
+            data:
+              hvac_mode: heat
+          - action: climate.set_temperature
+            target:
+              entity_id: climate.gym_minisplit_setall_gym_minisplit
+            data:
+              temperature: 85
+          - if:
+            - condition: template
+              value_template: '{{ not cooling_season }}'
+            then:
+            - action: climate.set_hvac_mode
+              target:
+                entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+              data:
+                hvac_mode: heat
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+              data:
+                temperature: 69
+            else:
+            - action: climate.turn_off
+              target:
+                entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger is not none and trigger.id == ''deactivate'' }}'
+      sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.gym_minisplit_setall_gym_minisplit
+        data:
+          hvac_mode: auto
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.playroom_minisplit_setall_playroom_minisplit
+        data:
+          hvac_mode: auto
+      - action: fan.turn_off
+        target:
+          entity_id:
+          - fan.gym_floor_fan
+          - fan.gym_pedestal_fan
+- id: '1783477452844'
+  alias: Panda Alarm Daytime Mute
+  description: >-
+    Mutes the Panda Alarm's LED and "print done" sound effect while it's not
+    daytime, restoring both to their prior values when daytime returns.
+    Captures the LED's brightness/color and the sound effect selection into
+    input helpers right before muting - only if it isn't already muted, so
+    repeat firings don't overwrite a good capture with the muted values -
+    then restores them. Triggers on any daytime state change and uses a
+    choose block driven by daytime's current state (not the trigger
+    direction), so this can also be run manually/standalone and will still
+    do the right thing.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.daytime
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'off'
+      sequence:
+      - if:
+        - condition: template
+          value_template: >-
+            {{ has_value('light.panda_alarm_led')
+               and not is_state('light.panda_alarm_led', 'off') }}
+        then:
+        - action: input_number.set_value
+          target:
+            entity_id: input_number.panda_alarm_led_saved_brightness
+          data:
+            value: "{{ state_attr('light.panda_alarm_led', 'brightness') | int(255) }}"
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.panda_alarm_led_saved_color
+          data:
+            value: >-
+              {{ state_attr('light.panda_alarm_led', 'rgb_color')
+                 | default([255, 255, 255]) | join(',') }}
+      - if:
+        - condition: template
+          value_template: >-
+            {{ has_value('select.panda_alarm_sound_effect_done')
+               and not is_state('select.panda_alarm_sound_effect_done', 'Silent') }}
+        then:
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.panda_alarm_sound_effect_done_saved
+          data:
+            value: "{{ states('select.panda_alarm_sound_effect_done') }}"
+      - action: light.turn_off
+        target:
+          entity_id: light.panda_alarm_led
+        continue_on_error: true
+      - action: select.select_option
+        target:
+          entity_id: select.panda_alarm_sound_effect_done
+        data:
+          option: Silent
+        continue_on_error: true
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.daytime
+        state: 'on'
+      sequence:
+      - action: light.turn_on
+        target:
+          entity_id: light.panda_alarm_led
+        data:
+          brightness: "{{ states('input_number.panda_alarm_led_saved_brightness') | int(255) }}"
+          rgb_color: >-
+            {{ states('input_text.panda_alarm_led_saved_color').split(',') | map('int') | list
+               if states('input_text.panda_alarm_led_saved_color') not in ['', 'unknown', 'unavailable']
+               else [255, 255, 255] }}
+        continue_on_error: true
+      - action: select.select_option
+        target:
+          entity_id: select.panda_alarm_sound_effect_done
+        data:
+          option: >-
+            {{ states('input_text.panda_alarm_sound_effect_done_saved')
+               if states('input_text.panda_alarm_sound_effect_done_saved') in ['Pulse', 'Prompt', 'Beep', 'Custom']
+               else 'Prompt' }}
+        continue_on_error: true
+  mode: single
+  trace:
+    stored_traces: 100
