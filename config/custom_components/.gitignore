@@ -61,3 +61,6 @@ pyscript/**
 
 obihai/**
 !obihai/.gitkeep
+
+# bambu_lab (HACS third-party) — ignore contents like the others
+bambu_lab/**
