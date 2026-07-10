@@ -1,0 +1,46 @@
+# =====================================================================================
+# Ambient Weather Camera
+#
+# Latest still image from the roof weather camera (updates every few minutes)
+# plus a sensor for when that image was actually captured. The image URL never
+# changes (always "latest.jpg"), so the capture time comes from the HTTP
+# Last-Modified header rather than just "when HA last polled".
+#
+# Uses command_line (not rest_command) for the timestamp: rest_command's
+# response_variable always tries to text-decode the response body, which fails
+# on a binary JPEG even for a HEAD-less/range request (the first bytes of a
+# JPEG aren't valid UTF-8 either) - command_line's `curl -sI | grep` approach
+# never touches the body at all, sidestepping that entirely.
+#
+# The camera itself is NOT configured here: as of this HA version the "generic"
+# camera platform is config-entry-only (YAML `camera: - platform: generic` fails
+# with "does not support platform setup"). It's created via the config flow API
+# instead - see the entry with unique_id ambient_weather_camera, title
+# "Weather Camera" under Settings -> Devices & Services -> Generic Camera.
+#
+# Entities created:
+#   - camera.weather_camera            : the latest still image (config-entry based)
+#   - sensor.ambient_camera_last_image : timestamp the current image was captured
+# =====================================================================================
+
+command_line:
+  - sensor:
+      name: "Ambient Camera Last Image"
+      unique_id: ambient_camera_last_image
+      command: >-
+        curl -sI --max-time 10 'https://images.ambientweather.net/8C4F004FFF39/latest.jpg'
+        | grep -i '^last-modified:' | sed -E 's/^[Ll]ast-[Mm]odified: *//;s/\r$//'
+      command_timeout: 15
+      scan_interval: 180
+      device_class: timestamp
+      icon: "mdi:camera-outline"
+      value_template: >-
+        {%- if value -%}
+          {#- HTTP-date (RFC 2822, e.g. "Fri, 03 Jul 2026 02:43:08 GMT") - as_datetime()
+              doesn't parse this format (silently returns None), so use strptime and
+              attach the UTC offset explicitly since the value has no tzinfo otherwise
+              and would be misread as local time. #}
+          {{ strptime(value, '%a, %d %b %Y %H:%M:%S GMT').strftime('%Y-%m-%dT%H:%M:%S+00:00') }}
+        {%- else -%}
+          {{ this.state }}
+        {%- endif -%}
