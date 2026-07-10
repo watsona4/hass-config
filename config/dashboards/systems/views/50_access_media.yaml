@@ -142,17 +142,6 @@ cards:
       tap_action:
         action: more-info
   - type: heading
-    heading: Upstairs
-    heading_style: subtitle
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:mushroom-lock-card
-      entity: lock.front_door
-      tap_action:
-        action: more-info
-  - type: heading
     heading: Garage Lower
     heading_style: subtitle
   - type: grid
@@ -252,6 +241,17 @@ cards:
   - type: heading
     heading: Cameras
     heading_style: title
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: camera.p1s_01p00c5c0603366_camera
+      tap_action:
+        action: more-info
   - type: heading
     heading: Other Areas
     heading_style: subtitle

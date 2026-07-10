@@ -15,7 +15,7 @@ badges:
 
   # Air Quality
   - type: custom:mushroom-template-badge
-    entity: sensor.waqi_nearby_aqi
+    entity: sensor.ambient_indoor_pm2_5_aqi
     icon: mdi:cloud
     color: "{{ state_attr('sensor.ui_waqi_nearby_aqi_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_waqi_nearby_aqi_badge', 'content') }}"
@@ -33,7 +33,7 @@ badges:
 
   # UV Index
   - type: custom:mushroom-template-badge
-    entity: sensor.openmeteo_nearby_uv_index
+    entity: sensor.ambient_uv_index
     icon: mdi:weather-sunny-alert
     color: "{{ state_attr('sensor.ui_nearby_uv_index_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_uv_index_badge', 'content') }}"
@@ -51,7 +51,7 @@ badges:
 
   # Vitamin D
   - type: custom:mushroom-template-badge
-    entity: sensor.openmeteo_nearby_uv_index
+    entity: sensor.ambient_uv_index
     icon: mdi:pill
     color: "{{ state_attr('sensor.ui_nearby_uv_index_vitamin_d_badge', 'color') }}"
     content: "{{ state_attr('sensor.ui_nearby_uv_index_vitamin_d_badge', 'content') }}"
@@ -78,8 +78,8 @@ sections:
             forecast_type: hourly
             temperature_sensor: sensor.local_temperature
             humidity_sensor: sensor.local_humidity
-            apparent_sensor: sensor.openmeteo_nearby_apparent_temperature
-            aqi_sensor: sensor.waqi_nearby_aqi
+            apparent_sensor: sensor.ambient_feels_like
+            aqi_sensor: sensor.ambient_indoor_pm2_5_aqi
 
           # Hourly Forecast Grid
           - type: custom:hourly-weather
@@ -470,9 +470,9 @@ sections:
   - type: grid
     cards:
       - type: custom:mushroom-title-card
-        title: Local Air Quality
+        title: Indoor Air Quality
       - type: custom:modern-circular-gauge
-        entity: sensor.waqi_nearby_aqi
+        entity: sensor.ambient_indoor_pm2_5_aqi
         name: "{{ state_attr('sensor.ui_waqi_nearby_aqi_gauge', 'name') }}"
         max: 500
         adaptive_state_color: true
@@ -498,7 +498,7 @@ sections:
         secondary:
           unit: AQI
           show_gauge: none
-          entity: sensor.waqi_nearby_aqi
+          entity: sensor.ambient_indoor_pm2_5_aqi
         gauge_foreground_style:
           width: 10
         needle: true
@@ -510,48 +510,30 @@ sections:
         alignment: center
         chips:
           - type: template
-            entity: sensor.waqi_nearby_pm2_5
+            entity: sensor.ambient_indoor_pm2_5
             icon: mdi:blur
             icon_color: "{{ state_attr('sensor.ui_waqi_nearby_pm2_5_chip', 'icon_color') }}"
             tap_action:
               action: more-info
           - type: template
-            entity: sensor.waqi_nearby_pm10
+            entity: sensor.ambient_indoor_pm10
             icon: mdi:blur-radial
             icon_color: "{{ state_attr('sensor.ui_waqi_nearby_pm10_chip', 'icon_color') }}"
             tap_action:
               action: more-info
           - type: template
-            entity: sensor.waqi_nearby_o3
-            icon: mdi:chemical-weapon
-            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_o3_chip', 'icon_color') }}"
-            tap_action:
-              action: more-info
-          - type: template
-            entity: sensor.waqi_nearby_co
-            icon: mdi:molecule-co
-            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_co_chip', 'icon_color') }}"
-            tap_action:
-              action: more-info
-          - type: template
-            entity: sensor.waqi_nearby_no2
-            icon: mdi:periodic-table
-            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_no2_chip', 'icon_color') }}"
-            tap_action:
-              action: more-info
-          - type: template
-            entity: sensor.waqi_nearby_so2
-            icon: mdi:factory
-            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_so2_chip', 'icon_color') }}"
+            entity: sensor.ambient_indoor_co2
+            icon: mdi:molecule-co2
+            icon_color: "{{ state_attr('sensor.ui_waqi_nearby_co2_chip', 'icon_color') }}"
             tap_action:
               action: more-info
       - type: custom:mushroom-template-card
-        entity: sensor.waqi_nearby_aqi
+        entity: sensor.ambient_indoor_pm2_5_aqi
         icon: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'icon') }}"
         primary: Health Advice
-        secondary: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'full_desc') }}"
+        secondary: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'label') }}"
         multiline_secondary: true
-        icon_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'icon_color') }}"
+        icon_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'color') }}"
         grid_options:
           columns: full
           rows: 2
@@ -560,33 +542,27 @@ sections:
       - type: horizontal-stack
         cards:
           - type: custom:mushroom-template-card
-            entity: sensor.aqi_forecast_nearby_day_0
-            primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_0', 'title') -}}"
-            secondary: "{{ states('sensor.aqi_forecast_nearby_day_0') }}"
-            icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'hex') }}"
-            badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'badge') }}"
-            icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'icon') }}"
-            badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_0', 'hex') }}"
+            entity: sensor.ambient_indoor_pm2_5_aqi_24h_average
+            primary: "{{ state_attr('sensor.ui_aq_indoor_pm2_5_24h', 'primary') }}"
+            secondary: "{{ state_attr('sensor.ui_aq_indoor_pm2_5_24h', 'secondary') }}"
+            icon_color: "{{ state_attr('sensor.ui_aq_indoor_pm2_5_24h', 'icon_color') }}"
+            icon: "{{ state_attr('sensor.ui_aq_indoor_pm2_5_24h', 'icon') }}"
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
-            entity: sensor.aqi_forecast_nearby_day_1
-            primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_1', 'title') -}}"
-            secondary: "{{ states('sensor.aqi_forecast_nearby_day_1') }}"
-            icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'hex') }}"
-            badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'badge') }}"
-            icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'icon') }}"
-            badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_1', 'hex') }}"
+            entity: sensor.ambient_indoor_pm10_aqi_24h_average
+            primary: "{{ state_attr('sensor.ui_aq_indoor_pm10_24h', 'primary') }}"
+            secondary: "{{ state_attr('sensor.ui_aq_indoor_pm10_24h', 'secondary') }}"
+            icon_color: "{{ state_attr('sensor.ui_aq_indoor_pm10_24h', 'icon_color') }}"
+            icon: "{{ state_attr('sensor.ui_aq_indoor_pm10_24h', 'icon') }}"
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
-            entity: sensor.aqi_forecast_nearby_day_2
-            primary: "{{- state_attr('sensor.aqi_forecast_nearby_day_2', 'title') -}}"
-            secondary: "{{ states('sensor.aqi_forecast_nearby_day_2') }}"
-            icon_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'hex') }}"
-            badge_icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'badge') }}"
-            icon: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'icon') }}"
-            badge_color: "{{ state_attr('sensor.aqi_forecast_nearby_day_2', 'hex') }}"
+            entity: sensor.ambient_indoor_co2_24h_average
+            primary: "{{ state_attr('sensor.ui_aq_indoor_co2_24h', 'primary') }}"
+            secondary: "{{ state_attr('sensor.ui_aq_indoor_co2_24h', 'secondary') }}"
+            icon_color: "{{ state_attr('sensor.ui_aq_indoor_co2_24h', 'icon_color') }}"
+            icon: "{{ state_attr('sensor.ui_aq_indoor_co2_24h', 'icon') }}"
             tap_action:
               action: more-info
       - type: vertical-stack
@@ -597,75 +573,67 @@ sections:
         cards:
           - type: custom:mushroom-title-card
             title: Home Air Quality
+          - type: custom:modern-circular-gauge
+            entity: sensor.ambient_indoor_pm2_5_aqi
+            name: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'name') }}"
+            max: 500
+            adaptive_state_color: true
+            segments:
+              - from: 0
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_0') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_0') }}"
+              - from: 51
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_51') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_51') }}"
+              - from: 101
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_101') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_101') }}"
+              - from: 151
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_151') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_151') }}"
+              - from: 201
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_201') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_201') }}"
+              - from: 301
+                color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_301') }}"
+                label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_301') }}"
+            secondary:
+              unit: AQI
+              show_gauge: none
+              entity: sensor.ambient_indoor_pm2_5_aqi
+            gauge_foreground_style:
+              width: 10
+            needle: true
+            grid_options:
+              columns: 12
+              rows: 4
+            tertiary: {}
           - type: horizontal-stack
             cards:
-              - type: custom:modern-circular-gauge
-                entity: sensor.waqi_home_aqi
-                name: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'name') }}"
-                max: 500
-                adaptive_state_color: true
-                segments:
-                  - from: 0
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_0') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_0') }}"
-                  - from: 51
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_51') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_51') }}"
-                  - from: 101
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_101') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_101') }}"
-                  - from: 151
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_151') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_151') }}"
-                  - from: 201
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_201') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_201') }}"
-                  - from: 301
-                    color: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'color_301') }}"
-                    label: "{{ state_attr('sensor.ui_waqi_home_aqi_gauge', 'label_301') }}"
-                secondary:
-                  unit: AQI
-                  show_gauge: none
-                  entity: sensor.waqi_home_aqi
-                gauge_foreground_style:
-                  width: 10
-                needle: true
-                grid_options:
-                  columns: 12
-                  rows: 4
-                tertiary: {}
-              - type: vertical-stack
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: sensor.aqi_forecast_home_day_0
-                    primary: "{{- state_attr('sensor.aqi_forecast_home_day_0', 'title') -}}"
-                    secondary: "{{ states('sensor.aqi_forecast_home_day_0') }}"
-                    icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'hex') }}"
-                    badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'badge') }}"
-                    icon: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'icon') }}"
-                    badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_0', 'hex') }}"
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-template-card
-                    entity: sensor.aqi_forecast_home_day_1
-                    primary: "{{- state_attr('sensor.aqi_forecast_home_day_1', 'title') -}}"
-                    secondary: "{{ states('sensor.aqi_forecast_home_day_1') }}"
-                    icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'hex') }}"
-                    badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'badge') }}"
-                    icon: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'icon') }}"
-                    badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_1', 'hex') }}"
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-template-card
-                    entity: sensor.aqi_forecast_home_day_2
-                    primary: "{{- state_attr('sensor.aqi_forecast_home_day_2', 'title') -}}"
-                    secondary: "{{ states('sensor.aqi_forecast_home_day_2') }}"
-                    icon_color: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'hex') }}"
-                    badge_icon: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'badge') }}"
-                    icon: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'icon') }}"
-                    badge_color: "{{ state_attr('sensor.aqi_forecast_home_day_2', 'hex') }}"
-                    tap_action:
-                      action: more-info
+              - type: custom:mushroom-template-card
+                entity: sensor.ambient_indoor_pm2_5_aqi_24h_average
+                primary: "{{ state_attr('sensor.ui_aq_home_pm2_5_24h', 'primary') }}"
+                secondary: "{{ state_attr('sensor.ui_aq_home_pm2_5_24h', 'secondary') }}"
+                icon_color: "{{ state_attr('sensor.ui_aq_home_pm2_5_24h', 'icon_color') }}"
+                icon: "{{ state_attr('sensor.ui_aq_home_pm2_5_24h', 'icon') }}"
+                tap_action:
+                  action: more-info
+              - type: custom:mushroom-template-card
+                entity: sensor.ambient_indoor_pm10_aqi_24h_average
+                primary: "{{ state_attr('sensor.ui_aq_home_pm10_24h', 'primary') }}"
+                secondary: "{{ state_attr('sensor.ui_aq_home_pm10_24h', 'secondary') }}"
+                icon_color: "{{ state_attr('sensor.ui_aq_home_pm10_24h', 'icon_color') }}"
+                icon: "{{ state_attr('sensor.ui_aq_home_pm10_24h', 'icon') }}"
+                tap_action:
+                  action: more-info
+              - type: custom:mushroom-template-card
+                entity: sensor.ambient_indoor_co2_24h_average
+                primary: "{{ state_attr('sensor.ui_aq_home_co2_24h', 'primary') }}"
+                secondary: "{{ state_attr('sensor.ui_aq_home_co2_24h', 'secondary') }}"
+                icon_color: "{{ state_attr('sensor.ui_aq_home_co2_24h', 'icon_color') }}"
+                icon: "{{ state_attr('sensor.ui_aq_home_co2_24h', 'icon') }}"
+                tap_action:
+                  action: more-info
       - type: vertical-stack
         visibility:
           - condition: state
@@ -755,7 +723,7 @@ sections:
         unit: ""
         icon: mdi:white-balance-sunny
         adaptive_state_color: true
-        entity: sensor.openmeteo_nearby_uv_index
+        entity: sensor.ambient_uv_index
         max: 11
         segments:
           - from: 0
@@ -776,7 +744,7 @@ sections:
         secondary:
           show_gauge: none
           unit: UVI
-          entity: sensor.openmeteo_nearby_uv_index
+          entity: sensor.ambient_uv_index
         gauge_foreground_style:
           width: 10
         needle: true
@@ -802,7 +770,7 @@ sections:
               action: more-info
         alignment: center
       - type: custom:mushroom-template-card
-        entity: sensor.openmeteo_nearby_uv_index
+        entity: sensor.ambient_uv_index
         primary: Health Advice
         icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
         secondary: "{{ state_attr('sensor.ui_nearby_uv_index', 'full_desc') }}"

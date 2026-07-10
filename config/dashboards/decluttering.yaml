@@ -51,32 +51,32 @@ template_card:
     entity: '[[entity]]'
     icon: >-
       {%- from 'main.jinja' import get_icon -%}
-      {{- get_icon(entity, '[[app]]', '[[options]]') -}}
+      {{ get_icon(entity, '[[app]]', '[[options]]') }}
     icon_color: >-
       {%- from 'main.jinja' import get_color -%}
-      {{- get_color(entity, '[[app]]', '[[options]]') -}}
+      {{ get_color(entity, '[[app]]', '[[options]]') }}
     primary: >-
       {%- from 'main.jinja' import get_name -%}
       {%- if '[[name]]' == 'default' -%}
-        {{- get_name(entity, '[[app]]', '[[options]]') -}}
+        {{ get_name(entity, '[[app]]', '[[options]]') }}
       {%- else -%}
-        {{- '[[name]]' -}}
+        {{ '[[name]]' }}
       {%- endif -%}
     secondary: >-
       {%- import 'main.jinja' as main -%}
       {%- if '[[width]]' == 'narrow' -%}
-        {{- main.get_short_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+        {{ main.get_short_label(entity, '[[app]]', '[[options]];layout=[[layout]]') }}
       {%- elif '[[width]]' == 'wide' -%}
-        {{- main.get_long_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+        {{ main.get_long_label(entity, '[[app]]', '[[options]];layout=[[layout]]') }}
       {%- else -%}
-        {{- main.get_label(entity, '[[app]]', '[[options]];layout=[[layout]]') -}}
+        {{ main.get_label(entity, '[[app]]', '[[options]];layout=[[layout]]') }}
       {%- endif -%}
     badge_icon: >-
       {%- from 'main.jinja' import get_badge -%}
-      {{- get_badge(entity, '[[app]]', '[[options]]') -}}
+      {{ get_badge(entity, '[[app]]', '[[options]]') }}
     badge_color: >-
       {%- from 'main.jinja' import get_badge_color -%}
-      {{- get_badge_color(entity, '[[app]]', '[[options]]') -}}
+      {{ get_badge_color(entity, '[[app]]', '[[options]]') }}
     layout: '[[layout]]'
     multiline_secondary: '[[multiline_secondary]]'
     tap_action: '[[tap_action]]'
@@ -99,36 +99,36 @@ ui_template_card:
         columns: 12
         rows: auto
   card:
-      type: custom:mushroom-template-card
-      entity: '[[entity]]'
-      icon: "{{- state_attr('[[ui_entity]]', 'icon') }}"
-      icon_color: "{{- state_attr('[[ui_entity]]', 'color') }}"
-      primary: >-
-        {%- if '[[name]]' == 'default' -%}
-          {{ state_attr('[[ui_entity]]', 'name') }}
-        {%- else -%}
-          {{ '[[name]]' }}
-        {%- endif -%}
-      secondary: >-
-        {%- set lookup = '' -%}
-        {%- if '[[width]]' == 'narrow' -%}
-          {%- set lookup = 'short_label' -%}
-        {%- elif '[[width]]' == 'wide' -%}
-          {%- set lookup = 'long_label' -%}
-        {%- else -%}
-          {%- set lookup = 'label' -%}
-        {%- endif -%}
-        {%- if '[[layout]]' == 'vertical' -%}
-          {%- set lookup = lookup + '_vertical' -%}
-        {%- endif -%}
-        {{ state_attr('[[ui_entity]]', lookup) }}
-      badge_icon: "{{ state_attr('[[ui_entity]]', 'badge') }}"
-      badge_color: "{{ state_attr('[[ui_entity]]', 'badge_color') }}"
-      layout: '[[layout]]'
-      multiline_secondary: '[[multiline_secondary]]'
-      tap_action: '[[tap_action]]'
-      icon_tap_action: '[[icon_tap_action]]'
-      grid_options: '[[grid_options]]'
+    type: custom:mushroom-template-card
+    entity: '[[entity]]'
+    icon: "{{ state_attr('[[ui_entity]]', 'icon') }}"
+    icon_color: "{{ state_attr('[[ui_entity]]', 'color') }}"
+    primary: >-
+      {%- if '[[name]]' == 'default' -%}
+        {{ state_attr('[[ui_entity]]', 'name') }}
+      {%- else -%}
+        {{ '[[name]]' }}
+      {%- endif -%}
+    secondary: >-
+      {%- set lookup = '' -%}
+      {%- if '[[width]]' == 'narrow' -%}
+        {%- set lookup = 'short_label' -%}
+      {%- elif '[[width]]' == 'wide' -%}
+        {%- set lookup = 'long_label' -%}
+      {%- else -%}
+        {%- set lookup = 'label' -%}
+      {%- endif -%}
+      {%- if '[[layout]]' == 'vertical' -%}
+        {%- set lookup = lookup + '_vertical' -%}
+      {%- endif -%}
+      {{ state_attr('[[ui_entity]]', lookup) }}
+    badge_icon: "{{ state_attr('[[ui_entity]]', 'badge') }}"
+    badge_color: "{{ state_attr('[[ui_entity]]', 'badge_color') }}"
+    layout: '[[layout]]'
+    multiline_secondary: '[[multiline_secondary]]'
+    tap_action: '[[tap_action]]'
+    icon_tap_action: '[[icon_tap_action]]'
+    grid_options: '[[grid_options]]'
 
 # =====================================================================================
 # Template Badge
@@ -147,20 +147,47 @@ template_badge:
     entity: '[[entity]]'
     icon: >-
       {%- from 'main.jinja' import get_icon -%}
-      {{- get_icon(entity, '[[app]]', '[[options]]') -}}
+      {{ get_icon(entity, '[[app]]', '[[options]]') }}
     color: >-
       {%- from 'main.jinja' import get_color -%}
-      {{- get_color(entity, '[[app]]', '[[options]]') -}}
+      {{ get_color(entity, '[[app]]', '[[options]]') }}
     label: >-
       {%- from 'main.jinja' import get_name -%}
       {%- if '[[name]]' == 'default' -%}
-        {{- get_name(entity, '[[app]]', '[[options]]') -}}
+        {{ get_name(entity, '[[app]]', '[[options]]') }}
       {%- else -%}
-        {{- '[[name]]' -}}
+        {{ '[[name]]' }}
       {%- endif -%}
     content: >-
       {%- from 'main.jinja' import get_short_label -%}
-      {{- get_short_label(entity, '[[app]]', '[[options]]') -}}
+      {{ get_short_label(entity, '[[app]]', '[[options]]') }}
+    tap_action:
+      action: more-info
+
+# =====================================================================================
+# Template UI Badge
+ui_template_badge:
+  default:
+    - name: default
+    - app: default
+    - options: ''
+    - multiline_secondary: false
+    - tap_action:
+        action: more-info
+    - icon_tap_action:
+        action: nothing
+  card:
+    type: custom:mushroom-template-badge
+    entity: '[[entity]]'
+    icon: "{{ state_attr('[[ui_entity]]', 'icon') }}"
+    color: "{{ state_attr('[[ui_entity]]', 'color') }}"
+    label: >-
+      {%- if '[[name]]' == 'default' -%}
+        {{ state_attr('[[ui_entity]]', 'name') }}
+      {%- else -%}
+        {{ '[[name]]' }}
+      {%- endif -%}
+    content: "{{ state_attr('[[ui_entity]]', 'short_label') }}"
     tap_action:
       action: more-info
 
@@ -286,12 +313,12 @@ machine_summary:
                 type: template
                 entity: this.entity_id
                 icon: |
-                  {{- 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' -}}
+                  {{ 'mdi:cog' if is_state(entity,'on') else 'mdi:cog-off' }}
                 icon_color: |
-                  {{- 'green' if is_state(entity,'on') else 'red' -}}
+                  {{ 'green' if is_state(entity,'on') else 'red' }}
                 content: >
                   {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
-                  {{- (s.partition('Service')[2]) if 'Service' in s else '' -}}
+                  {{ (s.partition('Service')[2]) if 'Service' in s else '' }}
                 tap_action: none
           exclude: []
         sort:
@@ -315,12 +342,12 @@ machine_summary:
                 type: template
                 entity: this.entity_id
                 icon: >
-                  {{- 'mdi:server' if is_state(entity,'on') else 'mdi:server-off' -}}
+                  {{ 'mdi:server' if is_state(entity,'on') else 'mdi:server-off' }}
                 icon_color: |
-                  {{- 'green' if is_state(entity,'on') else 'red' -}}
+                  {{ 'green' if is_state(entity,'on') else 'red' }}
                 content: >
                   {%- set s = state_attr(entity,'friendly_name') | default('', true) -%}
-                  {{- (s.partition('Container')[2]) if 'Container' in s else '' -}}
+                  {{ (s.partition('Container')[2]) if 'Container' in s else '' }}
                 tap_action: none
           exclude: []
         sort:
@@ -339,4 +366,4 @@ lhm_card_stack:
     filter:
       template: >-
         {%- from 'macros/libre_hardware_monitor.jinja' import lhm_card_stack -%}
-        {{- lhm_card_stack('[[machine_match]]', '[[root_match]]', [[columns]]) -}}
+        {{ lhm_card_stack('[[machine_match]]', '[[root_match]]', [[columns]]) }}

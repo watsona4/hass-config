@@ -47,15 +47,7 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.humidifiers
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
       entity: automation.kitchen_door
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: automation.living_room_light
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -103,6 +95,10 @@ cards:
         action: more-info
     - type: custom:mushroom-entity-card
       entity: automation.electric_blanket
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: automation.electric_blanket_2
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -221,10 +217,6 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.home_alone
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
       entity: automation.interior_lights
       tap_action:
         action: more-info
@@ -245,15 +237,15 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.openmeteo_home_refresh_via_rest_command
+      entity: automation.openmeteo_home
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.openmeteo_nearby_refresh_via_rest_command
+      entity: automation.openmeteo_nearby
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: automation.openmeteo_rv_refresh_via_rest_command
+      entity: automation.openmeteo_rv
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -294,18 +286,6 @@ cards:
         action: more-info
     - type: custom:mushroom-entity-card
       entity: automation.thermostats
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: automation.waqi_home
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: automation.waqi_nearby
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: automation.waqi_rv
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card

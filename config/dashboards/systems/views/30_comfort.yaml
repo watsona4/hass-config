@@ -35,11 +35,6 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.laundry_room_thermometer_temperature
-      - app: ambient
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
       - entity: sensor.everything_presence_one_6dbad0_temperature
       - app: ambient
     - type: custom:decluttering-card
@@ -82,6 +77,36 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.p1s_01p00c5c0603366_bed_target_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.p1s_01p00c5c0603366_bed_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.p1s_01p00c5c0603366_nozzle_target_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.p1s_01p00c5c0603366_nozzle_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.bambu_p1s_chamber_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.bambu_p1s_bed_removal_threshold
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.kids_bathroom_presence_temperature
       - app: ambient
     - type: custom:decluttering-card
@@ -114,27 +139,22 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.chicken_coop_thermometer_temperature
-      - app: ambient
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
       - entity: sensor.acurite_tower_a_11075_temperature
       - app: ambient
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.chicken_coop_thermometer_temperature
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.chicken_coop_temperature_state_2
+      - app: ambient
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.both_temperature_c80330c7b898
-      - app: ambient
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.soil_surface_temperature
-      - app: ambient
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.soil_temperature_at_10cm
       - app: ambient
     - type: custom:decluttering-card
       template: template_card
@@ -225,11 +245,6 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.outside_water_temperature
-      - app: ambient
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
       - entity: sensor.water_heater_temperature
       - app: ambient
     - type: custom:decluttering-card
@@ -266,7 +281,7 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.laundry_room_thermometer_humidity
+      - entity: sensor.humidifier_humidity_state
       - app: indoor
     - type: custom:decluttering-card
       template: template_card
@@ -303,6 +318,11 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: sensor.bambu_p1s_chamber_thermometer_humidity
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: sensor.kids_bathroom_presence_humidity
       - app: indoor
     - type: custom:decluttering-card
@@ -330,12 +350,17 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.chicken_coop_thermometer_humidity
+      - entity: sensor.acurite_tower_a_11075_humidity
       - app: indoor
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: sensor.acurite_tower_a_11075_humidity
+      - entity: sensor.attic_mold
+      - app: indoor
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: sensor.chicken_coop_thermometer_humidity
       - app: indoor
     - type: custom:decluttering-card
       template: template_card
@@ -412,14 +437,4 @@ cards:
       template: template_card
       variables:
       - entity: sensor.freezer_temperature_humidity
-      - app: indoor
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.mold_indicator
-      - app: indoor
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.outside_water_humidity
       - app: indoor

@@ -37,7 +37,6 @@ cards:
   - sensor.playroom_energy_today
   - sensor.rv_energy_today
   - sensor.shop_energy_today
-  - sensor.shop_furnace_gas_energy_today
   - sensor.study_energy_today
   - sensor.water_heater_gas_energy_today
 - type: statistics-graph
@@ -76,7 +75,6 @@ cards:
   - sensor.playroom_energy_today
   - sensor.rv_energy_today
   - sensor.shop_energy_today
-  - sensor.shop_furnace_gas_energy_today
   - sensor.study_energy_today
   - sensor.water_heater_gas_energy_today
 - type: statistics-graph
@@ -92,7 +90,6 @@ cards:
   - sensor.furnace_gas_meter_today
   - sensor.gas_daily
   - sensor.gas_stove_gas_meter_today
-  - sensor.shop_furnace_gas_meter_today
   - sensor.water_heater_gas_meter_today
 - type: custom:stack-in-card
   mode: vertical
@@ -280,12 +277,6 @@ cards:
       - entity: sensor.shop_energy_today
       - app: energy_daily_area
       - project_daily: 'true'
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.shop_furnace_gas_energy_today
-      - app: energy_daily_area
-      - project_daily: 'true'
   - type: heading
     heading: Garage Upper
     heading_style: subtitle
@@ -388,19 +379,6 @@ cards:
       variables:
       - entity: sensor.gas_daily
       - app: daily_appliance
-      - project_daily: 'true'
-  - type: heading
-    heading: Garage Lower
-    heading_style: subtitle
-  - type: grid
-    columns: 2
-    square: false
-    cards:
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: sensor.shop_furnace_gas_meter_today
-      - app: daily
       - project_daily: 'true'
   - type: heading
     heading: Basement

@@ -23,7 +23,7 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-light-card
-      entity: light.fish_tank_light
+      entity: light.living_room_end_table_lamp_2
       tap_action:
         action: more-info
     - type: custom:mushroom-light-card
@@ -38,10 +38,6 @@ cards:
       entity: light.parlor_lamp
       tap_action:
         action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.parlor_table_lamp
-      tap_action:
-        action: more-info
   - type: heading
     heading: Upstairs
     heading_style: subtitle
@@ -50,11 +46,7 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-light-card
-      entity: light.parlor_table_lamp_status_led
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.guest_bedroom_lamp
+      entity: light.p1s_01p00c5c0603366_chamber_light
       tap_action:
         action: more-info
     - type: custom:mushroom-light-card
@@ -69,23 +61,7 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-light-card
-      entity: light.back_porch_lights
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
       entity: light.chicken_coop_light
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.front_porch_light
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.garage_lights
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.kitchen_porch_light
       tap_action:
         action: more-info
   - type: heading
@@ -97,10 +73,6 @@ cards:
     cards:
     - type: custom:mushroom-light-card
       entity: light.ratgdov25i_f6128e_light
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-light-card
-      entity: light.shop_lights
       tap_action:
         action: more-info
   - type: heading
@@ -137,29 +109,22 @@ cards:
     heading: Airflow
     heading_style: title
   - type: heading
-    heading: Garage Upper
+    heading: Upstairs
     heading_style: subtitle
   - type: grid
     columns: 2
     square: false
     cards:
     - type: custom:mushroom-fan-card
-      entity: fan.gym_floor_fan
+      entity: fan.p1s_01p00c5c0603366_aux_fan
       tap_action:
         action: more-info
     - type: custom:mushroom-fan-card
-      entity: fan.gym_pedestal_fan
+      entity: fan.p1s_01p00c5c0603366_chamber_fan
       tap_action:
         action: more-info
-  - type: heading
-    heading: Attic
-    heading_style: subtitle
-  - type: grid
-    columns: 2
-    square: false
-    cards:
     - type: custom:mushroom-fan-card
-      entity: fan.attic_duct_fan
+      entity: fan.p1s_01p00c5c0603366_cooling_fan
       tap_action:
         action: more-info
   - type: heading
@@ -195,11 +160,22 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
-      entity: switch.family_christmas_tree_socket_1
+      entity: switch.family_christmas_tree_socket_1_cloud
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.formal_christmas_tree_socket_1
+      entity: switch.formal_christmas_tree_socket_1_cloud
+      tap_action:
+        action: more-info
+  - type: heading
+    heading: Upstairs
+    heading_style: subtitle
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-entity-card
+      entity: switch.printer_exhaust_outlet
       tap_action:
         action: more-info
   - type: heading
@@ -225,7 +201,7 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
-      entity: switch.playroom_christmas_tree_socket_1
+      entity: switch.playroom_christmas_tree_socket_1_cloud
       tap_action:
         action: more-info
   - type: heading

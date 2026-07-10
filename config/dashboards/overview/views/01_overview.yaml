@@ -213,7 +213,7 @@ sections:
 
           # Sunlight and UV Index
           - type: custom:mushroom-template-card
-            entity: sensor.light_sensor_illuminance
+            entity: sensor.ambient_illuminance
             icon: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_light_sensor_illuminance', 'color') }}"
             primary: Illuminance
@@ -228,7 +228,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.openmeteo_nearby_uv_index
+            entity: sensor.ambient_uv_index
             icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_uv_index', 'color') }}"
             primary: UV Index
@@ -245,7 +245,7 @@ sections:
 
           # Wind and Precipitation
           - type: custom:mushroom-template-card
-            entity: sensor.openmeteo_nearby_wind_speed
+            entity: sensor.ambient_wind_speed
             icon: "{{ state_attr('sensor.ui_nearby_wind_speed', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_wind_speed', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_wind_speed', 'name') }}"
@@ -260,7 +260,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.openmeteo_nearby_today_precip_sum
+            entity: sensor.ambient_daily_rain
             icon: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'name') }}"
@@ -277,7 +277,7 @@ sections:
 
           # Air Quality and Dew Point
           - type: custom:mushroom-template-card
-            entity: sensor.waqi_nearby_aqi
+            entity: sensor.ambient_indoor_pm2_5_aqi
             icon: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'color') }}"
             primary: Air Quality Index
@@ -292,7 +292,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.openmeteo_nearby_dew_point
+            entity: sensor.ambient_dew_point
             icon: "{{ state_attr('sensor.ui_nearby_dew_point', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_dew_point', 'color') }}"
             primary: Dew Point

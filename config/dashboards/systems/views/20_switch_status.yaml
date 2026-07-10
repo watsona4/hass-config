@@ -87,14 +87,6 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.laundry_room_thermometer_enable_display
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.laundry_room_thermometer_show_smiley
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
       entity: switch.living_room_presence_micro_motion_detection
       tap_action:
         action: more-info
@@ -139,11 +131,19 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
+      entity: switch.parlor_humidifier_auto_off
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.parlor_humidifier_child_lock
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
       entity: switch.humidifier_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.parlor_humidifier_enable_drying_mode_while_power_is_off
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -186,11 +186,27 @@ cards:
     square: false
     cards:
     - type: custom:mushroom-entity-card
-      entity: switch.eleanor_presence_underlying_open_function_info_output_switch
+      entity: switch.p1s_01p00c5c0603366_enable_camera
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.master_bedroom_electric_blanket_switch
+      entity: switch.p1s_01p00c5c0603366_use_image_sensor_camera
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.bambu_p1s_chamber_thermometer_enable_display
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.bambu_p1s_chamber_thermometer_show_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_crossfade
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.eleanor_presence_underlying_open_function_info_output_switch
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -198,11 +214,15 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
+      entity: switch.study_loudness
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.master_bathroom_presence_underlying_open_function_info_output_switch
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.michael_presence_underlying_open_function_info_output_switch
+      entity: switch.master_bedroom_electric_blanket_switch
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -286,27 +306,7 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.unnamed_room_crossfade
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.unnamed_room_loudness
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.study_space_heater_outlet
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.unnamed_room_status_light
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.study_subwoofer_enabled_2
-      tap_action:
-        action: more-info
-    - type: custom:mushroom-entity-card
-      entity: switch.study_thermometer_comfort_smiley
+      entity: switch.study_status_light
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -314,7 +314,15 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
-      entity: switch.unnamed_room_touch_controls
+      entity: switch.study_thermometer_show_smiley
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_subwoofer_enabled
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
+      entity: switch.study_touch_controls
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
@@ -496,6 +504,10 @@ cards:
       tap_action:
         action: more-info
     - type: custom:mushroom-entity-card
+      entity: switch.garage_camera_audio_detection
+      tap_action:
+        action: more-info
+    - type: custom:mushroom-entity-card
       entity: switch.garage_camera_detect
       tap_action:
         action: more-info
@@ -657,6 +669,16 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.breakfast_room_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.breakfast_room_closed_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.breakfast_room_window_calibration
       - app: default
     - type: custom:decluttering-card
@@ -667,8 +689,23 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.hot_inside
+      - app: heat
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.humidifier_low_water
       - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.kitchen_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.kitchen_closed_hub
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -687,7 +724,27 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.laundry_room_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.laundry_room_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.living_room_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.living_room_closed_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.living_room_closed_tv
       - app: default
     - type: custom:decluttering-card
       template: template_card
@@ -814,6 +871,11 @@ cards:
       variables:
       - entity: binary_sensor.dishwasher_remote_start
       - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.west_windows_closed_temperature
+      - app: default
   - type: heading
     heading: Upstairs
     heading_style: subtitle
@@ -844,6 +906,56 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_developer_lan_mode
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_extruder_filament_state
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_firmware_update
+      - app: update
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_hms_errors
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_hybrid_mqtt_blocks_control
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_mqtt_encryption_firmware
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_online
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_print_error
+      - app: problem
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.p1s_01p00c5c0603366_recording_timelapse
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.eleanor_room_closed_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.nest_protect_kids_room_eleanor_co_status
       - app: carbon_monoxide
     - type: custom:decluttering-card
@@ -864,13 +976,8 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: binary_sensor.parlor_table_lamp_power_button
+      - entity: binary_sensor.front_hallway_closed_temperature
       - app: default
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
-      - entity: binary_sensor.master_bedroom_electric_blanket_status
-      - app: connectivity
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -890,6 +997,11 @@ cards:
       template: template_card
       variables:
       - entity: binary_sensor.front_hallway_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.guest_bedroom_closed_button
       - app: default
     - type: custom:decluttering-card
       template: template_card
@@ -924,13 +1036,28 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.guest_south_closed_temperature
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.hot_in_study
       - app: heat
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.kids_bathroom_closed_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.kids_bathroom_presence_presence_information
       - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bathroom_closed_button
+      - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -949,12 +1076,32 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.master_bedroom_closed_button
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bedroom_closed_morning
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.master_bedroom_electric_blanket_drawing_power
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.master_bedroom_left_window_calibration
       - app: default
     - type: custom:decluttering-card
       template: template_card
       variables:
       - entity: binary_sensor.master_bedroom_right_window_calibration
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.michael_room_closed_button
       - app: default
     - type: custom:decluttering-card
       template: template_card
@@ -1244,6 +1391,31 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
+      - entity: binary_sensor.study_south_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_south_closed_temperature
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_usb_monitor_webcam_running
+      - app: running
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_west_closed_brightness
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.study_west_closed_temperature
+      - app: default
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
       - entity: binary_sensor.study_west_window_calibration
       - app: default
     - type: custom:decluttering-card
@@ -1268,6 +1440,11 @@ cards:
     columns: 2
     square: false
     cards:
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.acurite_tower_a_11075_battery
+      - app: battery
     - type: custom:decluttering-card
       template: template_card
       variables:
@@ -1411,11 +1588,6 @@ cards:
     - type: custom:decluttering-card
       template: template_card
       variables:
-      - entity: binary_sensor.acurite_tower_a_11075_battery
-      - app: battery
-    - type: custom:decluttering-card
-      template: template_card
-      variables:
       - entity: binary_sensor.pipe_heater_cycled_recently
       - app: running
     - type: custom:decluttering-card
@@ -1500,6 +1672,16 @@ cards:
       variables:
       - entity: binary_sensor.garage_camera_all_occupancy
       - app: occupancy
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.garage_camera_engine_starting_sound
+      - app: sound
+    - type: custom:decluttering-card
+      template: template_card
+      variables:
+      - entity: binary_sensor.garage_camera_idling_sound
+      - app: sound
     - type: custom:decluttering-card
       template: template_card
       variables:
