@@ -120,6 +120,23 @@ template:
 
   - trigger:
       - platform: state
+        entity_id:
+          - input_boolean.drying_wood
+      - platform: homeassistant
+        event: start
+    variables:
+      drying: "{{ is_state('input_boolean.drying_wood', 'on') }}"
+    sensor:
+      - name: ui_drying_wood_chip
+        unique_id: e4adc998-1304-427d-9025-ee6c31ab80b6
+        state: "{{ states('input_boolean.drying_wood') }}"
+        attributes:
+          icon: "mdi:saw-blade"
+          label: "{{ 'Drying Wood' if drying else 'Not Drying' }}"
+          color: "{{ 'brown' if drying else 'disabled' }}"
+
+  - trigger:
+      - platform: state
         entity_id: sensor.home_download_rate
     variables:
       entity_id: sensor.home_download_rate
@@ -338,9 +355,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.light_sensor_illuminance
+        entity_id: sensor.ambient_illuminance
     variables:
-      entity_id: sensor.light_sensor_illuminance
+      entity_id: sensor.ambient_illuminance
       app: outdoor
       options: {}
       state_info: >-
@@ -362,9 +379,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.openmeteo_nearby_uv_index
+        entity_id: sensor.ambient_uv_index
     variables:
-      entity_id: sensor.openmeteo_nearby_uv_index
+      entity_id: sensor.ambient_uv_index
       app: uv_index
       options: {}
       state_info: >-
@@ -386,13 +403,13 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.openmeteo_nearby_wind_speed
+        entity_id: sensor.ambient_wind_speed
     variables:
-      entity_id: sensor.openmeteo_nearby_wind_speed
+      entity_id: sensor.ambient_wind_speed
       app: default
       options:
-        direction: sensor.openmeteo_nearby_wind_direction
-        gusts: sensor.openmeteo_nearby_wind_gust
+        direction: sensor.ambient_wind_direction_avg_10m
+        gusts: sensor.ambient_wind_gust
         show_deg: false
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
@@ -413,15 +430,33 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.openmeteo_nearby_today_precip_sum
+        entity_id:
+          - sensor.ambient_daily_rain
+          - sensor.ambient_hourly_rain
+          - sensor.openmeteo_nearby_today_precip_prob_max
     variables:
-      entity_id: sensor.openmeteo_nearby_today_precip_sum
+      entity_id: sensor.ambient_daily_rain
       app: default
-      options:
-        prob: sensor.openmeteo_nearby_today_precip_prob_max
+      options: {}
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      rate: "{{ states('sensor.ambient_hourly_rain') | float(0) }}"
+      # Description: not currently raining -> today's forecast chance of rain;
+      # actively raining -> the live rate. Both formatted via the same
+      # units-humanizing helper used everywhere else (unit/precision handling,
+      # not hand-rolled), then combined with the value using the same
+      # format_label() every other sensor's default label goes through.
+      desc_text: >-
+        {%- from 'units/base.jinja' import u_humanize_entity -%}
+        {%- if rate > 0 -%}
+          {{ u_humanize_entity('sensor.ambient_hourly_rain') }}
+        {%- else -%}
+          {{ u_humanize_entity('sensor.openmeteo_nearby_today_precip_prob_max') }} chance
+        {%- endif -%}
+      display_label: >-
+        {%- from 'helpers.jinja' import format_label -%}
+        {{ format_label(state_info.value, desc_text, state_info.is_unavail, state_info.long_desc, delim=' • ') }}
     sensor:
       - name: ui_nearby_today_precip_sum
         unique_id: f44a31ae-348a-43ef-bca9-f1af7662d1c0
@@ -433,14 +468,16 @@ template:
           color: "{{ state_info.color }}"
           badge: "{{ state_info.badge }}"
           badge_color: "{{ state_info.badge_color }}"
-          label: "{{ state_info.label }}"
-          label_vertical: "{{ state_info.long_label }}"
+          label: "{{ display_label }}"
+          label_vertical: >-
+            {%- from 'helpers.jinja' import format_label -%}
+            {{ format_label(state_info.value, desc_text, state_info.is_unavail, state_info.long_desc, delim='\n') }}
 
   - trigger:
       - platform: state
-        entity_id: sensor.waqi_nearby_aqi
+        entity_id: sensor.ambient_indoor_pm2_5_aqi
     variables:
-      entity_id: sensor.waqi_nearby_aqi
+      entity_id: sensor.ambient_indoor_pm2_5_aqi
       app: default
       options: {}
       state_info: >-
@@ -462,9 +499,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.openmeteo_nearby_dew_point
+        entity_id: sensor.ambient_dew_point
     variables:
-      entity_id: sensor.openmeteo_nearby_dew_point
+      entity_id: sensor.ambient_dew_point
       app: dew_point
       options: {}
       state_info: >-

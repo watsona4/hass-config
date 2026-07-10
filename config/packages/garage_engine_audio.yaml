@@ -42,6 +42,13 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.garage_engine_recent_start
+      - platform: state
+        entity_id: timer.garage_engine_recent_start
+        to: "idle"
+    condition:
+      - condition: state
+        entity_id: input_boolean.garage_engine_recent_start
+        state: "on"
     action:
       - service: input_boolean.turn_off
         target:

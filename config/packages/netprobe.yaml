@@ -37,6 +37,28 @@ mqtt:
         model: iperf3 bash client
         sw_version: "1.0"
 
+  binary_sensor:
+    # ---------------- Vultr iperf3 speed-test box presence ----------------
+    # Published by vultr-iperf3-watchdog.sh (systemd timer on the host),
+    # which checks the Vultr API directly for whether the tagged instance
+    # still exists - not just whether iperf3 tests are currently succeeding.
+    # expire_after covers the case where the watchdog timer itself stops
+    # running (host down, timer disabled, etc).
+    - name: Missing
+      unique_id: node_missing
+      state_topic: site/home/devices/netprobe/vultr_iperf3_status
+      value_template: "{{ 'OFF' if value_json.exists else 'ON' }}"
+      json_attributes_topic: site/home/devices/netprobe/vultr_iperf3_status
+      device_class: problem
+      icon: mdi:server-network
+      expire_after: 3600
+      device:
+        identifiers: ["vultr_iperf3_device"]
+        name: Vultr Iperf3 Server
+        manufacturer: Vultr
+        model: "vhp-1c-1gb (iperf3 only)"
+        sw_version: "1.0"
+
 # Optional: link capacity knobs for utilization math
 input_number:
   home_down_capacity_mbps:
@@ -645,3 +667,64 @@ template:
         state: >-
           {% set s = state_attr('sensor.netprobe_rv_raw','schedule') %}
           {{ s.ul_mode if s is mapping else None }}
+
+# ============================ Automations ============================
+automation:
+  - alias: Vultr Iperf3 Server Watchdog
+    id: vultr_iperf3_server_watchdog
+    description: >-
+      Notifies when the standalone Vultr iperf3 speed-test box goes missing,
+      when auto-recovery succeeds, and if auto-recovery fails and needs
+      manual attention. Detection and re-provisioning happen on the host via
+      vultr-iperf3-watchdog.sh (systemd timer) - this automation is
+      notification-only, since Home Assistant's container doesn't have the
+      SSH key or sudo access needed to run the provisioning script itself.
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.vultr_iperf3_server_missing
+        attribute: note
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.to_state.attributes.note != trigger.from_state.attributes.note }}
+    actions:
+      - variables:
+          note: "{{ trigger.to_state.attributes.note | default('') }}"
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ 'node missing' in note }}"
+            sequence:
+              - action: notify.aaron_and_ashley_phones
+                data:
+                  title: Vultr Iperf3 Server
+                  message: Vultr iperf3 speed-test server is down - auto-recovery in progress.
+                  data:
+                    push:
+                      ttl: 0
+                      priority: high
+          - conditions:
+              - condition: template
+                value_template: "{{ 'recovered at' in note }}"
+            sequence:
+              - action: notify.aaron_and_ashley_phones
+                data:
+                  title: Vultr Iperf3 Server
+                  message: "Vultr iperf3 speed-test server recovered - {{ note }}."
+                  data:
+                    push:
+                      ttl: 0
+                      priority: normal
+          - conditions:
+              - condition: template
+                value_template: "{{ 'recovery attempt failed' in note }}"
+            sequence:
+              - action: notify.aaron_and_ashley_phones
+                data:
+                  title: Vultr Iperf3 Server
+                  message: Auto-recovery FAILED for the Vultr iperf3 box - manual intervention needed.
+                  data:
+                    push:
+                      ttl: 0
+                      priority: high
+    mode: single
