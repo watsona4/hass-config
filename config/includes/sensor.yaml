@@ -1,25 +1,3 @@
-- platform: rest
-  name: "Agromonitoring"
-  unique_id: agromonitoring
-  scan_interval: 43200
-  timeout: 8
-  resource: https://api.agromonitoring.com/agro/1.0/soil
-  params:
-    polyid: !secret agromonitoring_polyid
-    appid: !secret agromonitoring_appid
-  headers:
-    Accept: application/json
-    User-Agent: HomeAssistant
-    Cache-Control: no-cache
-  value_template: >-
-    {% set dt = value_json.get('dt') if value_json is mapping else none %}
-    {{ dt if dt is not none else states(this.entity_id) }}
-  json_attributes:
-    - dt
-    - t10
-    - moisture
-    - t0
-
 - platform: filter
   name: "Outside Temperature Filtered"
   unique_id: outside_temperature_filtered
@@ -127,33 +105,8 @@
   outdoor_temp_sensor: sensor.outside_temperature_filtered
   calibration_factor: 1.17777777777777
 
-- platform: statistics
-  name: "High Temperature"
-  unique_id: high_temperature
-  entity_id: sensor.outside_temperature_filtered
-  state_characteristic: value_max
-  max_age: "24:00:00"
-
-- platform: statistics
-  name: "Low Temperature"
-  unique_id: low_temperature
-  entity_id: sensor.outside_temperature_filtered
-  state_characteristic: value_min
-  max_age: "24:00:00"
-
-- platform: statistics
-  name: "High Temperature All Time"
-  unique_id: high_temperature_all_time
-  entity_id: sensor.outside_temperature_filtered
-  state_characteristic: value_max
-  max_age: "999999:00:00"
-
-- platform: statistics
-  name: "Low Temperature All Time"
-  unique_id: low_temperature_all_time
-  entity_id: sensor.outside_temperature_filtered
-  state_characteristic: value_min
-  max_age: "999999:00:00"
+# High/Low Temperature (today + all-time) moved to trigger-based template
+# sensors in includes/template.yaml — recorder-free, persist across restarts.
 
 - platform: statistics
   name: "Wind Gust Max 10m"
@@ -170,3 +123,25 @@
   state_characteristic: mean
   max_age:
     minutes: 5
+
+- platform: rest
+  name: "Agromonitoring"
+  unique_id: agromonitoring
+  scan_interval: 43200
+  timeout: 8
+  resource: https://api.agromonitoring.com/agro/1.0/soil
+  params:
+    polyid: !secret agromonitoring_polyid
+    appid: !secret agromonitoring_appid
+  headers:
+    Accept: application/json
+    User-Agent: HomeAssistant
+    Cache-Control: no-cache
+  value_template: >-
+    {% set dt = value_json.get('dt') if value_json is mapping else none %}
+    {{ dt if dt is not none else states(this.entity_id) }}
+  json_attributes:
+    - dt
+    - t10
+    - moisture
+    - t0
