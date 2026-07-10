@@ -809,7 +809,7 @@ single_window:
     then:
     - action: input_select.select_option
       target:
-        entity_id: input_select.blind_{{ window.split('.')[1] }}_closed_reason
+        entity_id: input_select.{{ window.split('.')[1] }}_closed_reason
       data:
         option: '{{ reason }}'
   - if:
@@ -903,12 +903,26 @@ announce:
     then:
     - stop: In a meeting
   - variables:
-      player_ids: "{% set provided = players %} {% if provided is none %}\n  []\n{%
-        else %}\n  {% set expanded = expand(provided) | list %}\n  {% if expanded
-        | count > 0 %}\n    {{ expanded | map(attribute='entity_id') | list }}\n  {%
-        else %}\n    {% if provided is string %}\n      {{ [provided] }}\n    {% else
-        %}\n      {{ provided | list }}\n    {% endif %}\n  {% endif %}\n{% endif
-        %}"
+      player_ids: >-
+        {% set provided = players %}
+        {% set ns = namespace(ids=[]) %}
+        {% if provided is not none %}
+        {% set expanded = expand(provided) | list %}
+        {% if expanded | count > 0 %}
+        {% set ns.ids = expanded | map(attribute='entity_id') | list %}
+        {% elif provided is string %}
+        {% set ns.ids = [provided] %}
+        {% else %}
+        {% set ns.ids = provided | list %}
+        {% endif %}
+        {% endif %}
+        {% set ns2 = namespace(ok=[]) %}
+        {% for player in ns.ids %}
+        {% if has_value(player) %}
+        {% set ns2.ok = ns2.ok + [player] %}
+        {% endif %}
+        {% endfor %}
+        {{ ns2.ok }}
       playing_players: "{% set ns = namespace(active=[]) %} {% for player in player_ids
         %}\n  {% if is_state(player, 'playing') %}\n    {% set ns.active = ns.active
         + [player] %}\n  {% endif %}\n{% endfor %} {{ ns.active }}"
