@@ -1,0 +1,88 @@
+# =====================================================================================
+# iCloud3 Apple Authentication Alert
+#
+# iCloud3 loses Apple Account authentication every few days to weeks and must be
+# reauthenticated (request a verification code, then type the code shown on Ashley's
+# iPhone). When that happens iCloud3 sets sensor.icloud3_alerts to a message such as
+# "Apple Authentication needed (...)" or "Apple Login Failed, ..." (and triggers HA's
+# native reauth flow). This package pings on that and reminds twice daily until fixed.
+#
+# Entities referenced:
+#   - sensor.icloud3_alerts (state + message_text attribute) — set by iCloud3 post_alert
+#   - notify.aaron_phones — the alert target
+# =====================================================================================
+
+automation:
+
+  - id: icloud3_apple_auth_alert
+    alias: "iCloud3 Apple Authentication Alert"
+    description: >-
+      Pings when iCloud3 loses Apple Account authentication (verification code needed
+      or login failed) so it can be reauthenticated. Repeats twice daily while unresolved.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: "sensor.icloud3_alerts"
+      - trigger: time
+        at: "08:00:00"
+      - trigger: time
+        at: "19:00:00"
+    conditions:
+      - condition: template
+        value_template: >-
+          {% set m = (states('sensor.icloud3_alerts') ~ ' ' ~
+                      (state_attr('sensor.icloud3_alerts', 'message_text') or '')) | lower %}
+          {{ "authentication needed" in m or "login failed" in m
+             or "verification" in m or "reauth" in m }}
+    actions:
+      - action: notify.aaron_phones
+        data:
+          title: "iCloud3 needs reauthentication"
+          message: >-
+            {{ state_attr('sensor.icloud3_alerts', 'message_text')
+               or states('sensor.icloud3_alerts') }} — Reconfigure iCloud3, request a
+            verification code, then enter the code shown on Ashley's iPhone.
+          data:
+            tag: "icloud3_reauth"
+            url: "/config/integrations/integration/icloud3"
+            clickAction: "/config/integrations/integration/icloud3"
+            ttl: 0
+            priority: high
+            push:
+              interruption-level: time-sensitive
+      - action: persistent_notification.create
+        data:
+          notification_id: "icloud3_reauth"
+          title: "iCloud3 needs reauthentication"
+          message: >-
+            {{ state_attr('sensor.icloud3_alerts', 'message_text')
+               or states('sensor.icloud3_alerts') }}
+
+            Settings -> Devices & Services -> iCloud3 -> Reconfigure: request a
+            verification code, then enter the code shown on Ashley's iPhone.
+
+  - id: icloud3_apple_auth_restored
+    alias: "iCloud3 Apple Authentication Restored"
+    description: >-
+      Clears the reauthentication alert (phone + persistent notification) once iCloud3
+      authentication recovers.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: "sensor.icloud3_alerts"
+    conditions:
+      - condition: template
+        value_template: >-
+          {% set m = (states('sensor.icloud3_alerts') ~ ' ' ~
+                      (state_attr('sensor.icloud3_alerts', 'message_text') or '')) | lower %}
+          {{ not ("authentication needed" in m or "login failed" in m
+                  or "verification" in m or "reauth" in m) }}
+    actions:
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: "icloud3_reauth"
+      - action: notify.aaron_phones
+        data:
+          message: "clear_notification"
+          data:
+            tag: "icloud3_reauth"
