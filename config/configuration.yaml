@@ -23,8 +23,7 @@ http:
     - 10.10.10.1
     - 127.0.0.1
     - 2603:7080:8a00:5b00::/64
-  ip_ban_enabled: true
-  login_attempts_threshold: 5
+  ip_ban_enabled: false
 
 logger:
   default: warning
@@ -64,6 +63,15 @@ recorder:
       - updater
       - sun
     event_types:
+      - google_pollen_nearby_update
+      - google_pollen_home_update
+      - google_pollen_rv_update
+      - openmeteo_nearby_update
+      - openmeteo_home_update
+      - openmeteo_rv_update
+      - waqi_nearby_update
+      - waqi_home_update
+      - waqi_rv_update
       - strava_activities_update
       - strava_latest_photos_update
       - xert_activity_list_update
@@ -83,6 +91,10 @@ recorder:
       - script.window_position
       - sensor.rv_bridge_location_raw
     entity_globs:
+      - sensor.frigate_*
+      - sensor.icloud3_*_next_update
+      - sensor.*_wi_fi_signal
+      - sensor.*_voltage
       - sensor.ui_*
       - sensor.*_rssi
       - sensor.*_linkquality
@@ -110,85 +122,85 @@ frontend:
     - /local/hass-bha-icons.js
     - /local/community/lovelace-card-mod/card-mod.js
 
-lovelace:
-  mode: yaml
-  resource_mode: yaml
-  resources:
-    - url: /local/community/lovelace-mushroom/mushroom.js
-      type: module
-    - url: /local/community/lovelace-auto-entities/auto-entities.js
-      type: module
-    - url: /local/community/decluttering-card/decluttering-card.js
-      type: module
-    - url: /local/community/button-card/button-card.js
-      type: module
-    - url: /local/community/clock-weather-card/clock-weather-card.js
-      type: module
-    - url: /local/community/frigate-hass-card/frigate-hass-card.js
-      type: module
-    - url: /local/community/mini-graph-card/mini-graph-card-bundle.js
-      type: module
-    - url: /local/community/modern-circular-gauge/modern-circular-gauge.js
-      type: module
-    - url: /local/community/lovelace-hourly-weather/hourly-weather.js
-      type: module
-    - url: /local/community/apexcharts-card/apexcharts-card.js
-      type: module
-    - url: /local/community/config-template-card/config-template-card.js
-      type: module
-    - url: /local/community/lovelace-card-mod/card-mod.js
-      type: module
-    - url: /local/community/stack-in-card/stack-in-card.js
-      type: module
-    - url: /local/community/flex-table-card/flex-table-card.js
-      type: module
-    - url: /local/community/lovelace-state-switch/state-switch.js
-      type: module
-    - url: /local/community/advanced-camera-card/advanced-camera-card.js
-      type: module
-  dashboards:
-    lovelace-health:
-      mode: yaml
-      title: "Health & Fitness"
-      icon: mdi:heart-pulse
-      show_in_sidebar: true
-      filename: dashboards/health/dashboard.yaml
-    lovelace-environment:
-      mode: yaml
-      title: Environment
-      icon: mdi:leaf
-      show_in_sidebar: true
-      filename: dashboards/environment/dashboard.yaml
-    lovelace-computers:
-      mode: yaml
-      title: Computers
-      icon: mdi:server
-      show_in_sidebar: true
-      filename: dashboards/computers/dashboard.yaml
-    lovelace-rv:
-      mode: yaml
-      title: RV
-      icon: mdi:caravan
-      show_in_sidebar: true
-      filename: dashboards/rv/dashboard.yaml
-    lovelace-security:
-      mode: yaml
-      title: Security
-      icon: mdi:cctv
-      show_in_sidebar: true
-      filename: dashboards/security/dashboard.yaml
-    lovelace-spaces:
-      mode: yaml
-      title: Spaces
-      icon: mdi:floor-plan
-      show_in_sidebar: true
-      filename: dashboards/spaces/dashboard.yaml
-    lovelace-systems:
-      mode: yaml
-      title: Systems
-      icon: mdi:home-automation
-      show_in_sidebar: true
-      filename: dashboards/systems/dashboard.yaml
+# lovelace:
+#   mode: yaml
+#   resource_mode: yaml
+#   resources:
+#     - url: /local/community/lovelace-mushroom/mushroom.js
+#       type: module
+#     - url: /local/community/lovelace-auto-entities/auto-entities.js
+#       type: module
+#     - url: /local/community/decluttering-card/decluttering-card.js
+#       type: module
+#     - url: /local/community/button-card/button-card.js
+#       type: module
+#     - url: /local/community/clock-weather-card/clock-weather-card.js
+#       type: module
+#     - url: /local/community/frigate-hass-card/frigate-hass-card.js
+#       type: module
+#     - url: /local/community/mini-graph-card/mini-graph-card-bundle.js
+#       type: module
+#     - url: /local/community/modern-circular-gauge/modern-circular-gauge.js
+#       type: module
+#     - url: /local/community/lovelace-hourly-weather/hourly-weather.js
+#       type: module
+#     - url: /local/community/apexcharts-card/apexcharts-card.js
+#       type: module
+#     - url: /local/community/config-template-card/config-template-card.js
+#       type: module
+#     - url: /local/community/lovelace-card-mod/card-mod.js
+#       type: module
+#     - url: /local/community/stack-in-card/stack-in-card.js
+#       type: module
+#     - url: /local/community/flex-table-card/flex-table-card.js
+#       type: module
+#     - url: /local/community/lovelace-state-switch/state-switch.js
+#       type: module
+#     - url: /local/community/advanced-camera-card/advanced-camera-card.js
+#       type: module
+#   dashboards:
+#     lovelace-health:
+#       mode: yaml
+#       title: "Health & Fitness"
+#       icon: mdi:heart-pulse
+#       show_in_sidebar: true
+#       filename: dashboards/health/dashboard.yaml
+#     lovelace-environment:
+#       mode: yaml
+#       title: Environment
+#       icon: mdi:leaf
+#       show_in_sidebar: true
+#       filename: dashboards/environment/dashboard.yaml
+#     lovelace-computers:
+#       mode: yaml
+#       title: Computers
+#       icon: mdi:server
+#       show_in_sidebar: true
+#       filename: dashboards/computers/dashboard.yaml
+#     lovelace-rv:
+#       mode: yaml
+#       title: RV
+#       icon: mdi:caravan
+#       show_in_sidebar: true
+#       filename: dashboards/rv/dashboard.yaml
+#     lovelace-security:
+#       mode: yaml
+#       title: Security
+#       icon: mdi:cctv
+#       show_in_sidebar: true
+#       filename: dashboards/security/dashboard.yaml
+#     lovelace-spaces:
+#       mode: yaml
+#       title: Spaces
+#       icon: mdi:floor-plan
+#       show_in_sidebar: true
+#       filename: dashboards/spaces/dashboard.yaml
+#     lovelace-systems:
+#       mode: yaml
+#       title: Systems
+#       icon: mdi:home-automation
+#       show_in_sidebar: true
+#       filename: dashboards/systems/dashboard.yaml
 
 zone:
   - name: Home
@@ -204,10 +216,24 @@ scene: !include scenes.yaml
 
 # Custom YAML entities
 mqtt: !include includes/mqtt.yaml
-template: !include_dir_merge_list includes/templates
-notify: !include includes/notification_groups.yaml
-climate: !include includes/climate.yaml
-generic_hygrostat: !include includes/generic_hygrostat.yaml
-binary_sensor: !include includes/binary_sensor.yaml
-sensor: !include_dir_merge_list includes/sensors
-utility_meter: !include includes/utility_meters.yaml
+template: !include includes/template.yaml
+sensor: !include includes/sensor.yaml
+
+notify:
+  # This notification group aggregates Aaron's personal and work cell phones
+  - platform: group
+    name: "Aaron Phones"
+    unique_id: aaron_phones
+    services:
+      - action: mobile_app_pixel_9_pro_xl
+      - action: mobile_app_l144jy6rmq_iphone
+
+  # This notification group aggregates Aaron's personal and work cell phones and
+  # Ashley's ce phone.
+  - platform: group
+    name: "Aaron and Ashley Phones"
+    unique_id: aaron_and_ashley_phones
+    services:
+      - action: mobile_app_pixel_9_pro_xl
+      - action: mobile_app_l144jy6rmq_iphone
+      - action: mobile_app_ashleys_iphone
