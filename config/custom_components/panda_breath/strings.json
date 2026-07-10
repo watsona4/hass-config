@@ -1,0 +1,16 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Panda Breath",
+        "description": "Enter the API server address (e.g. http://frigate:8061).",
+        "data": {
+          "host": "API URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Panda Breath API."
+    }
+  }
+}
