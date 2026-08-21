@@ -3250,25 +3250,26 @@
   trace:
     stored_traces: 100
 - id: '1711813023796'
-  alias: Nest Protect Battery Level
+  alias: First Alert Battery Level
   description: ''
   triggers:
   - entity_id:
-    - sensor.nest_protect_battery_level
-    below: 26
+    - binary_sensor.first_alert_battery_low
     for:
       hours: 0
       minutes: 10
       seconds: 0
-    trigger: numeric_state
+    trigger: state
+    to:
+    - 'on'
   conditions: []
   actions:
   - action: notify.mobile_app_pixel_9_pro_xl
     data:
-      title: Nest Smoke Detectors
-      message: '{% set entity = state_attr(''sensor.nest_protect_battery_level'',
-        ''min_entity_id'') %} {{ state_attr(entity, ''friendly_name'') }} is at {{
-        states(entity, with_unit=True) }}!'
+      title: First Alert Smoke Detectors
+      message: '{% set entity = state_attr(''binary_sensor.first_alert_battery_low'',
+        ''alarm_list'')[0] %} {{ state_attr(entity, ''friendly_name'') }} battery
+        is low!'
   mode: single
 - id: '1711813060737'
   alias: Blind Tilt Battery Level

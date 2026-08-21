@@ -1,43 +1,72 @@
-group:
-  doors_all:
-    name: All Doors
+binary_sensor:
+  - platform: group
+    name: "All Doors"
+    device_class: opening
     entities:
       - binary_sensor.kitchen_door_contact
       - binary_sensor.living_room_door_contact
       - binary_sensor.playroom_door_contact
 
-  smokes_all:
-    name: All Smoke Detectors
+  - platform: group
+    name: "All Smoke Detectors"
+    device_class: smoke
     entities:
-      - binary_sensor.nest_protect_back_hallway_smoke_status
-      - binary_sensor.nest_protect_family_room_smoke_status
-      - binary_sensor.nest_protect_guest_room_smoke_status
-      - binary_sensor.nest_protect_gym_smoke_status
-      - binary_sensor.nest_protect_kids_room_eleanor_smoke_status
-      - binary_sensor.nest_protect_kids_room_michael_smoke_status
-      - binary_sensor.nest_protect_living_room_smoke_status
-      - binary_sensor.nest_protect_upstairs_smoke_status
+      - binary_sensor.back_hallway_smoke_alarm
+      - binary_sensor.basement_smoke_alarm
+#      - binary_sensor.family_room_smoke_alarm
+      - binary_sensor.front_hallway_smoke_alarm
+      - binary_sensor.guest_bedroom_smoke_alarm
+#      - binary_sensor.gym_smoke_alarm
+      - binary_sensor.kitchen_smoke_alarm
+      - binary_sensor.eleanor_s_bedroom_smoke_alarm
+      - binary_sensor.michael_s_bedroom_smoke_alarm
+      - binary_sensor.living_room_smoke_alarm
+      - binary_sensor.master_bedroom_smoke_alarm
 
-template:
-  - binary_sensor:
-      - name: Any Door Open
-        unique_id: any_door_open
-        device_class: opening
-        state: >
-          {{ expand('group.doors_all') | selectattr('state','eq','on') | list | count > 0 }}
-        attributes:
-          open_count: >
-            {{ expand('group.doors_all') | selectattr('state','eq','on') | list | count }}
-          open_list: >
-            {{ expand('group.doors_all') | selectattr('state','eq','on') | map(attribute='name') | list }}
+  - platform: group
+    name: "All Carbon Monoxide Detectors"
+    device_class: carbon_monoxide
+    entities:
+      - binary_sensor.back_hallway_co_alarm
+      - binary_sensor.basement_co_alarm
+#      - binary_sensor.family_room_co_alarm
+      - binary_sensor.front_hallway_co_alarm
+      - binary_sensor.guest_bedroom_co_alarm
+#      - binary_sensor.gym_co_alarm
+      - binary_sensor.kitchen_co_alarm
+      - binary_sensor.eleanor_s_bedroom_co_alarm
+      - binary_sensor.michael_s_bedroom_co_alarm
+      - binary_sensor.living_room_co_alarm
+      - binary_sensor.master_bedroom_co_alarm
 
-      - name: Any Smoke Detected
-        unique_id: any_smoke_detected
-        device_class: smoke
-        state: >
-          {{ expand('group.smokes_all') | selectattr('state','eq','on') | list | count > 0 }}
-        attributes:
-          alarm_count: >
-            {{ expand('group.smokes_all') | selectattr('state','eq','on') | list | count }}
-          alarm_list: >
-            {{ expand('group.smokes_all') | selectattr('state','eq','on') | map(attribute='name') | list }}
+  - platform: group
+    name: "First Alert Battery Low"
+    device_class: battery
+    entities:
+      - binary_sensor.back_hallway_battery_low
+      - binary_sensor.basement_battery_low
+#      - binary_sensor.family_room_battery_low
+      - binary_sensor.front_hallway_battery_low
+      - binary_sensor.guest_bedroom_battery_low
+#      - binary_sensor.gym_battery_low
+      - binary_sensor.kitchen_battery_low
+      - binary_sensor.eleanor_s_bedroom_battery_low
+      - binary_sensor.michael_s_bedroom_battery_low
+      - binary_sensor.living_room_battery_low
+      - binary_sensor.master_bedroom_battery_low
+
+  - platform: group
+    name: "First Alert End of Life"
+    device_class: problem
+    entities:
+      - binary_sensor.back_hallway_end_of_life
+      - binary_sensor.basement_end_of_life
+#      - binary_sensor.family_room_end_of_life
+      - binary_sensor.front_hallway_end_of_life
+      - binary_sensor.guest_bedroom_end_of_life
+#      - binary_sensor.gym_end_of_life
+      - binary_sensor.kitchen_end_of_life
+      - binary_sensor.eleanor_s_bedroom_end_of_life
+      - binary_sensor.michael_s_bedroom_end_of_life
+      - binary_sensor.living_room_end_of_life
+      - binary_sensor.master_bedroom_end_of_life
