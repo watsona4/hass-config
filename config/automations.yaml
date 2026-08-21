@@ -7306,3 +7306,77 @@
   mode: single
   trace:
     stored_traces: 100
+- id: 8fbd832e
+  alias: Ambient Indoor AQI Sensor Unavailable
+  description: Alerts once if the indoor PM2.5/PM10 AQI sensors have been unavailable
+    for 2+ hours (fires in the [2:00, 2:15) window after crossing threshold, sampled
+    every 15 min).
+  triggers:
+  - trigger: time_pattern
+    minutes: /15
+  conditions:
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: state
+        entity_id: sensor.ambient_aqi_pm25_aqin
+        state: unavailable
+        for:
+          hours: 2
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: sensor.ambient_aqi_pm25_aqin
+          state: unavailable
+          for:
+            hours: 2
+            minutes: 15
+    - condition: and
+      conditions:
+      - condition: state
+        entity_id: sensor.ambient_aqi_pm10_24h_aqin
+        state: unavailable
+        for:
+          hours: 2
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: sensor.ambient_aqi_pm10_24h_aqin
+          state: unavailable
+          for:
+            hours: 2
+            minutes: 15
+  actions:
+  - action: notify.aaron_phones
+    data:
+      title: Ambient Indoor Air Quality
+      message: Indoor PM2.5/PM10 AQI sensor has been unavailable for 2+ hours -- may
+        need a battery/link check on the indoor air quality monitor.
+  mode: single
+- id: '1784300122991'
+  alias: Plant Sensor Battery
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.plant_sensor_d455_battery
+    below: 20
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      title: Plant Sensor
+      message: Plant sensor battery is at {{ states('sensor.plant_sensor_d455_battery',
+        with_unit=True) }}!
+      data:
+        push:
+          interruption-level: critical
+          ttl: 0
+          priority: high
+    action: notify.mobile_app_pixel_9_pro_xl
+  mode: single
