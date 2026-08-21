@@ -623,40 +623,83 @@
 
 
 # =============================================================================
-# Side Door Lock Status — mirrors sensor.garage_door_status: state reflects the
-# raw lock.side_door state, with icon/color attributes for dashboard use.
+# Kitchen Door Lock Status — mirrors sensor.garage_door_status (see
+# packages/garage_door_status.yaml): state reflects the raw
+# lock.ultraloq_bolt_f_matter state, with icon/color/reason attributes for
+# dashboard use. reason re-derives *why* the lock is in its current state from
+# the same condition inputs the "Kitchen Door Lock" automation itself uses
+# (auto-lock/unlock based on presence, daytime, dark-outside) -- it doesn't
+# read anything the automation writes, it independently recomputes the same
+# logic, exactly like the garage door sensor does. Formerly "Side Door Lock
+# Status" (lock.side_door, a U-tec/Ultraloq lock bridged via SmartThings
+# cloud-to-cloud) -- replaced 2026-08-14 with the same physical lock
+# reconfigured to speak Matter/Thread directly, fixing the recurring
+# SmartThings link staleness. See [[matter-thread-crossvlan-fix]] and
+# [[side-door-lock-connectivity]] in memory for the full history.
 # =============================================================================
 - trigger:
     - platform: state
-      entity_id: lock.side_door
+      entity_id:
+        - lock.ultraloq_bolt_f_matter
+        - input_boolean.someone_is_home
+        - input_boolean.home_alone
+        - binary_sensor.daytime
+        - binary_sensor.dark_outside
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Side Door Lock Status"
-      unique_id: side_door_lock_status
-      state: "{{ states('lock.side_door') }}"
+    - name: "Kitchen Door Lock Status"
+      unique_id: kitchen_door_lock_status
+      state: "{{ states('lock.ultraloq_bolt_f_matter') }}"
       attributes:
-        online: "{{ has_value('lock.side_door') }}"
+        online: "{{ has_value('lock.ultraloq_bolt_f_matter') }}"
+        reason: >-
+          {%- set someone_home = is_state('input_boolean.someone_is_home', 'on') -%}
+          {%- set home_alone = is_state('input_boolean.home_alone', 'on') -%}
+          {%- set daytime = is_state('binary_sensor.daytime', 'on') -%}
+          {%- set dark_outside = is_state('binary_sensor.dark_outside', 'on') -%}
+          {%- set good_conditions = daytime and not dark_outside and someone_home and not home_alone -%}
+          {%- if is_state('lock.ultraloq_bolt_f_matter', 'locked') -%}
+            {%- if not someone_home -%}
+              No one home
+            {%- elif home_alone -%}
+              Home alone mode
+            {%- elif not daytime -%}
+              Nighttime
+            {%- elif dark_outside -%}
+              Dark outside
+            {%- else -%}
+              Manually locked
+            {%- endif -%}
+          {%- elif is_state('lock.ultraloq_bolt_f_matter', 'unlocked') -%}
+            {%- if good_conditions -%}
+              Good conditions
+            {%- else -%}
+              Manually unlocked
+            {%- endif -%}
+          {%- else -%}
+            Unknown
+          {%- endif -%}
         icon: >-
-          {%- if is_state('lock.side_door', 'locked') -%}
+          {%- if is_state('lock.ultraloq_bolt_f_matter', 'locked') -%}
             mdi:lock
-          {%- elif is_state('lock.side_door', 'unlocked') -%}
+          {%- elif is_state('lock.ultraloq_bolt_f_matter', 'unlocked') -%}
             mdi:lock-open-variant
-          {%- elif is_state('lock.side_door', 'jammed') -%}
+          {%- elif is_state('lock.ultraloq_bolt_f_matter', 'jammed') -%}
             mdi:lock-alert
-          {%- elif has_value('lock.side_door') -%}
+          {%- elif has_value('lock.ultraloq_bolt_f_matter') -%}
             mdi:lock-question
           {%- else -%}
             mdi:lock-alert-outline
           {%- endif -%}
         color: >-
-          {%- if is_state('lock.side_door', 'locked') -%}
+          {%- if is_state('lock.ultraloq_bolt_f_matter', 'locked') -%}
             green
-          {%- elif is_state('lock.side_door', 'unlocked') -%}
+          {%- elif is_state('lock.ultraloq_bolt_f_matter', 'unlocked') -%}
             blue
-          {%- elif is_state('lock.side_door', 'jammed') -%}
+          {%- elif is_state('lock.ultraloq_bolt_f_matter', 'jammed') -%}
             red
-          {%- elif has_value('lock.side_door') -%}
+          {%- elif has_value('lock.ultraloq_bolt_f_matter') -%}
             amber
           {%- else -%}
             red

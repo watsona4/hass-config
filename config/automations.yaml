@@ -67,6 +67,10 @@
     entity_id: binary_sensor.garage_camera_engine_starting_sound
     to: 'on'
     id: Engine Starting
+  - trigger: state
+    entity_id: input_boolean.home_alone
+    to: 'on'
+    id: Home Alone On
   conditions: []
   actions:
   - if:
@@ -130,6 +134,32 @@
       target:
         entity_id: cover.ratgdov25i_f6128e_door
     - stop: Snowy so closing door
+  - if:
+    - condition: trigger
+      id:
+      - Home Alone On
+    - condition: state
+      entity_id: cover.ratgdov25i_f6128e_door
+      state: open
+    - condition: state
+      entity_id: input_boolean.garage_engine_recent_start
+      state: 'off'
+    - condition: state
+      entity_id: binary_sensor.ratgdov25i_f6128e_obstruction
+      state: 'off'
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: opening
+      - condition: state
+        entity_id: cover.ratgdov25i_f6128e_door
+        state: closing
+    then:
+    - action: cover.close_cover
+      target:
+        entity_id: cover.ratgdov25i_f6128e_door
+    - stop: Both parents away (home_alone), closing garage
   - wait_template: '{{ is_state(''timer.garage_door_delay'', ''idle'') }}'
     continue_on_timeout: false
     timeout: 00:10:00
@@ -194,7 +224,7 @@
             entity_id: cover.ratgdov25i_f6128e_door
         - action: lock.unlock
           target:
-            entity_id: lock.side_door
+            entity_id: lock.ultraloq_bolt_f_matter
     - conditions:
       - condition: trigger
         id: One Minute
@@ -3300,17 +3330,28 @@
   mode: single
 - id: '1712784588419'
   alias: Someone is Home
-  description: ''
+  description: 'Includes a house-sitter branch: if the kitchen door is unlocked while
+    all 4 family members are away (not just a parent -- this excludes the kids-home-alone
+    case entirely, since that requires a kid to be home), someone_is_home turns on
+    and a heads-up notification fires. It turns back off automatically the next time
+    the door locks, as long as no one has actually come home by then. The "all 4 away"
+    check also accepts binary_sensor.vacation_mode == on as an alternative, since a
+    stale/stuck "home" GPS reading while traveling internationally (phone loses
+    signal/data and never reports leaving) would otherwise block this branch and make
+    the house look permanently occupied for the whole trip regardless of who unlocks
+    the door.'
   triggers:
   - entity_id:
-    - lock.side_door
+    - lock.ultraloq_bolt_f_matter
     to: unlocked
     id: Unlocking
     trigger: state
+    from: locked
   - entity_id:
-    - lock.side_door
+    - lock.ultraloq_bolt_f_matter
     to: locked
     trigger: state
+    id: Locking
   - entity_id:
     - person.ashley_watson
     to:
@@ -3413,22 +3454,6 @@
         conditions:
         - condition: trigger
           id:
-          - Unlocking
-        - condition: or
-          conditions:
-          - condition: state
-            entity_id: binary_sensor.before_school_time
-            state: 'off'
-          - condition: state
-            entity_id: person.aaron_watson
-            state: home
-          - condition: state
-            entity_id: person.ashley_watson
-            state: home
-      - condition: and
-        conditions:
-        - condition: trigger
-          id:
           - Eleanor
           - Michael
         - condition: state
@@ -3437,6 +3462,30 @@
       - condition: state
         entity_id: input_boolean.home_alone
         state: 'on'
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - Unlocking
+        - condition: or
+          conditions:
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: person.ashley_watson
+              state: home
+            - condition: state
+              entity_id: person.aaron_watson
+              state: home
+            - condition: state
+              entity_id: person.eleanor_watson
+              state: home
+            - condition: state
+              entity_id: person.michael_watson
+              state: home
+          - condition: state
+            entity_id: binary_sensor.vacation_mode
+            state: 'on'
     then:
     - if:
       - condition: or
@@ -3465,24 +3514,37 @@
       target:
         entity_id: input_boolean.coming_home
     - if:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: person.ashley_watson
-          state: home
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: person.aaron_watson
-          state: home
       - condition: trigger
         id:
         - Unlocking
+      - condition: or
+        conditions:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: person.ashley_watson
+            state: home
+          - condition: state
+            entity_id: person.aaron_watson
+            state: home
+          - condition: state
+            entity_id: person.eleanor_watson
+            state: home
+          - condition: state
+            entity_id: person.michael_watson
+            state: home
+        - condition: state
+          entity_id: binary_sensor.vacation_mode
+          state: 'on'
       then:
-      - action: notify.aaron_phones
+      - action: notify.aaron_and_ashley_phones
+        metadata: {}
         data:
-          title: Someone Home
-          message: Someone is home!
+          title: Side Door Unlocked
+          message: Side door was unlocked while everyone is away -- house sitter?
+          data:
+            push:
+              interruption-level: active
     - if:
       - condition: trigger
         id:
@@ -3726,12 +3788,19 @@
         entity_id: light.playroom_lights
   mode: single
 - id: '1714213889654'
-  alias: Side Door Lock
-  description: 'Consolidated automation for the side door lock (lock.side_door): auto-lock/
-    auto-unlock behavior based on presence and time of day, plus connectivity monitoring
-    (hourly alert while offline for more than an hour, notice when it comes back online).
-    One automation per device, per user preference; combines the former "Side Door
-    Lock", "Side Door Lock Offline", and "Side Door Lock Restored" automations.'
+  alias: Kitchen Door Lock
+  description: 'Consolidated automation for the kitchen door lock (lock.ultraloq_bolt_f_matter):
+    auto-lock/auto-unlock behavior based on presence and time of day, plus connectivity
+    monitoring (hourly alert while offline for more than an hour, notice when it comes
+    back online). One automation per device, per user preference; combines the former
+    "Side Door Lock", "Side Door Lock Offline", and "Side Door Lock Restored" automations.
+    Formerly lock.side_door (U-tec/Ultraloq via SmartThings cloud-to-cloud) -- replaced
+    2026-08-14 with the same physical lock reconfigured to speak Matter/Thread directly,
+    fixing the recurring SmartThings link staleness; device-based SmartThings lock/unlock
+    actions converted to plain lock.lock/lock.unlock service calls since Matter locks are
+    a standard entity, no device-specific action type needed. See
+    [[matter-thread-crossvlan-fix]] and [[side-door-lock-connectivity]] in memory for the
+    full history.'
   mode: parallel
   max: 10
   triggers:
@@ -3741,16 +3810,15 @@
     - binary_sensor.daytime
     - input_boolean.someone_is_home
     - binary_sensor.dark_outside
+    - input_boolean.home_alone
   - id: unlocked
-    device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-    domain: lock
-    entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-    type: unlocked
+    trigger: state
+    entity_id: lock.ultraloq_bolt_f_matter
+    to: unlocked
     for:
       hours: 0
       minutes: 0
       seconds: 2
-    trigger: device
   - id: hourly_check
     trigger: time_pattern
     hours: /1
@@ -3759,7 +3827,7 @@
     event: start
   - id: state_change
     trigger: state
-    entity_id: lock.side_door
+    entity_id: lock.ultraloq_bolt_f_matter
   conditions: []
   actions:
   - choose:
@@ -3783,7 +3851,7 @@
           entity_id: binary_sensor.dark_outside
           state: 'on'
       - condition: state
-        entity_id: lock.side_door
+        entity_id: lock.ultraloq_bolt_f_matter
         state: unlocked
       sequence:
       - if:
@@ -3815,13 +3883,12 @@
             minutes: 5
       - if:
         - condition: state
-          entity_id: lock.side_door
+          entity_id: lock.ultraloq_bolt_f_matter
           state: unlocked
         then:
-        - device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-          domain: lock
-          entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-          type: lock
+        - action: lock.lock
+          target:
+            entity_id: lock.ultraloq_bolt_f_matter
     - conditions:
       - condition: trigger
         id:
@@ -3831,28 +3898,28 @@
         entity_id: input_boolean.someone_is_home
         state: 'on'
       - condition: state
+        entity_id: input_boolean.home_alone
+        state: 'off'
+      - condition: state
         entity_id: binary_sensor.daytime
         state: 'on'
       - condition: state
         entity_id: binary_sensor.dark_outside
         state: 'off'
-      - condition: device
-        device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-        domain: lock
-        entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-        type: is_locked
+      - condition: state
+        entity_id: lock.ultraloq_bolt_f_matter
+        state: locked
       sequence:
-      - device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-        domain: lock
-        entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-        type: unlock
+      - action: lock.unlock
+        target:
+          entity_id: lock.ultraloq_bolt_f_matter
     - conditions:
       - condition: trigger
         id:
         - hourly_check
         - start
       - condition: state
-        entity_id: lock.side_door
+        entity_id: lock.ultraloq_bolt_f_matter
         state: unavailable
         for:
           hours: 1
@@ -3860,9 +3927,9 @@
       - action: notify.aaron_phones
         metadata: {}
         data:
-          title: Side Door Lock
-          message: Side door lock has been offline for over an hour ({{ ((now() -
-            states.lock.side_door.last_changed).total_seconds() / 3600) | round(1)
+          title: Kitchen Door Lock
+          message: Kitchen door lock has been offline for over an hour ({{ ((now() -
+            states.lock.ultraloq_bolt_f_matter.last_changed).total_seconds() / 3600) | round(1)
             }}h).
     - conditions:
       - condition: trigger
@@ -3875,8 +3942,8 @@
       - action: notify.aaron_phones
         metadata: {}
         data:
-          title: Side Door Lock
-          message: Side door lock is back online.
+          title: Kitchen Door Lock
+          message: Kitchen door lock is back online.
   trace:
     stored_traces: 100
 - id: '1714473824822'
@@ -5250,10 +5317,9 @@
     domain: cover
     entity_id: edc2419f8848486ac424927164837f0c
     type: open
-  - device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-    domain: lock
-    entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-    type: unlock
+  - action: lock.unlock
+    target:
+      entity_id: lock.ultraloq_bolt_f_matter
   - delay:
       hours: 0
       minutes: 5
@@ -5274,14 +5340,13 @@
         entity_id:
         - script.turn_off_exterior_lights
         - script.turn_off_interior_lights
-  - device_id: feb41ed109a272e0e43e683fc809f09f
-    domain: cover
-    entity_id: edc2419f8848486ac424927164837f0c
-    type: close
-  - device_id: 6c9aed40494e1b52b2cf82d499f60d0b
-    domain: lock
-    entity_id: 8faf28ebb01ba5cb31620ba6fea47dcf
-    type: lock
+    - device_id: feb41ed109a272e0e43e683fc809f09f
+      domain: cover
+      entity_id: edc2419f8848486ac424927164837f0c
+      type: close
+    - action: lock.lock
+      target:
+        entity_id: lock.ultraloq_bolt_f_matter
   mode: single
 - id: '1724715439449'
   alias: Kitchen Hub Playing
@@ -6736,11 +6801,17 @@
   mode: queued
 - id: kids_home_alone
   alias: Kids Home Alone
-  description: Whenever a kid is home and both parents are away, turn input_boolean.home_alone
+  description: 'Whenever a kid is home and both parents are away, turn input_boolean.home_alone
     on and keep it on (through door locks / GPS blips) until a parent comes home or
-    no kid is home. Relies on Eleanor's reliable phone location. home_alone cascades
+    no kid is home. Relies on Eleanor''s reliable phone location. home_alone cascades
     into someone_is_home (and the A/C) via the "Someone is Home" automation, so the
     house stays occupied on early-dismissal days, after school, weekends and breaks.
+    binary_sensor.vacation_mode overrides this -- a stale/stuck "home" GPS reading
+    (phone loses signal/data abroad and never reports leaving) would otherwise keep
+    home_alone, and everything downstream, stuck on for an entire trip -- so
+    vacation_mode forces it off regardless of what the trackers say, and is also a
+    trigger so the correction happens immediately rather than waiting on a GPS
+    update that may never come.'
   mode: queued
   triggers:
   - trigger: state
@@ -6749,6 +6820,8 @@
     - person.michael_watson
     - person.aaron_watson
     - person.ashley_watson
+  - trigger: state
+    entity_id: binary_sensor.vacation_mode
   - trigger: homeassistant
     event: start
   actions:
@@ -6758,6 +6831,14 @@
       kid_home: "{{ is_state('person.eleanor_watson', 'home')\n   or is_state('person.michael_watson',
         'home') }}"
   - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.vacation_mode
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.home_alone
     - conditions:
       - condition: template
         value_template: '{{ kid_home and not parents_home }}'
