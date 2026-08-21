@@ -1,0 +1,70 @@
+{%- import 'units/base.jinja' as base -%}
+
+{#-
+    humanize(eid_or_value, attr='', unit='', from_unit='')
+
+    Friendly front-end over the unit library in units/base.jinja. Formats a
+    quantity with significant digits and, where useful, SI/IEC prefixes.
+
+    eid_or_value : an entity_id string, OR a raw numeric value.
+    attr         : attribute name to read (entity_id must be a string).
+    unit         : target unit. For entities/values it is the unit to convert to;
+                   for a plain (non-converting) value it is the unit to display.
+    from_unit    : source unit. Only needed to convert a raw value or an
+                   attribute, since neither carries unit_of_measurement metadata.
+                   Ignored for an entity's state (its native unit is authoritative).
+
+    Conversion happens when a target unit is known and the source unit can be
+    determined: an entity's state converts on `unit` alone; a value or an
+    attribute converts only when both `from_unit` and `unit` are given.
+-#}
+{% macro humanize(eid_or_value, attr='', unit='', from_unit='') -%}
+    {%- if eid_or_value is string -%}
+        {%- if attr -%}
+            {%- if from_unit and unit -%}
+                {{- base.u_convert_humanize_attr(eid_or_value, attr, from_unit, unit) -}}
+            {%- else -%}
+                {{- base.u_humanize_attr(eid_or_value, attr, unit) -}}
+            {%- endif -%}
+        {%- elif unit -%}
+            {{- base.u_convert_humanize_entity(eid_or_value, unit) -}}
+        {%- else -%}
+            {{- base.u_humanize_entity(eid_or_value) -}}
+        {%- endif -%}
+    {%- elif from_unit and unit -%}
+        {{- base.u_convert_humanize_value(eid_or_value, from_unit, unit) -}}
+    {%- else -%}
+        {{- base.u_humanize_value(eid_or_value, unit) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{#-
+    convert(eid_or_value, attr='', unit='', from_unit='')
+
+    Same interface as humanize(), but returns the raw converted number without
+    sig-digit rounding, SI/IEC prefixes, or unit text. Conversion happens on the
+    same conditions as humanize(); where no conversion applies the underlying
+    state, attribute, or value is returned unchanged.
+
+    See humanize() above for the meaning of each argument.
+-#}
+{% macro convert(eid_or_value, attr='', unit='', from_unit='') -%}
+    {%- if eid_or_value is string -%}
+        {%- if attr -%}
+            {%- if from_unit and unit -%}
+                {{- base.u_convert_value(state_attr(eid_or_value, attr), from_unit, unit) -}}
+            {%- else -%}
+                {{- state_attr(eid_or_value, attr) -}}
+            {%- endif -%}
+        {%- elif unit -%}
+            {{- base.u_convert_entity(eid_or_value, unit) -}}
+        {%- else -%}
+            {{- states(eid_or_value) -}}
+        {%- endif -%}
+    {%- elif from_unit and unit -%}
+        {{- base.u_convert_value(eid_or_value, from_unit, unit) -}}
+    {%- else -%}
+        {{- eid_or_value -}}
+    {%- endif -%}
+{%- endmacro %}
+

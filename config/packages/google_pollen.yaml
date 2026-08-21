@@ -213,13 +213,13 @@ template:
         unique_id: 5afa2d1c-6166-5f44-de4b-4d0639d38c71
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else none }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
             {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
           dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
-          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else none }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
@@ -247,14 +247,14 @@ template:
         availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
           {{ ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else none     ) }}
         attributes:
           code: >-
             {{ ctx.pick.code if (ctx.plants | count) > 0 else
                 (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
           type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
           in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
-          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else none }}"
           value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
           entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
@@ -270,13 +270,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[0].get('date') if (ctx.days|count)>0 else none) }}"
-          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or none }}"
           dominant_value: "{{ (ctx.days[0].get('dominant_value') if (ctx.days|count)>0 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else 'none') }}"
+          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else none) }}"
           dominant_hex: "{{ (ctx.days[0].get('dominant_hex') if (ctx.days|count)>0 else neutral_hex) }}"
           species_name: "{{ (ctx.days[0].get('species_name') if (ctx.days|count)>0 else none) }}"
           species_value: "{{ (ctx.days[0].get('species_value') if (ctx.days|count)>0 else 0) }}"
-          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else 'none') }}"
+          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else none) }}"
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
@@ -292,13 +292,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[1].get('date') if (ctx.days|count)>1 else none) }}"
-          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or none }}"
           dominant_value: "{{ (ctx.days[1].get('dominant_value') if (ctx.days|count)>1 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else 'none') }}"
+          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else none) }}"
           dominant_hex: "{{ (ctx.days[1].get('dominant_hex') if (ctx.days|count)>1 else neutral_hex) }}"
           species_name: "{{ (ctx.days[1].get('species_name') if (ctx.days|count)>1 else none) }}"
           species_value: "{{ (ctx.days[1].get('species_value') if (ctx.days|count)>1 else 0) }}"
-          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else 'none') }}"
+          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else none) }}"
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
@@ -314,13 +314,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[2].get('date') if (ctx.days|count)>2 else none) }}"
-          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or none }}"
           dominant_value: "{{ (ctx.days[2].get('dominant_value') if (ctx.days|count)>2 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else 'none') }}"
+          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else none) }}"
           dominant_hex: "{{ (ctx.days[2].get('dominant_hex') if (ctx.days|count)>2 else neutral_hex) }}"
           species_name: "{{ (ctx.days[2].get('species_name') if (ctx.days|count)>2 else none) }}"
           species_value: "{{ (ctx.days[2].get('species_value') if (ctx.days|count)>2 else 0) }}"
-          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else 'none') }}"
+          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else none) }}"
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
@@ -342,7 +342,7 @@ template:
                 'type': none,
                 'in_season': none,
                 'value': 0,
-                'category': 'none',
+                'category': none,
                 'picture': none
               } -%}
               {%- set ns.out = ns.out + [item] -%}
@@ -394,13 +394,13 @@ template:
         unique_id: 56430790-66c2-0184-926b-a54db77315a1
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else none }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
             {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
           dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
-          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else none }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
@@ -428,14 +428,14 @@ template:
         availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
           {{ ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else none) }}
         attributes:
           code: >-
             {{ ctx.pick.code if (ctx.plants | count) > 0 else
                 (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
           type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
           in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
-          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else none }}"
           value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
           entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
@@ -451,13 +451,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[0].get('date') if (ctx.days|count)>0 else none) }}"
-          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or none }}"
           dominant_value: "{{ (ctx.days[0].get('dominant_value') if (ctx.days|count)>0 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else 'none') }}"
+          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else none) }}"
           dominant_hex: "{{ (ctx.days[0].get('dominant_hex') if (ctx.days|count)>0 else neutral_hex) }}"
           species_name: "{{ (ctx.days[0].get('species_name') if (ctx.days|count)>0 else none) }}"
           species_value: "{{ (ctx.days[0].get('species_value') if (ctx.days|count)>0 else 0) }}"
-          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else 'none') }}"
+          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else none) }}"
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
@@ -473,13 +473,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[1].get('date') if (ctx.days|count)>1 else none) }}"
-          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or none }}"
           dominant_value: "{{ (ctx.days[1].get('dominant_value') if (ctx.days|count)>1 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else 'none') }}"
+          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else none) }}"
           dominant_hex: "{{ (ctx.days[1].get('dominant_hex') if (ctx.days|count)>1 else neutral_hex) }}"
           species_name: "{{ (ctx.days[1].get('species_name') if (ctx.days|count)>1 else none) }}"
           species_value: "{{ (ctx.days[1].get('species_value') if (ctx.days|count)>1 else 0) }}"
-          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else 'none') }}"
+          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else none) }}"
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
@@ -495,13 +495,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[2].get('date') if (ctx.days|count)>2 else none) }}"
-          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or none }}"
           dominant_value: "{{ (ctx.days[2].get('dominant_value') if (ctx.days|count)>2 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else 'none') }}"
+          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else none) }}"
           dominant_hex: "{{ (ctx.days[2].get('dominant_hex') if (ctx.days|count)>2 else neutral_hex) }}"
           species_name: "{{ (ctx.days[2].get('species_name') if (ctx.days|count)>2 else none) }}"
           species_value: "{{ (ctx.days[2].get('species_value') if (ctx.days|count)>2 else 0) }}"
-          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else 'none') }}"
+          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else none) }}"
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
@@ -523,7 +523,7 @@ template:
                 'type': none,
                 'in_season': none,
                 'value': 0,
-                'category': 'none',
+                'category': none,
                 'picture': none
               } -%}
               {%- set ns.out = ns.out + [item] -%}
@@ -575,13 +575,13 @@ template:
         unique_id: e5c54be4-0f16-6254-1ba3-560d889b28df
         icon: mdi:flower-pollen
         availability: "{{ has_value(src) and ((ctx.di | count) > 0) }}"
-        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else 'none' }}"
+        state: "{{ (top.get('displayName') or top.get('code')) if has_vals else none }}"
         attributes:
           date: >-
             {%- set dt = d0.get('date') or {} -%}
             {{ "%04d-%02d-%02d"|format(dt.get('year',0),dt.get('month',0),dt.get('day',0)) if dt else none }}
           dominant_value: "{{ (top.get('indexInfo') or {}).get('value') if has_vals else 0 }}"
-          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else 'none' }}"
+          dominant_category: "{{ (top.get('indexInfo') or {}).get('category') if has_vals else none }}"
           dominant_hex: >-
             {%- if has_vals -%}
               {%- set c = (top.get('indexInfo') or {}).get('color') or {} -%}
@@ -609,14 +609,14 @@ template:
         availability: "{{ has_value(src) and ( (ctx.plants | count) > 0 or (plants_fallback | count) > 0 ) }}"
         state: >-
           {{ ctx.pick.name if (ctx.plants | count) > 0 else
-              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else 'none') }}
+              (plants_fallback[0].get('displayName') if (plants_fallback|count>0) else none) }}
         attributes:
           code: >-
             {{ ctx.pick.code if (ctx.plants | count) > 0 else
                 (plants_fallback[0].get('code') if (plants_fallback|count>0) else none) }}
           type: "{{ ctx.pick.type if (ctx.plants | count) > 0 else none }}"
           in_season: "{{ ctx.pick.in_season if (ctx.plants | count) > 0 else none }}"
-          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else 'none' }}"
+          category: "{{ ctx.pick.category if (ctx.plants | count) > 0 else none }}"
           value: "{{ ctx.pick.value if (ctx.plants | count) > 0 else 0 }}"
           entity_picture: "{{ ctx.pick.picture if (ctx.plants | count) > 0 else none }}"
 
@@ -632,13 +632,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[0].get('date') if (ctx.days|count)>0 else none) }}"
-          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[0].get('dominant_type') if (ctx.days|count)>0 else none) or none }}"
           dominant_value: "{{ (ctx.days[0].get('dominant_value') if (ctx.days|count)>0 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else 'none') }}"
+          dominant_category: "{{ (ctx.days[0].get('dominant_category') if (ctx.days|count)>0 else none) }}"
           dominant_hex: "{{ (ctx.days[0].get('dominant_hex') if (ctx.days|count)>0 else neutral_hex) }}"
           species_name: "{{ (ctx.days[0].get('species_name') if (ctx.days|count)>0 else none) }}"
           species_value: "{{ (ctx.days[0].get('species_value') if (ctx.days|count)>0 else 0) }}"
-          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else 'none') }}"
+          species_category: "{{ (ctx.days[0].get('species_category') if (ctx.days|count)>0 else none) }}"
           species_type: "{{ (ctx.days[0].get('species_type') if (ctx.days|count)>0 else none) }}"
           species_picture: "{{ (ctx.days[0].get('species_picture') if (ctx.days|count)>0 else none) }}"
 
@@ -654,13 +654,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[1].get('date') if (ctx.days|count)>1 else none) }}"
-          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[1].get('dominant_type') if (ctx.days|count)>1 else none) or none }}"
           dominant_value: "{{ (ctx.days[1].get('dominant_value') if (ctx.days|count)>1 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else 'none') }}"
+          dominant_category: "{{ (ctx.days[1].get('dominant_category') if (ctx.days|count)>1 else none) }}"
           dominant_hex: "{{ (ctx.days[1].get('dominant_hex') if (ctx.days|count)>1 else neutral_hex) }}"
           species_name: "{{ (ctx.days[1].get('species_name') if (ctx.days|count)>1 else none) }}"
           species_value: "{{ (ctx.days[1].get('species_value') if (ctx.days|count)>1 else 0) }}"
-          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else 'none') }}"
+          species_category: "{{ (ctx.days[1].get('species_category') if (ctx.days|count)>1 else none) }}"
           species_type: "{{ (ctx.days[1].get('species_type') if (ctx.days|count)>1 else none) }}"
           species_picture: "{{ (ctx.days[1].get('species_picture') if (ctx.days|count)>1 else none) }}"
 
@@ -676,13 +676,13 @@ template:
           {%- endif -%}
         attributes:
           date: "{{ (ctx.days[2].get('date') if (ctx.days|count)>2 else none) }}"
-          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or 'none' }}"
+          dominant_type: "{{ (ctx.days[2].get('dominant_type') if (ctx.days|count)>2 else none) or none }}"
           dominant_value: "{{ (ctx.days[2].get('dominant_value') if (ctx.days|count)>2 else 0) | default(0) }}"
-          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else 'none') }}"
+          dominant_category: "{{ (ctx.days[2].get('dominant_category') if (ctx.days|count)>2 else none) }}"
           dominant_hex: "{{ (ctx.days[2].get('dominant_hex') if (ctx.days|count)>2 else neutral_hex) }}"
           species_name: "{{ (ctx.days[2].get('species_name') if (ctx.days|count)>2 else none) }}"
           species_value: "{{ (ctx.days[2].get('species_value') if (ctx.days|count)>2 else 0) }}"
-          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else 'none') }}"
+          species_category: "{{ (ctx.days[2].get('species_category') if (ctx.days|count)>2 else none) }}"
           species_type: "{{ (ctx.days[2].get('species_type') if (ctx.days|count)>2 else none) }}"
           species_picture: "{{ (ctx.days[2].get('species_picture') if (ctx.days|count)>2 else none) }}"
 
@@ -704,7 +704,7 @@ template:
                 'type': none,
                 'in_season': none,
                 'value': 0,
-                'category': 'none',
+                'category': none,
                 'picture': none
               } -%}
               {%- set ns.out = ns.out + [item] -%}

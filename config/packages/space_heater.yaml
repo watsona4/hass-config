@@ -27,9 +27,13 @@ template:
           {% if is_state(
             'input_boolean.space_heater_in_laundry_room',
             'on') %}
-            {{ states('sensor.lb4k_temperature') }}
+            {{ states('sensor.lb4k_temperature') | float(none) }}
           {% else %}
             {{ states(
               'sensor.study_thermometer_temperature'
-            ) }}
+            ) | float(none) }}
           {% endif %}
+        availability: >-
+          {{ has_value('sensor.lb4k_temperature')
+             if is_state('input_boolean.space_heater_in_laundry_room', 'on')
+             else has_value('sensor.study_thermometer_temperature') }}

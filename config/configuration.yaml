@@ -29,6 +29,7 @@ logger:
   default: warning
   logs:
     annotatedyaml.constructors: error
+    custom_components.bambu_lab: debug
     homeassistant.components.apple_tv: critical
     homeassistant.components.bluetooth.active_update_coordinator: critical
     homeassistant.components.bluetooth.manager: critical

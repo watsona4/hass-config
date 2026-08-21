@@ -36,6 +36,7 @@ config/packages/xert_activities.yaml
 
 # Ignore heavy binary assets, allow config assets
 config/www/community
+config/www/media/
 config/www/**/*.jpg
 config/www/**/*.jpeg
 config/www/**/*.png
@@ -135,3 +136,6 @@ config/.vscode/
 
 # If you keep diagrams or images that are generated, ignore them:
 # config/image/
+
+# Added by ggshield
+.cache_ggshield

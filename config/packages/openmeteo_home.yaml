@@ -211,22 +211,25 @@ template:
           {{- s is not none and e is not none and s | as_local <= now() < e | as_local -}}
         attributes:
           start: >-
-            {%- set window = state_attr('sensor.openmeteo_home_uv_window_json','data') -%}
-            {%- set dt = window.get('start') | as_datetime(default=none) -%}
-            {{- dt | as_local if dt is not none -}}
+            {% set window = state_attr('sensor.openmeteo_home_uv_window_json', 'data') %}
+            {% set new = window.get('start') | as_datetime(default=none) %}
+            {% set new = new | as_local if new is not none else none %}
+            {% set prev = this.attributes.get('start') | as_datetime(default=none) %}
+            {% set stale = prev is not none and prev.date() != now().date() %}
+            {{ new if new is not none else (none if stale else prev) }}
           end: >-
-            {%- set window = state_attr('sensor.openmeteo_home_uv_window_json','data') -%}
-            {%- set dt = window.get('end') | as_datetime(default=none) -%}
-            {{- dt | as_local if dt is not none -}}
+            {% set window = state_attr('sensor.openmeteo_home_uv_window_json', 'data') %}
+            {% set new = window.get('end') | as_datetime(default=none) %}
+            {% set new = new | as_local if new is not none else none %}
+            {% set prev = this.attributes.get('end') | as_datetime(default=none) %}
+            {% set stale = prev is not none and prev.date() != now().date() %}
+            {{ new if new is not none else (none if stale else prev) }}
           duration: >-
             {%- set window = state_attr('sensor.openmeteo_home_uv_window_json','data') -%}
             {{- timedelta(minutes=window.get('duration_min') | int(0)) -}}
           active: >-
             {%- set window = state_attr('sensor.openmeteo_home_uv_window_json','data') -%}
             {{- window.get('active') | bool(none) -}}
-          ever_above: >-
-            {%- set window = state_attr('sensor.openmeteo_home_uv_window_json','data') -%}
-            {{- window.get('ever_above') | bool(none) -}}
 
   - sensor:
       - name: "OpenMeteo Home UV Exposure JSON"

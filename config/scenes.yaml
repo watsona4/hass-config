@@ -1,15 +1,15 @@
 - id: '1692813067948'
   name: Christmas Lights Off
   entities:
-    switch.formal_christmas_tree_socket_1:
+    switch.formal_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Formal Christmas Tree Socket 1
       state: 'off'
-    switch.family_christmas_tree_socket_1:
+    switch.family_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Family Christmas Tree Socket 1
       state: 'off'
-    switch.playroom_christmas_tree_socket_1:
+    switch.playroom_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Playroom Christmas Tree Socket 1
       state: 'off'
@@ -18,15 +18,15 @@
 - id: '1692813123735'
   name: Christmas Lights On
   entities:
-    switch.family_christmas_tree_socket_1:
+    switch.family_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Family Christmas Tree Socket 1
       state: 'on'
-    switch.formal_christmas_tree_socket_1:
+    switch.formal_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Formal Christmas Tree Socket 1
       state: 'on'
-    switch.playroom_christmas_tree_socket_1:
+    switch.playroom_christmas_tree_socket_1_cloud:
       device_class: outlet
       friendly_name: Playroom Christmas Tree Socket 1
       state: 'on'

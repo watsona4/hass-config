@@ -47,7 +47,6 @@
     entity_id:
     - device_tracker.ashley_iphone
     - device_tracker.aaron_helper_tracker
-    from: not_home
     to: home
     id: Coming Home
   - trigger: state
@@ -794,7 +793,7 @@
       then:
       - target:
           entity_id:
-          - switch.guest_bedroom_lamp_socket_1
+          - switch.guest_bedroom_lamp_socket_1_cloud
         data: {}
         action: switch.turn_off
   mode: restart
@@ -1292,41 +1291,6 @@
   alias: Gas Stove
   description: ''
   triggers:
-  - entity_id:
-    - climate.downstairs_thermostat
-    above: -2
-    trigger: numeric_state
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-    value_template: '{{ state.attributes.current_temperature | float - states("input_number.furnace_temperature")
-      | float }}'
-    enabled: false
-  - entity_id:
-    - climate.downstairs_thermostat
-    trigger: numeric_state
-    below: -2
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-    value_template: '{{ state.attributes.current_temperature | float - states("input_number.furnace_temperature")
-      | float }}'
-    enabled: false
-  - entity_id:
-    - climate.downstairs_thermostat
-    trigger: state
-    attribute: temperature
-    enabled: false
-  - trigger: state
-    entity_id:
-    - binary_sensor.daytime
-    - input_boolean.someone_is_home
-    to:
-    enabled: false
   - trigger: numeric_state
     entity_id:
     - sensor.parlor_thermometer_temperature
@@ -1346,30 +1310,6 @@
   conditions: []
   actions:
   - if:
-    - condition: numeric_state
-      entity_id: climate.downstairs_thermostat
-      below: -2
-      value_template: '{{ state.attributes.current_temperature | float - states("input_number.furnace_temperature")
-        | float }}'
-      enabled: false
-    - condition: state
-      entity_id: binary_sensor.daytime
-      state: 'on'
-      enabled: false
-    - condition: state
-      entity_id: input_boolean.someone_is_home
-      state: 'on'
-      enabled: false
-    - condition: template
-      value_template: '{% set target_temp = (state_attr(''climate.downstairs_thermostat'',
-        ''temperature'') or state_attr(''climate.downstairs_thermostat'', ''target_temp_low''))
-        | float %} {% set wood_stove = states(''input_boolean.wood_stove'') | bool
-        %}
-
-        {% set furnace = states("input_number.furnace_temperature") | float %}
-
-        {{ wood_stove or target_temp <= furnace }}'
-      enabled: false
     - condition: numeric_state
       entity_id: sensor.parlor_thermometer_temperature
       below: 70
@@ -2608,10 +2548,6 @@
     id: Low Humidity
   - event_type: timer.finished
     event_data:
-      entity_id: timer.gym_event_loop_timer
-    trigger: event
-  - event_type: timer.finished
-    event_data:
       entity_id: timer.gym_event_loop_running
     id: Stop
     trigger: event
@@ -2660,12 +2596,6 @@
         - Start
         - Manual
   actions:
-  - action: timer.start
-    metadata: {}
-    data:
-      duration: 00:05:00
-    target:
-      entity_id: timer.gym_event_loop_timer
   - choose:
     - conditions:
       - condition: or
@@ -2798,11 +2728,6 @@
         data: {}
         target:
           entity_id: timer.gym_event_loop_running
-  - action: timer.cancel
-    metadata: {}
-    data: {}
-    target:
-      entity_id: timer.gym_event_loop_timer
   mode: single
   trace:
     stored_traces: 100
@@ -4415,26 +4340,13 @@
         entity_id: cover.kids_bathroom_window
         state: open
       sequence:
-      - if:
-        - condition: state
-          entity_id: input_boolean.all_windows
-          state: 'on'
-        then:
-        - metadata: {}
-          data:
-            entities:
-            - cover.kids_bathroom_window
-            action: Closed Down
-            reason: Button
-          action: script.window_position
-        else:
-        - metadata: {}
-          data:
-            entities:
-            - cover.kids_bathroom_window
-            action: Closed Down
-            reason: Button
-          action: script.window_position
+      - metadata: {}
+        data:
+          entities:
+          - cover.kids_bathroom_window
+          action: Closed Down
+          reason: Button
+        action: script.window_position
     - conditions:
       - condition: state
         entity_id: cover.kids_bathroom_window
@@ -4474,25 +4386,13 @@
           entity_id: cover.master_bathroom_right_window
           state: open
       sequence:
-      - if:
-        - condition: state
-          entity_id: input_boolean.all_windows
-          state: 'on'
-        then:
-        - data:
-            entities:
-            - cover.master_bathroom_left_window
-            - cover.master_bathroom_right_window
-            action: Closed Down
-            reason: Button
-          action: script.window_position
-        else:
-        - data:
-            entities:
-            - cover.master_bathroom_left_window
-            - cover.master_bathroom_right_window
-            action: Closed Down
-          action: script.window_position
+      - data:
+          entities:
+          - cover.master_bathroom_left_window
+          - cover.master_bathroom_right_window
+          action: Closed Down
+          reason: Button
+        action: script.window_position
     - conditions:
       - or:
         - condition: state
@@ -4545,7 +4445,7 @@
             entities:
             - cover.master_bedroom_left_window
             - cover.master_bedroom_right_window
-            action: Closed Down
+            action: Closed Up
             reason: Button
           action: script.window_position
         else:
@@ -4660,8 +4560,8 @@
           players:
           - media_player.kitchen_hub
           - media_player.play_room_hub
-          - media_player.sonos_play_3
-          - media_player.sonos_five
+          - media_player.study
+          - media_player.parlor
           name: '{{name}}'
           door: '{{door}}'
         action: script.announce_door
@@ -4805,7 +4705,7 @@
               - cover.guest_bedroom_left_window
               - cover.guest_bedroom_right_window
               switches:
-              - binary_sensor.guest_bedroom_presence_presence_sensor_1
+              - binary_sensor.guest_bedroom_closed_presence
               - binary_sensor.west_windows_closed_temperature
               action: Open
             action: script.window_position
@@ -4839,7 +4739,7 @@
             entities:
             - cover.eleanor_room_window
             switches:
-            - binary_sensor.eleanor_closed_presence
+            - binary_sensor.eleanor_room_closed_presence
             - binary_sensor.west_windows_closed_temperature
             action: Open
           action: script.window_position
@@ -4865,7 +4765,7 @@
             entities:
             - cover.michael_room_window
             switches:
-            - binary_sensor.michael_closed_presence
+            - binary_sensor.michael_room_closed_presence
             - binary_sensor.west_windows_closed_temperature
             action: Open
           action: script.window_position
@@ -5191,7 +5091,6 @@
       - condition: state
         entity_id: binary_sensor.evening
         state: 'off'
-        enabled: false
       sequence:
       - target:
           entity_id: input_number.downstairs_temperature
@@ -5968,8 +5867,9 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.ambient_sensor_1_battery
-    to: 'on'
+    - binary_sensor.ambient_batt1
+    to:
+    - 'on'
     for:
       hours: 0
       minutes: 10
@@ -5993,6 +5893,12 @@
     button override as backup. Updates the input_boolean.in_a_teams_meeting and triggers
     related actions (pause media, toggle lamp) when meetings start or end.
 
+    The "button" trigger below is a placeholder: the intended physical MQTT device
+    (detects the work computer''s camera turning on, since monitoring software can''t
+    be installed there) hasn''t been built yet, so both the topic and the toggle-vs-directional
+    semantics of the `intended` template''s ''button'' branch are provisional -- update
+    the topic/payload and re-check that logic once the real device exists.
+
     '
   triggers:
   - trigger: state
@@ -6006,6 +5912,10 @@
     id: webcam_off
     for:
       minutes: 1
+  - trigger: mqtt
+    topic: site/home/devices/work_camera_monitor/action
+    payload: pressed
+    id: button
   actions:
   - variables:
       current: '{{ states(''input_boolean.in_a_teams_meeting'') }}'
@@ -6172,10 +6082,6 @@
     timeout:
       minutes: 30
     continue_on_timeout: false
-  - if:
-    - condition: template
-      value_template: '{{ wait.trigger.event.data.action == action_dismiss }}'
-    then: []
   mode: single
 - id: '1750667975418'
   alias: Water Heater Boost
