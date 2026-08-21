@@ -1,0 +1,205 @@
+template:
+  # ---------------------------------------------------------------------------
+  # PurpleAir UI Sensors (Environment > PurpleAir view)
+  # ---------------------------------------------------------------------------
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.purpleair_church_st_aqi
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_aqi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+      - name: ui_purpleair_aqi_gauge
+        state: "{{ states('sensor.purpleair_church_st_aqi') }}"
+        attributes:
+          name: "Church St AQI"
+          color_0: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=0, device_class='aqi')) -}}
+          label_0: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=0, device_class='aqi')) -}}
+          color_51: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=51, device_class='aqi')) -}}
+          label_51: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=51, device_class='aqi')) -}}
+          color_101: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=101, device_class='aqi')) -}}
+          label_101: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=101, device_class='aqi')) -}}
+          color_151: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=151, device_class='aqi')) -}}
+          label_151: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=151, device_class='aqi')) -}}
+          color_201: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=201, device_class='aqi')) -}}
+          label_201: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=201, device_class='aqi')) -}}
+          color_301: >-
+            {%- from 'main.jinja' import get_color -%}
+            {{- get_color(none, options=dict(value=301, device_class='aqi')) -}}
+          label_301: >-
+            {%- from 'main.jinja' import get_long_desc -%}
+            {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_pm1
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_pm1
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_pm2_5
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_pm2_5
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_pm10
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_pm10
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_temperature
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_temperature
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_humidity
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_humidity
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_pressure
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_pressure
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_volatile_organic_compounds_air_quality_index
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_voc_aqi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_rssi
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_rssi
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.church_st_uptime
+    variables:
+      app: default
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(trigger.entity_id, app) | from_json }}
+    sensor:
+      - name: ui_purpleair_uptime
+        state: "{{ states(trigger.entity_id) }}"
+        attributes:
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          label: "{{ state_info.label }}"

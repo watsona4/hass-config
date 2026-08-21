@@ -1,0 +1,25 @@
+# =============================================================================
+# PurpleAir - Computed AQI for the Church St outdoor air quality sensor
+#
+# The core PurpleAir integration (config-entry managed -- no YAML entities
+# here, they're all auto-created from the config entry) exposes raw pollutant
+# concentrations but doesn't compute an EPA AQI value itself. This package
+# adds that on top, reusing the same compute_aqi() macro already used for
+# WAQI forecasts.
+#
+# Entities created:
+#   sensor.purpleair_church_st_aqi: EPA AQI computed from PM2.5 + PM10
+# =============================================================================
+
+template:
+  - sensor:
+      - name: "PurpleAir Church St AQI"
+        unique_id: purpleair_church_st_aqi
+        device_class: aqi
+        state_class: measurement
+        availability: >-
+          {{ has_value('sensor.church_st_pm2_5') }}
+        state: >-
+          {%- from 'metrics/air_quality/aqi_calc.jinja' import compute_aqi -%}
+          {{- compute_aqi(pm25=states('sensor.church_st_pm2_5') | float(none),
+                          pm10=states('sensor.church_st_pm10') | float(none)) -}}
