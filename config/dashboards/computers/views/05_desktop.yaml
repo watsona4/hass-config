@@ -185,22 +185,10 @@ sections:
               action: more-info
           - type: custom:mushroom-template-card
             entity: sensor.desktop_wifi_signal
-            icon: >-
-              {%- set sig = states('sensor.desktop_wifi_signal') | int(0) -%}
-              {{ 'mdi:wifi-strength-4' if sig > 75 else 'mdi:wifi-strength-3' if sig > 50 else 'mdi:wifi-strength-2' if sig > 25 else 'mdi:wifi-strength-1' if sig > 0 else 'mdi:wifi-off' }}
-            icon_color: >-
-              {%- set sig = states('sensor.desktop_wifi_signal') | int(0) -%}
-              {{ 'green' if sig > 60 else 'orange' if sig > 30 else 'red' }}
-            primary: "{{ states('sensor.desktop_wifi_network') | default('Not Connected') }}"
-            secondary: >-
-              {%- set sig = states('sensor.desktop_wifi_signal') | default('?') -%}
-              {%- set dbm = states('sensor.desktop_wifi_signal_dbm') | default('?') -%}
-              {%- set ch = states('sensor.desktop_wifi_channel') | default('?') -%}
-              {%- set rate = states('sensor.desktop_wifi_bitrate') | default('?') -%}
-              {%- set auth = states('sensor.desktop_wifi_auth') | default('') -%}
-              {%- set radio = states('sensor.desktop_wifi_radio') | default('') -%}
-              {{ sig }}% ({{ dbm }} dBm) | Ch {{ ch }}
-              {{ rate }} Mbps{{ ' | ' ~ radio if radio else '' }}{{ ' | ' ~ auth if auth else '' }}
+            icon: "{{ state_attr('sensor.ui_desktop_wifi_stats', 'wifi_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_desktop_wifi_stats', 'wifi_color') }}"
+            primary: "{{ state_attr('sensor.ui_desktop_wifi_stats', 'wifi_primary') }}"
+            secondary: "{{ state_attr('sensor.ui_desktop_wifi_stats', 'wifi_secondary') }}"
             multiline_secondary: true
             tap_action:
               action: more-info
@@ -214,42 +202,11 @@ sections:
             title: GPU
             subtitle: Graphics processor load and thermals
           - type: custom:mushroom-template-card
-            entity: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
-            icon: mdi:expansion-card
-            icon_color: >-
-              {% set gpus = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}
-              {% set g = gpus[0] if gpus and gpus | length > 0 else none -%}
-              {% set core = g['core'] | default({}) if g else {} -%}
-              {% set load = core['load_pct'] | default(0) | float -%}
-              {% if load > 90 -%}red
-              {% elif load > 70 -%}orange
-              {% elif load > 30 -%}yellow
-              {% else -%}green
-              {% endif -%}
-            primary: >-
-              {% set gpus = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}
-              {% set g = gpus[0] if gpus and gpus | length > 0 else none -%}
-              {% set core = g['core'] | default({}) if g else {} -%}
-              {% set load = core['load_pct'] | default(0) | round(0) | int -%}
-              GPU ({{- load -}}%)
-            secondary: >-
-              {% set gpus = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}
-              {% set g = gpus[0] if gpus and gpus | length > 0 else none -%}
-              {% if not g -%}No GPU data
-              {% else -%}
-              {% set temp = g['temp_c'] | default(0) | round(0) | int -%}
-              {% set core = g['core'] | default({}) -%}
-              {% set soc = g['soc'] | default({}) -%}
-              {% set core_power = core['power_w'] | default(0) | round(1) -%}
-              {% set soc_power = soc['power_w'] | default(0) | round(1) -%}
-              {% set voltage = soc['voltage_v'] | default(0) | round(2) -%}
-              {% set total_power = core_power + soc_power -%}
-              {% set ns = namespace(lines=[]) -%}
-              {% if temp > 0 -%}{% set ns.lines = ns.lines + [temp | string ~ '°C'] -%}{% endif -%}
-              {% if total_power > 0 -%}{% set ns.lines = ns.lines + [total_power | round(1) | string ~ ' W'] -%}{% endif -%}
-              {% if voltage > 0 -%}{% set ns.lines = ns.lines + [voltage | string ~ ' V'] -%}{% endif -%}
-              {{- ns.lines | join(' | ') if ns.lines else 'Idle' -}}
-              {% endif -%}
+            entity: sensor.desktop_bq063ig_hardware_telemetry
+            icon: "{{ state_attr('sensor.ui_desktop_gpu_load', 'gpu_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_desktop_gpu_load', 'gpu_color') }}"
+            primary: "{{ state_attr('sensor.ui_desktop_gpu_load', 'gpu_primary') }}"
+            secondary: "{{ state_attr('sensor.ui_desktop_gpu_load', 'gpu_secondary') }}"
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
@@ -271,9 +228,9 @@ sections:
             subtitle: Monitored system services
           - type: custom:mushroom-template-card
             entity: binary_sensor.desktop_services_ok
-            icon: mdi:cog
-            icon_color: "{{ 'green' if is_state('binary_sensor.desktop_services_ok', 'on') else 'red' }}"
-            primary: Services Status
-            secondary: "{{ states('sensor.desktop_services_checked') }} monitored"
+            icon: "{{ state_attr('sensor.ui_desktop_services_status', 'services_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_desktop_services_status', 'services_color') }}"
+            primary: "{{ state_attr('sensor.ui_desktop_services_status', 'services_primary') }}"
+            secondary: "{{ state_attr('sensor.ui_desktop_services_status', 'services_secondary') }}"
             tap_action:
               action: more-info

@@ -10,7 +10,7 @@
 #   - UI sensors for dashboard card attributes
 #   - Binary sensors for health status
 #
-# Source telemetry sensor: sensor.raspi4_raspi4_hardware_telemetry
+# Source telemetry sensor: sensor.raspi4_hardware_telemetry
 #
 # =============================================================================
 
@@ -22,9 +22,9 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.raspi4_raspi4_hardware_telemetry
+        entity_id: sensor.raspi4_hardware_telemetry
     variables:
-      entity_id: sensor.raspi4_raspi4_hardware_telemetry
+      entity_id: sensor.raspi4_hardware_telemetry
       available: "{{ has_value(entity_id) }}"
       host: "{{ state_attr(entity_id, 'host') or {} }}"
       health: "{{ state_attr(entity_id, 'health') or {} }}"
@@ -509,7 +509,7 @@ template:
       - platform: state
         entity_id:
           - sensor.raspi4_cpu_utilization
-          - sensor.raspi4_raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
           - sensor.raspi4_cpu_load_1m
     variables:
       entity_id: sensor.raspi4_cpu_utilization
@@ -751,7 +751,7 @@ template:
       - platform: state
         entity_id:
           - binary_sensor.raspi4_status_alarm
-          - sensor.raspi4_raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
           - sensor.raspi4_overall_status_summary
     variables:
       entity_id: binary_sensor.raspi4_status_alarm
@@ -874,7 +874,7 @@ template:
       - platform: state
         entity_id:
           - sensor.raspi4_fs_root_percent
-          - sensor.raspi4_raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
           - sensor.raspi4_fs_root_used
           - sensor.raspi4_fs_root_total
     variables:
@@ -910,18 +910,18 @@ template:
           app: disk_utilization
           device_class: none
           fs_icon: >-
-            {%- set telemetry = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'rootfs') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+            {%- set telemetry = state_attr('sensor.raspi4_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.raspi4_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'rootfs') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
           fs_color: >-
             {%- set pct = states('sensor.raspi4_fs_root_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
           fs_secondary: >-
-            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'rootfs') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.raspi4_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.raspi4_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'rootfs') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
   - trigger:
       - platform: homeassistant
         event: start
       - platform: state
         entity_id:
           - sensor.raspi4_fs_boot_percent
-          - sensor.raspi4_raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
           - sensor.raspi4_fs_boot_used
           - sensor.raspi4_fs_boot_total
     variables:
@@ -957,18 +957,18 @@ template:
           app: disk_utilization
           device_class: none
           fs_icon: >-
-            {%- set telemetry = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'bootfs') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+            {%- set telemetry = state_attr('sensor.raspi4_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.raspi4_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'bootfs') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
           fs_color: >-
             {%- set pct = states('sensor.raspi4_fs_boot_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
           fs_secondary: >-
-            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.raspi4_raspi4_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'bootfs') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.raspi4_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.raspi4_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'bootfs') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
   - trigger:
       - platform: homeassistant
         event: start
       - platform: state
         entity_id:
           - sensor.raspi4_ethernet_info
-          - sensor.raspi4_raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
           - sensor.raspi4_ethernet_upload
           - sensor.raspi4_ethernet_download
     variables:
@@ -1011,3 +1011,99 @@ template:
             {{- 'mdi:lan-connect' if state_attr('sensor.raspi4_ethernet_info', 'carrier') else 'mdi:lan-disconnect' -}}
           iface_color: >-
             {{- '#22c55e' if state_attr('sensor.raspi4_ethernet_info', 'carrier') else '#dc2626' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.raspi4_hardware_telemetry
+          - sensor.raspi4_hardware_telemetry
+    variables:
+      entity_id: sensor.raspi4_hardware_telemetry
+      app: connectivity
+      options:
+        attr: host
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_raspi4_system
+        unique_id: d21fff70-4c48-5bf7-b446-4fb452447e86
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          system_icon: >-
+            {%- set host = state_attr('sensor.raspi4_hardware_telemetry', 'host') | default({}) -%}{%- set chassis = (host['chassis_type'] | default('Desktop')) | lower -%}{%- set icons = {'notebook': 'mdi:laptop', 'laptop': 'mdi:laptop', 'desktop': 'mdi:desktop-tower', 'server': 'mdi:server', 'tablet': 'mdi:tablet'} -%}{{- icons.get(chassis, 'mdi:desktop-tower') -}}
+          system_color: >-
+            {%- set host = state_attr('sensor.raspi4_hardware_telemetry', 'host') | default({}) -%}{%- set os = (host['system'] | default('')) | lower -%}{{- 'blue' if 'windows' in os else ('orange' if 'linux' in os else ('purple' if 'freebsd' in os else 'grey')) -}}
+          system_primary: >-
+            {%- set host = state_attr('sensor.raspi4_hardware_telemetry', 'host') | default({}) -%}{{- host['name'] | default('Unknown') -}}
+          system_secondary: >-
+            {%- set h = state_attr('sensor.raspi4_hardware_telemetry', 'host') | default({}) -%}{%- set model = h['model'] | default('Unknown') -%}{%- set serial = h['serial'] | default('N/A') -%}{%- set system = h['system'] | default('Unknown') -%}{%- set release = h['release'] | default('') -%}{%- set machine = h['machine'] | default('') -%}{%- set os_str = h['os'] | default('') -%}{%- set build = os_str.split('-')[2] if '-' in os_str else os_str -%}{{- model ~ ' (Serial: ' ~ serial ~ ')\n' ~ system ~ ' ' ~ release ~ ' (' ~ machine ~ ')\nBuild: ' ~ build -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - binary_sensor.raspi4_services_ok
+          - sensor.raspi4_services_checked
+    variables:
+      entity_id: binary_sensor.raspi4_services_ok
+      app: running
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_raspi4_services_status
+        unique_id: c0d36b31-bce0-5d6c-9b42-599d70f47580
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: running
+          device_class: none
+          services_icon: >-
+            mdi:cog
+          services_color: >-
+            {{- 'green' if is_state('binary_sensor.raspi4_services_ok', 'on') else 'red' -}}
+          services_primary: >-
+            Services Status
+          services_secondary: >-
+            {{- states('sensor.raspi4_services_checked') ~ ' monitored' -}}

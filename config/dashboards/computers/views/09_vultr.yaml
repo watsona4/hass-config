@@ -186,9 +186,9 @@ sections:
             subtitle: Monitored system services
           - type: custom:mushroom-template-card
             entity: binary_sensor.vultr_services_ok
-            icon: mdi:cog
-            icon_color: "{{ 'green' if is_state('binary_sensor.vultr_services_ok', 'on') else 'red' }}"
-            primary: Services Status
-            secondary: "{{ states('sensor.vultr_services_checked') }} monitored"
+            icon: "{{ state_attr('sensor.ui_vultr_services_status', 'services_icon') }}"
+            icon_color: "{{ state_attr('sensor.ui_vultr_services_status', 'services_color') }}"
+            primary: "{{ state_attr('sensor.ui_vultr_services_status', 'services_primary') }}"
+            secondary: "{{ state_attr('sensor.ui_vultr_services_status', 'services_secondary') }}"
             tap_action:
               action: more-info

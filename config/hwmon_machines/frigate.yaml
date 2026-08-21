@@ -17,7 +17,7 @@ machine:
   # The MQTT sensor created by telemetry-tap via MQTT discovery
   # Format: sensor.<hostname>_hardware_telemetry
   # The full JSON payload is stored as attributes on this sensor
-  telemetry_sensor: sensor.frigate_frigate_hardware_telemetry
+  telemetry_sensor: sensor.frigate_hardware_telemetry
 
   # Dashboard view ordering (02-99, 01 is overview)
   view_order: 4

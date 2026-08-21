@@ -11,7 +11,7 @@
 machine:
   name: RV Hass
   slug: rvhass
-  telemetry_sensor: sensor.a0d7b954_ssh_a0d7b954_ssh_hardware_telemetry
+  telemetry_sensor: sensor.a0d7b954_ssh_hardware_telemetry
   view_order: 8
 
 # -----------------------------------------------------------------------------

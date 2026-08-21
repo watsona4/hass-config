@@ -10,7 +10,7 @@
 machine:
   name: OPNsense
   slug: opnsense
-  telemetry_sensor: sensor.opnsense_home_arpa_opnsense_home_arpa_hardware_telemetry
+  telemetry_sensor: sensor.opnsense_home_arpa_hardware_telemetry
   view_order: 6
 
 # -----------------------------------------------------------------------------
@@ -39,8 +39,7 @@ sections:
   services:
     enabled: true
     include:
-      - adguardhome
-      - kea-dhcp
+      - kea
       - crowdsec
       - cron
 

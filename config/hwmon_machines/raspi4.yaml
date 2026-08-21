@@ -10,7 +10,7 @@
 machine:
   name: RasPi4
   slug: raspi4
-  telemetry_sensor: sensor.raspi4_raspi4_hardware_telemetry
+  telemetry_sensor: sensor.raspi4_hardware_telemetry
   view_order: 7
 
 # -----------------------------------------------------------------------------

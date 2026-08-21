@@ -10,7 +10,7 @@
 machine:
   name: Laptop
   slug: laptop
-  telemetry_sensor: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+  telemetry_sensor: sensor.laptop_oo58t6kn_hardware_telemetry
   view_order: 3
 
 # -----------------------------------------------------------------------------

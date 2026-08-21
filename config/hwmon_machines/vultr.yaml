@@ -9,7 +9,7 @@
 machine:
   name: Vultr
   slug: vultr
-  telemetry_sensor: sensor.vultr_vultr_hardware_telemetry
+  telemetry_sensor: sensor.vultr_hardware_telemetry
   view_order: 9
 
 # -----------------------------------------------------------------------------

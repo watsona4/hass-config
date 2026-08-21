@@ -10,7 +10,7 @@
 #   - UI sensors for dashboard card attributes
 #   - Binary sensors for health status
 #
-# Source telemetry sensor: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+# Source telemetry sensor: sensor.desktop_bq063ig_hardware_telemetry
 #
 # =============================================================================
 
@@ -22,9 +22,9 @@ template:
       - platform: homeassistant
         event: start
       - platform: state
-        entity_id: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+        entity_id: sensor.desktop_bq063ig_hardware_telemetry
     variables:
-      entity_id: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+      entity_id: sensor.desktop_bq063ig_hardware_telemetry
       available: "{{ has_value(entity_id) }}"
       host: "{{ state_attr(entity_id, 'host') or {} }}"
       health: "{{ state_attr(entity_id, 'health') or {} }}"
@@ -174,7 +174,7 @@ template:
         unit_of_measurement: "%"
         state_class: measurement
       - name: "Desktop FS Windows (C:) Percent"
-        unique_id: 9fbc1dc7-c0e0-5884-ade8-6b02e1405381
+        unique_id: 5a5130ba-d01a-5327-bbf1-b09097f8a1b9
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Windows') | first | default(none) %}{{ ((fs.used_b / (fs.used_b + fs.available_b)) * 100) | round(1) if fs else 0 }}
@@ -182,7 +182,7 @@ template:
         unit_of_measurement: "%"
         state_class: measurement
       - name: "Desktop FS Windows (C:) Used"
-        unique_id: e6ad5d71-4e86-56c8-ba11-62f33fa421e4
+        unique_id: 9ef56acf-a64c-50e9-8968-9ba578f66a12
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Windows') | first | default(none) %}{{ ((fs.used_b | default(0)) / 1073741824) | round(2) if fs else 0 }}
@@ -191,7 +191,7 @@ template:
         state_class: measurement
         device_class: data_size
       - name: "Desktop FS Windows (C:) Total"
-        unique_id: 282563eb-428f-5132-8d0b-9b51fee6f180
+        unique_id: 61134ef4-e3f3-5c34-addc-41406b86c5b7
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Windows') | first | default(none) %}{{ (((fs.used_b | default(0)) + (fs.available_b | default(0))) / 1073741824) | round(2) if fs else 0 }}
@@ -200,7 +200,7 @@ template:
         state_class: measurement
         device_class: data_size
       - name: "Desktop FS Data (D:) Percent"
-        unique_id: 7602de4e-1e62-5ca0-895b-ef49e88faed0
+        unique_id: f8f6efcf-2c18-5188-8ffe-8c6e93996a1e
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Data') | first | default(none) %}{{ ((fs.used_b / (fs.used_b + fs.available_b)) * 100) | round(1) if fs else 0 }}
@@ -208,7 +208,7 @@ template:
         unit_of_measurement: "%"
         state_class: measurement
       - name: "Desktop FS Data (D:) Used"
-        unique_id: f074b126-6eaa-5d6b-96d8-f16d33aeda88
+        unique_id: fe8818c7-f287-58df-a4af-cc3827c875d4
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Data') | first | default(none) %}{{ ((fs.used_b | default(0)) / 1073741824) | round(2) if fs else 0 }}
@@ -217,7 +217,7 @@ template:
         state_class: measurement
         device_class: data_size
       - name: "Desktop FS Data (D:) Total"
-        unique_id: 1372991a-78b6-52dd-859a-a96faa106d00
+        unique_id: 4d7096ea-8506-5b5e-9dad-64cc882a4a77
         availability: "{{ available }}"
         state: >-
           {% set fs = filesystems | selectattr('label', 'eq', 'Data') | first | default(none) %}{{ (((fs.used_b | default(0)) + (fs.available_b | default(0))) / 1073741824) | round(2) if fs else 0 }}
@@ -473,7 +473,7 @@ template:
       - platform: state
         entity_id:
           - sensor.desktop_cpu_utilization
-          - sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
           - sensor.desktop_cpu_load_1m
     variables:
       entity_id: sensor.desktop_cpu_utilization
@@ -715,7 +715,7 @@ template:
       - platform: state
         entity_id:
           - binary_sensor.desktop_status_alarm
-          - sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
           - sensor.desktop_overall_status_summary
     variables:
       entity_id: binary_sensor.desktop_status_alarm
@@ -881,7 +881,7 @@ template:
       - platform: state
         entity_id:
           - sensor.desktop_fs_windows_c_percent
-          - sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
           - sensor.desktop_fs_windows_c_used
           - sensor.desktop_fs_windows_c_total
     variables:
@@ -917,18 +917,18 @@ template:
           app: disk_utilization
           device_class: none
           fs_icon: >-
-            {%- set telemetry = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+            {%- set telemetry = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
           fs_color: >-
             {%- set pct = states('sensor.desktop_fs_windows_c_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
           fs_secondary: >-
-            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Windows') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
   - trigger:
       - platform: homeassistant
         event: start
       - platform: state
         entity_id:
           - sensor.desktop_fs_data_d_percent
-          - sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
           - sensor.desktop_fs_data_d_used
           - sensor.desktop_fs_data_d_total
     variables:
@@ -964,11 +964,11 @@ template:
           app: disk_utilization
           device_class: none
           fs_icon: >-
-            {%- set telemetry = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Data') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
+            {%- set telemetry = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'filesystems') | default([]) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'drives') | default([]) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Data') | first | default(none) -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('') if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if p.label is defined and p.label == (fs.label | default('')) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set encrypted = (fs.encrypted | default(false)) or (partition.encryption.encrypted | default(false) if partition and partition.encryption is defined else false) if fs else false -%}{{- 'mdi:folder-lock' if encrypted else 'mdi:folder' -}}
           fs_color: >-
             {%- set pct = states('sensor.desktop_fs_data_d_percent') | float(0) -%}{%- if pct > 95 -%}#dc2626{%- elif pct > 85 -%}#f97316{%- elif pct > 70 -%}#eab308{%- else -%}#22c55e{%- endif -%}
           fs_secondary: >-
-            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Data') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
+            {%- from 'units/base.jinja' import u_humanize_value -%}{%- set telemetry = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'filesystems') | default([], true) -%}{%- set drives = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'drives') | default([], true) -%}{%- set fs = telemetry | selectattr('label', 'eq', 'Data') | first | default(none) -%}{%- set used_b = fs.used_b | default(0, true) if fs else 0 -%}{%- set avail_b = fs.available_b | default(0, true) if fs else 0 -%}{%- set total_b = used_b + avail_b -%}{%- set pct = ((used_b / total_b) * 100) | round(0) | int if total_b > 0 else 0 -%}{%- set fmt = fs.format | default('Unknown', true) if fs else 'Unknown' -%}{%- set mnt = fs.mountpoint | default('Unknown', true) if fs else 'Unknown' -%}{%- set fs_uuid = fs.uuid | default('', true) if fs else '' -%}{%- set read_rate = fs.read_rate_bps | default(0, true) if fs else 0 -%}{%- set write_rate = fs.write_rate_bps | default(0, true) if fs else 0 -%}{%- set drive_name = fs.backing_blockdev.drive_name | default('', true) if fs and fs.backing_blockdev is defined else '' -%}{%- set drive = drives | selectattr('name', 'eq', drive_name) | first | default(none) if drive_name else none -%}{%- set fs_drive_letter = mnt | replace(':\\', '') | replace(':/', '') if mnt and ':' in mnt else '' -%}{%- set partition = none -%}{%- if drive and drive.partitions is defined -%}{%- for p in drive.partitions -%}{%- if (fs_drive_letter and p.drive_letter | default('') == fs_drive_letter) or (p.label | default('') == (fs.label | default(''))) -%}{%- set partition = p -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- set fs_encrypted = fs.encrypted | default(false, true) if fs else false -%}{%- set part_encrypted = partition.encryption.encrypted | default(false, true) if partition and partition.encryption is defined else false -%}{%- set encrypted = fs_encrypted or part_encrypted -%}{%- set enc_scheme = partition.encryption.scheme | default('', true) if partition and partition.encryption is defined else '' -%}{%- set ns = namespace(lines=[]) -%}{%- set ns.lines = ns.lines + [u_humanize_value(used_b, 'B') ~ ' / ' ~ u_humanize_value(total_b, 'B') ~ ' (' ~ pct ~ '% used)'] -%}{%- set ns.lines = ns.lines + [fmt ~ ' | ' ~ mnt] -%}{%- if read_rate > 0 or write_rate > 0 -%}{%- set ns.lines = ns.lines + ['R: ' ~ u_humanize_value(read_rate, 'B') ~ '/s | W: ' ~ u_humanize_value(write_rate, 'B') ~ '/s'] -%}{%- endif -%}{%- if encrypted -%}{%- set enc_text = 'Encrypted' ~ (' (' ~ enc_scheme ~ ')' if enc_scheme else '') -%}{%- set ns.lines = ns.lines + [enc_text] -%}{%- endif -%}{%- if fs_uuid -%}{%- set ns.lines = ns.lines + ['UUID: ' ~ fs_uuid] -%}{%- endif -%}{{- ns.lines | join('\n') -}}
   - trigger:
       - platform: homeassistant
         event: start
@@ -1126,7 +1126,7 @@ template:
       - platform: state
         entity_id:
           - sensor.desktop_wifi_info
-          - sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
           - sensor.desktop_wifi_upload
           - sensor.desktop_wifi_download
     variables:
@@ -1169,3 +1169,198 @@ template:
             {{- 'mdi:wifi' if state_attr('sensor.desktop_wifi_info', 'carrier') else 'mdi:wifi-off' -}}
           iface_color: >-
             {{- '#22c55e' if state_attr('sensor.desktop_wifi_info', 'carrier') else '#dc2626' -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
+    variables:
+      entity_id: sensor.desktop_bq063ig_hardware_telemetry
+      app: connectivity
+      options:
+        attr: host
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_desktop_system
+        unique_id: 1f67d70b-f371-5c33-b30a-701c37648cec
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          system_icon: >-
+            {%- set host = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'host') | default({}) -%}{%- set chassis = (host['chassis_type'] | default('Desktop')) | lower -%}{%- set icons = {'notebook': 'mdi:laptop', 'laptop': 'mdi:laptop', 'desktop': 'mdi:desktop-tower', 'server': 'mdi:server', 'tablet': 'mdi:tablet'} -%}{{- icons.get(chassis, 'mdi:desktop-tower') -}}
+          system_color: >-
+            {%- set host = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'host') | default({}) -%}{%- set os = (host['system'] | default('')) | lower -%}{{- 'blue' if 'windows' in os else ('orange' if 'linux' in os else ('purple' if 'freebsd' in os else 'grey')) -}}
+          system_primary: >-
+            {%- set host = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'host') | default({}) -%}{{- host['name'] | default('Unknown') -}}
+          system_secondary: >-
+            {%- set h = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'host') | default({}) -%}{%- set model = h['model'] | default('Unknown') -%}{%- set serial = h['serial'] | default('N/A') -%}{%- set system = h['system'] | default('Unknown') -%}{%- set release = h['release'] | default('') -%}{%- set machine = h['machine'] | default('') -%}{%- set os_str = h['os'] | default('') -%}{%- set build = os_str.split('-')[2] if '-' in os_str else os_str -%}{{- model ~ ' (Serial: ' ~ serial ~ ')\n' ~ system ~ ' ' ~ release ~ ' (' ~ machine ~ ')\nBuild: ' ~ build -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.desktop_wifi_signal
+          - sensor.desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_wifi_network
+          - sensor.desktop_wifi_signal_dbm
+          - sensor.desktop_wifi_channel
+          - sensor.desktop_wifi_bitrate
+    variables:
+      entity_id: sensor.desktop_wifi_signal
+      app: connectivity
+      options:
+        device_class: binary
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_desktop_wifi_stats
+        unique_id: 6a017dea-9eb6-59b1-9e4f-2deb69caaed2
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: connectivity
+          device_class: binary
+          wifi_icon: >-
+            {%- set sig = states('sensor.desktop_wifi_signal') | int(0) -%}{{- 'mdi:wifi-strength-4' if sig > 75 else 'mdi:wifi-strength-3' if sig > 50 else 'mdi:wifi-strength-2' if sig > 25 else 'mdi:wifi-strength-1' if sig > 0 else 'mdi:wifi-off' -}}
+          wifi_color: >-
+            {%- set sig = states('sensor.desktop_wifi_signal') | int(0) -%}{{- 'green' if sig > 60 else 'orange' if sig > 30 else 'red' -}}
+          wifi_primary: >-
+            {{- states('sensor.desktop_wifi_network') | default('Not Connected') -}}
+          wifi_secondary: >-
+            {%- set sig = states('sensor.desktop_wifi_signal') | default('?') -%}{%- set dbm = states('sensor.desktop_wifi_signal_dbm') | default('?') -%}{%- set ch = states('sensor.desktop_wifi_channel') | default('?') -%}{%- set rate = states('sensor.desktop_wifi_bitrate') | default('?') -%}{%- set auth = states('sensor.desktop_wifi_auth') | default('') -%}{%- set radio = states('sensor.desktop_wifi_radio') | default('') -%}{{- sig ~ '% (' ~ dbm ~ ' dBm) | Ch ' ~ ch ~ '\n' ~ rate ~ ' Mbps' ~ (' | ' ~ radio if radio else '') ~ (' | ' ~ auth if auth else '') -}}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.desktop_bq063ig_hardware_telemetry
+          - sensor.desktop_bq063ig_hardware_telemetry
+    variables:
+      entity_id: sensor.desktop_bq063ig_hardware_telemetry
+      app: cpu_utilization
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_desktop_gpu_load
+        unique_id: bf4cb0e2-319c-54ce-84be-72ac2496d3fe
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: cpu_utilization
+          device_class: none
+          gpu_icon: >-
+            mdi:expansion-card
+          gpu_color: >-
+            {%- set gpus = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- set core = g['core'] | default({}) if g else {} -%}{%- set load = core['load_pct'] | default(0) | float -%}{%- if load > 90 -%}red{%- elif load > 70 -%}orange{%- elif load > 30 -%}yellow{%- else -%}green{%- endif -%}
+          gpu_primary: >-
+            {%- set gpus = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- set core = g['core'] | default({}) if g else {} -%}{%- set load = core['load_pct'] | default(0) | round(0) | int -%}{{- 'GPU (' ~ load ~ '%)' -}}
+          gpu_secondary: >-
+            {%- set gpus = state_attr('sensor.desktop_bq063ig_hardware_telemetry', 'gpus') | default([], true) -%}{%- set g = gpus[0] if gpus and gpus | length > 0 else none -%}{%- if not g -%}No GPU data{%- else -%}{%- set temp = g['temp_c'] | default(0) | round(0) | int -%}{%- set core = g['core'] | default({}) -%}{%- set soc = g['soc'] | default({}) -%}{%- set core_power = core['power_w'] | default(0) | round(1) -%}{%- set soc_power = soc['power_w'] | default(0) | round(1) -%}{%- set voltage = soc['voltage_v'] | default(0) | round(2) -%}{%- set total_power = core_power + soc_power -%}{%- set ns = namespace(lines=[]) -%}{%- if temp > 0 -%}{%- set ns.lines = ns.lines + [temp | string ~ '°C'] -%}{%- endif -%}{%- if total_power > 0 -%}{%- set ns.lines = ns.lines + [total_power | round(1) | string ~ ' W'] -%}{%- endif -%}{%- if voltage > 0 -%}{%- set ns.lines = ns.lines + [voltage | string ~ ' V'] -%}{%- endif -%}{{- ns.lines | join(' | ') if ns.lines else 'Idle' -}}{%- endif -%}
+  - trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - binary_sensor.desktop_services_ok
+          - sensor.desktop_services_checked
+    variables:
+      entity_id: binary_sensor.desktop_services_ok
+      app: running
+      options: {}
+      state_info: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, options=options) | from_json }}
+      state_info_vertical: >-
+        {%- from 'main.jinja' import get_device_state_info -%}
+        {{ get_device_state_info(entity_id, app, layout='vertical', options=options) | from_json }}
+    sensor:
+      - name: ui_desktop_services_status
+        unique_id: 11feebe7-dea3-5c2d-8a94-a353eb29e371
+        state: "{{ states(entity_id) }}"
+        attributes:
+          value: "{{ state_info.value }}"
+          name: "{{ state_info.name }}"
+          default_desc: "{{ state_info.default_desc }}"
+          short_desc: "{{ state_info.short_desc }}"
+          full_desc: "{{ state_info.full_desc }}"
+          icon: "{{ state_info.icon }}"
+          color: "{{ state_info.color }}"
+          badge: "{{ state_info.badge }}"
+          badge_color: "{{ state_info.badge_color }}"
+          label: "{{ state_info.label }}"
+          short_label: "{{ state_info.short_label }}"
+          long_label: "{{ state_info.long_label }}"
+          label_vertical: "{{ state_info_vertical.label }}"
+          short_label_vertical: "{{ state_info_vertical.short_label }}"
+          long_label_vertical: "{{ state_info_vertical.long_label }}"
+          app: running
+          device_class: none
+          services_icon: >-
+            mdi:cog
+          services_color: >-
+            {{- 'green' if is_state('binary_sensor.desktop_services_ok', 'on') else 'red' -}}
+          services_primary: >-
+            Services Status
+          services_secondary: >-
+            {{- states('sensor.desktop_services_checked') ~ ' monitored' -}}

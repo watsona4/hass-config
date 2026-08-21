@@ -82,7 +82,7 @@ sections:
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
-            entity: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+            entity: sensor.laptop_oo58t6kn_hardware_telemetry
             icon: "{{ state_attr('sensor.ui_laptop_system', 'system_icon') }}"
             icon_color: "{{ state_attr('sensor.ui_laptop_system', 'system_color') }}"
             primary: "{{ state_attr('sensor.ui_laptop_system', 'system_primary') }}"
@@ -299,7 +299,7 @@ sections:
             title: Battery
             subtitle: Charge level and power status
           - type: custom:mushroom-template-card
-            entity: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+            entity: sensor.laptop_oo58t6kn_hardware_telemetry
             icon: "{{ state_attr('sensor.ui_laptop_battery_status', 'battery_icon') }}"
             icon_color: "{{ state_attr('sensor.ui_laptop_battery_status', 'battery_color') }}"
             primary: "{{ state_attr('sensor.ui_laptop_battery_status', 'battery_primary') }}"
@@ -308,7 +308,7 @@ sections:
             tap_action:
               action: more-info
           - type: custom:mushroom-template-card
-            entity: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+            entity: sensor.laptop_oo58t6kn_hardware_telemetry
             icon: "{{ state_attr('sensor.ui_laptop_battery_health', 'health_icon') }}"
             icon_color: "{{ state_attr('sensor.ui_laptop_battery_health', 'health_color') }}"
             primary: "{{ state_attr('sensor.ui_laptop_battery_health', 'health_primary') }}"
@@ -326,7 +326,7 @@ sections:
             title: GPU
             subtitle: Graphics processor load and thermals
           - type: custom:mushroom-template-card
-            entity: sensor.laptop_oo58t6kn_laptop_oo58t6kn_hardware_telemetry
+            entity: sensor.laptop_oo58t6kn_hardware_telemetry
             icon: "{{ state_attr('sensor.ui_laptop_gpu_load', 'gpu_icon') }}"
             icon_color: "{{ state_attr('sensor.ui_laptop_gpu_load', 'gpu_color') }}"
             primary: "{{ state_attr('sensor.ui_laptop_gpu_load', 'gpu_primary') }}"

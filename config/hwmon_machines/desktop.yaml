@@ -11,7 +11,7 @@
 machine:
   name: Desktop
   slug: desktop
-  telemetry_sensor: sensor.desktop_bq063ig_desktop_bq063ig_hardware_telemetry
+  telemetry_sensor: sensor.desktop_bq063ig_hardware_telemetry
   view_order: 5
 
 # -----------------------------------------------------------------------------
