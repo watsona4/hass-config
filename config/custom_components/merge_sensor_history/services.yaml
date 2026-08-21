@@ -1,0 +1,52 @@
+import_history:
+  name: Import History
+  description: "Import all historical states from a source entity into a destination entity. Only imports data older than the destination's oldest record."
+  fields:
+    source_entity_id:
+      name: Source Entity
+      description: "The entity to copy history FROM (old sensor)."
+      required: true
+      example: "sensor.ecowitt_temperature"
+      selector:
+        entity:
+    destination_entity_id:
+      name: Destination Entity
+      description: "The entity to copy history INTO (new sensor)."
+      required: true
+      example: "sensor.new_temperature"
+      selector:
+        entity:
+    fill_gaps:
+      name: Fill Gaps
+      description: "Also fill gaps inside the destination's existing time range (and after its newest entry) with source data."
+      required: false
+      default: false
+      selector:
+        boolean:
+    gap_threshold_minutes:
+      name: Gap Threshold
+      description: "Minimum gap width, in minutes, for a quiet period in the destination to qualify for gap-filling."
+      required: false
+      default: 60
+      selector:
+        number:
+          min: 1
+          max: 1440
+          unit_of_measurement: minutes
+    scale_factor:
+      name: Scaling Factor
+      description: "Multiply every numeric source value (states and statistics) by this factor before importing. Use when the sensors record the same quantity in different units, e.g. 1000 for kWh to Wh, or 0.001 for Wh to kWh. Omit for no scaling. Mutually exclusive with Value Function."
+      required: false
+      example: 1000
+      selector:
+        number:
+          min: 0
+          step: any
+          mode: box
+    value_function:
+      name: Value Function
+      description: "A math formula of v (the source value) applied to every numeric source value before importing, for conversions a plain factor cannot express, e.g. 'v * 9/5 + 32' for Celsius to Fahrenheit. Allowed: numbers, + - * / % ^ ( ) and abs, round, floor, ceil, sqrt, log, log10, exp, min, max, pow, pi, e. Parsed as pure math, never executed as code. Mutually exclusive with Scaling Factor."
+      required: false
+      example: "v * 9/5 + 32"
+      selector:
+        text:
