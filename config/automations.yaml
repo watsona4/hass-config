@@ -7286,3 +7286,39 @@
           priority: high
     action: notify.mobile_app_pixel_9_pro_xl
   mode: single
+- id: '1787354041315'
+  alias: First Alert Integration Reauth Needed
+  description: >-
+    Notifies once if binary_sensor.all_smoke_detectors has been unavailable
+    for 30+ minutes -- since all First Alert devices come from the same
+    resideo_firstalert config entry/coordinator, an integration-wide auth
+    failure takes them all down together, so this group sensor going
+    unavailable is a reliable proxy for "the integration needs reauth"
+    without needing a dedicated diagnostic entity (the integration doesn't
+    expose one). Refresh tokens are single-use/rotating and Resideo's API
+    is flaky enough (frequent 503s/resets) that reauth is needed more often
+    than the nominal ~30 day token life; email/password reauth is
+    CAPTCHA-blocked as of 2026-08, so it has to be the manual token path
+    (Proxyman/mitmproxy capturing POST https://login.resideo.com/oauth/token
+    from the mobile app, then Settings > Devices & Services > First Alert >
+    Reconfigure > manual token entry).
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.all_smoke_detectors
+      to: unavailable
+      for:
+        minutes: 30
+  conditions: []
+  actions:
+    - action: notify.aaron_phones
+      data:
+        title: First Alert Needs Reauth
+        message: >-
+          First Alert smoke/CO detectors have been unavailable for 30+
+          minutes -- the resideo_firstalert integration almost certainly
+          needs manual reauth (refresh token died). Settings > Devices &
+          Services > First Alert > Reconfigure > manual token entry.
+        data:
+          push:
+            interruption-level: active
+  mode: single
