@@ -6365,8 +6365,6 @@
     the moment print_status leaves ''finish'' (a new print started), and only sends
     the notification if still ''finish'' afterward - replicating the old restart-cancellation
     without depending on it.'
-  mode: parallel
-  max: 10
   triggers:
   - id: status_finish
     trigger: state
@@ -6377,6 +6375,12 @@
     trigger: state
     entity_id:
     - sensor.p1s_01p00c5c0603366_print_status
+  - id: status_settled
+    trigger: state
+    entity_id:
+    - sensor.p1s_01p00c5c0603366_print_status
+    for:
+      seconds: 15
   - id: layer_threshold
     trigger: numeric_state
     entity_id:
@@ -6391,13 +6395,94 @@
   - id: stage_change
     trigger: state
     entity_id: sensor.p1s_01p00c5c0603366_current_stage
+  - trigger: state
+    entity_id: binary_sensor.p1s_01p00c5c0603366_print_error
+    from: 'off'
+    to: 'on'
+    for:
+      seconds: 5
+    id: print_error
+  - trigger: state
+    entity_id: binary_sensor.p1s_01p00c5c0603366_hms_errors
+    from: 'off'
+    to: 'on'
+    for:
+      seconds: 5
+    id: hms_error
   conditions: []
   actions:
   - choose:
     - conditions:
       - condition: trigger
-        id: status_finish
+        id:
+        - print_error
+        - hms_error
       sequence:
+      - variables:
+          cam_ok: '{{ states(''camera.p1s_01p00c5c0603366_camera'') not in [''unavailable'',''unknown'']
+            }}'
+          title: "{{ '\U0001F6D1 3D Printer: Print Error' if trigger.id == 'print_error'
+            else '⚠️ 3D Printer: HMS Error' }}"
+          msg: '{% set job = states(''sensor.p1s_01p00c5c0603366_task_name'') %}{%
+            set jobtxt = '' on "'' ~ job ~ ''"'' if job not in [''unknown'',''unavailable'','''']
+            else '''' %}{% if trigger.id == ''print_error'' %}⛔ The Bambu P1S reported
+            a PRINT ERROR{{ jobtxt }}. Check the printer.{% else %}{% set attrs =
+            states.binary_sensor.p1s_01p00c5c0603366_hms_errors.attributes %}{% set
+            msgs = attrs.items() | selectattr(''0'',''search'',''(?i)error'') | map(attribute=''1'')
+            | select(''string'') | list %}⚠️ The Bambu P1S reported {{ attrs.get(''Count'',
+            msgs | count) }} HMS error(s){{ jobtxt }}: {{ msgs | join(''; '') if msgs
+            else ''check the printer / Bambu app for details.'' }}{% endif %}'
+      - if:
+        - condition: template
+          value_template: '{{ cam_ok }}'
+        then:
+        - action: notify.aaron_phones
+          data:
+            title: '{{ title }}'
+            message: '{{ msg }}'
+            data:
+              tag: bambu_p1s_error
+              group: bambu_p1s
+              ttl: 0
+              priority: high
+              channel: 3D Printer Alerts
+              importance: high
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+              image: /api/camera_proxy/camera.p1s_01p00c5c0603366_camera
+              attachment:
+                url: /api/camera_proxy/camera.p1s_01p00c5c0603366_camera
+                content-type: jpeg
+        else:
+        - action: notify.aaron_phones
+          data:
+            title: '{{ title }}'
+            message: '{{ msg }}'
+            data:
+              tag: bambu_p1s_error
+              group: bambu_p1s
+              ttl: 0
+              priority: high
+              channel: 3D Printer Alerts
+              importance: high
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+    - conditions:
+      - condition: trigger
+        id: status_finish
+      - condition: state
+        entity_id: input_boolean.bambu_p1s_finish_notified
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.bambu_p1s_finish_notified
       - variables:
           filament: "{{ states(\n  'sensor.bambu_p1s_last_filament_type'\n) }}"
           filament_name: "{{ states(\n  'sensor.bambu_p1s_last_filament_name'\n) }}"
@@ -6472,6 +6557,16 @@
                 }} print from the {{ bed_friendly }}.'
     - conditions:
       - condition: trigger
+        id: status_settled
+      - condition: template
+        value_template: '{{ trigger.to_state is not none and trigger.to_state.state
+          != ''finish'' }}'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.bambu_p1s_finish_notified
+    - conditions:
+      - condition: trigger
         id: layer_threshold
       - condition: numeric_state
         entity_id: input_number.bambu_p1s_target_layer
@@ -6534,7 +6629,7 @@
                 | float(0)}])[-5:]) | to_json }}'
     - conditions:
       - condition: trigger
-        id: status_any
+        id: status_settled
       sequence:
       - choose:
         - conditions:
@@ -6552,6 +6647,8 @@
           device_id: 85eb2d0b675ac078f4ef8dffbe0c8cca
           entity_id: 608148fe368d2fb96074a02efa91e345
           domain: switch
+  mode: parallel
+  max: 10
 - id: '1771294193709'
   alias: Electric Blanket
   description: ''
