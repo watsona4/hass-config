@@ -1,0 +1,165 @@
+# =============================================================================
+# Dependency Monitoring - notify when infrastructure the household depends on
+# goes down. Deliberately notification-only (per owner's ask: "just notify me
+# when something goes down") -- no recovery/back-online messages, unlike the
+# existing Vultr Iperf3 Server Watchdog (packages/netprobe.yaml) or Side Door
+# Lock connectivity automations, which this package intentionally does not
+# duplicate.
+#
+# Vultr speed-test coverage note: binary_sensor.vultr_iperf3_server_missing
+# already has a dedicated watchdog (packages/netprobe.yaml, "Vultr Iperf3
+# Server Watchdog") covering "is the Vultr-side iperf3 server reachable" with
+# down/recovered/recovery-failed branches. This package adds the piece that
+# was missing: general Vultr HOST health (CPU/services/etc via
+# binary_sensor.vultr_status_alarm), not the speed-test path specifically.
+#
+# Raspberry Pi coverage is split into three automations (host / time server /
+# GPS server) rather than one, so a total Pi outage doesn't fire three
+# redundant notifications for the same root cause: the host-health automation
+# owns "the whole Pi is unreachable," so the time-server and GPS-server
+# automations only watch for their OWN service reporting not-ok while the Pi
+# is otherwise still checking in.
+#
+# Entities referenced:
+#   binary_sensor.vultr_status_alarm         (packages/hwmon/vultr.yaml)
+#   binary_sensor.raspi4_status_alarm        (packages/hwmon/raspi4.yaml)
+#   binary_sensor.raspi4_service_chrony      (packages/hwmon/raspi4.yaml)
+#   binary_sensor.raspi4_service_gpsd        (packages/hwmon/raspi4.yaml)
+#   binary_sensor.raspi4_service_str2str_ntrip (packages/hwmon/raspi4.yaml)
+#   sensor.gps_raspi4_home_arpa_mode         (core gpsd integration, direct
+#                                             TCP connection to the Pi's gpsd
+#                                             daemon -- a genuinely different
+#                                             signal from the MQTT-telemetry-
+#                                             derived service sensors above,
+#                                             since it can fail independently
+#                                             of the MQTT channel)
+#
+# Note found while building this: binary_sensor.raspberrypi_status_alarm (a
+# GUI-created template entity) references the misspelled
+# binary_sensor.raspberrypi4_overall_status_ok, which doesn't exist -- it's
+# permanently unavailable and dangling. Not touched here since it's
+# GUI-managed and unused by any automation; flagging in case it's worth
+# deleting via Settings > Entities.
+# =============================================================================
+
+automation:
+  - id: vultr_host_health_alert
+    alias: "Vultr Host Health Alert"
+    description: >-
+      Notifies when the Vultr VPS reports a health problem, or when its
+      status telemetry is unreachable long enough to suggest the same.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.vultr_status_alarm
+        to: "on"
+        for:
+          minutes: 5
+        id: problem
+      - trigger: state
+        entity_id: binary_sensor.vultr_status_alarm
+        to:
+          - "unavailable"
+          - "unknown"
+        for:
+          minutes: 15
+        id: unreachable
+    conditions: []
+    actions:
+      - action: notify.aaron_phones
+        data:
+          title: "Vultr Host"
+          message: >-
+            {{ ("Vultr is reporting a health problem: "
+                ~ (states('sensor.vultr_overall_status_summary') | default('see dashboard', true)) ~ ".")
+               if trigger.id == 'problem' else
+               "Vultr's health telemetry has been unreachable for 15+ minutes." }}
+
+  - id: raspi4_host_health_alert
+    alias: "Raspberry Pi Host Health Alert"
+    description: >-
+      Notifies when the Raspberry Pi (raspi4) reports a health problem, or
+      when its status telemetry is unreachable long enough to suggest the
+      whole host is down.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.raspi4_status_alarm
+        to: "on"
+        for:
+          minutes: 5
+        id: problem
+      - trigger: state
+        entity_id: binary_sensor.raspi4_status_alarm
+        to:
+          - "unavailable"
+          - "unknown"
+        for:
+          minutes: 15
+        id: unreachable
+    conditions: []
+    actions:
+      - action: notify.aaron_phones
+        data:
+          title: "Raspberry Pi"
+          message: >-
+            {{ ("Raspberry Pi is reporting a health problem: "
+                ~ (states('sensor.raspi4_overall_status_summary') | default('see dashboard', true)) ~ ".")
+               if trigger.id == 'problem' else
+               "Raspberry Pi's health telemetry has been unreachable for 15+ minutes." }}
+
+  - id: raspi4_time_server_alert
+    alias: "Raspberry Pi Time Server Alert"
+    description: >-
+      Notifies when chrony (the Pi's NTP time server) reports not-ok while
+      the Pi itself is still otherwise checking in -- a total Pi outage is
+      covered separately by the host-health alert above, not here.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.raspi4_service_chrony
+        to: "off"
+        for:
+          minutes: 5
+    conditions: []
+    actions:
+      - action: notify.aaron_phones
+        data:
+          title: "Raspberry Pi Time Server"
+          message: "chrony (NTP) on the Raspberry Pi has been reporting not-ok for 5+ minutes."
+
+  - id: raspi4_gps_server_alert
+    alias: "Raspberry Pi GPS Server Alert"
+    description: >-
+      Notifies when the Pi's GPS stack (gpsd / str2str-ntrip) reports not-ok,
+      or when HA's own direct connection to gpsd is lost -- the direct
+      connection check catches failures the MQTT-telemetry self-report
+      wouldn't (e.g. a network path issue specific to gpsd's port). A total
+      Pi outage is covered separately by the host-health alert above.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id:
+          - binary_sensor.raspi4_service_gpsd
+          - binary_sensor.raspi4_service_str2str_ntrip
+        to: "off"
+        for:
+          minutes: 5
+        id: service
+      - trigger: state
+        entity_id: sensor.gps_raspi4_home_arpa_mode
+        to:
+          - "unavailable"
+          - "unknown"
+        for:
+          minutes: 5
+        id: direct_connection
+    conditions: []
+    actions:
+      - action: notify.aaron_phones
+        data:
+          title: "Raspberry Pi GPS Server"
+          message: >-
+            {{ (trigger.to_state.attributes.friendly_name ~ " has been reporting not-ok for 5+ minutes.")
+               if trigger.id == 'service' else
+               "HA's direct connection to gpsd on the Raspberry Pi has been unreachable for 5+ minutes." }}
