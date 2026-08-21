@@ -1,0 +1,16 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Panda Sense Pro",
+        "description": "Enter the API server address (e.g. http://frigate:8064).",
+        "data": {
+          "host": "API URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Panda Sense Pro API."
+    }
+  }
+}

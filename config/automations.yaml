@@ -7202,20 +7202,32 @@
           - fan.gym_floor_fan
           - fan.gym_pedestal_fan
 - id: '1783477452844'
-  alias: Panda Alarm Daytime Mute
-  description: >-
-    Mutes the Panda Alarm's LED and "print done" sound effect while it's not
-    daytime, restoring both to their prior values when daytime returns.
-    Captures the LED's brightness/color and the sound effect selection into
-    input helpers right before muting - only if it isn't already muted, so
-    repeat firings don't overwrite a good capture with the muted values -
-    then restores them. Triggers on any daytime state change and uses a
-    choose block driven by daytime's current state (not the trigger
-    direction), so this can also be run manually/standalone and will still
-    do the right thing.
+  alias: Daytime Device Mute
+  description: 'While it''s not daytime: turns off the LEDs on the Panda Alarm, Panda
+    Vent, and Panda Jetpack; turns off the printer''s chamber light; mutes the Panda
+    Alarm''s "print done" sound effect (saved/restored, same as before); and engages
+    the Panda Sense Pro''s screensaver as a display mute. All reversed when daytime
+    returns. Deliberately never touches any LED color -- the Panda Alarm''s three
+    mode colors (idle/printing/alarm) are fixed device configuration set once via
+    POST /led/color (see custom_components/panda_alarm/light.py), not something this
+    automation (or the light entity itself, which no longer accepts a color at all)
+    should ever change. Previously this automation also saved/restored the Panda Alarm
+    LED''s brightness and color on every mute cycle -- that''s what was silently collapsing
+    the three distinct mode colors back to one every time daytime returned, since
+    the old light.py wrote whatever single color was restored into all three of idle/printing/alarm
+    at once. Removed entirely; muting is now a plain on/off toggle with nothing else
+    to preserve. Triggers on any daytime state change and uses a choose block driven
+    by daytime''s current state (not the trigger direction), so this can also be run
+    manually/standalone and will still do the right thing.'
   triggers:
   - trigger: state
-    entity_id: binary_sensor.daytime
+    entity_id:
+    - binary_sensor.daytime
+    - sensor.panda_alarm_printer_state
+    - sensor.panda_vent_printer_state
+    - sensor.panda_breath_printer_state
+    - sensor.panda_jetpack_printer_state
+    - sensor.panda_sense_pro_ip_address
   conditions: []
   actions:
   - choose:
@@ -7226,36 +7238,22 @@
       sequence:
       - if:
         - condition: template
-          value_template: >-
-            {{ has_value('light.panda_alarm_led')
-               and not is_state('light.panda_alarm_led', 'off') }}
-        then:
-        - action: input_number.set_value
-          target:
-            entity_id: input_number.panda_alarm_led_saved_brightness
-          data:
-            value: "{{ state_attr('light.panda_alarm_led', 'brightness') | int(255) }}"
-        - action: input_text.set_value
-          target:
-            entity_id: input_text.panda_alarm_led_saved_color
-          data:
-            value: >-
-              {{ state_attr('light.panda_alarm_led', 'rgb_color')
-                 | default([255, 255, 255]) | join(',') }}
-      - if:
-        - condition: template
-          value_template: >-
-            {{ has_value('select.panda_alarm_sound_effect_done')
-               and not is_state('select.panda_alarm_sound_effect_done', 'Silent') }}
+          value_template: "{{ has_value('select.panda_alarm_sound_effect_done')\n
+            \  and not is_state('select.panda_alarm_sound_effect_done', 'Silent')
+            }}"
         then:
         - action: input_text.set_value
           target:
             entity_id: input_text.panda_alarm_sound_effect_done_saved
           data:
-            value: "{{ states('select.panda_alarm_sound_effect_done') }}"
+            value: '{{ states(''select.panda_alarm_sound_effect_done'') }}'
       - action: light.turn_off
         target:
-          entity_id: light.panda_alarm_led
+          entity_id:
+          - light.panda_alarm_led
+          - light.panda_vent_light
+          - light.panda_jetpack_light
+          - light.p1s_01p00c5c0603366_chamber_light
         continue_on_error: true
       - action: select.select_option
         target:
@@ -7263,6 +7261,17 @@
         data:
           option: Silent
         continue_on_error: true
+      - action: switch.turn_on
+        target:
+          entity_id: switch.panda_sense_pro_screensaver
+        continue_on_error: true
+      - action: select.select_option
+        metadata: {}
+        target:
+          entity_id: select.p1s_01p00c5c0603366_printing_speed
+        data:
+          option: silent
+        enabled: false
     - conditions:
       - condition: state
         entity_id: binary_sensor.daytime
@@ -7270,23 +7279,30 @@
       sequence:
       - action: light.turn_on
         target:
-          entity_id: light.panda_alarm_led
-        data:
-          brightness: "{{ states('input_number.panda_alarm_led_saved_brightness') | int(255) }}"
-          rgb_color: >-
-            {{ states('input_text.panda_alarm_led_saved_color').split(',') | map('int') | list
-               if states('input_text.panda_alarm_led_saved_color') not in ['', 'unknown', 'unavailable']
-               else [255, 255, 255] }}
+          entity_id:
+          - light.panda_alarm_led
+          - light.panda_vent_light
+          - light.panda_jetpack_light
+          - light.p1s_01p00c5c0603366_chamber_light
         continue_on_error: true
       - action: select.select_option
         target:
           entity_id: select.panda_alarm_sound_effect_done
         data:
-          option: >-
-            {{ states('input_text.panda_alarm_sound_effect_done_saved')
-               if states('input_text.panda_alarm_sound_effect_done_saved') in ['Pulse', 'Prompt', 'Beep', 'Custom']
-               else 'Prompt' }}
+          option: "{{ states('input_text.panda_alarm_sound_effect_done_saved')\n   if
+            states('input_text.panda_alarm_sound_effect_done_saved') in ['Pulse',
+            'Prompt', 'Beep', 'Custom']\n   else 'Prompt' }}"
         continue_on_error: true
+      - action: switch.turn_off
+        target:
+          entity_id: switch.panda_sense_pro_screensaver
+        continue_on_error: true
+      - action: select.select_option
+        metadata: {}
+        target:
+          entity_id: select.p1s_01p00c5c0603366_printing_speed
+        data:
+          option: standard
   mode: single
   trace:
     stored_traces: 100

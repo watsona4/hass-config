@@ -1,0 +1,16 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Panda Branch Plus",
+        "description": "Enter the API server address (e.g. http://frigate:8066).",
+        "data": {
+          "host": "API URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Panda Branch Plus API."
+    }
+  }
+}
