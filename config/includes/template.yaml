@@ -440,11 +440,16 @@
       {%- set acc = state_attr(ent_pixel,'gps_accuracy') -%}
       {%- set ts  = (states[ent_pixel].last_updated | as_timestamp) -%}
       {%- set age_m = ((now()|as_timestamp) - ts) / 60 if ts else 9e9 -%}
+      {# A tracker that stops reporting (phone off, no signal) keeps its last state
+         string -- e.g. "not_home" -- forever; it doesn't flip to unavailable. Without
+         a staleness ceiling here, "valid" stays true indefinitely and a days-old
+         reading can still out-score (or get picked over) a live one. #}
       {%- set valid = (s not in ['unknown','unavailable'])
                       and ((lat|float(none)) is not none)
                       and ((lon|float(none)) is not none)
                       and ((acc|float(none)) is not none)
-                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0)
+                      and (age_m < 90) -%}
       {%- set acc_f = acc | float(9999) -%}
       {%- set score = (
             (50 if valid else 0) +
@@ -464,7 +469,8 @@
                       and ((lat|float(none)) is not none)
                       and ((lon|float(none)) is not none)
                       and ((acc|float(none)) is not none)
-                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0) -%}
+                      and ((lat|float(0)) != 0 or (lon|float(0)) != 0)
+                      and (age_m < 90) -%}
       {%- set acc_f = acc | float(9999) -%}
       {%- set score = (
             (50 if valid else 0) +
@@ -473,17 +479,48 @@
           ) -%}
       {{ {'entity': ent_iphone, 'state': s, 'lat': (lat|float(none)), 'lon': (lon|float(none)),
           'acc': (acc|float(none)), 'age_m': age_m, 'valid': valid, 'score': score} }}
+    # The work phone lives at the house and isn't carried while traveling, so when
+    # the personal phone (pixel) goes unavailable, falling back to the work phone's
+    # GPS reports "home" regardless of where the person actually is. Instead, hold
+    # at this sensor's own last computed value (i.e. the personal phone's last real
+    # position before it went dark) rather than trusting the work phone's location.
+    frozen: >-
+      {%- set prev_lat = state_attr('sensor.aaron_composite_location','latitude') -%}
+      {%- set prev_lon = state_attr('sensor.aaron_composite_location','longitude') -%}
+      {{ {'entity': state_attr('sensor.aaron_composite_location','source_entity'),
+          'state': states('sensor.aaron_composite_location'),
+          'lat': prev_lat, 'lon': prev_lon,
+          'acc': state_attr('sensor.aaron_composite_location','gps_accuracy'),
+          'age_m': 9e9, 'valid': (prev_lat is not none and prev_lon is not none), 'score': 0} }}
+    # Neither phone travels with Aaron all the time: the work phone stays home/in the
+    # car during the workday (personal phone is with him at the office, zone.bettis),
+    # and the work phone stays home while personal travels (vacation). A "higher score
+    # wins" contest is wrong either way -- a phone sitting still at the house always has
+    # a cleaner GPS lock than a phone actually out with him, regardless of which one that
+    # is. What carries information is whichever phone is NOT at the house: a phone that
+    # reads "home" tells you nothing (it may just have been left behind), so whenever
+    # exactly one of the two disagrees with "home", trust the one that disagrees. When
+    # BOTH disagree with "home" at once (e.g. personal phone in the work parking lot
+    # while the work phone is on him inside), that's the office pattern far more often
+    # than a coincidence -- unless vacation_mode says he's actually traveling, in which
+    # case personal is the one with him.
     best: >-
-      {%- if is_state(ent_pixel,'home') and not is_state(ent_iphone,'home') -%}
-        {{ iphone }}
-      {%- elif is_state(ent_iphone,'home') and not is_state(ent_pixel,'home') -%}
+      {%- if pixel.valid and iphone.valid -%}
+        {%- if is_state(ent_pixel,'home') and not is_state(ent_iphone,'home') -%}
+          {{ iphone }}
+        {%- elif is_state(ent_iphone,'home') and not is_state(ent_pixel,'home') -%}
+          {{ pixel }}
+        {%- elif is_state('binary_sensor.vacation_mode','on') -%}
+          {{ pixel }}
+        {%- else -%}
+          {{ iphone }}
+        {%- endif -%}
+      {%- elif pixel.valid -%}
         {{ pixel }}
-      {%- elif pixel.valid and not iphone.valid -%}
-        {{ pixel }}
-      {%- elif iphone.valid and not pixel.valid -%}
+      {%- elif iphone.valid and frozen.valid -%}
+        {{ frozen }}
+      {%- elif iphone.valid -%}
         {{ iphone }}
-      {%- elif pixel.valid and iphone.valid -%}
-        {{ pixel if (pixel.score | float(0)) >= (iphone.score | float(0)) else iphone }}
       {%- else -%}
         {{ {'entity': none, 'state': 'unknown', 'lat': none, 'lon': none,
             'acc': none, 'age_m': 9e9, 'valid': false, 'score': 0} }}
