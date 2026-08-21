@@ -1,0 +1,181 @@
+title: Sprinklers
+type: sections
+max_columns: 2
+cards: []
+badges:
+
+  # Landscaper pause -- prominent since it needs to be remembered/toggled by hand
+  - type: custom:mushroom-template-badge
+    entity: input_boolean.sprinkler_landscaper_pause
+    icon: mdi:account-hard-hat
+    color: >-
+      {{ 'orange' if is_state('input_boolean.sprinkler_landscaper_pause', 'on') else 'disabled' }}
+    content: >-
+      {{ 'Landscaper Pause: ON' if is_state('input_boolean.sprinkler_landscaper_pause', 'on')
+         else 'Landscaper Pause: off' }}
+    tap_action:
+      action: toggle
+
+  # System master switch
+  - type: custom:mushroom-template-badge
+    entity: input_boolean.sprinkler_system_enabled
+    icon: mdi:sprinkler
+    color: >-
+      {{ 'green' if is_state('input_boolean.sprinkler_system_enabled', 'on') else 'red' }}
+    content: >-
+      {{ 'System Enabled' if is_state('input_boolean.sprinkler_system_enabled', 'on')
+         else 'System DISABLED' }}
+    tap_action:
+      action: toggle
+
+sections:
+  - type: grid
+    column_span: 1
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: Zone Valves
+
+          # All 3 zones paired 2026-07-11. Each entity_id pattern already covers
+          # both valve.zone_N_zone and its companion sensor.zone_N_zone_history,
+          # so there's no need for a separate domain:valve filter (that caused
+          # each valve to match two include criteria and render twice).
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: null
+            filter:
+              include:
+                - entity_id: "*zone_1_zone*"
+                - entity_id: "*zone_2_zone*"
+                - entity_id: "*zone_3_zone*"
+            sort:
+              method: friendly_name
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: Zone Configuration
+
+          - type: entities
+            entities:
+              - entity: input_number.sprinkler_zone1_area
+                name: Zone 1 Area
+              - entity: input_number.sprinkler_zone1_gpm
+                name: Zone 1 Flow Rate
+              - entity: sensor.sprinkler_zone_1_cycle_minutes
+                name: Zone 1 Cycle Time
+              - entity: input_number.sprinkler_zone2_area
+                name: Zone 2 Area
+              - entity: input_number.sprinkler_zone2_gpm
+                name: Zone 2 Flow Rate
+              - entity: sensor.sprinkler_zone_2_cycle_minutes
+                name: Zone 2 Cycle Time
+              - entity: input_number.sprinkler_zone3_area
+                name: Zone 3 Area
+              - entity: input_number.sprinkler_zone3_gpm
+                name: Zone 3 Flow Rate
+              - entity: sensor.sprinkler_zone_3_cycle_minutes
+                name: Zone 3 Cycle Time
+
+  - type: grid
+    column_span: 1
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: Watering Program
+
+          - type: markdown
+            content: >-
+              **Reason:** {{ states('input_text.sprinkler_reason') }}
+
+          - type: entities
+            entities:
+              - entity: sensor.sprinkler_days_since_install
+                name: Days Since Install
+              - entity: sensor.sprinkler_cycles_today
+                name: Cycles Today
+              - entity: binary_sensor.sprinkler_hot_today
+                name: Hot Today
+              - entity: sensor.sprinkler_weekly_target
+                name: Weekly Target
+              - entity: sensor.sprinkler_daily_target_before_rain
+                name: Daily Target (before rain)
+              - entity: sensor.sprinkler_today_needed
+                name: "Today's Need (after rain)"
+              - entity: sensor.sprinkler_irrigation_today
+                name: Irrigation Today
+              - entity: sensor.sprinkler_rain_last_7_days
+                name: Rain (last 7 days)
+              - entity: sensor.sprinkler_irrigation_last_7_days
+                name: Irrigation (last 7 days)
+              - entity: input_number.sprinkler_pending_makeup_depth
+                name: Pending Makeup Depth
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: "Today's Schedule"
+
+          - type: entities
+            entities:
+              - entity: sensor.sprinkler_morning_start_display
+                name: Pre-dawn Start
+                icon: mdi:clock-outline
+              - entity: sensor.sprinkler_extra1_time_display
+                name: Extra Cycle 1
+                icon: mdi:clock-outline
+              - entity: sensor.sprinkler_extra2_time_display
+                name: Extra Cycle 2
+                icon: mdi:clock-outline
+              - entity: sensor.sprinkler_extra3_time_display
+                name: Extra Cycle 3
+                icon: mdi:clock-outline
+
+  - type: grid
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:mushroom-title-card
+            title: Irrigation & Rainfall History
+
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Daily Volume
+            graph_span: 30d
+            span:
+              start: day
+            yaxis:
+              - id: depth
+                decimals: 2
+                apex_config:
+                  title:
+                    text: inches
+            series:
+              - entity: sensor.sprinkler_irrigation_today
+                name: Irrigation
+                type: column
+                color: "#3b82f6"
+                yaxis_id: depth
+                statistics:
+                  type: change
+                  period: day
+              - entity: sensor.ambient_dailyrain
+                name: Rainfall
+                type: column
+                color: "#22c55e"
+                yaxis_id: depth
+                statistics:
+                  type: change
+                  period: day

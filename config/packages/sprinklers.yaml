@@ -1,0 +1,1271 @@
+# =====================================================================================
+# Sprinklers - watering program (Orbit b-hyve + whatever's added later)
+#
+# Started as new-sod establishment watering and is meant to grow into the general
+# watering program for the property as more valves get added (misting for flowers,
+# bubblers/soakers for beds, more grass zones, etc). Every zone -- regardless of type
+# -- shares the same depth/precip-rate delivery model (deliver depth_in inches,
+# runtime = depth_in / precip_rate, precip_rate = 96.3*gpm/area_sqft); "type" is a
+# label only, not a different code path -- it just documents how gpm/area should be
+# derived for that kind of emitter (see sod_zone_list()'s own comment). The
+# sod-specific taper/rolling-budget layer on top of that (exponential cycle-count and
+# depth decay from sod_install_date, converging on a weekly rain+irrigation budget)
+# is what currently decides *how much* depth_in to ask for each cycle; once the grass
+# zones' taper has fully decayed this becomes, in effect, just "the general lawn
+# watering program" per the header's original name, and any non-grass zones already
+# in sod_zone_list() are just along for the ride, valid targets whether or not the
+# grass-specific taper is still active. See
+# custom_templates/metrics/irrigation/sod_watering.jinja for all of this math,
+# especially sod_zone_list() (the single source of truth for every zone -- add a new
+# valve there, and nowhere else) and sod_effective_cycles_per_day().
+#
+# Grounded in UF/IFAS EP110, Sod Solutions, Texas A&M AgriLife, and MU Extension
+# guidance: 2-3x/day for 7-10 days until roots "peg down", then 1x/day; full
+# transition to established watering ~3-4 weeks; established turf target is 1"/week
+# including rain (1.5-2"/week in sustained heat); early-morning irrigation minimizes
+# evaporation and fungal disease risk from prolonged leaf wetness. This guidance is
+# specifically about the grass/spray zones' taper -- it doesn't drive non-grass zones,
+# which just receive whatever depth_in the taper computes each cycle like every zone
+# does.
+#
+# Hardware note: zone valve entities are valve.zone_1_zone, valve.zone_2_zone,
+# valve.zone_3_zone (Orbit b-hyve, via the local-BLE `orbit_bhyve` custom
+# integration). The cloud `bhyve` (sebr) integration is also installed in parallel
+# and owns the non-suffixed valve.zone_N_zone entities -- the "_2" suffix here is
+# just HA's automatic name-collision handling, not a meaningful zone number.
+# Switched from cloud to BLE control 2026-07-17 for reliability (BLE doesn't depend
+# on Orbit's cloud/hub being reachable). Every guard in this package checks the
+# entity's *state* (unknown/unavailable = not connected), not whether the entity_id
+# string is configured, so zones safely no-op (and send a manual reminder
+# notification instead) if BLE connectivity is ever lost -- this is also how an
+# unpaired future zone (e.g. valve.zone_4_zone, added 2026-08-12 for a soaker hose
+# with no valve purchased yet) can be wired into sod_zone_list() ahead of the
+# hardware actually existing: it just runs in manual-reminder mode until paired.
+#
+# Helper entities (created via the GUI/websocket API per this repo's CLAUDE.md, not
+# declared here):
+#   - input_datetime.sod_install_date               : date sod was laid
+#   - input_datetime.sprinkler_morning_start_time    : recalculated daily so the
+#                                                       pre-dawn cycle ends at 5am
+#   - input_datetime.sprinkler_extra{1,2,3}_time     : recalculated daily, evenly
+#                                                       spread across the 5am-6pm
+#                                                       daytime window for however
+#                                                       many extra cycles are active
+#   - input_number.sprinkler_zone{1,2,3,4}_gpm       : measured/rated zone flow rate
+#                                                       (bucket test + water-meter
+#                                                       timing for spray zones;
+#                                                       manufacturer spec or measured
+#                                                       total outflow for soaker/drip)
+#   - input_number.sprinkler_zone{1,2,3}_area        : spray zone sprayed footprint
+#                                                       (sq ft) -- update here if a
+#                                                       zone is reconfigured, no code
+#                                                       changes needed
+#   - input_number.sprinkler_weekly_target_normal    : 1.25 in
+#   - input_number.sprinkler_weekly_target_hot       : 2.0 in
+#   - input_number.sprinkler_hot_threshold_f         : 90
+#   - input_number.sprinkler_initial_cycles_per_day  : 3
+#   - input_number.sprinkler_initial_daily_depth     : 0.35 in
+#   - input_number.sprinkler_tau_freq_days           : 10 (cycle-count decay constant)
+#   - input_number.sprinkler_tau_depth_days          : 28 (depth decay constant)
+#   - input_number.sprinkler_today_delivered         : running total of inches
+#                                                       delivered today (reset 00:05)
+#   - input_number.sprinkler_pending_makeup_depth    : inches banked while paused,
+#                                                       consumed by the next cycle
+#                                                       that actually runs
+#   - input_boolean.sprinkler_system_enabled         : master kill switch
+#   - input_boolean.sprinkler_landscaper_pause       : skip cycles while landscapers
+#                                                       are working; banks the missed
+#                                                       depth for catch-up on pause-off
+#   - input_text.sprinkler_water_ledger              : compact rolling 7-day ledger,
+#                                                       "YYYYMMDD:rain_in:irrigation_in;..."
+#
+# Zone 4's area (sensor.sprinkler_zone_4_area, defined below in this file, not a
+# helper -- note the underscore before "4", unlike zone4_gpm: template sensor
+# entity_ids are slugified from `name:` and assigned once at creation, so they don't
+# retroactively match a later helper-naming convention without deleting and
+# recreating the entity; check the actual registered entity_id rather than assuming)
+# is a template sensor instead of a bare input_number specifically so the
+# geometry/assumptions behind the number -- hose length, effective wetting width --
+# stay documented where they're computed, rather than being a number someone will
+# forget the derivation of once beds get moved around. Any future non-spray zone
+# (misting, another soaker run, etc) should follow the same pattern: a template
+# sensor with the reasoning in its own comment, not a plain input_number, since
+# unlike a spray zone's sprayed footprint (a straightforward measurement), non-spray
+# "area" is usually a derived assumption worth keeping visible.
+#
+# Dashboard: Environment > Sprinklers tab. Schedule times shown there come from
+# read-only sensor.sprinkler_*_display mirrors (not the raw input_datetime helpers),
+# so the dashboard can't accidentally edit the real schedule. Not yet updated for
+# zone 4 -- it dispenses/reminds via notify.aaron_phones like every zone, but has no
+# dashboard card of its own yet.
+# =====================================================================================
+
+template:
+  - trigger:
+      - platform: time_pattern
+        minutes: "/15"
+      - platform: homeassistant
+        event: "start"
+    sensor:
+      - name: "Sprinkler Days Since Install"
+        unique_id: sprinkler_days_since_install
+        icon: mdi:calendar-clock
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import sod_day_count -%}
+          {{ sod_day_count("input_datetime.sod_install_date") }}
+
+      - name: "Sprinkler Cycles Today"
+        unique_id: sprinkler_cycles_today
+        icon: mdi:repeat
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {{ sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                           "input_number.sprinkler_tau_freq_days",
+                                           "input_number.sprinkler_hot_threshold_f") }}
+
+      - name: "Sprinkler Weekly Target"
+        unique_id: sprinkler_weekly_target
+        unit_of_measurement: "in"
+        state_class: measurement
+        icon: mdi:water
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import sod_weekly_target_in -%}
+          {{ sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                   "input_number.sprinkler_weekly_target_hot",
+                                   "input_number.sprinkler_hot_threshold_f") }}
+
+      - name: "Sprinkler Daily Target Before Rain"
+        unique_id: sprinkler_daily_target_before_rain
+        unit_of_measurement: "in"
+        state_class: measurement
+        icon: mdi:water
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {{ sod_daily_target_before_rain(day, "input_number.sprinkler_initial_daily_depth",
+                                           weekly, "input_number.sprinkler_tau_depth_days") }}
+
+      - name: "Sprinkler Rain Last 7 Days"
+        unique_id: sprinkler_rain_7d
+        unit_of_measurement: "in"
+        device_class: precipitation
+        state_class: measurement
+        icon: mdi:weather-rainy
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import sod_ledger_summary -%}
+          {%- set summary = sod_ledger_summary(states("input_text.sprinkler_water_ledger"))
+                             | from_json(default={"rain_7d": 0, "irrigation_7d": 0}) -%}
+          {{ summary.rain_7d }}
+
+      - name: "Sprinkler Irrigation Last 7 Days"
+        unique_id: sprinkler_irrigation_7d
+        unit_of_measurement: "in"
+        state_class: measurement
+        icon: mdi:sprinkler
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import sod_ledger_summary -%}
+          {%- set summary = sod_ledger_summary(states("input_text.sprinkler_water_ledger"))
+                             | from_json(default={"rain_7d": 0, "irrigation_7d": 0}) -%}
+          {{ summary.irrigation_7d }}
+
+      - name: "Sprinkler Today Needed"
+        unique_id: sprinkler_today_needed
+        unit_of_measurement: "in"
+        state_class: measurement
+        icon: mdi:water-alert
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain, sod_today_needed_in -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {{ sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                  states("sensor.ambient_dailyrain")) }}
+
+      - name: "Sprinkler Morning Runtime Estimate"
+        unique_id: sprinkler_morning_runtime_estimate
+        unit_of_measurement: "min"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-outline
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day, sod_zone_minutes, sod_zone_list -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {%- set cycles = sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                                          "input_number.sprinkler_tau_freq_days",
+                                                          "input_number.sprinkler_hot_threshold_f") | int -%}
+          {%- set per_cycle = (needed / cycles) if cycles > 0 else 0 -%}
+          {%- set ns = namespace(total=0) -%}
+          {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+              {%- set ns.total = ns.total + (sod_zone_minutes(per_cycle, z.gpm, z.area) | float(0)) -%}
+          {%- endfor -%}
+          {{ (ns.total + 0.34) | round(1) }}
+
+      # Per-zone durations, decoupled from any specific cycle's start time --
+      # every cycle today (pre-dawn or extra) uses the same per_cycle_depth, so
+      # each zone's runtime is constant for the whole day, not tied to a slot.
+      - name: "Sprinkler Zone 1 Cycle Minutes"
+        unique_id: sprinkler_zone1_cycle_minutes
+        unit_of_measurement: "min"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-outline
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day, sod_zone_minutes -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {%- set cycles = sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                                          "input_number.sprinkler_tau_freq_days",
+                                                          "input_number.sprinkler_hot_threshold_f") | int -%}
+          {%- set per_cycle = (needed / cycles) if cycles > 0 else 0 -%}
+          {{ sod_zone_minutes(per_cycle, states("input_number.sprinkler_zone1_gpm"), states("input_number.sprinkler_zone1_area")) }}
+
+      - name: "Sprinkler Zone 2 Cycle Minutes"
+        unique_id: sprinkler_zone2_cycle_minutes
+        unit_of_measurement: "min"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-outline
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day, sod_zone_minutes -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {%- set cycles = sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                                          "input_number.sprinkler_tau_freq_days",
+                                                          "input_number.sprinkler_hot_threshold_f") | int -%}
+          {%- set per_cycle = (needed / cycles) if cycles > 0 else 0 -%}
+          {{ sod_zone_minutes(per_cycle, states("input_number.sprinkler_zone2_gpm"), states("input_number.sprinkler_zone2_area")) }}
+
+      - name: "Sprinkler Zone 3 Cycle Minutes"
+        unique_id: sprinkler_zone3_cycle_minutes
+        unit_of_measurement: "min"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-outline
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day, sod_zone_minutes -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {%- set cycles = sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                                          "input_number.sprinkler_tau_freq_days",
+                                                          "input_number.sprinkler_hot_threshold_f") | int -%}
+          {%- set per_cycle = (needed / cycles) if cycles > 0 else 0 -%}
+          {{ sod_zone_minutes(per_cycle, states("input_number.sprinkler_zone3_gpm"), states("input_number.sprinkler_zone3_area")) }}
+
+      # Zone 4: paired and live 2026-08-15 (valve.zone_4_zone). Two devices share
+      # this single valve -- an oscillating sprinkler head AND a 25ft soaker hose,
+      # plumbed off the same line through fixed ball valves, so they always run
+      # together for the same duration; there's no way to water one without the
+      # other. Each has its own real, independently bucket-measured GPM and area,
+      # and their precipitation rates differ by ~3.5x (sprinkler 0.80 in/hr,
+      # soaker 2.79 in/hr as of the 2026-08-15 calibration) -- too different for
+      # either device to reasonably govern the zone's runtime alone (governing by
+      # the slower device leaves the faster one underwatered, and vice versa
+      # overwaters it). Per owner decision, "split the difference": average the
+      # two devices' own precip rates and use THAT as the zone's effective rate,
+      # so each device deviates from its own nominal target depth by the same
+      # magnitude in opposite directions -- a fair compromise given they
+      # physically can't both be satisfied. See sensor.sprinkler_zone_4_area's
+      # own comment for the derivation; input_number.sprinkler_zone4_gpm holds
+      # the real measured total (2.6 gpm) that pairs with that derived area to
+      # reproduce the effective rate.
+      - name: "Sprinkler Zone 4 Area"
+        unique_id: sprinkler_zone4_area
+        unit_of_measurement: "sq ft"
+        state_class: measurement
+        icon: mdi:ruler-square
+        state: >-
+          {#- This is a derived "effective area", not a real footprint -- see the
+             zone 4 header comment above for why a single physically-real number
+             can't represent this shared-valve, two-device zone. The two real
+             devices, both bucket-measured 2026-08-15 with the ball valves at
+             their current settings (sprinkler head fully open, soaker throttled
+             down after an earlier too-wide-open measurement badly overweighted
+             it -- see memory if re-deriving):
+               - Oscillating sprinkler head: circular sector, 30ft radius, ~15ft
+                 arc length -> area = (arc_length * radius) / 2 = 225 sq ft.
+                 Measured 96oz/24s -> 1.875 gpm.
+               - 25ft soaker hose: area = hose_length_ft * wetting_width_ft.
+                 wetting_width_ft is a PLACEHOLDER ASSUMPTION (~12in total
+                 wetted width straddling the hose, typical for average garden
+                 soil) -- verify by digging a test hole after a normal cycle and
+                 adjust to match actual soil. area = 25 sq ft.
+                 Measured (2.6 gpm total zone flow) - 1.875 (sprinkler) = 0.725
+                 gpm.
+             "Split the difference": average their two precip rates (96.3*gpm/
+             area each) into one effective rate, then solve for the area that
+             reproduces that effective rate at the REAL total zone flow (2.6
+             gpm, input_number.sprinkler_zone4_gpm) -- so gpm here stays a real,
+             directly-measured number (useful/trustworthy on its own), and only
+             this area is a derived stand-in. -#}
+          {%- set sprinkler_gpm = 1.875 -%}
+          {%- set sprinkler_area = 225 -%}
+          {%- set soaker_gpm = 0.725 -%}
+          {%- set soaker_area = 25 -%}
+          {%- set sprinkler_precip = 96.3 * sprinkler_gpm / sprinkler_area -%}
+          {%- set soaker_precip = 96.3 * soaker_gpm / soaker_area -%}
+          {%- set effective_precip = (sprinkler_precip + soaker_precip) / 2 -%}
+          {%- set total_gpm = states('input_number.sprinkler_zone4_gpm') | float(sprinkler_gpm + soaker_gpm) -%}
+          {{ (96.3 * total_gpm / effective_precip) | round(1) }}
+
+      - name: "Sprinkler Zone 4 Cycle Minutes"
+        unique_id: sprinkler_zone4_cycle_minutes
+        unit_of_measurement: "min"
+        device_class: duration
+        state_class: measurement
+        icon: mdi:timer-outline
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import
+                sod_day_count, sod_weekly_target_in, sod_daily_target_before_rain,
+                sod_today_needed_in, sod_effective_cycles_per_day, sod_zone_minutes -%}
+          {%- set day = sod_day_count("input_datetime.sod_install_date") | int -%}
+          {%- set weekly = sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                                  "input_number.sprinkler_weekly_target_hot",
+                                                  "input_number.sprinkler_hot_threshold_f") | float(0) -%}
+          {%- set daily_before_rain = sod_daily_target_before_rain(
+                day, "input_number.sprinkler_initial_daily_depth", weekly,
+                "input_number.sprinkler_tau_depth_days") | float(0) -%}
+          {%- set needed = sod_today_needed_in(daily_before_rain, states("input_text.sprinkler_water_ledger"),
+                                                 states("sensor.ambient_dailyrain")) | float(0) -%}
+          {%- set cycles = sod_effective_cycles_per_day(day, needed, "input_number.sprinkler_initial_cycles_per_day",
+                                                          "input_number.sprinkler_tau_freq_days",
+                                                          "input_number.sprinkler_hot_threshold_f") | int -%}
+          {%- set per_cycle = (needed / cycles) if cycles > 0 else 0 -%}
+          {{ sod_zone_minutes(per_cycle, states("input_number.sprinkler_zone4_gpm"), states("sensor.sprinkler_zone_4_area")) }}
+    binary_sensor:
+      - name: "Sprinkler Hot Today"
+        unique_id: sprinkler_hot_today
+        device_class: heat
+        icon: mdi:thermometer-alert
+        state: >-
+          {%- from "metrics/irrigation/sod_watering.jinja" import sod_hot_today -%}
+          {{ sod_hot_today("input_number.sprinkler_hot_threshold_f") == "True" }}
+
+  # Separate, fast-updating trigger block (state-driven, not the 15-minute
+  # cadence above) -- this gates whether an in-progress watering cycle should
+  # stop mid-run, so it needs to react within seconds of a storm developing,
+  # not up to 15 minutes later. Also polled every minute so the 30-minute
+  # "recent lightning" decay (below) expires on time even without a fresh
+  # sensor update.
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.ambient_hourlyrain
+          - sensor.ambient_lightning_distance
+          - sensor.ambient_lightning_time
+      - platform: time_pattern
+        minutes: "/1"
+      - platform: homeassistant
+        event: "start"
+    binary_sensor:
+      - name: "Sprinkler Storming"
+        unique_id: sprinkler_storming
+        device_class: safety
+        icon: mdi:weather-lightning-rainy
+        state: >-
+          {%- set hourly_rain = states("sensor.ambient_hourlyrain") | float(0) -%}
+          {%- set lightning_dist = states("sensor.ambient_lightning_distance") | float(999) -%}
+          {%- set last_strike = as_datetime(states("sensor.ambient_lightning_time"), default=none) -%}
+          {%- set lightning_recent = last_strike is not none and (now() - last_strike).total_seconds() < 1800 -%}
+          {{ hourly_rain > 0.1 or (lightning_dist < 10 and lightning_recent) }}
+
+automation:
+  - alias: "Sprinkler Watering Program"
+    id: "9f18c246-1fc8-42cb-9385-b047dbe3f205"
+    mode: single
+    triggers:
+      - trigger: time
+        at: "00:05:00"
+        id: "recalc"
+      - trigger: time
+        at: "input_datetime.sprinkler_morning_start_time"
+        id: "morning"
+      - trigger: time
+        at: "input_datetime.sprinkler_extra1_time"
+        id: "extra1"
+      - trigger: time
+        at: "input_datetime.sprinkler_extra2_time"
+        id: "extra2"
+      - trigger: time
+        at: "input_datetime.sprinkler_extra3_time"
+        id: "extra3"
+      # 15-minute-ahead heads-up so the landscaper pause can be flipped on in
+      # time -- gated to daytime/weekdays in the choose block below, since
+      # that's the only window landscapers are ever actually here.
+      - trigger: time
+        at:
+          entity_id: "input_datetime.sprinkler_morning_start_time"
+          offset: "-00:15:00"
+        id: "morning_reminder"
+      - trigger: time
+        at:
+          entity_id: "input_datetime.sprinkler_extra1_time"
+          offset: "-00:15:00"
+        id: "extra1_reminder"
+      - trigger: time
+        at:
+          entity_id: "input_datetime.sprinkler_extra2_time"
+          offset: "-00:15:00"
+        id: "extra2_reminder"
+      - trigger: time
+        at:
+          entity_id: "input_datetime.sprinkler_extra3_time"
+          offset: "-00:15:00"
+        id: "extra3_reminder"
+      # A genuine on->off transition -- this cannot be triggered by an HA restart,
+      # since a restart restores the existing state rather than producing a fresh
+      # transition. Combined with the pending-depth check below, a restart while
+      # paused (or unpaused) can never spuriously fire the catch-up run.
+      - trigger: state
+        entity_id: input_boolean.sprinkler_landscaper_pause
+        from: "on"
+        to: "off"
+        id: "pause_ended"
+      # Same on->off-transition reasoning as pause_ended above, applied to a
+      # storm clearing: script.sprinkler_run_cycle banks whatever depth a
+      # storm-interrupted cycle didn't get to deliver into
+      # pending_makeup_depth, same as the landscaper-pause path -- this
+      # trigger is what actually runs the catch-up once it's safe again.
+      - trigger: state
+        entity_id: binary_sensor.sprinkler_storming
+        from: "on"
+        to: "off"
+        id: "storm_ended"
+    actions:
+      - variables:
+          day: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_day_count -%}
+            {{ sod_day_count("input_datetime.sod_install_date") | int }}
+          weekly_target: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_weekly_target_in -%}
+            {{ sod_weekly_target_in("input_number.sprinkler_weekly_target_normal",
+                                     "input_number.sprinkler_weekly_target_hot",
+                                     "input_number.sprinkler_hot_threshold_f") | float(0) }}
+          daily_target: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_daily_target_before_rain -%}
+            {{ sod_daily_target_before_rain(day, "input_number.sprinkler_initial_daily_depth",
+                                             weekly_target, "input_number.sprinkler_tau_depth_days") | float(0) }}
+          # --- Water-need breakdown -------------------------------------------------
+          # These intermediate values are surfaced here purely so the automation
+          # trace shows WHY today_needed came out the way it did (rolling 7-day
+          # budget vs. rain + irrigation already banked), not just the final number.
+          # They mirror the internals of sod_today_needed_in() exactly; today_needed
+          # itself is still taken from the macro below so the two can't drift apart.
+          # Both rain_7d and irrigation_7d are recency-weighted (tau=4) in the trace:
+          # water applied days ago -- rain or sprinkler -- decays out of the budget
+          # credit rather than suppressing today's need at full strength.
+          rain_today: "{{ states('sensor.ambient_dailyrain') | float(0) }}"
+          ledger_summary: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_ledger_summary -%}
+            {{ sod_ledger_summary(states("input_text.sprinkler_water_ledger"))
+               | from_json(default={"rain_7d": 0, "irrigation_7d": 0, "entry_count": 0}) }}
+          rain_7d: "{{ ledger_summary.rain_7d | float(0) }}"
+          irrigation_7d: "{{ ledger_summary.irrigation_7d | float(0) }}"
+          ledger_entry_count: "{{ ledger_summary.entry_count | int(0) }}"
+          window_days: "{{ [7, ledger_entry_count + 1] | min }}"
+          weekly_budget: "{{ (daily_target * window_days) | round(3) }}"
+          flood_cap: "{{ (daily_target * 2) | round(3) }}"
+          needed_before_floor: >-
+            {{ (weekly_budget - rain_7d - irrigation_7d - rain_today) | round(3) }}
+          today_needed: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_today_needed_in -%}
+            {{ sod_today_needed_in(daily_target, states("input_text.sprinkler_water_ledger"),
+                                    states("sensor.ambient_dailyrain")) | float(0) }}
+          water_reason: >-
+            {%- if not is_state("input_boolean.sprinkler_system_enabled", "on") -%}
+            Master switch OFF -- no watering will run regardless of computed need ({{ today_needed }} in).
+            {%- elif today_needed <= 0 -%}
+            No water needed today: the rolling {{ window_days }}-day budget of {{ weekly_budget }} in is already covered by recency-weighted irrigation {{ irrigation_7d }} in + recency-weighted rain {{ rain_7d }} in + today's rain {{ rain_today }} in, giving a raw need of {{ needed_before_floor }} in (floored to 0).
+            {%- else -%}
+            Need {{ today_needed }} in today: {{ window_days }}-day budget {{ weekly_budget }} in minus weighted irrigation {{ irrigation_7d }} in minus weighted rain {{ rain_7d }} in minus today's rain {{ rain_today }} in = {{ needed_before_floor }} in.{{ " Capped at the single-day flood limit of " ~ flood_cap ~ " in." if needed_before_floor > flood_cap else "" }}
+            {%- endif -%}
+          cycles: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_effective_cycles_per_day -%}
+            {{ sod_effective_cycles_per_day(day, today_needed, "input_number.sprinkler_initial_cycles_per_day",
+                                             "input_number.sprinkler_tau_freq_days",
+                                             "input_number.sprinkler_hot_threshold_f") | int }}
+          per_cycle_depth: "{{ (today_needed / cycles) if cycles > 0 else 0 }}"
+          extras_active: "{{ [cycles - 1, 0] | max }}"
+          storming: "{{ is_state('binary_sensor.sprinkler_storming', 'on') }}"
+      # Surfaces water_reason (already computed above purely for the automation
+      # trace) as a real queryable entity for the dashboard. Runs on every trigger
+      # of this automation, so it always reflects the latest need computation;
+      # the choose: branches below overwrite it with something more specific
+      # whenever the actual outcome (banked/skipped/running) diverges from what
+      # the raw need number alone would suggest.
+      - action: input_text.set_value
+        target:
+          entity_id: "input_text.sprinkler_reason"
+        data:
+          value: "{{ (water_reason | trim)[:255] }}"
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: "recalc"
+            sequence:
+              - action: input_number.set_value
+                target:
+                  entity_id: "input_number.sprinkler_today_delivered"
+                data:
+                  value: 0
+              - variables:
+                  morning_minutes: >-
+                    {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_minutes, sod_zone_list -%}
+                    {%- set ns = namespace(total=0) -%}
+                    {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+                        {%- set ns.total = ns.total + (sod_zone_minutes(per_cycle_depth, z.gpm, z.area) | float(0)) -%}
+                    {%- endfor -%}
+                    {{ ns.total + 0.34 }}
+                  # Pulled out of the set_datetime template below so the same clamped
+                  # value can also drive the "already past" check right after it.
+                  clamped_morning_minutes: "{{ [morning_minutes | float(0), 299] | min }}"
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: "input_datetime.sprinkler_morning_start_time"
+                data:
+                  time: >-
+                    {{ (now().replace(hour=5, minute=0, second=0, microsecond=0)
+                        - timedelta(minutes=clamped_morning_minutes)).strftime("%H:%M:%S") }}
+              # Extra cycles (beyond the pre-dawn one) are spread evenly across the
+              # 5am-6pm daytime window -- those daylight hours carry the real
+              # desiccation risk -- rather than fixed clock slots, so whatever number
+              # of extras today's cycle count needs, the daytime gaps stay balanced.
+              # Evening/night is never used, per the overnight-leaf-wetness/disease
+              # guidance. Slots beyond today's extras_active count still get a value
+              # here (harmless): the choose conditions below gate them off.
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: "input_datetime.sprinkler_extra1_time"
+                data:
+                  time: >-
+                    {%- set n = [extras_active, 1] | max -%}
+                    {{ (now().replace(hour=5, minute=0, second=0, microsecond=0)
+                        + timedelta(hours=1 * (13 / (n + 1)))).strftime("%H:%M:%S") }}
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: "input_datetime.sprinkler_extra2_time"
+                data:
+                  time: >-
+                    {%- set n = [extras_active, 1] | max -%}
+                    {{ (now().replace(hour=5, minute=0, second=0, microsecond=0)
+                        + timedelta(hours=2 * (13 / (n + 1)))).strftime("%H:%M:%S") }}
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: "input_datetime.sprinkler_extra3_time"
+                data:
+                  time: >-
+                    {%- set n = [extras_active, 1] | max -%}
+                    {{ (now().replace(hour=5, minute=0, second=0, microsecond=0)
+                        + timedelta(hours=3 * (13 / (n + 1)))).strftime("%H:%M:%S") }}
+              # If the computed pre-dawn runtime is long enough that "5am minus
+              # that many minutes" lands at or before now (recalc runs at
+              # 00:05, so this triggers whenever clamped_morning_minutes is
+              # pinned near/at the 299min ceiling), the input_datetime.set_datetime
+              # above just scheduled sprinkler_morning_start_time for a time
+              # already in the past. HA's entity-based time trigger always
+              # fires at the NEXT occurrence of a time-of-day value, so a
+              # past time silently defers the "morning" trigger a full 24h
+              # instead of firing today -- and since a skipped day raises
+              # tomorrow's rolling-budget need even further, this can cascade
+              # into skipping every day after that too. Observed 2026-08-12:
+              # a low-delivery day pushed today_needed high enough that the
+              # runtime estimate hit the 299min clamp, and the day's watering
+              # silently never happened. Catch it here instead: run the cycle
+              # immediately, right now as part of recalc, using the exact same
+              # guarded logic (landscaper pause / storm checks) a real
+              # "morning" trigger would use.
+              - if:
+                  - condition: template
+                    value_template: "{{ clamped_morning_minutes >= 295 }}"
+                then: &cycle_sequence
+                  - if:
+                      - condition: or
+                        conditions:
+                          - condition: state
+                            entity_id: input_boolean.sprinkler_landscaper_pause
+                            state: "on"
+                          - condition: template
+                            value_template: "{{ storming }}"
+                    then:
+                      # Landscapers are out, or it's storming -- bank this cycle's
+                      # depth instead of running, so whoever runs next (a catch-up
+                      # on pause-off/storm-clear, or simply the next regular cycle)
+                      # can make up for it. Both causes behave identically here;
+                      # they only diverge at catch-up time -- pause_ended just
+                      # replays the bank as-is, but storm_ended recomputes what's
+                      # actually still needed since the storm's own rain may have
+                      # already covered some or all of it. Capped at 1in (matching
+                      # script.sprinkler_run_cycle's sprinkler_max_cycle_depth_in)
+                      # so repeated misses across a multi-day pause/storm can't
+                      # silently compound into an amount no single future cycle
+                      # could ever actually deliver.
+                      - action: input_number.set_value
+                        target:
+                          entity_id: "input_number.sprinkler_pending_makeup_depth"
+                        data:
+                          value: >-
+                            {{ [(states("input_number.sprinkler_pending_makeup_depth") | float(0))
+                                + per_cycle_depth, 1.0] | min }}
+                      - action: input_text.set_value
+                        target:
+                          entity_id: "input_text.sprinkler_reason"
+                        data:
+                          value: >-
+                            {%- if is_state("input_boolean.sprinkler_landscaper_pause", "on") -%}
+                            {{ ("Landscaper pause active -- banked " ~ (per_cycle_depth | round(3))
+                                ~ " in instead of running (pending makeup now "
+                                ~ (states("input_number.sprinkler_pending_makeup_depth") | float(0))
+                                ~ " in).") | trim }}
+                            {%- else -%}
+                            {{ ("Storming -- banked " ~ (per_cycle_depth | round(3))
+                                ~ " in instead of running (pending makeup now "
+                                ~ (states("input_number.sprinkler_pending_makeup_depth") | float(0))
+                                ~ " in); rain totals will be rechecked before catching up once it clears.") | trim }}
+                            {%- endif -%}
+                    else:
+                      - action: input_text.set_value
+                        target:
+                          entity_id: "input_text.sprinkler_reason"
+                        data:
+                          value: >-
+                            {{ ("Running cycle now: " ~ (per_cycle_depth | round(3))
+                                ~ " in scheduled + "
+                                ~ (states("input_number.sprinkler_pending_makeup_depth") | float(0) | round(3))
+                                ~ " in banked makeup.") | trim }}
+                      # pending_makeup_depth is cleared by the script itself on
+                      # full completion, not here -- see the comment at the end
+                      # of script.sprinkler_run_cycle for why.
+                      - action: script.sprinkler_run_cycle
+                        data:
+                          depth_in: >-
+                            {{ per_cycle_depth
+                               + (states("input_number.sprinkler_pending_makeup_depth") | float(0)) }}
+          - conditions:
+              - condition: trigger
+                id: "morning"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+            sequence: *cycle_sequence
+          - conditions:
+              - condition: trigger
+                id: "extra1"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: template
+                value_template: "{{ extras_active >= 1 }}"
+            sequence: *cycle_sequence
+          - conditions:
+              - condition: trigger
+                id: "extra2"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: template
+                value_template: "{{ extras_active >= 2 }}"
+            sequence: *cycle_sequence
+          - conditions:
+              - condition: trigger
+                id: "extra3"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: template
+                value_template: "{{ extras_active >= 3 }}"
+            sequence: *cycle_sequence
+          - conditions:
+              - condition: trigger
+                id: ["morning_reminder", "extra1_reminder", "extra2_reminder", "extra3_reminder"]
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: state
+                entity_id: input_boolean.sprinkler_landscaper_pause
+                state: "off"
+              - condition: time
+                after: "06:00:00"
+                before: "17:00:00"
+                weekday: ["mon", "tue", "wed", "thu", "fri"]
+              - condition: template
+                value_template: >-
+                  {{ trigger.id == "morning_reminder"
+                     or (trigger.id == "extra1_reminder" and extras_active >= 1)
+                     or (trigger.id == "extra2_reminder" and extras_active >= 2)
+                     or (trigger.id == "extra3_reminder" and extras_active >= 3) }}
+            sequence:
+              - action: notify.aaron_phones
+                data:
+                  title: "Sprinklers starting in 15 min"
+                  message: >-
+                    {%- set names = {"morning_reminder": "Pre-dawn cycle", "extra1_reminder": "Extra cycle 1",
+                                      "extra2_reminder": "Extra cycle 2", "extra3_reminder": "Extra cycle 3"} -%}
+                    {{ names[trigger.id] }} about to start -- hold for landscapers?
+          - conditions:
+              - condition: trigger
+                id: "pause_ended"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: template
+                value_template: >-
+                  {{ (states("input_number.sprinkler_pending_makeup_depth") | float(0)) > 0
+                     and not storming }}
+            sequence:
+              - variables:
+                  catchup_depth: "{{ states('input_number.sprinkler_pending_makeup_depth') | float(0) }}"
+                  catchup_minutes: >-
+                    {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_minutes, sod_zone_list -%}
+                    {%- set ns = namespace(total=0) -%}
+                    {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+                        {%- set ns.total = ns.total + (sod_zone_minutes(catchup_depth, z.gpm, z.area) | float(0)) -%}
+                    {%- endfor -%}
+                    {{ ns.total + 0.34 }}
+                  next_slot_ts: >-
+                    {%- set slots = [
+                          {"active": true, "entity": "input_datetime.sprinkler_morning_start_time"},
+                          {"active": extras_active >= 1, "entity": "input_datetime.sprinkler_extra1_time"},
+                          {"active": extras_active >= 2, "entity": "input_datetime.sprinkler_extra2_time"},
+                          {"active": extras_active >= 3, "entity": "input_datetime.sprinkler_extra3_time"},
+                        ] -%}
+                    {%- set ns = namespace(next_ts=none) -%}
+                    {%- for s in slots -%}
+                        {%- if s.active -%}
+                            {%- set h = state_attr(s.entity, "hour") | int(0) -%}
+                            {%- set m = state_attr(s.entity, "minute") | int(0) -%}
+                            {%- set sec = state_attr(s.entity, "second") | int(0) -%}
+                            {%- set slot_dt = now().replace(hour=h, minute=m, second=sec, microsecond=0) -%}
+                            {%- if slot_dt > now() and (ns.next_ts is none or slot_dt.timestamp() < ns.next_ts) -%}
+                                {%- set ns.next_ts = slot_dt.timestamp() -%}
+                            {%- endif -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {{ ns.next_ts if ns.next_ts is not none else "" }}
+                  would_overlap: >-
+                    {{ next_slot_ts != "" and
+                       (now().timestamp() + (catchup_minutes | float(0)) * 60) > (next_slot_ts | float) }}
+              - if:
+                  - condition: template
+                    value_template: "{{ not would_overlap }}"
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: "input_text.sprinkler_reason"
+                    data:
+                      value: >-
+                        {{ ("Landscaper pause ended -- resuming catch-up: "
+                            ~ (catchup_depth | round(3)) ~ " in banked water.") | trim }}
+                  # Enough runway before the next scheduled cycle -- catch up now.
+                  # pending_makeup_depth is cleared by the script itself on full
+                  # completion, not here -- see the comment at the end of
+                  # script.sprinkler_run_cycle for why.
+                  - action: script.sprinkler_run_cycle
+                    data:
+                      depth_in: "{{ catchup_depth }}"
+                else:
+                  # leave pending_makeup_depth as-is -- the next regular cycle's
+                  # own sequence (above) already folds it into that cycle's depth_in.
+                  - action: input_text.set_value
+                    target:
+                      entity_id: "input_text.sprinkler_reason"
+                    data:
+                      value: >-
+                        {{ ("Landscaper pause ended, but too close to the next scheduled cycle to catch up now -- "
+                            ~ (catchup_depth | round(3)) ~ " in still banked for later.") | trim }}
+          - conditions:
+              - condition: trigger
+                id: "storm_ended"
+              - condition: state
+                entity_id: input_boolean.sprinkler_system_enabled
+                state: "on"
+              - condition: template
+                value_template: >-
+                  {{ (states('input_number.sprinkler_pending_makeup_depth') | float(0)) > 0
+                     and not is_state('input_boolean.sprinkler_landscaper_pause', 'on') }}
+            sequence:
+              # Mirrors pause_ended's not-storming guard: don't resume just because
+              # the storm cleared if the landscapers are still here -- wait for
+              # pause_ended to fire instead once they're done too.
+              # Unlike pause_ended, don't just replay the banked
+              # pending_makeup_depth as-is -- the storm's own rain (now
+              # reflected in sensor.ambient_dailyrain, and therefore in a
+              # freshly recomputed today_needed) may have already satisfied
+              # some or all of what was banked. Recompute what's actually
+              # still needed today (today_needed minus everything genuinely
+              # delivered so far, which script.sprinkler_run_cycle tracks
+              # accurately even for a storm-interrupted cycle) and only run
+              # that much.
+              - variables:
+                  remaining_needed: "{{ [0, today_needed - (states('input_number.sprinkler_today_delivered') | float(0))] | max }}"
+                  catchup_minutes: >-
+                    {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_minutes, sod_zone_list -%}
+                    {%- set ns = namespace(total=0) -%}
+                    {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+                        {%- set ns.total = ns.total + (sod_zone_minutes(remaining_needed, z.gpm, z.area) | float(0)) -%}
+                    {%- endfor -%}
+                    {{ ns.total + 0.34 }}
+                  next_slot_ts: >-
+                    {%- set slots = [
+                          {"active": true, "entity": "input_datetime.sprinkler_morning_start_time"},
+                          {"active": extras_active >= 1, "entity": "input_datetime.sprinkler_extra1_time"},
+                          {"active": extras_active >= 2, "entity": "input_datetime.sprinkler_extra2_time"},
+                          {"active": extras_active >= 3, "entity": "input_datetime.sprinkler_extra3_time"},
+                        ] -%}
+                    {%- set ns = namespace(next_ts=none) -%}
+                    {%- for s in slots -%}
+                        {%- if s.active -%}
+                            {%- set h = state_attr(s.entity, "hour") | int(0) -%}
+                            {%- set m = state_attr(s.entity, "minute") | int(0) -%}
+                            {%- set sec = state_attr(s.entity, "second") | int(0) -%}
+                            {%- set slot_dt = now().replace(hour=h, minute=m, second=sec, microsecond=0) -%}
+                            {%- if slot_dt > now() and (ns.next_ts is none or slot_dt.timestamp() < ns.next_ts) -%}
+                                {%- set ns.next_ts = slot_dt.timestamp() -%}
+                            {%- endif -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {{ ns.next_ts if ns.next_ts is not none else "" }}
+                  would_overlap: >-
+                    {{ next_slot_ts != "" and
+                       (now().timestamp() + (catchup_minutes | float(0)) * 60) > (next_slot_ts | float) }}
+              - if:
+                  - condition: template
+                    value_template: "{{ remaining_needed > 0 and not would_overlap }}"
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: "input_text.sprinkler_reason"
+                    data:
+                      value: >-
+                        {{ ("Storm cleared -- resuming: " ~ (remaining_needed | round(3))
+                            ~ " in still needed (storm's own rain already covered part of what was banked).") | trim }}
+                  - action: notify.aaron_phones
+                    data:
+                      title: "Sprinkler: Storm cleared, resuming"
+                      message: >-
+                        Rain stopped -- resuming watering for {{ remaining_needed | round(3) }}"
+                        (the storm's own rain already covered part of what was banked).
+                  # pending_makeup_depth is cleared by the script itself on full
+                  # completion, not here. This used to be an unconditional
+                  # zero-out placed right after this call, guarded only against
+                  # the script raising an exception (entity unavailable,
+                  # disabled, etc. -- observed 2026-07-18: a mid-storm lull fired
+                  # storm_ended while the script was disabled from an unrelated
+                  # template bug, and the old unconditional reset lost 0.211in of
+                  # banked water with zero actually delivered). That guard
+                  # didn't cover a graceful `stop:` mid-catch-up though (a fresh
+                  # storm or landscaper pause reasserting during this same
+                  # call) -- `stop:` isn't an error, so the zero-out still ran
+                  # and stomped whatever the script had just re-banked. See the
+                  # comment at the end of script.sprinkler_run_cycle.
+                  - action: script.sprinkler_run_cycle
+                    data:
+                      depth_in: "{{ remaining_needed }}"
+                else:
+                  # Nothing left to deliver (the storm's own rain covered it), or
+                  # the next scheduled cycle is too close to fit the catch-up --
+                  # either way, clear the bank so a later storm_ended transition
+                  # doesn't keep re-offering a stale amount.
+                  - action: input_number.set_value
+                    target:
+                      entity_id: "input_number.sprinkler_pending_makeup_depth"
+                    data:
+                      value: 0
+                  - action: input_text.set_value
+                    target:
+                      entity_id: "input_text.sprinkler_reason"
+                    data:
+                      value: >-
+                        {{ ("Storm cleared -- no catch-up needed (rain covered it) or too close to the "
+                            ~ "next scheduled cycle to fit it in; bank cleared.") | trim }}
+
+  - alias: "Sprinkler End Of Day Ledger Update"
+    id: "57ccfa2b-fc20-42b9-8ea5-153b08b68f31"
+    mode: single
+    triggers:
+      - trigger: time
+        at: "23:58:00"
+    actions:
+      - action: input_text.set_value
+        target:
+          entity_id: "input_text.sprinkler_water_ledger"
+        data:
+          value: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_ledger_append -%}
+            {{ sod_ledger_append(states("input_text.sprinkler_water_ledger"),
+                                  states("sensor.ambient_dailyrain") | float(0),
+                                  states("input_number.sprinkler_today_delivered") | float(0)) }}
+
+  - alias: "Sprinkler Stuck Valve Watchdog"
+    id: "5b637651-bdba-480d-a180-1d0debbef576"
+    mode: single
+    triggers:
+      # Regular poll: catches a valve genuinely stuck open (bad relay, lost
+      # command, etc). Threshold is well above the longest legitimate single-
+      # zone runtime -- it must never trip on a real, still-running cycle.
+      - trigger: time_pattern
+        minutes: "/5"
+        id: "poll"
+      # A restart never leaves a script's delay/close step pending on purpose --
+      # our design always closes each valve at the end of its run. So any valve
+      # found open the moment HA comes back is stale leftover state from an
+      # interrupted run (restart, crash, power loss) and is safe to close
+      # immediately, rather than waiting up to 5-plus minutes for the next poll.
+      - trigger: homeassistant
+        event: start
+        id: "startup"
+    actions:
+      - variables:
+          zone_entities: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_list -%}
+            {%- set ns = namespace(items=[]) -%}
+            {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+                {%- if states(z.entity_id) not in ["unknown", "unavailable"] -%}
+                    {%- set ns.items = ns.items + [z.entity_id] -%}
+                {%- endif -%}
+            {%- endfor -%}
+            {{ ns.items }}
+      - repeat:
+          for_each: "{{ zone_entities }}"
+          sequence:
+            - if:
+                - condition: template
+                  value_template: >-
+                    {%- set st = states[repeat.item] -%}
+                    {{ st is not none and st.state == "open"
+                       and (trigger.id == "startup"
+                            or (now() - st.last_changed).total_seconds() > 10800) }}
+              then:
+                - action: valve.close_valve
+                  target:
+                    entity_id: "{{ repeat.item }}"
+                - action: notify.aaron_phones
+                  data:
+                    title: "Sprinkler Watchdog"
+                    message: >-
+                      {{ ("Force-closed " ~ repeat.item ~ " on HA startup -- it was left open, "
+                          ~ "likely from a watering cycle interrupted by a restart.")
+                         if trigger.id == "startup" else
+                         ("Force-closed " ~ repeat.item ~ " -- it had been open for over 3 hours. "
+                          ~ "Check the zone valve/wiring.") }}
+                - action: persistent_notification.create
+                  data:
+                    title: "Sprinkler Watchdog"
+                    message: >-
+                      Force-closed {{ repeat.item }}
+                      ({{ "startup recovery" if trigger.id == "startup" else "stuck open >3h" }}).
+
+script:
+  sprinkler_run_cycle:
+    alias: "Sprinkler Run Cycle"
+    fields:
+      depth_in:
+        description: >-
+          Depth (inches) to deliver this cycle, split sequentially across
+          every zone in sod_zone_list(). Clamped internally to
+          sprinkler_max_cycle_depth_in -- see that step's comment.
+        example: 0.15
+    sequence:
+      - variables:
+          # Hard ceiling on a single call, independent of how depth_in was
+          # computed upstream. input_number.sprinkler_pending_makeup_depth
+          # (banked catch-up water from storm/landscaper interruptions) has no
+          # cap of its own and gets added on top of a normal cycle's depth, so
+          # repeated interruptions before a catch-up runs can compound it far
+          # past any reasonable single-cycle amount. Observed 2026-08-10/11:
+          # it banked up to 2.648in, which asked zone 1 (the largest, slowest
+          # zone) to run for over 18 hours -- past orbit_bhyve.start_watering's
+          # hard 65535-second (~18.2h) duration limit -- and errored out the
+          # whole cycle every time it ran, delivering nothing. 1in safely
+          # covers any legitimate single-cycle need (normal cycles deliver a
+          # fraction of a ~0.35-0.7in/day target) while staying well under
+          # the ~2.3in that would retrip the API limit on zone 1.
+          sprinkler_max_cycle_depth_in: 1.0
+          depth_in: "{{ [depth_in | float(0), sprinkler_max_cycle_depth_in] | min }}"
+          zones: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_list -%}
+            {{ sod_zone_list() | from_json(default=[]) }}
+          # Running total of inches actually delivered so far this call --
+          # equals depth_in once every zone completes normally, but tracks a
+          # true partial amount if a storm cuts the cycle short. Credited to
+          # sprinkler_today_delivered either at the very end (normal
+          # completion) or immediately before an early stop (storm
+          # interruption), so bookkeeping never claims water that didn't
+          # actually fall.
+          total_delivered_in: 0
+      - variables:
+          # Longest-zone runtime ceiling, applied as a single scale factor to
+          # depth_in across ALL zones -- not an independent per-zone clamp.
+          # An earlier version of this cap clamped each zone's own runtime to
+          # a flat ceiling independently, which meant a fast zone (high
+          # precip rate) delivered its full requested depth while the slow
+          # zone alone got shorted -- uneven coverage for what's meant to be
+          # one uniform depth across the yard. Instead: find whichever zone
+          # is slowest to reach depth_in (lowest precip rate = area/gpm --
+          # zone 1 in practice, 2827 sqft on 3.7gpm, the zone that took ~8h
+          # to deliver 1in and prompted this whole cap -- see the
+          # sprinkler_max_cycle_depth_in comment above), and if even that
+          # zone would exceed the ceiling, scale depth_in down by the same
+          # factor for every zone so they all still get equal depth and the
+          # slowest zone lands exactly at the ceiling. If the slowest zone
+          # already finishes within the ceiling, the scale is 1 and nothing
+          # changes.
+          sprinkler_max_zone_minutes: 120
+          max_raw_minutes: >-
+            {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_minutes -%}
+            {%- set ns = namespace(max=0) -%}
+            {%- for z in zones -%}
+                {%- set ns.max = [ns.max, sod_zone_minutes(depth_in, z.gpm, z.area) | float(0)] | max -%}
+            {%- endfor -%}
+            {{ ns.max }}
+          depth_in: >-
+            {{ (depth_in | float(0)) * ([sprinkler_max_zone_minutes / max_raw_minutes, 1] | min)
+               if max_raw_minutes > 0 else (depth_in | float(0)) }}
+      - repeat:
+          for_each: "{{ zones }}"
+          sequence:
+            - variables:
+                # entity_id is now a hardcoded literal (always non-blank), so "has a
+                # valve" means "this entity actually exists/reports a real state" --
+                # zones not yet paired correctly read back as unknown.
+                has_valve: >-
+                  {{ states(repeat.item.entity_id) not in ["unknown", "unavailable"] }}
+                minutes: >-
+                  {%- from "metrics/irrigation/sod_watering.jinja" import sod_zone_minutes -%}
+                  {{ sod_zone_minutes(depth_in, repeat.item.gpm, repeat.item.area) | float(0) }}
+                # 1 inch of water over 1 sqft = 0.623 gallons (1/12 ft * 7.48052 gal/ft3)
+                gallons: "{{ (depth_in | float(0)) * (repeat.item.area | float(0)) * 0.623 }}"
+            - if:
+                - condition: template
+                  value_template: "{{ minutes > 0 }}"
+              then:
+                - if:
+                    - condition: template
+                      value_template: "{{ has_valve }}"
+                  then:
+                    # Plain valve.open_valve falls back to the paired
+                    # number.zone_N_watering_duration entity (or the integration's
+                    # default_duration_sec) rather than our computed runtime.
+                    # orbit_bhyve.start_watering's own `duration` field (seconds)
+                    # overrides that, so the physical timer -- not just HA's delay
+                    # step below -- tracks the real duration and the zone still
+                    # shuts off correctly on its own even if HA restarts mid-cycle.
+                    - action: orbit_bhyve.start_watering
+                      target:
+                        entity_id: "{{ repeat.item.entity_id }}"
+                      data:
+                        duration: "{{ (minutes * 60) | round(0) | int }}"
+                - action: notify.aaron_phones
+                  data:
+                    title: >-
+                      {{ "Sprinkler: " ~ repeat.item.name
+                         ~ (" starting" if has_valve else " -- turn ON now") }}
+                    message: >-
+                      {{ repeat.item.name }} {{ "dispensing" if has_valve else "needs" }}
+                      {{ gallons | round(1) }} gal, {{ "running" if has_valve else "run for" }}
+                      {{ minutes | round(1) }} min.
+                - if:
+                    - condition: template
+                      value_template: "{{ has_valve }}"
+                  then:
+                    # BLE connect+handshake adds a few seconds before the valve
+                    # actually opens. A short zone's whole timed delay could elapse
+                    # before that happens, so the zone would get less water than
+                    # intended. Wait for confirmed "open" before starting the real
+                    # countdown, so the requested duration is honored regardless of
+                    # how long the BLE command took.
+                    - wait_template: "{{ is_state(repeat.item.entity_id, 'open') }}"
+                      timeout:
+                        seconds: 150
+                      continue_on_timeout: true
+                - variables:
+                    # variables: always stores the stringified template render, never a
+                    # real datetime object -- as_datetime(wait_start) below converts it
+                    # back before doing arithmetic on it.
+                    wait_start: "{{ now() }}"
+                # Interruptible watering wait, replacing a blind delay: times
+                # out normally after the full planned duration if neither
+                # interrupt condition develops (continue_on_timeout mirrors the
+                # old delay exactly), but returns immediately the moment either
+                # binary_sensor.sprinkler_storming or
+                # input_boolean.sprinkler_landscaper_pause flips on, so a storm
+                # or the landscapers showing up mid-zone cuts this zone -- and
+                # the whole cycle -- short instead of running the full planned
+                # time regardless. The pause_ended automation branch's blind
+                # replay of pending_makeup_depth is still correct for this case
+                # even though it was written for the pre-start skip path: the
+                # banked amount is always exactly what's still owed, whether
+                # the cycle never started or was cut short partway through.
+                - wait_template: >-
+                    {{ is_state('binary_sensor.sprinkler_storming', 'on')
+                       or is_state('input_boolean.sprinkler_landscaper_pause', 'on') }}
+                  timeout:
+                    seconds: "{{ (minutes * 60) | round(0) | int }}"
+                  continue_on_timeout: true
+                - variables:
+                    storming_now: "{{ is_state('binary_sensor.sprinkler_storming', 'on') }}"
+                    paused_now: "{{ is_state('input_boolean.sprinkler_landscaper_pause', 'on') }}"
+                    zone_interrupted: "{{ storming_now or paused_now }}"
+                    interrupt_reason: >-
+                      {{ 'Storm' if storming_now else 'Landscaper pause' if paused_now else '' }}
+                    zone_elapsed_s: "{{ [(now() - as_datetime(wait_start)).total_seconds(), minutes * 60] | min }}"
+                    zone_delivered_in: >-
+                      {{ (depth_in | float(0)) * (zone_elapsed_s / (minutes * 60)) }}
+                    total_delivered_in: "{{ (total_delivered_in | float(0)) + zone_delivered_in }}"
+                - if:
+                    - condition: template
+                      value_template: "{{ has_valve }}"
+                  then:
+                    # Close now regardless of whether the full duration elapsed
+                    # or a storm cut it short -- the device should have already
+                    # shut the zone off on its own once `duration` elapsed, so
+                    # this is a no-op in that case and just confirms it.
+                    - action: valve.close_valve
+                      target:
+                        entity_id: "{{ repeat.item.entity_id }}"
+                    # Don't advance to the next zone until this one is confirmed
+                    # closed -- two zones open at once is more than the single
+                    # water main can support.
+                    - wait_template: "{{ is_state(repeat.item.entity_id, 'closed') }}"
+                      timeout:
+                        seconds: 300
+                      continue_on_timeout: true
+                    - if:
+                        - condition: template
+                          value_template: "{{ not is_state(repeat.item.entity_id, 'closed') }}"
+                      then:
+                        - action: notify.aaron_phones
+                          data:
+                            title: "Sprinkler WARNING: {{ repeat.item.name }} may still be open"
+                            message: >-
+                              {{ repeat.item.name }} hasn't confirmed closed 5 minutes after
+                              the stop command. Continuing anyway -- multiple zones may be
+                              running at once right now. Check the b-hyve app.
+                  else:
+                    - action: notify.aaron_phones
+                      data:
+                        title: >-
+                          {{ ("Sprinkler: " ~ interrupt_reason.upper() ~ " -- turn OFF " ~ repeat.item.name ~ " now")
+                             if zone_interrupted else
+                             "Sprinkler: " ~ repeat.item.name ~ " -- turn OFF now" }}
+                        message: >-
+                          {{ (interrupt_reason ~ " -- stop early, only "
+                              ~ (zone_delivered_in | round(2)) ~ '" delivered so far.')
+                             if zone_interrupted else
+                             (minutes | round(1) ~ " min elapsed -- turn off " ~ repeat.item.name ~ " now.") }}
+                - if:
+                    - condition: template
+                      value_template: "{{ zone_interrupted }}"
+                  then:
+                    # Credit exactly what was actually delivered (this zone plus
+                    # any earlier zones this same call), then bank the
+                    # difference between the requested depth and what was
+                    # delivered for a later catch-up -- see the "storm_ended"
+                    # automation trigger, which recomputes what's still
+                    # genuinely needed rather than blindly replaying this bank.
+                    - action: input_number.set_value
+                      target:
+                        entity_id: "input_number.sprinkler_today_delivered"
+                      data:
+                        value: >-
+                          {{ (states("input_number.sprinkler_today_delivered") | float(0)) + total_delivered_in }}
+                    # Capped at 1in, same reasoning/constant as the
+                    # landscaper-pause banking step in the automation above.
+                    - action: input_number.set_value
+                      target:
+                        entity_id: "input_number.sprinkler_pending_makeup_depth"
+                      data:
+                        value: >-
+                          {{ [(states("input_number.sprinkler_pending_makeup_depth") | float(0))
+                              + (depth_in | float(0)) - total_delivered_in, 1.0] | min }}
+                    - action: notify.aaron_phones
+                      data:
+                        title: "Sprinkler: {{ interrupt_reason }} detected, cycle stopped"
+                        message: >-
+                          Stopped after {{ repeat.item.name }} -- {{ (depth_in - total_delivered_in) | round(3) }}"
+                          banked for catch-up once {{ 'the storm clears' if storming_now else 'the landscapers are done' }}.
+                    - stop: "{{ interrupt_reason }} detected mid-cycle"
+                - delay:
+                    seconds: 10
+      - action: input_number.set_value
+        target:
+          entity_id: "input_number.sprinkler_today_delivered"
+        data:
+          value: >-
+            {{ (states("input_number.sprinkler_today_delivered") | float(0)) + total_delivered_in }}
+      # Reaching this point means every zone completed without a `stop:` --
+      # i.e. the full requested depth_in was actually delivered, so whatever
+      # was banked going in is now paid off. This is the only place
+      # pending_makeup_depth is ever cleared -- callers used to clear it
+      # themselves right after dispatching this script, which raced this
+      # same script's own interrupt-branch banking: if a storm or the
+      # landscaper pause fired again mid-catch-up, the interrupt branch would
+      # correctly re-bank the shortfall, only for the caller's very next step
+      # to unconditionally stomp it back to 0 the instant this script
+      # returned (whether it finished or hit `stop:` -- a graceful `stop:`
+      # isn't an error, so callers couldn't tell the difference). Observed
+      # 2026-08-11: interrupting a runaway catch-up mid-cycle re-banked
+      # ~0.99in correctly, then the calling automation's unconditional
+      # zero-out erased it within the same second. Centralizing the clear
+      # here, gated on actually reaching the end of the script, closes that
+      # gap for every caller at once instead of patching each call site.
+      - action: input_number.set_value
+        target:
+          entity_id: "input_number.sprinkler_pending_makeup_depth"
+        data:
+          value: 0

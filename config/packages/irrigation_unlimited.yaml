@@ -1,0 +1,48 @@
+# Irrigation Unlimited (HACS custom integration) -- configured purely to get
+# its own dashboard card / manual-run controls / history for the existing
+# physical zone valves. Deliberately has NO schedules: packages/sprinklers.yaml
+# is still the only thing that decides when/how much to water (rain-aware
+# taper curve + banking logic in script.sprinkler_run_cycle) and it calls
+# valve.open_valve/close_valve directly. Giving Irrigation Unlimited its own
+# schedules on the same valve entities would create two independent
+# schedulers fighting over the same physical zones -- real risk of
+# double-watering or conflicting valve state. sync_switches (on by default)
+# keeps Irrigation Unlimited's own status in sync with valve changes made by
+# the other automation rather than trying to own/override them.
+#
+# The "All Zones" sequence below is manual-trigger-only (no schedules
+# attached) -- it just gives the dashboard a one-button "run everything in
+# order" control; it never fires on its own.
+#
+# Zone duration values are only the default used when a manual run doesn't
+# specify one -- adjust to taste, they don't affect the automated program.
+irrigation_unlimited:
+  controllers:
+    - name: "Sprinklers"
+      controller_id: sprinklers
+      show_sequence_status: true
+      zones:
+        - name: "Zone 1"
+          zone_id: zone_1
+          entity_id: valve.zone_1_zone
+          duration: "00:10:00"
+        - name: "Zone 2"
+          zone_id: zone_2
+          entity_id: valve.zone_2_zone
+          duration: "00:10:00"
+        - name: "Zone 3"
+          zone_id: zone_3
+          entity_id: valve.zone_3_zone
+          duration: "00:10:00"
+        - name: "Zone 4"
+          zone_id: zone_4
+          entity_id: valve.zone_4_zone
+          duration: "00:10:00"
+      sequences:
+        - name: "All Zones"
+          sequence_id: all_zones
+          zones:
+            - zone_id: zone_1
+            - zone_id: zone_2
+            - zone_id: zone_3
+            - zone_id: zone_4

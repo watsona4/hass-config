@@ -1,0 +1,233 @@
+{# New-sod watering: establishment taper, weather adjustment, rolling rain/irrigation ledger #}
+{# All depths are inches; all rates are inches/hour; ledger entries cover the trailing 7 days #}
+
+{% macro sod_day_count(install_date_entity) -%}
+    {%- set raw = states(install_date_entity) -%}
+    {%- if raw in ['unknown', 'unavailable', ''] -%}
+        {{- 0 -}}
+    {%- else -%}
+        {%- set installed = as_datetime(raw).date() -%}
+        {{- [0, (now().date() - installed).days] | max -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Today's forecast high (°F), preferring Open-Meteo's daily forecast over a live/actual reading #}
+{% macro sod_forecast_high_f() -%}
+    {%- set daily = state_attr('sensor.openmeteo_home', 'daily') -%}
+    {%- set highs = daily.get('temperature_2m_max', []) if daily is mapping else [] -%}
+    {%- if (highs | length) > 0 -%}
+        {{- highs[0] | float(0) -}}
+    {%- else -%}
+        {{- states('sensor.ambient_outdoor_temperature') | float(0) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro sod_hot_today(hot_threshold_entity) -%}
+    {{- (sod_forecast_high_f() | float(0)) >= (states(hot_threshold_entity) | float(90)) -}}
+{%- endmacro %}
+
+{# Weekly water budget (irrigation + rain), inches, before any taper #}
+{% macro sod_weekly_target_in(weekly_normal_entity, weekly_hot_entity, hot_threshold_entity) -%}
+    {%- if sod_hot_today(hot_threshold_entity) == 'True' -%}
+        {{- states(weekly_hot_entity) | float(2.0) -}}
+    {%- else -%}
+        {{- states(weekly_normal_entity) | float(1.0) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Cycles/day: decays from initial_cycles toward 1 (tau_freq_days); +1 heat bump only while still >1 #}
+{% macro sod_cycles_per_day(day, initial_cycles_entity, tau_freq_entity, hot_threshold_entity) -%}
+    {%- set initial = states(initial_cycles_entity) | float(3) -%}
+    {%- set tau = states(tau_freq_entity) | float(5) -%}
+    {%- set decayed = 1 + ((initial - 1) * (e ** (-1 * (day | float(0)) / tau))) -%}
+    {%- set base = [1, decayed | round(0, 'common') | int] | max -%}
+    {%- if base > 1 and sod_hot_today(hot_threshold_entity) == 'True' -%}
+        {{- [4, base + 1] | min -}}
+    {%- else -%}
+        {{- base -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Effective cycles/day = max(establishment-taper cycles, cycles needed so no single
+   cycle's slowest zone would exceed the 120min runtime cap in script.sprinkler_run_cycle
+   for today's total need). The taper alone can leave cycles at 1 long after a rain/
+   irrigation deficit would otherwise justify splitting a day's water across more than
+   one cycle -- without this, a large backlog just gets silently capped/under-delivered
+   in one oversized cycle instead of actually being spread across more of them.
+   sod_zone_minutes is linear in depth, so the minutes for 1in directly gives the
+   slowest zone's per-inch rate; from that, the minimum N with (today_needed/N)*rate <=
+   120 is a closed form, no search needed. Volume-driven cycles are capped at 2/day
+   normally, 4 (matching the taper's own heat-bump ceiling above) on a hot forecast, so
+   a large backlog can't turn into constant all-day watering. Zone list comes from
+   sod_zone_list() -- every zone, of any type, is considered when finding the
+   slowest one, since a future zone type could turn out slower than today's grass. #}
+{% macro sod_effective_cycles_per_day(day, today_needed, initial_cycles_entity, tau_freq_entity, hot_threshold_entity) -%}
+    {%- set day_based = sod_cycles_per_day(day, initial_cycles_entity, tau_freq_entity, hot_threshold_entity) | int -%}
+    {%- set ns = namespace(rate=0) -%}
+    {%- for z in (sod_zone_list() | from_json(default=[])) -%}
+        {%- set ns.rate = [ns.rate, sod_zone_minutes(1.0, z.gpm, z.area) | float(0)] | max -%}
+    {%- endfor -%}
+    {%- set needed_cycles = (((today_needed | float(0)) * ns.rate) / 120) | round(0, 'ceil') | int -%}
+    {%- set ceiling = 4 if sod_hot_today(hot_threshold_entity) == 'True' else 2 -%}
+    {%- set volume_based = [1, [needed_cycles, ceiling] | min] | max -%}
+    {{- [day_based, volume_based] | max -}}
+{%- endmacro %}
+
+{# Today's target depth before rain is netted out. Includes a documented humidity/heat approximation #}
+{% macro sod_daily_target_before_rain(day, initial_daily_entity, weekly_target_in, tau_depth_entity) -%}
+    {%- set initial = states(initial_daily_entity) | float(0.35) -%}
+    {%- set tau = states(tau_depth_entity) | float(14) -%}
+    {%- set final = (weekly_target_in | float(0)) / 7 -%}
+    {%- set base = final + (initial - final) * (e ** (-1 * (day | float(0)) / tau)) -%}
+    {%- set humidity = states('sensor.ambient_outdoor_humidity') | float(100) -%}
+    {%- set forecast_high = sod_forecast_high_f() | float(0) -%}
+    {%- if humidity < 30 and forecast_high >= 85 -%}
+        {{- (base * 1.15) | round(3) -}}
+    {%- else -%}
+        {{- base | round(3) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Minutes to run a zone to deliver depth_in, using PR(in/hr) = 96.3 * GPM / area_sqft #}
+{% macro sod_zone_minutes(depth_in, gpm, area_sqft) -%}
+    {%- set gpm_f = gpm | float(0) -%}
+    {%- set area_f = area_sqft | float(0) -%}
+    {%- if gpm_f <= 0 or area_f <= 0 or (depth_in | float(0)) <= 0 -%}
+        {{- 0 -}}
+    {%- else -%}
+        {%- set precip_rate = (96.3 * gpm_f) / area_f -%}
+        {{- (((depth_in | float(0)) / precip_rate) * 60) | round(1) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{# Single source of truth for every sprinkler zone -- add a new valve here (and
+   nowhere else) to extend the system. Every zone shares the same depth/precip-rate
+   model (sod_zone_minutes above): area_sqft receiving depth_in of water takes
+   depth_in/precip_rate hours, precip_rate = 96.3*gpm/area. 'type' is a label only
+   (spray/soaker/mister/...) -- it doesn't change the math, only how 'gpm' and 'area'
+   should be derived for that kind of emitter: a spray zone's area is the sprayed
+   footprint and its gpm is the nozzle's bucket-tested flow, while a soaker/drip
+   zone's area is a much narrower wetted strip (hose length x effective wetting
+   width) and its gpm is the hose's rated/measured total flow -- see each zone's own
+   area sensor for the specific reasoning. 'combo' (zone 4) is a fourth pattern: two+
+   devices permanently plumbed off ONE valve through fixed (non-electronic) splitter
+   valves, so they always run together for the same duration with no independent
+   control. Both gpm and area for a combo zone are derived stand-ins, not real
+   measurements of any single device -- see that zone's own area sensor for how they're
+   reverse-engineered from the real per-device measurements to reproduce a deliberately
+   chosen compromise precip rate. Every zone's area is its own template sensor
+   (sensor.sprinkler_zoneN_area) rather than a bare input_number, specifically so the
+   geometry/assumptions (or, for a combo zone, the whole derivation) behind the number
+   stay documented in the template itself instead of being a value someone will forget
+   the derivation of. gpm stays an input_number since it's normally a measured constant
+   (bucket test / manufacturer spec) -- a combo zone is the one exception, where it
+   still holds a real measurement (the true total zone flow), just not one tied to a
+   single device. Returns JSON text, not a native list -- Jinja macros can only produce
+   strings, so every caller must decode with `| from_json(default=[])` before iterating
+   (same pattern as sod_ledger_entries below). #}
+{% macro sod_zone_list() -%}
+    {{- [
+          {"name": "Zone 1", "entity_id": "valve.zone_1_zone", "type": "spray",
+           "gpm": states("input_number.sprinkler_zone1_gpm"), "area": states("input_number.sprinkler_zone1_area")},
+          {"name": "Zone 2", "entity_id": "valve.zone_2_zone", "type": "spray",
+           "gpm": states("input_number.sprinkler_zone2_gpm"), "area": states("input_number.sprinkler_zone2_area")},
+          {"name": "Zone 3", "entity_id": "valve.zone_3_zone", "type": "spray",
+           "gpm": states("input_number.sprinkler_zone3_gpm"), "area": states("input_number.sprinkler_zone3_area")},
+          {"name": "Zone 4 (Sprinkler+Soaker)", "entity_id": "valve.zone_4_zone", "type": "combo",
+           "gpm": states("input_number.sprinkler_zone4_gpm"), "area": states("sensor.sprinkler_zone_4_area")},
+        ] | tojson -}}
+{%- endmacro %}
+
+{# Parse the compact ledger ("YYYYMMDD:rain:irr;...") into entries from the trailing 7 days #}
+{% macro sod_ledger_entries(ledger_text) -%}
+    {%- set ns = namespace(items=[]) -%}
+    {%- set today = now().date() -%}
+    {%- for part in (ledger_text or '').split(';') -%}
+        {%- set p = part | trim -%}
+        {%- if (p | length) > 0 -%}
+            {%- set fields = p.split(':') -%}
+            {%- if (fields | length) == 3 and (fields[0] | length) == 8 -%}
+                {%- set entry_date = strptime(fields[0], '%Y%m%d', default=none) -%}
+                {%- if entry_date is not none -%}
+                    {%- set age = (today - entry_date.date()).days -%}
+                    {%- if age >= 0 and age < 7 -%}
+                        {%- set ns.items = ns.items + [{
+                            'date': fields[0],
+                            'rain_in': fields[1] | float(0),
+                            'irrigation_in': fields[2] | float(0),
+                        }] -%}
+                    {%- endif -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.items | tojson -}}
+{%- endmacro %}
+
+{# Recency-weighted sum of a numeric field across ledger-style entries (each item must have
+   a 'date' key in 'YYYYMMDD' format, matching sod_ledger_entries' shape). Each entry's value
+   is multiplied by e^(-days_ago/tau) before summing, so a value from today counts fully but
+   the same value further in the past contributes less and less -- e.g. with tau=3, a value
+   from 3 days ago (one half-life) counts for ~50%, and from 7 days ago only ~11%. Used so
+   rain that fell days ago doesn't still offset today's irrigation need as if it just fell. #}
+{% macro exponential_weighted_sum(iterable, attribute=None, tau=1, start=0) %}
+    {%- set today = now().date() -%}
+    {%- set ns = namespace(total=start) -%}
+    {%- for item in iterable -%}
+        {%- set val = item[attribute] if attribute is not none else item -%}
+        {%- set entry_date = strptime(item['date'], '%Y%m%d', default=none) -%}
+        {%- if entry_date is not none -%}
+            {%- set days_ago = (today - entry_date.date()).days -%}
+            {%- set ns.total = ns.total + (val * (e ** (-1 * days_ago / tau))) -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{- ns.total -}}
+{% endmacro %}
+
+{# Rolling totals as a JSON object: {"rain_7d": x, "irrigation_7d": y, "entry_count": n}.
+   Both rain and irrigation are recency-weighted (tau=4) rather than flat-summed: water put
+   down days ago -- whether by rain or by the sprinklers -- shouldn't keep offsetting today's
+   need at full strength once the soil has had time to dry. Weighting only rain (the old
+   behavior) made the budget too conservative, since a big irrigation stretch would suppress
+   watering for days afterward as if all of it were still in the root zone. #}
+{% macro sod_ledger_summary(ledger_text) -%}
+    {%- set entries = sod_ledger_entries(ledger_text) | from_json(default=[]) -%}
+    {%- set rain_7d = exponential_weighted_sum(entries, attribute='rain_in', tau=4) | float(0) -%}
+    {%- set irrigation_7d = exponential_weighted_sum(entries, attribute='irrigation_in', tau=4) | float(0) -%}
+    {{- {'rain_7d': rain_7d | round(3), 'irrigation_7d': irrigation_7d | round(3),
+         'entry_count': entries | length} | tojson -}}
+{%- endmacro %}
+
+{# Today's irrigation need after netting rain + already-delivered irrigation, capped against a single flood day.
+   The budget window scales with how many days of real ledger history exist (1..7) so a fresh/empty ledger
+   doesn't manufacture a false "deficit" for days before the system existed.
+
+   rain_today_in is today's rain-so-far (e.g. states('sensor.ambient_daily_rain')), passed in separately
+   from the ledger: the ledger only gets today's entry appended at 23:58pm (see sod_ledger_append / the
+   "Sprinkler End Of Day Ledger Update" automation), so without this argument any rain that's already
+   fallen today is invisible to every cycle that triggers before that nightly update -- a morning storm
+   would not reduce an afternoon cycle's depth at all. Callers should always pass the live sensor value so
+   each cycle's depth is netted against rain that's fallen *today*, not just the trailing 7 completed days. #}
+{% macro sod_today_needed_in(daily_target_before_rain, ledger_text, rain_today_in) -%}
+    {%- set summary = sod_ledger_summary(ledger_text)
+                       | from_json(default={'rain_7d': 0, 'irrigation_7d': 0, 'entry_count': 0}) -%}
+    {%- set window_days = [7, summary.entry_count + 1] | min -%}
+    {%- set weekly_budget = (daily_target_before_rain | float(0)) * window_days -%}
+    {%- set needed = weekly_budget - summary.rain_7d - summary.irrigation_7d - (rain_today_in | float(0)) -%}
+    {%- set capped = [needed, (daily_target_before_rain | float(0)) * 2] | min -%}
+    {{- [0, capped] | max | round(3) -}}
+{%- endmacro %}
+
+{# Append today's rain + irrigation to the ledger, dropping anything older than 7 days. Returns the new ledger text #}
+{% macro sod_ledger_append(ledger_text, rain_in, irrigation_in) -%}
+    {%- set existing = sod_ledger_entries(ledger_text) | from_json(default=[]) -%}
+    {%- set today_str = now().strftime('%Y%m%d') -%}
+    {%- set kept = existing | rejectattr('date', 'equalto', today_str) | list -%}
+    {%- set new_entry = {'date': today_str, 'rain_in': rain_in | float(0), 'irrigation_in': irrigation_in | float(0)} -%}
+    {%- set all_entries = kept + [new_entry] -%}
+    {%- set ns = namespace(parts=[]) -%}
+    {%- for e in all_entries -%}
+        {%- set ns.parts = ns.parts + [e.date ~ ':' ~ (e.rain_in | round(2)) ~ ':' ~ (e.irrigation_in | round(2))] -%}
+    {%- endfor -%}
+    {{- ns.parts | join(';') -}}
+{%- endmacro %}
