@@ -2,7 +2,10 @@
 
 {% macro normalize_unit(unit) %}
     {%- set raw = (unit | string) | trim -%}
-    {%- set cleaned = raw | replace(' ', '') -%}
+    {#- Fold Greek small letter mu (U+03BC) onto the micro sign (U+00B5) that
+        the unit maps and SI prefix table use; the two glyphs are visually
+        identical and both appear in the wild (e.g. "μg/m³" vs "µg/m³"). -#}
+    {%- set cleaned = raw | replace(' ', '') | replace('\u03bc', '\u00b5') -%}
 
     {#- early canonical aliases to avoid prefix collisions -#}
     {%- if cleaned | lower in ['mile','miles'] -%}{{- 'mi' -}}

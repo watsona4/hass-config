@@ -109,20 +109,23 @@
 {%- endmacro %}
 
 {#-  ----------------- dimension detection -------------------- -#}
+{# Note: '' is itself a valid dimension key (the dimensionless %/ppm/ppb
+   family), so an unrecognized unit MUST return the sentinel 'unknown' and
+   never fall through to ''. The `found` flag is tracked in a namespace
+   because Jinja's `loop` variable is out of scope after {% endfor %}. #}
 {% macro get_dimension(u) %}
     {%- set unit = normalize_unit(u|string) -%}
+    {%- set ns = namespace(dim='unknown') -%}
     {%- for dim, spec in CONVERSION.items() -%}
         {%- if 'map' in spec and (unit == spec.base or unit in spec.map) -%}
-            {{- dim -}}
+            {%- set ns.dim = dim -%}
             {%- break -%}
         {%- elif dim == 'temperature' and unit in spec.units -%}
-            {{- dim -}}
+            {%- set ns.dim = dim -%}
             {%- break -%}
         {%- endif -%}
     {%- endfor -%}
-    {%- if loop is defined and loop.last and not loop.broken -%}
-        {{- 'unknown' -}}
-    {%- endif -%}
+    {{- ns.dim -}}
 {% endmacro %}
 
 {#-  -------------------- helpers: to/from base -------------------- -#}

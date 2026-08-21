@@ -174,6 +174,59 @@
     ]
 } %}
 
+{# ======================================================================
+  Unit conversion: µg/m³ ⇄ ppb for ozone (O₃)
+
+  HA's "ozone" device_class reports state in µg/m³, but the AQI
+  breakpoints above (lookup_unit) are in ppb. Converting between a mass
+  concentration (µg/m³) and a volume mixing ratio (ppb) is NOT a fixed
+  factor — it depends on the molar volume of the gas, which varies with
+  temperature (and pressure). This is why the generic ppb handling in
+  units/base.jinja (which treats ppb as a dimensionless fraction of %)
+  cannot be used here.
+
+  Ideal-gas relation at P = 1 atm:
+      µg/m³ = ppb × M / Vm(T)
+      ppb   = µg/m³ × Vm(T) / M
+  where
+      M     = 48.00 g/mol       molar mass of O₃
+      Vm(T) = R_atm × T (K)     molar volume in L/mol
+              R_atm = 0.0820573 L·atm/(mol·K), T in kelvin
+
+  At 25 °C this yields the familiar EPA factor of ≈ 1.96 µg/m³ per ppb.
+====================================================================== #}
+
+{% set o3_molar_mass = 48.00 %}
+{% set r_atm = 0.0820573 %}
+{% set ugm3_aliases = ["µg/m³", "µg/m3", "ug/m³", "ug/m3"] %}
+
+{#- Molar volume of an ideal gas (L/mol) at temp_c °C, 1 atm. -#}
+{% macro o3_molar_volume(temp_c=25) -%}
+    {{- r_atm * ((temp_c | float(25)) + 273.15) -}}
+{%- endmacro %}
+
+{#- Convert an ozone reading between µg/m³ and ppb at temp_c °C.
+    Returns a float, or none if the value is non-numeric or the unit
+    pair is not a µg/m³⇄ppb conversion. -#}
+{% macro o3_convert(value, from_unit, to_unit, temp_c=25) -%}
+    {%- set v = value | float(none) -%}
+    {%- set fu = from_unit | string | lower -%}
+    {%- set tu = to_unit | string | lower -%}
+    {%- set ugm3 = ugm3_aliases | map('lower') | list -%}
+    {%- set vm = o3_molar_volume(temp_c) | float(none) -%}
+    {%- if v is none -%}
+        {{- none -}}
+    {%- elif fu == tu -%}
+        {{- v -}}
+    {%- elif fu == "ppb" and tu in ugm3 -%}
+        {{- v * o3_molar_mass / vm -}}
+    {%- elif fu in ugm3 and tu == "ppb" -%}
+        {{- v * vm / o3_molar_mass -}}
+    {%- else -%}
+        {{- none -}}
+    {%- endif -%}
+{%- endmacro %}
+
 {% macro get_dc_context() %}
     {{- {'lookup_unit': lookup_unit, 'levels': levels} | tojson -}}
 {% endmacro %}
