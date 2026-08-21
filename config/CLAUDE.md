@@ -38,6 +38,23 @@ header comment listing purpose and dependencies. Integration sections are
 ordered: `homeassistant:` → `input_*:` → `template:` → `automation:` →
 `script:`.
 
+## Recurring Task: Sunny Sensor Calibration (1st & 15th of each month)
+
+An automation (`packages/sunny_calibration.yaml`) reminds the owner on the 1st
+and 15th to report recent clearly-sunny / clearly-cloudy days, so the owner
+may open a session with something like "this is my report for the 1st" or
+just describe recent weather unprompted. **When that happens, follow
+`docs/sunny-sensor-calibration.md` — read it in full before doing anything.**
+It has the model, the exact SQL/pandas extraction procedure, every gotcha
+found so far (including one about entity renames breaking raw-state history —
+easy to miss), and a running calibration log to read for context. Don't
+improvise a different approach; the doc exists specifically so this doesn't
+need to be re-derived each time. Reference data lives in
+`docs/sunny-sensor-labels.csv` and `docs/sunny-sensor-references.csv`
+(append-only, durable against the 30-day recorder purge). After a calibration
+session, update all three: the calibration doc's log, the memory entry
+`[[sunny-sensor-tree-obstruction]]`, and the two CSVs.
+
 ---
 
 ## Entity Migration: YAML → GUI

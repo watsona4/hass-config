@@ -1,0 +1,37 @@
+# =============================================================================
+# Package: Sunny Sensor Calibration Reminder
+#
+# Nudges the owner to recalibrate binary_sensor.sunny as the sun's seasonal path
+# moves relative to the fixed tree obstruction at the weather station. On
+# receiving a reminder: note recent clearly-sunny / clearly-cloudy days (append
+# to config/docs/sunny-sensor-labels.csv) and have Claude follow
+# config/docs/sunny-sensor-calibration.md to pull the recorder data and update
+# the model before that history purges (recorder keeps 30 days).
+#
+# Related: includes/template.yaml (binary_sensor.sunny),
+#          includes/sensor.yaml (sensor.solar_radiation_max_20m).
+# =============================================================================
+automation:
+  - id: sunny_sensor_calibration_reminder
+    alias: "Sunny Sensor: Calibration Reminder"
+    mode: single
+    trigger:
+      - platform: time
+        at: "10:00:00"
+    condition:
+      # 1st and 15th of each month -> spaced reminders that span the seasons.
+      - condition: template
+        value_template: "{{ now().day in [1, 15] }}"
+    action:
+      - service: notify.mobile_app_pixel_9_pro_xl
+        data:
+          title: "Recalibrate the Sunny sensor"
+          message: >-
+            Sun angle vs the trees drifts with the seasons. Log the next clearly
+            sunny and clearly cloudy days (date + which) in
+            docs/sunny-sensor-labels.csv, then ask Claude to follow
+            docs/sunny-sensor-calibration.md - pull the recorder data for the
+            labeled days and update binary_sensor.sunny before it purges (30d).
+          data:
+            tag: "sunny_sensor_calibration"
+            notification_icon: "mdi:weather-sunny-alert"

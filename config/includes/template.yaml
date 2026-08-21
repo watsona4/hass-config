@@ -11,20 +11,85 @@
 
 # ===============================
 # Sunny outside (debounced)
+#
+# The Ambient station is heavily tree-shaded to the E/SE, so direct sun only
+# reaches the pyranometer once it clears the canopy (~10am) and again in the
+# open western sky (~2-4pm). A fixed illuminance threshold therefore read "not
+# sunny" all morning even on clear days. Instead we detect direct sun by its
+# signature: the beam punching through canopy gaps spikes solar radiation well
+# past any overcast value. sensor.solar_radiation_max_20m is a rolling 20-min
+# max; a peak >= 300 W/m2 means the sun is genuinely out. Calibrated from the
+# clear day 2026-07-11 (dappled spikes 700-1190 W/m2 vs flat <=250 when blocked)
+# and the 2026-07-14 bright-overcast reference (peaked at only 136 W/m2) -- 300
+# stays comfortably above both non-sunny ceilings. Lowered from 400 on
+# 2026-07-17 after a low-sun-angle (~28 deg elevation) late-afternoon reading of
+# 340 W/m2 read as "not sunny" despite visibly direct sun -- 400 had no margin
+# left for weaker, lower-elevation spikes. Note: while the sun is fully behind
+# the trees the station has no signal, so this will read "off" during those
+# hours regardless of sky clarity.
+#
+# Smoke branch: wildfire smoke scatters the beam so it never spikes even on a
+# cloudless day. When binary_sensor.smoky is on we relax the requirement to a
+# low daylight floor (peak >= 50) so a smoky-but-clear day still reads sunny.
+# Assumes smoke => otherwise-clear sky (typical of high-pressure smoke events);
+# a smoky AND genuinely cloudy day would false-positive - see the calibration
+# doc (config/docs/sunny-sensor-calibration.md) to refine once such a day is
+# labeled.
+#
+# Steeple branch (added 2026-07-19): separate from the tree obstruction above,
+# a church steeple blocks the station's own pyranometer in a specific sky
+# window. Derived from 21 days of sensor.solar_radiation_max_20m recorder
+# history binned by (azimuth, elevation): holding elevation fixed, radiation
+# craters from 190-330 W/m2 down to 63-66 W/m2 between azimuth 278 and 282 at
+# elevation 15-25 deg, and is similarly suppressed (150-270 vs 322-693 W/m2 at
+# comparable azimuths one elevation band up) across azimuth 266-276 at
+# elevation 25-35 deg -- narrowing to no detectable effect by elevation 35-45.
+# That wide-at-the-base/narrow-at-the-top shape matches a spire's silhouette.
+# Cross-checked against sensor.living_room_{left,right}_window_light_level
+# (a different vantage, unaffected by this specific obstruction) over the same
+# azimuth range: it shows only the smooth, expected evening decline with no
+# comparable dip, confirming this is a station-specific artifact and not the
+# sun genuinely dimming. Owner decision: while in this zone, hold the sensor's
+# last computed value rather than trusting the (locally invalid) radiation
+# reading -- simplest option, no new sensor dependency. Zone: azimuth 264-286,
+# elevation < 30. Re-derive if the steeple's angular position relative to the
+# station ever changes (station moved, tree growth alters the sightline, etc).
 # ===============================
 - binary_sensor:
     - name: Sunny
       unique_id: sunny_outside
       device_class: light
-      delay_on: "00:05:00"
+      delay_on: "00:02:00"
       delay_off: "00:05:00"
       availability: >-
-        {{ has_value('sensor.ambient_illuminance')
-           and (state_attr('sun.sun','elevation') | float(none)) is not none }}
+        {{ has_value('sensor.solar_radiation_max_20m')
+           and has_value('sensor.ambient_solarradiation') }}
       state: >-
         {% set elev = state_attr('sun.sun','elevation') | float(0) %}
-        {% set ill = states('sensor.ambient_illuminance') | float(0) %}
-        {{ elev > 3 and ill > 10000 }}
+        {% set azi = state_attr('sun.sun','azimuth') | float(0) %}
+        {% set peak = states('sensor.solar_radiation_max_20m') | float(0) %}
+        {% set smoky = is_state('binary_sensor.smoky', 'on') %}
+        {% set steeple = azi >= 264 and azi < 286 and elev < 30 %}
+        {{ (this.state == 'on') if steeple
+           else (elev > 3 and (peak >= 300 or (smoky and peak >= 50))) }}
+
+# ===============================
+# Smoky outside (wildfire haze)
+#
+# Wildfire smoke is a recurring summer pattern here and is optically distinct
+# from cloud: it scatters the direct beam (so the pyranometer reads low, like a
+# cloudy day) but shows up clearly in PM2.5. Threshold 35 ug/m3 (1h mean) sits
+# well above clear/cloudy-day PM2.5 (avg 6-13, peak <=30 on 2026-07-11..14) and
+# below the 2026-07-15 smoke event (avg 41, peak 93). Consumed by
+# binary_sensor.sunny to relax the direct-beam requirement on smoky-clear days.
+# ===============================
+- binary_sensor:
+    - name: Smoky
+      unique_id: smoky_outside
+      delay_on: "00:10:00"
+      delay_off: "00:20:00"
+      availability: "{{ has_value('sensor.outdoor_pm25_mean_1h') }}"
+      state: "{{ states('sensor.outdoor_pm25_mean_1h') | float(0) > 35 }}"
 
 # ===============================
 # Windy outside

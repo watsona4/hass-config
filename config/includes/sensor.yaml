@@ -124,6 +124,30 @@
   max_age:
     minutes: 5
 
+# Rolling 20-min peak of station solar radiation. Feeds binary_sensor.sunny:
+# the tree-shaded pyranometer only sees direct sun as brief high spikes through
+# canopy gaps, so the recent max is a far better "sun is out" signal than the
+# instantaneous value. sampling_size covers ~20 one-per-minute samples + margin.
+- platform: statistics
+  name: "Solar Radiation Max 20m"
+  unique_id: solar_radiation_max_20m
+  entity_id: sensor.ambient_solarradiation
+  state_characteristic: value_max
+  max_age:
+    minutes: 20
+  sampling_size: 60
+
+# Rolling 1-hour mean of outdoor PM2.5 -> feeds binary_sensor.smoky. Smooths the
+# spiky raw reading so wildfire-smoke detection doesn't flicker.
+- platform: statistics
+  name: "Outdoor PM2.5 Mean 1h"
+  unique_id: outdoor_pm25_mean_1h
+  entity_id: sensor.ambient_pm25
+  state_characteristic: mean
+  max_age:
+    minutes: 60
+  sampling_size: 120
+
 - platform: rest
   name: "Agromonitoring"
   unique_id: agromonitoring
