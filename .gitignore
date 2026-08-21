@@ -25,6 +25,7 @@ config/.vacuum
 config/SERVICE_ACCOUNT.JSON
 
 config/dashboards/spaces/views/
+config/dashboards/systems/views/
 config/dashboards/environment/plant_sections
 config/packages/plants
 config/zwift_access_token.txt
@@ -97,6 +98,21 @@ config/*.age
 config/*.pid
 config/**/__pycache__/
 config/.custom_components/**/__pycache__/
+config/.backups/
+config/.cache/
+config/.ha_run.lock
+config/callgrind.out.*
+config/profile.*.cprof
+
+# --- Debug/tool output that lands at repo root ---
+/out
+/out.txt
+/logs.txt
+/mosquitto.log
+/telemetry.json
+/devices.json
+/tinytuya.json
+/migration.config
 
 # --- Backups/exports ---
 config/backups/
