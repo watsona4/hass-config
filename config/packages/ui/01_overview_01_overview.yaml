@@ -379,9 +379,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_uv_index
+        entity_id: sensor.ambient_uv
     variables:
-      entity_id: sensor.ambient_uv_index
+      entity_id: sensor.ambient_uv
       app: uv_index
       options: {}
       state_info: >-
@@ -403,13 +403,13 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_wind_speed
+        entity_id: sensor.ambient_windspeed
     variables:
-      entity_id: sensor.ambient_wind_speed
+      entity_id: sensor.ambient_windspeed
       app: default
       options:
-        direction: sensor.ambient_wind_direction_avg_10m
-        gusts: sensor.ambient_wind_gust
+        direction: sensor.ambient_winddir_avg10m
+        gusts: sensor.ambient_windgust
         show_deg: false
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
@@ -431,17 +431,17 @@ template:
   - trigger:
       - platform: state
         entity_id:
-          - sensor.ambient_daily_rain
-          - sensor.ambient_hourly_rain
+          - sensor.ambient_dailyrain
+          - sensor.ambient_hourlyrain
           - sensor.openmeteo_nearby_today_precip_prob_max
     variables:
-      entity_id: sensor.ambient_daily_rain
+      entity_id: sensor.ambient_dailyrain
       app: default
       options: {}
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
         {{ get_device_state_info(entity_id, app, options=options) | from_json }}
-      rate: "{{ states('sensor.ambient_hourly_rain') | float(0) }}"
+      rate: "{{ states('sensor.ambient_hourlyrain') | float(0) }}"
       # Description: not currently raining -> today's forecast chance of rain;
       # actively raining -> the live rate. Both formatted via the same
       # units-humanizing helper used everywhere else (unit/precision handling,
@@ -450,7 +450,7 @@ template:
       desc_text: >-
         {%- from 'units/base.jinja' import u_humanize_entity -%}
         {%- if rate > 0 -%}
-          {{ u_humanize_entity('sensor.ambient_hourly_rain') }}
+          {{ u_humanize_entity('sensor.ambient_hourlyrain') }}
         {%- else -%}
           {{ u_humanize_entity('sensor.openmeteo_nearby_today_precip_prob_max') }} chance
         {%- endif -%}
@@ -475,9 +475,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_indoor_pm2_5_aqi
+        entity_id: sensor.ambient_aqi_pm25_aqin
     variables:
-      entity_id: sensor.ambient_indoor_pm2_5_aqi
+      entity_id: sensor.ambient_aqi_pm25_aqin
       app: default
       options: {}
       state_info: >-
@@ -499,9 +499,9 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_dew_point
+        entity_id: sensor.ambient_dewpoint
     variables:
-      entity_id: sensor.ambient_dew_point
+      entity_id: sensor.ambient_dewpoint
       app: dew_point
       options: {}
       state_info: >-

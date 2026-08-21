@@ -228,7 +228,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.ambient_uv_index
+            entity: sensor.ambient_uv
             icon: "{{ state_attr('sensor.ui_nearby_uv_index', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_uv_index', 'color') }}"
             primary: UV Index
@@ -245,7 +245,7 @@ sections:
 
           # Wind and Precipitation
           - type: custom:mushroom-template-card
-            entity: sensor.ambient_wind_speed
+            entity: sensor.ambient_windspeed
             icon: "{{ state_attr('sensor.ui_nearby_wind_speed', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_wind_speed', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_wind_speed', 'name') }}"
@@ -260,7 +260,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.ambient_daily_rain
+            entity: sensor.ambient_dailyrain
             icon: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'color') }}"
             primary: "{{ state_attr('sensor.ui_nearby_today_precip_sum', 'name') }}"
@@ -277,7 +277,7 @@ sections:
 
           # Air Quality and Dew Point
           - type: custom:mushroom-template-card
-            entity: sensor.ambient_indoor_pm2_5_aqi
+            entity: sensor.ambient_aqi_pm25_aqin
             icon: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_waqi_nearby_aqi', 'color') }}"
             primary: Air Quality Index
@@ -292,7 +292,7 @@ sections:
               columns: 12
               rows: auto
           - type: custom:mushroom-template-card
-            entity: sensor.ambient_dew_point
+            entity: sensor.ambient_dewpoint
             icon: "{{ state_attr('sensor.ui_nearby_dew_point', 'icon') }}"
             icon_color: "{{ state_attr('sensor.ui_nearby_dew_point', 'color') }}"
             primary: Dew Point
@@ -380,6 +380,20 @@ sections:
         icon_color: "{{ state_attr('sensor.garage_door_status', 'color') }}"
         primary: Garage Door
         secondary: "{{ states('sensor.garage_door_status') | title }} • {{ state_attr('sensor.garage_door_status', 'reason') }}"
+        tap_action:
+          action: more-info
+        hold_action:
+          action: toggle
+        grid_options:
+          columns: full
+
+      # Kitchen Door Lock Status
+      - type: custom:mushroom-template-card
+        entity: lock.ultraloq_bolt_f_matter
+        icon: "{{ state_attr('sensor.kitchen_door_lock_status', 'icon') }}"
+        icon_color: "{{ state_attr('sensor.kitchen_door_lock_status', 'color') }}"
+        primary: Kitchen Door Lock
+        secondary: "{{ states('sensor.kitchen_door_lock_status') | title }} • {{ state_attr('sensor.kitchen_door_lock_status', 'reason') }}"
         tap_action:
           action: more-info
         hold_action:

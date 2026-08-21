@@ -19,7 +19,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_indoor_pm2_5_aqi
+        entity_id: sensor.ambient_aqi_pm25_aqin
     sensor:
       - name: ui_waqi_nearby_aqi_badge
         state: "{{ states(trigger.entity_id) }}"
@@ -46,7 +46,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_uv_index
+        entity_id: sensor.ambient_uv
     variables:
       state_info: >-
         {%- from 'main.jinja' import get_device_state_info -%}
@@ -84,7 +84,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_uv_index
+        entity_id: sensor.ambient_uv
     sensor:
       - name: ui_nearby_uv_index_vitamin_d_badge
         state: "{{ states(trigger.entity_id) }}"
@@ -403,7 +403,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_indoor_pm2_5_aqi
+        entity_id: sensor.ambient_aqi_pm25_aqin
     variables:
       app: default
       state_info: >-
@@ -418,7 +418,7 @@ template:
           color: "{{ state_info.color }}"
           label: "{{ state_info.label }}"
       - name: ui_waqi_nearby_aqi_gauge
-        state: "{{ states('sensor.ambient_indoor_pm2_5_aqi') }}"
+        state: "{{ states('sensor.ambient_aqi_pm25_aqin') }}"
         attributes:
           name: "Indoor PM2.5"
           color_0: >-
@@ -458,60 +458,60 @@ template:
             {%- from 'main.jinja' import get_long_desc -%}
             {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
       - name: ui_waqi_nearby_pm2_5_chip
-        state: "{{ states('sensor.ambient_indoor_pm2_5') }}"
+        state: "{{ states('sensor.ambient_pm25_in_aqin') }}"
         attributes:
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm2_5') -}}
+            {{- get_color('sensor.ambient_pm25_in_aqin') -}}
       - name: ui_waqi_nearby_pm10_chip
-        state: "{{ states('sensor.ambient_indoor_pm10') }}"
+        state: "{{ states('sensor.ambient_pm10_in_aqin') }}"
         attributes:
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm10') -}}
+            {{- get_color('sensor.ambient_pm10_in_aqin') -}}
       - name: ui_waqi_nearby_co2_chip
-        state: "{{ states('sensor.ambient_indoor_co2') }}"
+        state: "{{ states('sensor.ambient_co2_in_aqin') }}"
         attributes:
           icon_color: >-
-            {%- set co2 = states('sensor.ambient_indoor_co2') | int(0) -%}
+            {%- set co2 = states('sensor.ambient_co2_in_aqin') | int(0) -%}
             {{- 'green' if co2 < 800 else 'yellow' if co2 < 1200 else 'orange' if co2 < 2000 else 'red' -}}
       - name: ui_aq_indoor_pm2_5_24h
-        state: "{{ states('sensor.ambient_indoor_pm2_5_aqi_24h_average') }}"
+        state: "{{ states('sensor.ambient_aqi_pm25_24h_aqin') }}"
         attributes:
           primary: PM2.5 24h AQI
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_pm2_5_aqi_24h_average') | int(0) -%}
+            {%- set v = states('sensor.ambient_aqi_pm25_24h_aqin') | int(0) -%}
             {{- v ~ ' · ' ~ ('Good' if v < 51 else 'Moderate' if v < 101 else 'Unhealthy Sens.' if v < 151 else 'Unhealthy' if v < 201 else 'Very Unhealthy' if v < 301 else 'Hazardous') -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm2_5_aqi_24h_average') -}}
+            {{- get_color('sensor.ambient_aqi_pm25_24h_aqin') -}}
           icon: mdi:blur
       - name: ui_aq_indoor_pm10_24h
-        state: "{{ states('sensor.ambient_indoor_pm10_aqi_24h_average') }}"
+        state: "{{ states('sensor.ambient_aqi_pm10_24h_aqin') }}"
         attributes:
           primary: PM10 24h AQI
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_pm10_aqi_24h_average') | int(0) -%}
+            {%- set v = states('sensor.ambient_aqi_pm10_24h_aqin') | int(0) -%}
             {{- v ~ ' · ' ~ ('Good' if v < 51 else 'Moderate' if v < 101 else 'Unhealthy Sens.' if v < 151 else 'Unhealthy' if v < 201 else 'Very Unhealthy' if v < 301 else 'Hazardous') -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm10_aqi_24h_average') -}}
+            {{- get_color('sensor.ambient_aqi_pm10_24h_aqin') -}}
           icon: mdi:blur-radial
       - name: ui_aq_indoor_co2_24h
-        state: "{{ states('sensor.ambient_indoor_co2_24h_average') }}"
+        state: "{{ states('sensor.ambient_co2_in_24h_aqin') }}"
         attributes:
           primary: CO2 24h Avg
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_co2_24h_average') | float(0) | round(0) | int -%}
+            {%- set v = states('sensor.ambient_co2_in_24h_aqin') | float(0) | round(0) | int -%}
             {{- v ~ ' ppm · ' ~ ('Excellent' if v < 600 else 'Good' if v < 800 else 'Fair' if v < 1200 else 'Poor' if v < 2000 else 'Bad') -}}
           icon_color: >-
-            {%- set co2 = states('sensor.ambient_indoor_co2_24h_average') | int(0) -%}
+            {%- set co2 = states('sensor.ambient_co2_in_24h_aqin') | int(0) -%}
             {{- 'green' if co2 < 800 else 'yellow' if co2 < 1200 else 'orange' if co2 < 2000 else 'red' -}}
           icon: mdi:molecule-co2
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_indoor_pm2_5_aqi
+        entity_id: sensor.ambient_aqi_pm25_aqin
     variables:
       app: default
       state_info: >-
@@ -526,7 +526,7 @@ template:
           color: "{{ state_info.color }}"
           label: "{{ state_info.label }}"
       - name: ui_waqi_home_aqi_gauge
-        state: "{{ states('sensor.ambient_indoor_pm2_5_aqi') }}"
+        state: "{{ states('sensor.ambient_aqi_pm25_aqin') }}"
         attributes:
           name: "Indoor PM2.5"
           color_0: >-
@@ -566,36 +566,36 @@ template:
             {%- from 'main.jinja' import get_long_desc -%}
             {{- get_long_desc(none, options=dict(value=301, device_class='aqi')) -}}
       - name: ui_aq_home_pm2_5_24h
-        state: "{{ states('sensor.ambient_indoor_pm2_5_aqi_24h_average') }}"
+        state: "{{ states('sensor.ambient_aqi_pm25_24h_aqin') }}"
         attributes:
           primary: PM2.5 24h AQI
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_pm2_5_aqi_24h_average') | int(0) -%}
+            {%- set v = states('sensor.ambient_aqi_pm25_24h_aqin') | int(0) -%}
             {{- v ~ ' · ' ~ ('Good' if v < 51 else 'Moderate' if v < 101 else 'Unhealthy Sens.' if v < 151 else 'Unhealthy' if v < 201 else 'Very Unhealthy' if v < 301 else 'Hazardous') -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm2_5_aqi_24h_average') -}}
+            {{- get_color('sensor.ambient_aqi_pm25_24h_aqin') -}}
           icon: mdi:blur
       - name: ui_aq_home_pm10_24h
-        state: "{{ states('sensor.ambient_indoor_pm10_aqi_24h_average') }}"
+        state: "{{ states('sensor.ambient_aqi_pm10_24h_aqin') }}"
         attributes:
           primary: PM10 24h AQI
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_pm10_aqi_24h_average') | int(0) -%}
+            {%- set v = states('sensor.ambient_aqi_pm10_24h_aqin') | int(0) -%}
             {{- v ~ ' · ' ~ ('Good' if v < 51 else 'Moderate' if v < 101 else 'Unhealthy Sens.' if v < 151 else 'Unhealthy' if v < 201 else 'Very Unhealthy' if v < 301 else 'Hazardous') -}}
           icon_color: >-
             {%- from 'main.jinja' import get_color -%}
-            {{- get_color('sensor.ambient_indoor_pm10_aqi_24h_average') -}}
+            {{- get_color('sensor.ambient_aqi_pm10_24h_aqin') -}}
           icon: mdi:blur-radial
       - name: ui_aq_home_co2_24h
-        state: "{{ states('sensor.ambient_indoor_co2_24h_average') }}"
+        state: "{{ states('sensor.ambient_co2_in_24h_aqin') }}"
         attributes:
           primary: CO2 24h Avg
           secondary: >-
-            {%- set v = states('sensor.ambient_indoor_co2_24h_average') | float(0) | round(0) | int -%}
+            {%- set v = states('sensor.ambient_co2_in_24h_aqin') | float(0) | round(0) | int -%}
             {{- v ~ ' ppm · ' ~ ('Excellent' if v < 600 else 'Good' if v < 800 else 'Fair' if v < 1200 else 'Poor' if v < 2000 else 'Bad') -}}
           icon_color: >-
-            {%- set co2 = states('sensor.ambient_indoor_co2_24h_average') | int(0) -%}
+            {%- set co2 = states('sensor.ambient_co2_in_24h_aqin') | int(0) -%}
             {{- 'green' if co2 < 800 else 'yellow' if co2 < 1200 else 'orange' if co2 < 2000 else 'red' -}}
           icon: mdi:molecule-co2
 
@@ -687,7 +687,7 @@ template:
 
   - trigger:
       - platform: state
-        entity_id: sensor.ambient_uv_index
+        entity_id: sensor.ambient_uv
     variables:
       app: 'nearby_uv_index'
       state_info: >-
@@ -702,7 +702,7 @@ template:
           color: "{{ state_info.color }}"
           label: "{{ state_info.label }}"
       - name: ui_nearby_uv_index_gauge
-        state: "{{ states('sensor.ambient_uv_index') }}"
+        state: "{{ states('sensor.ambient_uv') }}"
         attributes:
           color_0: >-
             {%- from 'main.jinja' import get_color -%}

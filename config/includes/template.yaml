@@ -100,7 +100,7 @@
       state: >
         {% set gust_max = states('sensor.wind_gust_max_10m') | float(0) %}
         {% set mean_5m  = states('sensor.wind_speed_mean_5m') | float(0) %}
-        {% set wind_dir = states('sensor.ambient_wind_direction_avg_10m') | float(0) %}
+        {% set wind_dir = states('sensor.ambient_winddir_avg10m') | float(0) %}
         {% set door_dir = states('input_number.garage_azimuth') | float(180) %}
         {% set angle = (((wind_dir - door_dir + 180) % 360 - 180) | abs) %}
         {% set aligned = angle <= 60 %}
@@ -335,7 +335,7 @@
     problem_list: >-
       {% set sensors = [
         "sensor.acurite_tower_a_11075_temperature",
-        "sensor.ambient_sensor_1_temperature",
+        "sensor.ambient_temp1",
         "sensor.water_barrel_fill_level",
         "light.chicken_coop_light",
         "sensor.outside_brightness",
@@ -410,7 +410,7 @@
       icon: "{{ 'mdi:weather-pouring' if is_state(this.entity_id,'on') else 'mdi:weather-partly-cloudy' }}"
       availability: >-
         {{ has_value('binary_sensor.rain_sensor_moisture')
-           or has_value('sensor.ambient_hourly_rain') }}
+           or has_value('sensor.ambient_hourlyrain') }}
       state: >-
         {# Supplement the unreliable roof rain probe with the Ambient rain-gauge
            rate: rainy if EITHER the (fresh) probe is wet OR the gauge shows rain,
@@ -418,8 +418,8 @@
         {% set probe_wet = has_value('binary_sensor.rain_sensor_moisture')
                            and is_state('binary_sensor.rain_probe_fresh','on')
                            and is_state('binary_sensor.rain_sensor_moisture','on') %}
-        {% set gauge_wet = has_value('sensor.ambient_hourly_rain')
-                           and (states('sensor.ambient_hourly_rain') | float(0) > 0) %}
+        {% set gauge_wet = has_value('sensor.ambient_hourlyrain')
+                           and (states('sensor.ambient_hourlyrain') | float(0) > 0) %}
         {{ probe_wet or gauge_wet }}
       delay_on: "00:00:30"
       delay_off: "00:05:00"
@@ -428,11 +428,11 @@
           {% set probe_wet = has_value('binary_sensor.rain_sensor_moisture')
                              and is_state('binary_sensor.rain_probe_fresh','on')
                              and is_state('binary_sensor.rain_sensor_moisture','on') %}
-          {% set gauge_wet = has_value('sensor.ambient_hourly_rain')
-                             and (states('sensor.ambient_hourly_rain') | float(0) > 0) %}
+          {% set gauge_wet = has_value('sensor.ambient_hourlyrain')
+                             and (states('sensor.ambient_hourlyrain') | float(0) > 0) %}
           {{ 'roof+gauge' if (probe_wet and gauge_wet) else 'roof' if probe_wet
              else 'gauge' if gauge_wet else 'dry' }}
-        rain_rate_in_hr: "{{ states('sensor.ambient_hourly_rain') | float(0) }}"
+        rain_rate_in_hr: "{{ states('sensor.ambient_hourlyrain') | float(0) }}"
         probe_last_changed: >-
           {% if states.binary_sensor.rain_sensor_moisture is defined %}
             {{ states.binary_sensor.rain_sensor_moisture.last_changed }}

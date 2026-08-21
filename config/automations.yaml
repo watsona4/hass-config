@@ -1231,7 +1231,7 @@
     trigger: time
   - trigger: numeric_state
     entity_id:
-    - sensor.ambient_sensor_1_temperature
+    - sensor.ambient_temp1
     below: 35
   conditions: []
   actions:
@@ -1267,7 +1267,7 @@
             priority: high
   - if:
     - condition: numeric_state
-      entity_id: sensor.ambient_sensor_1_temperature
+      entity_id: sensor.ambient_temp1
       below: 35
     then:
     - wait_template: '{{ states(''timer.water_freezing_timer'', ''idle'') }}'
@@ -5860,7 +5860,7 @@
       metadata: {}
       data: {}
       target:
-        entity_id: switch.guest_bedroom_lamp_socket_1
+        entity_id: switch.guest_bedroom_lamp_socket_1_cloud
   - if:
     - condition: state
       entity_id: input_boolean.study_occupied
@@ -6691,7 +6691,7 @@
   triggers:
   - id: strike
     trigger: state
-    entity_id: sensor.ambient_last_lightning_strike
+    entity_id: sensor.ambient_lightning_time
     not_from:
     - unavailable
     - unknown
@@ -6706,8 +6706,8 @@
   conditions: []
   actions:
   - variables:
-      strike_time: '{{ as_timestamp(states(''sensor.ambient_last_lightning_strike''))
-        | timestamp_custom(''%-I:%M:%S %p'', true) }}'
+      strike_time: '{{ as_timestamp(states(''sensor.ambient_lightning_time'')) | timestamp_custom(''%-I:%M:%S
+        %p'', true) }}'
       strike_dist: '{{ states(''sensor.ambient_lightning_distance'') }}'
       first_dist: '{{ states(''input_number.lightning_first_strike_distance'') }}'
   - choose:
